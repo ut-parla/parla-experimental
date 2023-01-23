@@ -1,2 +1,6 @@
-# python_c_extensions
-A minimal setup for mixng Python and C++ in the same project. Cython + Scikit-Build + Unit Testing + Documentation
+# EZ Python w/ C++ Extensions
+
+A minimal setup for mixng Python and C++ in the same project. 
+Aims to configure for Cython + Scikit-Build with Unit Testing and Documentation for all 3 layers. 
+
+
