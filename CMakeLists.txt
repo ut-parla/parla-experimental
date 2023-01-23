@@ -25,3 +25,7 @@ if(MODTEST_BUILD_TESTS)
     add_subdirectory(unittests)
 endif(MODTEST_BUILD_TESTS)
 
+set(test_path_file ${CMAKE_SOURCE_DIR}/unittests/run_tests.sh)
+file(WRITE ${test_path_file} "export MODTEST_TESTS=${CMAKE_BINARY_DIR}/unittests\n")
+file(APPEND ${test_path_file} "py.test $MODTEST_TESTS\n")
+file(APPEND ${test_path_file} "ctest --test-dir $MODTEST_TESTS\n")
