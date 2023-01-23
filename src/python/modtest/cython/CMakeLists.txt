@@ -14,6 +14,7 @@ message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 install(TARGETS core LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/modtest/cython/)
 #install(TARGETS __init__ LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/modtest/cython/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/modtest/cython/)
 
 target_link_libraries(core ${PYTHON_LIBRARIES})
 target_link_libraries(core backend)

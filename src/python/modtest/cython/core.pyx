@@ -27,7 +27,9 @@ cdef class CppMathWrapper:
         pass
 
     cpdef int add(self, int a, int b):
+        """Add two integers"""
         return self.cpp_math.add(a, b)
 
     cpdef int sub(self, int a, int b):
+        """Subtract two integers"""
         return self.cpp_math.sub(a, b)

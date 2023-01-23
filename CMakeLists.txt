@@ -19,7 +19,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include_directories(${NUMPY_INCLUDE})
 
 add_subdirectory(src/c/backend)
-add_subdirectory(src/python/modtest/cython)
+add_subdirectory(src/python/modtest)
 
 if(MODTEST_BUILD_TESTS)
     add_subdirectory(unittests)
