@@ -1,0 +1,4 @@
+CompileFlags:
+    Add: [ -std=c++20 ]
+    Add: [ -stdlib=libc++]
+    Compiler: clang++
