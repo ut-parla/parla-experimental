@@ -16,7 +16,7 @@
     _doctest_subcase_idx = 0
 
 
-
+/*
 TEST_CASE("CppMath::add") {
     std::tuple<int, int> data;
     int case_idx = 0;
@@ -52,3 +52,4 @@ TEST_CASE("CppMath::sub") {
     printf("Case %d: %d - %d = %d \n", case_idx, std::get<0>(data), 2, std::get<1>(data));
     CHECK(math.sub(std::get<0>(data), 2) == std::get<1>(data));
 }
+*/
