@@ -1,7 +1,13 @@
-# EZ Python w/ C++ Extensions
+#  Parla Experimental
 
-A minimal setup for mixing Python and C++ in the same project. 
+Repository for refactoring Parla to a C++ runtime to avoid GIL during scheduling
 
-Aims to configure for Cython + Scikit-Build with Unit Testing and Documentation for all 3 layers. 
+This is a refactoring and extension of the `miniparla` repo: 
+https://github.com/dialecticDolt/miniparla/tree/cleanup/miniparla_cpp
+
+
+Scikit-build and organization template based on: https://github.com/dialecticDolt/python_c_extensions
+
+ 
 
 
