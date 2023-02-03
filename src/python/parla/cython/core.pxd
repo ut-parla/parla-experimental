@@ -10,6 +10,8 @@ cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
 
+    void cpu_busy_sleep(unsigned int microseconds)
+
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
 
@@ -26,9 +28,12 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void queue_dependency(InnerTask* task)
         bool process_dependencies()
+        void clear_dependencies()
 
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
+        bool notify_dependents_wrapper()
+
         void* get_py_task()
 
         int get_num_dependencies()
@@ -46,15 +51,27 @@ cdef extern from "include/runtime.hpp" nogil:
 
     cdef cppclass InnerWorker:
         void* py_worker
+        InnerTask* task
+
+        bool ready
 
         InnerWorker()
         InnerWorker(void* py_worker)
 
         void set_py_worker(void* py_worker)
+        void set_thread_idx(int idx)
+        void assign_task(InnerTask* task)
+        void remove_task()
+
+        void wait()
+        void stop()
 
     #ctypedef InnerWorker* InnerWorkerPtr_t
 
     cdef cppclass InnerScheduler:
+
+        bool should_run
+        
         InnerScheduler()
 
         void set_num_workers(int num_workers)
@@ -82,13 +99,6 @@ cdef extern from "include/runtime.hpp" nogil:
         #int get_num_active_workers()
         int get_num_running_tasks()
         int get_num_ready_tasks()
-
-
-
-
-
-
-
 
 
 

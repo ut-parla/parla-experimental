@@ -77,9 +77,21 @@ class ProtectedVector {
             this->length++;
         }
 
+        void push_back(std::vector<T>& a){
+            this->mtx.lock();
+            this->vec.insert(this->vec.end(), a.begin(), a.end());
+            this->mtx.unlock();
+            this->length += a.size();
+        }
+
         void push_back_unsafe(T a){
             this->vec.push_back(a);
             this->length++;
+        }
+
+        void push_back_unsafe(std::vector<T>& a){
+            this->vec.insert(this->vec.end(), a.begin(), a.end());
+            this->length += a.size();
         }
 
         void pop_back(){

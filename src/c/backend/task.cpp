@@ -42,9 +42,17 @@ void InnerTask::queue_dependency(InnerTask *task) {
 }
 
 bool InnerTask::process_dependencies() {
+  my_scoped_range r("task::process_dependencies", nvtx3::rgb{127, 127, 0});
+  // std::cout << "Processing Dependencies: " << this-> name << " " <<
+  // this->dependency_buffer.size() << std::endl;
   bool status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
   return status;
+}
+
+void InnerTask::clear_dependencies() {
+  this->dependency_buffer.clear();
+  this->dependencies.clear();
 }
 
 bool InnerTask::add_dependency(InnerTask *task) {
@@ -72,6 +80,7 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
 
   // TODO: This will need to include all other dependency trackers
   // (num_mapped_dependencies, etc)
+
   // TODO: num_spawned_dependencies should be handled before this stage as this
   // tasks predecessors need to exist
   //       unless we change to creating a task object on first taskspace
@@ -126,7 +135,7 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
  */
 
 bool InnerTask::add_dependent(InnerTask *task) {
-
+  my_scoped_range r("task::add_dependents", nvtx3::rgb{127, 127, 0});
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
   // Dependents is read when the task is in cleanup, which can overlap with this
@@ -156,19 +165,22 @@ bool InnerTask::add_dependent(InnerTask *task) {
 
 std::vector<InnerTask *> &
 InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
-
+  my_scoped_range r("task::notify_dependents", nvtx3::rgb{127, 127, 0});
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
   // at a time
-  //       This is possibly worse.
+  //       This is possibly worse, but splits out scheduler dependency.
   //       May need to change back to call scheduler.enqueue(task) here instead
 
   this->dependents.lock();
+  // std::cout << "Notifying dependents of " << this->name << ": " <<
+  // this->dependents.size_unsafe() << std::endl;
 
-  for (size_t i = 0; i < this->dependents.size(); i++) {
+  for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
     auto task = this->dependents.get_unsafe(i);
     bool ready = task->notify();
 
     if (ready) {
+      // std::cout << "Dependent Task Ready" << std::endl;
       buffer.push_back(task);
     }
   }

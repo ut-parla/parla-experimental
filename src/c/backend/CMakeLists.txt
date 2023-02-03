@@ -3,7 +3,16 @@ file(GLOB BACKEND_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB BACKEND_HDR_CURRENT ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 file(GLOB BACKEND_HDR_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
+
+
+
+
 add_library(backend STATIC ${BACKEND_SRC})
+
+if(PARLA_ENABLE_NVTX)
+    message(STATUS "Enabling NVTX support.")
+    target_include_directories(backend PUBLIC ${NVTX_INCLUDE})
+endif(PARLA_ENABLE_NVTX)
 
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -1,3 +1,16 @@
+import nvtx
+
+cpdef cpu_bsleep_gil(unsigned int microseconds):
+    """Busy sleep for a given number of microseconds, but don't release the GIL"""
+    cpu_busy_sleep(microseconds)
+
+cpdef cpu_bsleep_nogil(unsigned int microseconds):
+    """Busy sleep for a given number of microseconds, but release the GIL"""
+    with nogil:
+        cpu_busy_sleep(microseconds)
+
+# Define callbacks for C++ to call back into Python
+
 cdef void callback_launch(void* python_scheduler, void* python_task, void*
         python_worker) nogil:
     with gil:
@@ -6,7 +19,8 @@ cdef void callback_launch(void* python_scheduler, void* python_task, void*
         scheduler = <object>python_scheduler
         worker = <object>python_worker
 
-        scheduler.cpp_callback(task, worker)
+        scheduler.assign_task(task, worker)
+
         #print("Done with callback", flush=True)
         #(<object>python_function)(<object>python_input)
 
@@ -14,12 +28,12 @@ cdef void callback_stop(void* python_function) nogil:
     with gil:
         #print("Inside callback to cython (stop)", flush=True)
         scheduler = <object>python_function
-        scheduler.stop()
+        scheduler.stop_callback()
 
         #(<object>python_function)(<object>python_input)
 
 
-
+#Define the Cython Wrapper Classes
 cdef class PyInnerTask:
     cdef InnerTask* c_task
 
@@ -32,8 +46,8 @@ cdef class PyInnerTask:
         cdef InnerTask* _c_task
         _c_task = self.c_task
 
-        #name = python_task._taskid.full_name
-        name = "test"
+        name = python_task.taskid.full_name
+        #name = "test"
         name = name.encode('utf-8')
         _c_task.set_name(name)
 
@@ -54,11 +68,13 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         return <object> c_self.get_py_task()
 
-    cpdef add_dependencies(self, dependency_list):
+    cpdef add_dependencies(self, dependency_list, process=True):
         cdef InnerTask* c_self = self.c_task
 
         cdef PyInnerTask dependency
         cdef InnerTask* c_dependency
+
+        cdef bool status = False 
 
         for d in dependency_list:
             dependency = d.inner_task
@@ -66,9 +82,15 @@ cdef class PyInnerTask:
             c_self.queue_dependency(c_dependency)
 
 
-        #TODO: Remove GIL here?
-        status = c_self.process_dependencies()
+        if process:
+            with nogil:
+                status = c_self.process_dependencies()
+
         return status
+
+    cpdef clear_dependencies(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.clear_dependencies()
 
     cpdef get_dependencies(self):
         cdef InnerTask* c_self = self.c_task
@@ -116,6 +138,13 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         return c_self.get_num_blocking_dependencies()
 
+    cpdef notify_dependents_wrapper(self):
+        cdef InnerTask* c_self = self.c_task
+        cdef bool status = False
+        with nogil:
+            status = c_self.notify_dependents_wrapper()
+        return status
+
     cpdef set_state(self, int state):
         cdef InnerTask* c_self = self.c_task
         c_self.set_state(state)
@@ -132,6 +161,46 @@ cdef class PyInnerWorker:
         cdef InnerWorker* _inner_worker
         _inner_worker = new InnerWorker()
         self.inner_worker = _inner_worker
+
+    def __init__(self, python_worker):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+
+        _inner_worker.set_py_worker(<void *> python_worker)
+        _inner_worker.set_thread_idx(python_worker.index)
+
+    cpdef remove_task(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+
+        _inner_worker.remove_task()
+
+    cpdef wait_for_task(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+
+        with nogil:
+            _inner_worker.wait()
+
+    cpdef get_task(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+
+        cdef InnerTask* c_task
+
+        if _inner_worker.ready:
+            c_task = _inner_worker.task
+            py_task = <object> c_task.get_py_task()
+        else:
+            py_task = None
+
+        return py_task
+
+    cpdef stop(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+
+        _inner_worker.stop()
 
     def __dealloc__(self):
         del self.inner_worker
@@ -162,12 +231,17 @@ cdef class PyInnerScheduler:
         cdef launchfunc_t py_launch = callback_launch
         _inner_scheduler.set_launch_callback(py_launch)
 
+    cpdef get_status(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.should_run
+
     def __dealloc__(self):
         del self.inner_scheduler
 
     cpdef run(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.run()
+        with nogil:
+            c_self.run()
 
     cpdef stop(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -176,6 +250,11 @@ cdef class PyInnerScheduler:
     cpdef activate_wrapper(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.activate_wrapper()
+
+    cpdef enqueue_task(self, PyInnerTask task):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        cdef InnerTask* c_task = task.c_task
+        c_self.enqueue_task(c_task)
 
     cpdef add_worker(self, PyInnerWorker worker):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -191,7 +270,8 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
-        c_self.task_cleanup(c_worker, c_task, state)
+        with nogil:
+            c_self.task_cleanup(c_worker, c_task, state)
 
     cpdef get_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -218,52 +298,7 @@ cdef class PyInnerScheduler:
         return c_self.get_num_running_tasks()
 
     
+class Resources:
 
-    
-class Task:
-
-    def __init__(self, name="Default", dependencies=None):
-
-        self.name = name
-
-        self.vcus = 1
-        self.id = id(self)
-        self.inner_task = PyInnerTask(self.id, self, self.vcus)
-
-        if dependencies is not None:
-            self.add_dependencies(dependencies)
-
-    def add_dependencies(self, dependency_list):
-        self.inner_task.add_dependencies(dependency_list)
-
-    def get_num_dependencies(self):
-        return self.inner_task.get_num_dependencies()
-
-    def get_num_dependents(self):
-        return self.inner_task.get_num_dependents()
-
-    def get_num_blocking_dependencies(self):
-        return self.inner_task.get_num_blocking_dependencies()
-
-    def get_dependencies(self):
-        dependency_list = self.inner_task.get_dependencies()
-        return dependency_list
-
-    def get_dependents(self):
-        dependent_list = self.inner_task.get_dependents()
-        return dependent_list
-
-    def set_state(self, state):
-        self.inner_task.set_state(state)
-
-    def get_state(self):
-        return self.inner_task.get_state()
-
-    def set_complete(self):
-        self.inner_task.set_complete()
-
-    
-
-
-
-
+    def __init__(self, vcus):
+        self.resources = vcus

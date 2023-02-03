@@ -1,132 +1,154 @@
-#include "include/runtime.hpp"
 #include "include/phases.hpp"
+#include "include/runtime.hpp"
 
 /**************************/
-//Spawned Phase implementation
+// Spawned Phase implementation
 
-void SpawnedPhase::run(MappedPhase* ready){
-    //NOT IMPLEMENTED
-}
-
-
-/**************************/
-//Mapped Phase implementation
-
-void MappedPhase::run(ReservedPhase* ready){
-    //NOT IMPLEMENTED
+void SpawnedPhase::run(MappedPhase *ready) {
+  // NOT IMPLEMENTED
 }
 
 /**************************/
-//Reserved Phase implementation
-void ReservedPhase::run(ReadyPhase* ready){
-    //NOT IMPLEMENTED
+// Mapped Phase implementation
+
+void MappedPhase::run(ReservedPhase *ready) {
+  // NOT IMPLEMENTED
 }
 
 /**************************/
-//Ready Phase implementation
-
-void ReadyPhase::enqueue(InnerTask* task){
-    this->ready_tasks.push_back(task);
+// Reserved Phase implementation
+void ReservedPhase::run(ReadyPhase *ready) {
+  // NOT IMPLEMENTED
 }
 
-void ReadyPhase::enqueue(std::vector<InnerTask*>& tasks){
-    //NOT IMPLEMENTED
+/**************************/
+// Ready Phase implementation
+
+void ReadyPhase::enqueue(InnerTask *task) {
+  // std::cout << "Enqueuing task " << task->name << std::endl;
+  this->ready_tasks.push_back(task);
+  // std::cout << "Ready tasks after enqueue: " <<
+  // this->ready_tasks.atomic_size()
+  //          << std::endl;
 }
 
-int ReadyPhase::get_count(){
-    return this->ready_tasks.atomic_size();
+void ReadyPhase::enqueue(std::vector<InnerTask *> &tasks) {
+  // std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
+  // for (auto task : tasks) {
+  //  this->enqueue(task);
+  //}
+  this->ready_tasks.push_back(tasks);
+  // std::cout << "Ready tasks after: " << this->ready_tasks.atomic_size()
+  //          << std::endl;
 }
 
-bool ReadyPhase::condition(){
-    //NOT IMPLEMENTED
-    return true;
+int ReadyPhase::get_count() {
+  // std::cout << "Ready tasks: " << this->ready_tasks.atomic_size() <<
+  // std::endl;
+  int count = this->ready_tasks.atomic_size();
+  // std::cout << "Ready tasks: " << count << std::endl;
+  return count;
 }
 
-void ReadyPhase::run(LauncherPhase* launcher){
+bool ReadyPhase::condition() {
+  // NOT IMPLEMENTED
+  return true;
+}
 
-    //TODO: Refactor this so its readable without as many nested conditionals
+void ReadyPhase::run(LauncherPhase *launcher) {
 
-    //This is a critical region
-    //Mutex needed only if it is called from multiple threads (not just scheduler thread)
+  my_scoped_range r("ReadyPhase::run", nvtx3::rgb{0, 127, 0});
 
-    //Assumptions:
-    //Scheduler resources are ONLY decreased here
-    //Available workers are ONLY decreased here
+  // TODO: Refactor this so its readable without as many nested conditionals
 
-    //Assumptions to revisit:
-    //Ready tasks must be launched in order
-    //If the task at the head cannot be launched (eg. not enough resources, no available workers)
-    //, then no other tasks can be launched
-    //TODO: Revisit this design decision
+  // This is a critical region
+  // Mutex needed only if it is called from multiple threads (not just scheduler
+  // thread)
 
-    //TODO: Currently this drains the whole queue. Use Ready::condition() to set a better policy?
-    //TODO: This stops at a single failure.
-    //TODO: Maybe failure of a phase means it should wait on events to try again. Instead of just spinning?
+  // Assumptions:
+  // Scheduler resources are ONLY decreased here
+  // Available workers are ONLY decreased here
 
-    this->mtx.lock();
-    
-    bool has_task = true;
+  // Assumptions to revisit:
+  // Ready tasks must be launched in order
+  // If the task at the head cannot be launched (eg. not enough resources, no
+  // available workers) , then no other tasks can be launched
+  // TODO: Revisit this design decision
 
-    while(has_task){
+  // TODO: Currently this drains the whole queue. Use Ready::condition() to set
+  // a better policy?
+  // TODO: This stops at a single failure.
+  // TODO: Maybe failure of a phase means it should wait on events to try again.
+  // Instead of just spinning?
 
-        has_task = this->get_count() > 0;
+  this->status.reset();
 
-        if(has_task){
-            auto task = this->ready_tasks.front();
-            bool has_resources = scheduler->resources->check_greater(task->resources);
+  this->mtx.lock();
 
-            if(has_resources){
+  bool has_task = true;
 
-                bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+  while (has_task) {
 
-                if (has_thread){
+    has_task = this->get_count() > 0;
 
-                    InnerTask* task = this->ready_tasks.front_and_pop();
-                    InnerWorker* worker = scheduler->workers.dequeue_worker();
+    if (has_task) {
+      auto task = this->ready_tasks.front();
+      bool has_resources = scheduler->resources->check_greater(task->resources);
 
-                    launcher->enqueue(task, worker);
+      if (has_resources) {
 
-                    this->status.update(Ready::success);
-                }
-                else{
-                    this->status.update(Ready::worker_miss);
-                    break; //No more workers available
-                }
-            }
-            else{
-                this->status.update(Ready::resource_miss);
-                break; //No more resources available
-            }
+        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+
+        if (has_thread) {
+
+          InnerTask *task = this->ready_tasks.front_and_pop();
+          InnerWorker *worker = scheduler->workers.dequeue_worker();
+
+          // Decrease Resources
+          scheduler->resources->decrease(task->resources);
+
+          launcher->enqueue(task, worker);
+
+          this->status.update(Ready::success);
+        } else {
+          this->status.update(Ready::worker_miss);
+          break; // No more workers available
         }
-        else{
-            this->status.update(Ready::task_miss);
-            break; //No more tasks available
-        }
+      } else {
+        this->status.update(Ready::resource_miss);
+        break; // No more resources available
+      }
+    } else {
+      this->status.update(Ready::task_miss);
+      break; // No more tasks available
     }
+  }
 
-    this->mtx.unlock();
-
+  this->mtx.unlock();
 }
 
 /**************************/
-//Launcher Phase implementation
+// Launcher Phase implementation
 
-void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker){
-    //Immediately launch task
+void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
 
-    void* py_task = task->py_task;
-    void* py_worker = worker->py_worker;
+  my_scoped_range r("LauncherPhase::launch", nvtx3::rgb{0, 0, 127});
 
-    //Acquire GIL to assign task to worker and notify worker through python callback
-    launch_task_callback(this->launch_callback, py_scheduler, py_task, py_worker);
+  // Immediately launch task
+  task->set_state(Task::running);
+  this->num_running_tasks++;
 
-    //TODO: Replace this with a condition variable update on the InnerWorker
-    //      Then we won't need to acquire the GIL to launch from the scheduler thread
+  /*
+  //Acquire GIL to assign task to worker and notify worker through python
+  callback void* py_task = task->py_task; void* py_worker = worker->py_worker;
+  launch_task_callback(this->launch_callback, py_scheduler, py_task, py_worker);
+  */
 
-    this->num_running_tasks++;
+  // Assign task to thread and notify via c++ condition variable. No GIL needed
+  // until worker wakes.
+  worker->assign_task(task);
 }
 
-
-void LauncherPhase::run(){
-    //NOT IMPLEMENTED
+void LauncherPhase::run() {
+  // NOT IMPLEMENTED
 }

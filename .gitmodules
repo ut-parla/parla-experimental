@@ -1,0 +1,6 @@
+[submodule "3rd_party/nvtx"]
+	path = 3rd_party/nvtx
+	url = https://github.com/NVIDIA/NVTX
+[submodule "3rd_party/binlog"]
+	path = 3rd_party/binlog
+	url = git@github.com:morganstanley/binlog.git

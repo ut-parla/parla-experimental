@@ -7,6 +7,9 @@ set(3RD_PARTY_DIR ${PROJECT_SOURCE_DIR}/3rd_party)
 option(PARLA_BUILD_TESTS "Enables building of C++ tests" OFF)
 option(PARLA_DEBUG "Enables all debugging flags" ON)
 
+option(PARLA_ENABLE_LOGGING "Enable binlog logging" OFF)
+option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" ON)
+
 message(STATUS "PARLA_BUILD_TESTS: " ${PARLA_BUILD_TESTS})
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -28,6 +31,15 @@ if(PARLA_DEBUG)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
     set(CYTHON_FLAGS "${CYTHON_FLAGS} ${PARLA_DEBUG_CYTHON_COMPILE_FLAGS}")
 endif(PARLA_DEBUG)
+
+if(PARLA_ENABLE_NVTX)
+    set(NVTX_INCLUDE ${3RD_PARTY_DIR}/nvtx/c/include)
+endif(PARLA_ENABLE_NVTX)
+
+if(PARLA_ENABLE_LOGGING)
+    #TODO: figure out binlog cmake support 
+    #include_directories(${3RD_PARTY_DIR}/binlog/include)
+endif(PARLA_ENABLE_LOGGING)
 
 add_subdirectory(src/c/backend)
 add_subdirectory(src/python/parla)
