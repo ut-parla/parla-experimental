@@ -60,12 +60,13 @@ def main(workers, n, t, accesses, frac):
 
         nvtx.pop_range(domain="application")
 
-        nvtx.push_range(message="WAIT FOR TASKS", color="green", domain="application")
+        barrier_start_t = time.perf_counter()
         await T
-        nvtx.pop_range(domain="application")
+        barrier_end_t = time.perf_counter()
 
         end_t = time.perf_counter()
         elapsed_t = end_t - start_t
+        
         print(', '.join([str(workers), str(n), str(t), str(
             accesses), str(frac), str(elapsed_t)]), flush=True)
         #print(n/elapsed_t, flush=True)

@@ -164,6 +164,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             raise TaskBodyException(active_task.state.exception)
 
                         if isinstance(active_task.state, tasks.TaskRunning):
+                            nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
                             #print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
                             active_task.dependencies = active_task.state.dependencies
                             active_task.func = active_task.state.func
@@ -171,6 +172,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                             active_task.inner_task.clear_dependencies()
                             active_task.add_dependencies(active_task.dependencies, process=False)
+                            nvtx.pop_range(domain="Python Runtime")
 
                         self.inner_worker.remove_task()
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
