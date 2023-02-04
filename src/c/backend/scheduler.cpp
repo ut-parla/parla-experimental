@@ -90,7 +90,7 @@ void InnerScheduler::set_launch_callback(launchfunc_t launch_callback) {
 }
 
 void InnerScheduler::run() {
-  my_scoped_range r("Scheduler::run", nvtx3::rgb{127, 127, 0});
+  NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
   unsigned long long iteration_count = 0;
   while (this->should_run) {
     auto status = this->activate();
@@ -101,10 +101,12 @@ void InnerScheduler::run() {
 }
 
 void InnerScheduler::stop() {
-  my_scoped_range r("Scheduler::stop", nvtx3::rgb{127, 127, 0});
   // std::cout << "Stopping Scheduler (C++) " << std::endl;
   this->should_run = false;
   launch_stop_callback(this->stop_callback, this->py_scheduler);
+
+  std::string log_file = "parla.blog";
+  write_log(log_file);
 }
 
 Scheduler::Status InnerScheduler::activate() {
@@ -121,29 +123,26 @@ Scheduler::Status InnerScheduler::activate() {
 void InnerScheduler::activate_wrapper() { this->activate(); }
 
 void InnerScheduler::enqueue_task(InnerTask *task) {
-  my_scoped_range r("Scheduler::enqueue_task", nvtx3::rgb{127, 127, 0});
   // TODO: Change this to appropriate phase as it becomes implemented
+  LOG_INFO("My task: {}", "task");
   this->ready_phase->enqueue(task);
 }
 
 void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
-  my_scoped_range r("Scheduler::enqueue_task", nvtx3::rgb{127, 127, 0});
   this->ready_phase->enqueue(tasks);
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {
-  my_scoped_range r("Scheduler::add_worker", nvtx3::rgb{127, 127, 0});
   this->workers.add_worker(worker);
 }
 
 void InnerScheduler::enqueue_worker(InnerWorker *worker) {
-  my_scoped_range r("Scheduler::enqueue_worker", nvtx3::rgb{127, 127, 0});
   this->workers.enqueue_worker(worker);
 }
 
 void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
-  my_scoped_range r("Scheduler::task_cleanup", nvtx3::rgb{64, 127, 0});
+  NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
   /* Task::States are: spawned, mapped, reserved, ready, running, complete */
 
   // This will be called by EVERY thread that finishes a task

@@ -56,8 +56,7 @@ bool ReadyPhase::condition() {
 }
 
 void ReadyPhase::run(LauncherPhase *launcher) {
-
-  my_scoped_range r("ReadyPhase::run", nvtx3::rgb{0, 127, 0});
+  NVTX_RANGE("ReadyPhase::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -131,8 +130,7 @@ void ReadyPhase::run(LauncherPhase *launcher) {
 // Launcher Phase implementation
 
 void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
-
-  my_scoped_range r("LauncherPhase::launch", nvtx3::rgb{0, 0, 127});
+  NVTX_RANGE("LauncherPhase::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
   // Immediately launch task
   task->set_state(Task::running);

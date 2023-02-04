@@ -12,18 +12,7 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
-
-#include <nvtx3/nvtx3.hpp>
-struct my_domain {
-  static constexpr char const *name{"Parla Runtime"};
-};
-
-struct compute_domain {
-  static constexpr char const *name{"Compute"};
-};
-
-using my_scoped_range = nvtx3::scoped_range_in<my_domain>;
-using compute_range = nvtx3::scoped_range_in<compute_domain>;
+#include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -42,7 +31,7 @@ using TaskList = ProtectedVector<InnerTask *>;
 
 // Busy sleep for a given number of microseconds
 inline void cpu_busy_sleep(unsigned int micro) {
-  compute_range r("sleep::busy", nvtx3::rgb{0, 127, 127});
+  // compute_range r("sleep::busy", nvtx3::rgb{0, 127, 127});
   // int count = 0;
   auto block = std::chrono::microseconds(micro);
   auto time_start = std::chrono::high_resolution_clock::now();
@@ -277,6 +266,9 @@ public:
   bool get_complete();
 };
 
+//LOG_ADAPT_STRUCT(InnerTask, name, state, num_blocking_dependencies)
+
+
 /**
  *   The C++ "Mirror" of Parla's Python Workers
  *   This class is used to create a C++ representation of a Parla Worker
@@ -318,18 +310,17 @@ public:
 
   /* Wait for a task to be assigned */
   void wait() {
-    my_scoped_range r("worker::wait", nvtx3::rgb{127, 127, 0});
+    NVTX_RANGE("worker:wait", NVTX_COLOR_CYAN)
     std::unique_lock<std::mutex> lck(mtx);
     // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
     cv.wait(lck, [this] { return this->notified; });
-    // cv.wait(lck);
     // std::cout << "Task assigned (C++) " << this->thread_idx << " " <<
     // this->ready << std::endl;
   };
 
   /* Assign a task to the worker and notify worker that it is available*/
   void assign_task(InnerTask *task) {
-    my_scoped_range r("worker:assign_task", nvtx3::rgb{127, 127, 0});
+    NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
     // std::cout << "Assigning task (C++) " << this->thread_idx << " " <<
     // this->ready << std::endl;
     assert(ready == false);

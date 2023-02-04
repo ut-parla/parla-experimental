@@ -42,9 +42,7 @@ void InnerTask::queue_dependency(InnerTask *task) {
 }
 
 bool InnerTask::process_dependencies() {
-  my_scoped_range r("task::process_dependencies", nvtx3::rgb{127, 127, 0});
-  // std::cout << "Processing Dependencies: " << this-> name << " " <<
-  // this->dependency_buffer.size() << std::endl;
+  NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
   bool status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
   return status;
@@ -135,7 +133,7 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
  */
 
 bool InnerTask::add_dependent(InnerTask *task) {
-  my_scoped_range r("task::add_dependents", nvtx3::rgb{127, 127, 0});
+  
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
   // Dependents is read when the task is in cleanup, which can overlap with this
@@ -165,7 +163,8 @@ bool InnerTask::add_dependent(InnerTask *task) {
 
 std::vector<InnerTask *> &
 InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
-  my_scoped_range r("task::notify_dependents", nvtx3::rgb{127, 127, 0});
+  NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
+  
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
   // at a time
   //       This is possibly worse, but splits out scheduler dependency.

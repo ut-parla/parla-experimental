@@ -1,5 +1,5 @@
 all:
-	pip install .
+	pip install . --verbose
 
 clean:
 	python setup.py clean --all

@@ -7,7 +7,7 @@ set(3RD_PARTY_DIR ${PROJECT_SOURCE_DIR}/3rd_party)
 option(PARLA_BUILD_TESTS "Enables building of C++ tests" OFF)
 option(PARLA_DEBUG "Enables all debugging flags" ON)
 
-option(PARLA_ENABLE_LOGGING "Enable binlog logging" OFF)
+option(PARLA_ENABLE_LOGGING "Enable binlog logging" ON)
 option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" ON)
 
 message(STATUS "PARLA_BUILD_TESTS: " ${PARLA_BUILD_TESTS})
@@ -37,8 +37,17 @@ if(PARLA_ENABLE_NVTX)
 endif(PARLA_ENABLE_NVTX)
 
 if(PARLA_ENABLE_LOGGING)
-    #TODO: figure out binlog cmake support 
-    #include_directories(${3RD_PARTY_DIR}/binlog/include)
+    #TODO: figure out binlog cmake support
+    message(STATUS "Finding binlog...")
+    list(APPEND CMAKE_PREFIX_PATH "${3RD_PARTY_DIR}/binlog/install")
+    find_package(binlog 0.1.0)
+
+    if(NOT binlog_FOUND)
+        message(STATUS "Logging library `binlog` not found. Building binlog from source")
+        add_subdirectory(${3RD_PARTY_DIR}/binlog)
+        #find_package(binlog 0.1.0)
+    endif(NOT binlog_FOUND)
+
 endif(PARLA_ENABLE_LOGGING)
 
 add_subdirectory(src/c/backend)

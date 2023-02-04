@@ -12,7 +12,16 @@ add_library(backend STATIC ${BACKEND_SRC})
 if(PARLA_ENABLE_NVTX)
     message(STATUS "Enabling NVTX support.")
     target_include_directories(backend PUBLIC ${NVTX_INCLUDE})
+    target_compile_definitions(backend PUBLIC PARLA_ENABLE_NVTX)
 endif(PARLA_ENABLE_NVTX)
+
+if(PARLA_ENABLE_LOGGING)
+    message(STATUS "Enabling logging support.")
+    target_link_libraries(backend binlog::headers)
+    target_compile_definitions(backend PUBLIC PARLA_ENABLE_LOGGING)
+endif(PARLA_ENABLE_LOGGING)
+
+
 
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
