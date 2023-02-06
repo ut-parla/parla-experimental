@@ -75,7 +75,7 @@ bool InnerTask::add_dependency(InnerTask *task) {
 }
 
 bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
-
+  LOG_INFO(TASK, "Adding dependencies to {}. D={}", this, tasks);
   // TODO: This will need to include all other dependency trackers
   // (num_mapped_dependencies, etc)
 
@@ -91,16 +91,14 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
   }
 
   int before_value = this->num_blocking_dependencies.fetch_sub(1);
+  bool ready_state = before_value == 1;
 
-  if (before_value == 1) {
-    // This task is ready to run
-    // Launching must be handled
-    return true;
-  }
+  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this,  ready_state);
 
-  // The task was not ready to run during construction
-  // Launching will be handled by another task's notify_dependents
-  return false;
+  // If true, this task is ready to run. Launching must be handled
+  // Otherwise launching will be handled by another task's notify_dependents
+
+  return ready_state;
 }
 
 /*
@@ -163,6 +161,7 @@ bool InnerTask::add_dependent(InnerTask *task) {
 
 std::vector<InnerTask *> &
 InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
+  LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
   NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
   
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
@@ -186,6 +185,7 @@ InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
 
   this->set_complete(true);
   this->dependents.unlock();
+  LOG_INFO(TASK, "Notified dependents of {}. Ready tasks: {}", this, buffer);
 
   return buffer;
 }
@@ -215,7 +215,7 @@ int InnerTask::get_num_dependencies() {
 
 int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
 
-int InnerTask::get_num_blocking_dependencies() {
+int InnerTask::get_num_blocking_dependencies() const {
   return this->num_blocking_dependencies.load();
 }
 

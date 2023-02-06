@@ -117,6 +117,7 @@ Scheduler::Status InnerScheduler::activate() {
   this->ready_phase->run(this->launcher);
   // this->launcher->run();
   // this->ready_phase->status.print();
+  //LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->ready_phase);
   return this->status;
 }
 
@@ -124,25 +125,29 @@ void InnerScheduler::activate_wrapper() { this->activate(); }
 
 void InnerScheduler::enqueue_task(InnerTask *task) {
   // TODO: Change this to appropriate phase as it becomes implemented
-  LOG_INFO("My task: {}", "task");
+  LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
   this->ready_phase->enqueue(task);
 }
 
 void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
+  LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
   this->ready_phase->enqueue(tasks);
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {
+  LOG_INFO(SCHEDULER, "Adding worker {} to pool", worker);
   this->workers.add_worker(worker);
 }
 
 void InnerScheduler::enqueue_worker(InnerWorker *worker) {
+  LOG_INFO(SCHEDULER, "Enqueuing worker: {} is ready.", worker);
   this->workers.enqueue_worker(worker);
 }
 
 void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+  LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
   /* Task::States are: spawned, mapped, reserved, ready, running, complete */
 
   // This will be called by EVERY thread that finishes a task

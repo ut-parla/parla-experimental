@@ -1,5 +1,6 @@
 #pragma once
 #ifndef PARLA_BARRIER_HPP
+#define PARLA_BARRIER_HPP
 
 #include<mutex>
 #include<condition_variable>

@@ -145,6 +145,8 @@ void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
   // Assign task to thread and notify via c++ condition variable. No GIL needed
   // until worker wakes.
   worker->assign_task(task);
+
+  LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
 void LauncherPhase::run() {

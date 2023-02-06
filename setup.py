@@ -15,6 +15,12 @@ def main():
     if env_conda := os.getenv("CONDA_PREFIX"):
         cmake_args.append(f"-DCONDA_PREFIX={env_conda}")
 
+    if env_enable_logging := os.getenv("PARLA_ENABLE_LOGGING"):
+        cmake_args.append(f"-DPARLA_ENABLE_LOGGING={env_enable_logging}")
+
+    if env_enable_nvtx := os.getenv("PARLA_ENABLE_NVTX"):
+        cmake_args.append(f"-DPARLA_ENABLE_NVTX={env_enable_nvtx}")
+
     package_list = find_namespace_packages(where='src/python/')
     print("Found packages:", package_list)
 

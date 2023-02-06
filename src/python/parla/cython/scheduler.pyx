@@ -152,6 +152,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     if isinstance(self.task, ComputeTask):
                         active_task = self.task 
 
+                        core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+
                         #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
                         active_task.run()
@@ -159,11 +161,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
 
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
+
+                        final_state  = active_task.state
+
                         #TODO: Add better exception handling
-                        if isinstance(active_task.state, tasks.TaskException):
+                        if isinstance(final_state, tasks.TaskException):
                             raise TaskBodyException(active_task.state.exception)
 
-                        if isinstance(active_task.state, tasks.TaskRunning):
+                        elif isinstance(final_state, tasks.TaskRunning):
                             nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
                             #print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
                             active_task.dependencies = active_task.state.dependencies
@@ -173,6 +178,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.inner_task.clear_dependencies()
                             active_task.add_dependencies(active_task.dependencies, process=False)
                             nvtx.pop_range(domain="Python Runtime")
+                        
+                        elif  isinstance(final_state, tasks.TaskCompleted):
+                            core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+
+
+                        
 
                         self.inner_worker.remove_task()
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
@@ -336,5 +347,3 @@ def _task_callback(task, body):
             return tasks.TaskCompleted(result)
     finally:
         pass
-
-    assert False

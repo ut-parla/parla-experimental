@@ -1,5 +1,6 @@
 #pragma once
 #ifndef PARLA_PHASES_HPP
+#define PARLA_PHASES_HPP
 
 #include "containers.hpp"
 #include "runtime.hpp"
@@ -116,6 +117,10 @@ namespace Ready{
     };
 }
 
+#ifdef PARLA_ENABLE_LOGGING
+    LOG_ADAPT_STRUCT(Ready::Status, status)
+#endif
+
 class ReadyPhase {
 
     public:
@@ -146,6 +151,10 @@ class ReadyPhase {
 
         void run(LauncherPhase* launcher);
 };
+
+#ifdef PARLA_ENABLE_LOGGING
+    LOG_ADAPT_STRUCT(ReadyPhase, status)
+#endif
 
 namespace Launcher{
 

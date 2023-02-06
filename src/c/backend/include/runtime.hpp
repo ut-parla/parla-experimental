@@ -1,6 +1,7 @@
 #pragma once
 #include <condition_variable>
 #ifndef PARLA_BACKEND_HPP
+#define PARLA_BACKEND_HPP
 
 #include <atomic>
 #include <chrono>
@@ -111,8 +112,14 @@ public:
 namespace Task {
 
 /*State of the task. Shows which phase it is in.*/
-enum State { created, spawned, mapped, reserved, ready, running, complete };
+enum State { created=0, spawned=1, mapped=2, reserved=3, ready=4, running=5, complete=6};
+
+
 } // namespace Task
+
+#ifdef PARLA_ENABLE_LOGGING
+  BINLOG_ADAPT_ENUM(Task::State, created, spawned, mapped, reserved, ready, running, complete)
+#endif
 
 /**
  *   The C++ "Mirror" of Parla's Python Tasks
@@ -242,7 +249,7 @@ public:
   int get_num_dependents();
 
   /* Get number of blocking dependencies */
-  int get_num_blocking_dependencies();
+  int get_num_blocking_dependencies() const;
 
   /* Get dependency list. Used for testing Python interface. */
   std::vector<void *> get_dependencies();
@@ -259,6 +266,12 @@ public:
   /* Set the task status */
   void set_state(Task::State state);
 
+  /* Get the task status */
+  Task::State get_state() const {
+    const Task::State state = this->state.load();
+    return state;
+  }
+
   /* Set complete */
   void set_complete(bool complete);
 
@@ -266,7 +279,9 @@ public:
   bool get_complete();
 };
 
-//LOG_ADAPT_STRUCT(InnerTask, name, state, num_blocking_dependencies)
+#ifdef PARLA_ENABLE_LOGGING
+  LOG_ADAPT_STRUCT(InnerTask, name, get_state)
+#endif
 
 
 /**
@@ -349,6 +364,10 @@ public:
     cv.notify_all();
   }
 };
+
+#ifdef PARLA_ENABLE_LOGGING
+  LOG_ADAPT_STRUCT(InnerWorker, thread_idx, notified)
+#endif
 
 template <typename AllWorkers_t, typename ActiveWorkers_t> class WorkerPool {
 

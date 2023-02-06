@@ -1,4 +1,85 @@
 import nvtx
+import cython 
+
+#Logging functions
+
+LOG_TRACE = 0
+LOG_DEBUG = 1
+LOG_INFO = 2
+LOG_WARN = 3
+LOG_ERROR = 4
+LOG_FATAL = 5
+
+
+cpdef _log_task(logging_level, category, message, PyInnerTask obj):
+    cdef InnerTask* _inner = <InnerTask*> obj.c_task
+    msg = message.encode('utf-8')
+
+    if category == "Task":
+        log_task_1[InnerTask](logging_level, msg, _inner)
+    if category == "Worker":
+        log_worker_1[InnerTask](logging_level, msg, _inner)
+    if category == "Scheduler":
+            log_scheduler_1[InnerTask](logging_level, msg, _inner)
+
+cpdef _log_worker(logging_level, category, message, PyInnerWorker obj):
+    cdef InnerWorker* _inner = <InnerWorker*> obj.inner_worker
+    msg = message.encode('utf-8')
+
+    if category == "Task":
+        log_task_1[InnerWorker](logging_level, msg, _inner)
+    elif category == "Worker":
+        log_worker_1[InnerWorker](logging_level, msg, _inner)
+    elif category == "Scheduelr":
+        log_scheduler_1[InnerWorker](logging_level, msg, _inner)
+
+cpdef _log_task_worker(logging_level, category, message1, PyInnerTask obj1, message2, PyInnerWorker obj2):
+    cdef InnerTask* _inner1 = <InnerTask*> obj1.c_task
+    cdef InnerWorker* _inner2 = <InnerWorker*> obj2.inner_worker
+    msg1 = message1.encode('utf-8')
+    msg2 = message2.encode('utf-8')
+
+    if  category == "Task":
+        log_task_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
+    if category  == "Worker":
+        log_worker_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
+    if category == "Scheduler":
+        log_scheduler_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
+
+inner_type1  = cython.fused_type(PyInnerTask, PyInnerWorker)
+inner_type2 = cython.fused_type(PyInnerTask, PyInnerWorker)
+
+cpdef binlog_0(category, message, logging_level=LOG_INFO):
+    msg = message.encode('utf-8')
+    if  category == "Task":
+        log_task_msg(logging_level, msg)
+    if category  == "Worker":
+        log_worker_msg(logging_level, msg)
+    if category == "Scheduler":
+        log_scheduler_msg(logging_level, msg)
+
+cpdef binlog_1(category, message, inner_type1 obj, logging_level=LOG_INFO):
+
+    if inner_type1 is PyInnerTask:
+        _log_task(logging_level, category, message, obj)
+    elif inner_type1 is PyInnerWorker:
+        _log_worker(logging_level, category, message, obj)
+    else:
+        raise Exception("Unknown type in logger function")
+
+cpdef binlog_2(category, message1, inner_type1 obj1, message2, inner_type2 obj2, logging_level=LOG_INFO):
+
+    if inner_type1 is PyInnerTask:
+        if inner_type2 is PyInnerWorker:
+            _log_task_worker(logging_level, category, message1, obj1, message2, obj2)
+        else:
+            raise Exception("Unknown type combination in logger function")
+    else:
+        raise Exception("Unknown type combination in logger function")
+
+#cpdef log_2(category, message1, inner_type1  obj1,  message2, inner_type2 obj2):
+
+
 
 cpdef cpu_bsleep_gil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but don't release the GIL"""
@@ -46,7 +127,13 @@ cdef class PyInnerTask:
         cdef InnerTask* _c_task
         _c_task = self.c_task
 
-        name = python_task.taskid.full_name
+        binlog_1("Task", "Creating task", self)
+
+        if(python_task.taskid is not None):
+            name = python_task.taskid.full_name
+        else:
+            name = python_task.name
+            
         #name = "test"
         name = name.encode('utf-8')
         _c_task.set_name(name)
@@ -183,6 +270,8 @@ cdef class PyInnerWorker:
             _inner_worker.wait()
 
     cpdef get_task(self):
+
+        
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
 
@@ -193,6 +282,7 @@ cdef class PyInnerWorker:
             py_task = <object> c_task.get_py_task()
         else:
             py_task = None
+
 
         return py_task
 
