@@ -244,6 +244,9 @@ class TaskID:
     def __await__(self):
         return (yield TaskAwaitTasks([self.task], self.task))
 
+    def __dealloc__(self):
+        core.binlog_0("Task", "TaskID {} is being deallocated".format(self.full_name))
+
 
 class Task:
 
@@ -308,6 +311,10 @@ class Task:
         except Exception as e:
             tb = traceback.format_exc()
             task_state = TaskException(e, tb)
+
+            if isinstance(e, KeyboardInterrupt):
+                print("You pressed Ctrl+C! In a Task!", flush=True)
+                raise e
             #print("Task {} failed with exception: {} \n {}".format(self.name, e, tb), flush=True)
 
         finally:
@@ -351,6 +358,9 @@ class Task:
     def set_complete(self):
         self.inner_task.set_complete()
 
+    def __repr__(self):
+        return "Task. {}".format(self.taskid.full_name)
+
 
 class ComputeTask(Task):
 
@@ -375,6 +385,9 @@ class ComputeTask(Task):
 
     def _finish(self, context):
         pass
+
+    def __dealloc__(self):
+        print("ComputeTask dealloc", self.name, flush=True)
 
 
 #TODO: Data Movement Task  

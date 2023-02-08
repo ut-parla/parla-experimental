@@ -7,8 +7,8 @@ set(3RD_PARTY_DIR ${PROJECT_SOURCE_DIR}/3rd_party)
 option(PARLA_BUILD_TESTS "Enables building of C++ tests" OFF)
 option(PARLA_DEBUG "Enables all debugging flags" ON)
 
-option(PARLA_ENABLE_LOGGING "Enable binlog logging" ON)
-option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" ON)
+option(PARLA_ENABLE_LOGGING "Enable binlog logging" OFF)
+option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" OFF)
 
 message(STATUS "PARLA_BUILD_TESTS: " ${PARLA_BUILD_TESTS})
 message(STATUS "PARLA_DEBUG: " ${PARLA_DEBUG})
@@ -47,6 +47,7 @@ if(PARLA_ENABLE_LOGGING)
 
     if (binlog_FOUND)
         install(IMPORTED_RUNTIME_ARTIFACTS binlog::bread binlog::brecovery DESTINATION bin)
+        install(RUNTIME_DEPENDENCY_SET binlog::binlog DESTINATION lib)
     endif (binlog_FOUND)
 
     if(NOT binlog_FOUND)

@@ -25,7 +25,10 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task) {
   this->py_task = py_task;
 }
 
-void InnerTask::set_name(std::string name) { this->name = name; }
+void InnerTask::set_name(std::string name) {
+  // std::cout << "Setting name to " << name << std::endl;
+  this->name = name;
+}
 
 void InnerTask::set_id(long long int id) { this->id = id; }
 
@@ -61,17 +64,21 @@ bool InnerTask::add_dependency(InnerTask *task) {
   this->dependencies.push_back_unsafe(task);
 
   // If the task is already complete, we don't need to add it to the dependency
-  // count
+
+  bool dependency_complete = false;
 
   if (task->add_dependent(this)) {
     this->num_blocking_dependencies--;
 
     // Return that the dependency was already complete
-    return true;
+    dependency_complete = true;
   }
 
-  // Return that the dependency was not complete
-  return false;
+  // << "Added dependency " << task->name << " to " << this->name
+  //          << " Status: " << dependency_complete << std::endl;
+
+  // Return the dependency status
+  return dependency_complete;
 }
 
 bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
@@ -93,12 +100,18 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
   int before_value = this->num_blocking_dependencies.fetch_sub(1);
   bool ready_state = before_value == 1;
 
-  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this,  ready_state);
+  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this, ready_state);
+
+  if (before_value == 1) {
+    return true;
+  }
+
+  return false;
 
   // If true, this task is ready to run. Launching must be handled
   // Otherwise launching will be handled by another task's notify_dependents
 
-  return ready_state;
+  // return ready_state;
 }
 
 /*
@@ -131,7 +144,7 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
  */
 
 bool InnerTask::add_dependent(InnerTask *task) {
-  
+
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
   // Dependents is read when the task is in cleanup, which can overlap with this
@@ -163,7 +176,7 @@ std::vector<InnerTask *> &
 InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
   NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
-  
+
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
   // at a time
   //       This is possibly worse, but splits out scheduler dependency.
@@ -174,17 +187,23 @@ InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
   // this->dependents.size_unsafe() << std::endl;
 
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
+
     auto task = this->dependents.get_unsafe(i);
+
     bool ready = task->notify();
 
     if (ready) {
-      // std::cout << "Dependent Task Ready" << std::endl;
+      // std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(task);
     }
   }
 
   this->set_complete(true);
   this->dependents.unlock();
+
+  // std::cout << "Notified dependents of " << this->name << ". Ready tasks: "
+  // << buffer.size() << std::endl;
+
   LOG_INFO(TASK, "Notified dependents of {}. Ready tasks: {}", this, buffer);
 
   return buffer;

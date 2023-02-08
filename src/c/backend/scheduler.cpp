@@ -11,22 +11,22 @@ template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::enqueue_worker(
     InnerWorker *worker) {
   this->active_workers.push_back(worker);
-  // std::cout << "Enqueued Worker: " << worker->thread_idx
-  //          << " nworkers: " << this->active_workers.atomic_size() <<
-  //          std::endl;
+  // std::cout << "Enqueued Worker ID: " << worker->thread_idx << std::endl;
+  // std::cout << "Active workers: " << this->active_workers.atomic_size()
+  //           << std::endl;
 }
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 InnerWorker *WorkerPool<AllWorkers_t, ActiveWorkers_t>::dequeue_worker() {
   InnerWorker *worker = this->active_workers.back_and_pop();
-  // std::cout << "Dequeued Worker: " << this->active_workers.atomic_size()
-  //          << std::endl;
+  // std::cout << "Dequeued Worker ID: " << worker->thread_idx << std::endl;
   return worker;
 }
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::add_worker(
     InnerWorker *worker) {
+  // std::cout << "Adding worker: " << worker->thread_idx << std::endl;
   this->all_workers.push_back(worker);
   assert(this->all_workers.size() <= this->max_workers);
 }
@@ -92,7 +92,7 @@ void InnerScheduler::set_launch_callback(launchfunc_t launch_callback) {
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
   unsigned long long iteration_count = 0;
-  while (this->should_run) {
+  while (this->should_run.load()) {
     auto status = this->activate();
     if (this->sleep_flag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
@@ -101,12 +101,10 @@ void InnerScheduler::run() {
 }
 
 void InnerScheduler::stop() {
-  // std::cout << "Stopping Scheduler (C++) " << std::endl;
+  LOG_INFO(SCHEDULER, "Stopping scheduler");
   this->should_run = false;
   launch_stop_callback(this->stop_callback, this->py_scheduler);
-
-  std::string log_file = "parla.blog";
-  write_log(log_file);
+  LOG_INFO(SCHEDULER, "Stopped scheduler");
 }
 
 Scheduler::Status InnerScheduler::activate() {
@@ -117,7 +115,7 @@ Scheduler::Status InnerScheduler::activate() {
   this->ready_phase->run(this->launcher);
   // this->launcher->run();
   // this->ready_phase->status.print();
-  //LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->ready_phase);
+  // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->ready_phase);
   return this->status;
 }
 
@@ -148,6 +146,9 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
+
+  // std::cout << "Task Cleanup: " << task->name << " " << state << std::endl;
+
   /* Task::States are: spawned, mapped, reserved, ready, running, complete */
 
   // This will be called by EVERY thread that finishes a task
@@ -203,8 +204,9 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   // TODO: for runahead, we need to do this AFTER the task body is complete
   //      Need to add back to the pool after notify_dependents
+  worker->remove_task();
   this->resources->increase(task->resources);
-  this->workers.enqueue_worker(worker);
+  this->enqueue_worker(worker);
 
   // NOTE: Task::complete is NOT equivalent to task->complete
   // Task->complete:

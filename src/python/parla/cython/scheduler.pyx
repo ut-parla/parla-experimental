@@ -128,6 +128,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                 #Add the worker to the scheduler pool of active & availabe workers
                 self.scheduler.inner_scheduler.enqueue_worker(self.inner_worker)
+
                 with self.scheduler.start_monitor:
                     #print("NOTIFYING", flush=True)
                     self.scheduler.start_monitor.notify_all()
@@ -185,7 +186,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         
 
-                        self.inner_worker.remove_task()
+                        #self.inner_worker.remove_task()
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         nvtx.pop_range(domain="Python Runtime")
 
@@ -202,6 +203,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
             if isinstance(e, TaskBodyException):
                 raise WorkerThreadException("Unhandled Exception in Task") from e
+            if isinstance(e, KeyboardInterrupt):
+                print("You pressed Ctrl+C! In a worker!", flush=True)
+                raise e
             else:
                 raise WorkerThreadException("Unhandled Exception on "+str(self))
 

@@ -1,6 +1,7 @@
 import nvtx
 import cython 
 
+
 #Logging functions
 
 LOG_TRACE = 0
@@ -10,6 +11,9 @@ LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
 
+cpdef py_write_log(filename):
+    fname = filename.encode('utf-8')
+    write_log(fname)
 
 cpdef _log_task(logging_level, category, message, PyInnerTask obj):
     cdef InnerTask* _inner = <InnerTask*> obj.c_task
@@ -117,6 +121,7 @@ cdef void callback_stop(void* python_function) nogil:
 #Define the Cython Wrapper Classes
 cdef class PyInnerTask:
     cdef InnerTask* c_task
+    cdef string name #This is a hack to keep the name alive
 
     def __cinit__(self):
         cdef InnerTask* _c_task
@@ -135,7 +140,9 @@ cdef class PyInnerTask:
             name = python_task.name
             
         #name = "test"
+        
         name = name.encode('utf-8')
+        self.name = name
         _c_task.set_name(name)
 
         _c_task.set_id(idx)
@@ -149,6 +156,7 @@ cdef class PyInnerTask:
         _c_task.set_resources(resource_type, vcus)
 
     def __dealloc__(self):
+        binlog_0("Task", "Task {} is being deallocated".format(self.name))
         del self.c_task
 
     cpdef get_py_task(self):

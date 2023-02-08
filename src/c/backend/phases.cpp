@@ -136,6 +136,9 @@ void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
   task->set_state(Task::running);
   this->num_running_tasks++;
 
+  // std::cout << "Assigning " << task->name << " to " << worker->thread_idx
+  //          << std::endl;
+
   /*
   //Acquire GIL to assign task to worker and notify worker through python
   callback void* py_task = task->py_task; void* py_worker = worker->py_worker;
@@ -146,6 +149,8 @@ void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
   // until worker wakes.
   worker->assign_task(task);
 
+  // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
+  //           << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

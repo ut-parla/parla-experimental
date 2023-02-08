@@ -112,13 +112,21 @@ public:
 namespace Task {
 
 /*State of the task. Shows which phase it is in.*/
-enum State { created=0, spawned=1, mapped=2, reserved=3, ready=4, running=5, complete=6};
-
+enum State {
+  created = 0,
+  spawned = 1,
+  mapped = 2,
+  reserved = 3,
+  ready = 4,
+  running = 5,
+  complete = 6
+};
 
 } // namespace Task
 
 #ifdef PARLA_ENABLE_LOGGING
-  BINLOG_ADAPT_ENUM(Task::State, created, spawned, mapped, reserved, ready, running, complete)
+BINLOG_ADAPT_ENUM(Task::State, created, spawned, mapped, reserved, ready,
+                  running, complete)
 #endif
 
 /**
@@ -280,9 +288,8 @@ public:
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-  LOG_ADAPT_STRUCT(InnerTask, name, get_state)
+LOG_ADAPT_STRUCT(InnerTask, name, get_state)
 #endif
-
 
 /**
  *   The C++ "Mirror" of Parla's Python Workers
@@ -326,18 +333,19 @@ public:
   /* Wait for a task to be assigned */
   void wait() {
     NVTX_RANGE("worker:wait", NVTX_COLOR_CYAN)
+    LOG_INFO(WORKER, "Worker waiting: {}", this->thread_idx);
     std::unique_lock<std::mutex> lck(mtx);
     // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
     cv.wait(lck, [this] { return this->notified; });
-    // std::cout << "Task assigned (C++) " << this->thread_idx << " " <<
-    // this->ready << std::endl;
+    // std::cout << "Task assigned (C++) " << this->thread_idx << " "
+    //           << this->ready << std::endl;
   };
 
   /* Assign a task to the worker and notify worker that it is available*/
   void assign_task(InnerTask *task) {
     NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
-    // std::cout << "Assigning task (C++) " << this->thread_idx << " " <<
-    // this->ready << std::endl;
+    // std::cout << "Assigning task (C++) " << this->thread_idx << " "
+    //           << this->ready << std::endl;
     assert(ready == false);
     std::unique_lock<std::mutex> lck(mtx);
     this->task = task;
@@ -348,8 +356,8 @@ public:
 
   /* Remove task */
   void remove_task() {
-    // std::cout << "Removing task (C++) " << this->thread_idx << " " <<
-    // this->task->name << std::endl;
+    // std::cout << "Removing task (C++) " << this->thread_idx << " "
+    //           << this->task->name << std::endl;
     std::unique_lock<std::mutex> lck(mtx);
     this->task = nullptr;
     this->ready = false;
@@ -359,14 +367,14 @@ public:
   void stop() {
     // signal cv so that we can terminate
     std::unique_lock<std::mutex> lck(mtx);
-    // std::cout << "Stopping worker (C++) " << this->thread_idx << std::endl;
+    LOG_INFO(WORKER, "Worker stopping: {}", this->thread_idx);
     this->notified = true;
     cv.notify_all();
   }
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-  LOG_ADAPT_STRUCT(InnerWorker, thread_idx, notified)
+LOG_ADAPT_STRUCT(InnerWorker, thread_idx, notified)
 #endif
 
 template <typename AllWorkers_t, typename ActiveWorkers_t> class WorkerPool {

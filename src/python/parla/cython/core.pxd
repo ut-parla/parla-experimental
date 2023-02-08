@@ -61,7 +61,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_py_worker(void* py_worker)
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
-        void remove_task()
+        void remove_task() except +
 
         void wait()
         void stop()
@@ -80,7 +80,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_stop_callback(stopfunc_t func)
         void set_launch_callback(launchfunc_t func)
 
-        void run()
+        void run() except +
         void stop()
 
         void activate_wrapper()
@@ -90,7 +90,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)
-        void task_cleanup(InnerWorker* worker, InnerTask* task, int state)
+        void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
 
         int get_num_active_tasks()
         void increase_num_active_tasks()
@@ -104,7 +104,9 @@ cdef extern from "include/runtime.hpp" nogil:
 
 
 cdef extern from "include/profiling.hpp" nogil:
-    #void log_worker_msg(int t, string msg)
+
+    void write_log(string filename)
+
     void log_task_msg(int t, string msg)
     void log_worker_msg(int t, string msg)
     void log_scheduler_msg(int t, string msg)
@@ -117,7 +119,7 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_scheduler_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
-    #void log_scheduler_msg(int t, string msg)
+
 
 
 
