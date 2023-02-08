@@ -71,6 +71,8 @@ def spawn(taskid=None,  dependencies=[], vcus=1):
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
+        scheduler.spawn_wait()
+
         return task
 
     return decorator

@@ -59,8 +59,11 @@ cdef extern from "include/runtime.hpp" nogil:
         InnerWorker(void* py_worker)
 
         void set_py_worker(void* py_worker)
+        void set_scheduler(InnerScheduler* scheduler
+        )
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
+        InnerTask* get_task()
         void remove_task() except +
 
         void wait()
@@ -99,6 +102,9 @@ cdef extern from "include/runtime.hpp" nogil:
         #int get_num_active_workers()
         int get_num_running_tasks()
         int get_num_ready_tasks()
+        int get_num_notified_workers()
+
+        void spawn_wait() except +
 
 
 

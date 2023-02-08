@@ -307,6 +307,8 @@ public:
   // void* py_task = nullptr;
   InnerTask *task = nullptr;
 
+  InnerScheduler *scheduler = nullptr;
+
   std::mutex mtx;
   std::condition_variable cv;
   bool ready = false;
@@ -327,50 +329,27 @@ public:
   /* Set the Python Worker */
   void set_py_worker(void *worker) { this->py_worker = worker; };
 
+  /*Set the scheduler*/
+  void set_scheduler(InnerScheduler *scheduler) {
+    this->scheduler = scheduler;
+  };
+
   /* Set the thread idx */
   void set_thread_idx(int idx) { this->thread_idx = idx; };
 
   /* Wait for a task to be assigned */
-  void wait() {
-    NVTX_RANGE("worker:wait", NVTX_COLOR_CYAN)
-    LOG_INFO(WORKER, "Worker waiting: {}", this->thread_idx);
-    std::unique_lock<std::mutex> lck(mtx);
-    // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
-    cv.wait(lck, [this] { return this->notified; });
-    // std::cout << "Task assigned (C++) " << this->thread_idx << " "
-    //           << this->ready << std::endl;
-  };
+  void wait();
 
   /* Assign a task to the worker and notify worker that it is available*/
-  void assign_task(InnerTask *task) {
-    NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
-    // std::cout << "Assigning task (C++) " << this->thread_idx << " "
-    //           << this->ready << std::endl;
-    assert(ready == false);
-    std::unique_lock<std::mutex> lck(mtx);
-    this->task = task;
-    this->ready = true;
-    this->notified = true;
-    cv.notify_one();
-  };
+  void assign_task(InnerTask *task);
+
+  /* Get task */
+  InnerTask *get_task();
 
   /* Remove task */
-  void remove_task() {
-    // std::cout << "Removing task (C++) " << this->thread_idx << " "
-    //           << this->task->name << std::endl;
-    std::unique_lock<std::mutex> lck(mtx);
-    this->task = nullptr;
-    this->ready = false;
-    this->notified = false;
-  };
+  void remove_task();
 
-  void stop() {
-    // signal cv so that we can terminate
-    std::unique_lock<std::mutex> lck(mtx);
-    LOG_INFO(WORKER, "Worker stopping: {}", this->thread_idx);
-    this->notified = true;
-    cv.notify_all();
-  }
+  void stop();
 };
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -388,6 +367,15 @@ public:
 
   /* Number of workers */
   int max_workers;
+
+  /*Mutex for blocking spawn/await*/
+  std::mutex mtx;
+
+  /*Condition variable for blocking spawn/await*/
+  std::condition_variable cv;
+
+  /* Number of notified but not running workers*/
+  std::atomic<int> notified_workers{0};
 
   WorkerPool() = default;
   WorkerPool(int nworkers) : max_workers(nworkers){};
@@ -409,6 +397,20 @@ public:
 
   /* Set number of total workers */
   void set_num_workers(int nworkers);
+
+  /*Increase number of notified workers*/
+  int increase_num_notified_workers();
+
+  /*Decrease number of notified workers*/
+  int decrease_num_notified_workers();
+
+  /*Get number of notified workers*/
+  inline int get_num_notified_workers() {
+    return this->notified_workers.load();
+  }
+
+  /*Blocking for spawn/await so that other threads can take the GIL*/
+  void spawn_wait();
 
   /* Remove a worker from the all pool */
   // void remove_worker(InnerWorker* worker);
@@ -572,6 +574,12 @@ public:
    * scheduler */
   void decrease_num_active_tasks();
 
+  /*Increase number of notified workers*/
+  int increase_num_notified_workers();
+
+  /*Decrease number of notified workers*/
+  int decrease_num_notified_workers();
+
   /* Get number of running tasks. A task is running if is Python task has been
    * assigned and the task is not complete*/
   int get_num_running_tasks();
@@ -579,6 +587,15 @@ public:
   /* Get number of ready tasks. A task is ready if its dependencies has been
    * dispatched to a hardware queue or are complete */
   int get_num_ready_tasks();
+
+  /* Get number of noitified workers*/
+  int get_num_notified_workers() {
+    return this->workers.get_num_notified_workers();
+  }
+
+  /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
+   * threads can start*/
+  void spawn_wait();
 };
 
 #endif // PARLA_BACKEND_HPP

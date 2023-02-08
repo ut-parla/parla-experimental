@@ -3,9 +3,8 @@ from parla import Parla, spawn, TaskSpace, sleep_nogil
 
 bsleep = sleep_nogil
 
-def main():
+def main(T):
 
-    T = TaskSpace("T")
 
     @spawn(T[0], vcus=0)
     def task1():
@@ -32,4 +31,5 @@ def main():
 
 if __name__ == "__main__":
     with Parla():
-        main()
+        T = TaskSpace("T")
+        main(T)

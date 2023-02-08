@@ -257,12 +257,17 @@ cdef class PyInnerWorker:
         _inner_worker = new InnerWorker()
         self.inner_worker = _inner_worker
 
-    def __init__(self, python_worker):
+    def __init__(self, python_worker, PyInnerScheduler python_scheduler):
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
 
         _inner_worker.set_py_worker(<void *> python_worker)
         _inner_worker.set_thread_idx(python_worker.index)
+
+        cdef InnerScheduler* c_scheduler
+        c_scheduler = python_scheduler.inner_scheduler
+        _inner_worker.set_scheduler(c_scheduler)
+
 
     cpdef remove_task(self):
         cdef InnerWorker* _inner_worker
@@ -286,7 +291,7 @@ cdef class PyInnerWorker:
         cdef InnerTask* c_task
 
         if _inner_worker.ready:
-            c_task = _inner_worker.task
+            c_task = _inner_worker.get_task()
             py_task = <object> c_task.get_py_task()
         else:
             py_task = None
@@ -394,6 +399,15 @@ cdef class PyInnerScheduler:
     cpdef get_num_running_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_running_tasks()
+
+    cpdef get_num_notified_workers(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_num_notified_workers()
+
+    cpdef spawn_wait(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        with nogil:
+            c_self.spawn_wait()
 
     
 class Resources:

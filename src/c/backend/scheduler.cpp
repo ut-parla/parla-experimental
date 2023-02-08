@@ -3,8 +3,50 @@
 
 // Worker Implementation
 
-// nothing here, currently header only
+void InnerWorker::wait() {
+  NVTX_RANGE("worker:wait", NVTX_COLOR_CYAN)
+  LOG_INFO(WORKER, "Worker waiting: {}", this->thread_idx);
+  std::unique_lock<std::mutex> lck(mtx);
+  // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
+  cv.wait(lck, [this] { return this->notified; });
+  // std::cout << "Task assigned (C++) " << this->thread_idx << " "
+  //           << this->ready << std::endl;
+  this->scheduler->increase_num_notified_workers();
+}
 
+void InnerWorker::assign_task(InnerTask *task) {
+  NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
+  // std::cout << "Assigning task (C++) " << this->thread_idx << " "
+  //           << this->ready << std::endl;
+  assert(ready == false);
+  std::unique_lock<std::mutex> lck(mtx);
+  this->task = task;
+  this->ready = true;
+  this->notified = true;
+  cv.notify_one();
+}
+
+InnerTask *InnerWorker::get_task() {
+  this->scheduler->decrease_num_notified_workers();
+  return this->task;
+}
+
+void InnerWorker::remove_task() {
+  // std::cout << "Removing task (C++) " << this->thread_idx << " "
+  //           << this->task->name << std::endl;
+  std::unique_lock<std::mutex> lck(mtx);
+  this->task = nullptr;
+  this->ready = false;
+  this->notified = false;
+}
+
+void InnerWorker::stop() {
+  // signal cv so that we can terminate
+  std::unique_lock<std::mutex> lck(mtx);
+  LOG_INFO(WORKER, "Worker stopping: {}", this->thread_idx);
+  this->notified = true;
+  cv.notify_all();
+}
 // WorkerPool Implementation
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
@@ -46,6 +88,32 @@ int WorkerPool<AllWorkers_t, ActiveWorkers_t>::get_num_workers() {
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::set_num_workers(int nworkers) {
   this->max_workers = nworkers;
+}
+
+template <typename AllWorkers_t, typename ActiveWorkers_t>
+int WorkerPool<AllWorkers_t, ActiveWorkers_t>::increase_num_notified_workers() {
+  int before = this->notified_workers.fetch_add(1);
+  return before;
+}
+template <typename AllWorkers_t, typename ActiveWorkers_t>
+int WorkerPool<AllWorkers_t, ActiveWorkers_t>::decrease_num_notified_workers() {
+  int before = this->notified_workers.fetch_sub(1);
+  if ((before - 1) == 0) {
+    // std::cout << "Notifying waiting spawns: " << before << std::endl;
+    // this->cv.notify_all();
+  }
+  return before;
+}
+
+template <typename AllWorkers_t, typename ActiveWorkers_t>
+void WorkerPool<AllWorkers_t, ActiveWorkers_t>::spawn_wait() {
+  std::cout << this->get_num_notified_workers() << std::endl;
+  // std::unique_lock<std::mutex> lck(mtx);
+  // auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100), [this]
+  // {
+  //  return this->get_num_notified_workers() < 1;
+  //});
+  // std::cout << "Spawn wait status: " << status << std::endl;
 }
 
 template class WorkerPool<WorkerQueue, WorkerQueue>;
@@ -237,6 +305,14 @@ void InnerScheduler::decrease_num_active_tasks() {
   }
 }
 
+int InnerScheduler::increase_num_notified_workers() {
+  return this->workers.increase_num_notified_workers();
+}
+
+int InnerScheduler::decrease_num_notified_workers() {
+  return this->workers.decrease_num_notified_workers();
+}
+
 int InnerScheduler::get_num_running_tasks() {
   return this->launcher->num_running_tasks;
 }
@@ -244,3 +320,5 @@ int InnerScheduler::get_num_running_tasks() {
 int InnerScheduler::get_num_ready_tasks() {
   return this->ready_phase->get_count();
 }
+
+void InnerScheduler::spawn_wait() { this->workers.spawn_wait(); }

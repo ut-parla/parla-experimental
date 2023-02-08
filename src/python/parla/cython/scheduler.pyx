@@ -96,7 +96,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
         self.task = None
         self.status = "Initializing"
 
-        self.inner_worker = PyInnerWorker(self)
+        self.inner_worker = PyInnerWorker(self, scheduler.inner_scheduler)
 
         #Add the worker to the scheduler pool of all workers (not yet active)
         scheduler.inner_scheduler.add_worker(self.inner_worker)
@@ -313,6 +313,12 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Assigning Task", task, worker, flush=True)
         worker.assign_task(task)
         #print("Finished Assigning Task", task, worker, flush=True)
+
+    def get_num_notified_workers(self):
+        return self.inner_scheduler.get_num_notified_workers()
+
+    def spawn_wait(self):
+        self.inner_scheduler.spawn_wait()
 
     
 def _task_callback(task, body):
