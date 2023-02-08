@@ -11,7 +11,7 @@ sleep_nogil = core.cpu_bsleep_nogil
 TaskSpace = containers.TaskSpace
 Tasks = containers.Tasks
 
-__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks']
+__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
 
 
 import signal
@@ -22,10 +22,16 @@ def signal_handler(signal, frame):
     print("You pressed Ctrl+C!")
     sys.exit(0)
 
+parla_num_threads = os.environ.get("PARLA_NUM_THREADS", None)
+if parla_num_threads is None:
+    import psutil
+    parla_num_threads = int(psutil.cpu_count(logical=False))
+else:
+    parla_num_threads = int(parla_num_threads)
 
 class Parla:
 
-    def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, **kwds):
+    def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, n_workers=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
         self.scheduler_class = scheduler_class
         self.kwds = kwds
@@ -37,6 +43,11 @@ class Parla:
             logfile = "parla.blog"
 
         self.logfile = logfile
+        if n_workers is None:
+            n_workers = parla_num_threads
+
+        self.kwds["n_threads"] = n_workers
+
 
     def __enter__(self):
         if hasattr(self, "_sched"):
