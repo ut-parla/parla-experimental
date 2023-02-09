@@ -12,6 +12,7 @@ Requires:
 
 Can be built with:
 ```
+    git submodule update --init --recursive
     make clean; make
 ```
 
