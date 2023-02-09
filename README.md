@@ -15,6 +15,13 @@ Can be built with:
     make clean; make
 ```
 
+RUNNING `make clean` IS VERY IMPORTANT! 
+You may need to set C compilers explicily on Frontera. 
+
+```
+module load gcc/12
+make clean; CC=gcc CXX=g++ make
+```
 
 Build options are set through enviornment variables:
 
