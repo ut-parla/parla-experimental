@@ -38,8 +38,10 @@ Logging is done through the high-performance binlog library. We wrap the logging
 Logging from Python & Cython is more expensive than in C++ due to the cost of calling a c-extension, be aware of performance penalties from logging many things. 
 
 Logs are dumped when the Parla runtime exits. The name of the log file defaults to "parla.blog" but can be set with the PARLA_LOGFILE enviornment variable or as a parameter in the `with Parla(logfile=filename)` context. 
-If a Parla program is interrupted with a KeyboardInteruppt (Ctrl+C) it should dump the log when the runtime exits gracefully. 
-If a Parla program is interuppted with an error that causes a crash and core dump, the logfile can be recovered with `brecovery`. 
+
+If a Parla program is interrupted with a KeyboardInteruppt (Ctrl+C) it should dump the log when the runtime exits gracefully. The same *should* hopefully now be true of exceptions raised within tasks or workers. But please raise an issue if you found one that isn't handled. 
+ 
+If a Parla program is interuppted with an error that causes a crash and core dump, the logfile can be recovered with `brecovery`. See the binlog documentation for more information. 
 
 
 To read a logfile run:
