@@ -45,7 +45,7 @@ If a Parla program is interuppted with an error that causes a crash and core dum
 To read a logfile run:
 `bread <logfile>`
 
-#Number of threads
+# Number of threads
 
  The number of workers in the Parla runtime is controlled by the PARLA_NUM_THREADS enviornment variable. If it is not set it defaults to the number of cores on the host machine. 
 
