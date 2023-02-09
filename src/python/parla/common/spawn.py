@@ -71,7 +71,11 @@ def spawn(taskid=None,  dependencies=[], vcus=1):
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
-        scheduler.spawn_wait()
+        #This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
+        #TODO: Make this an optional flag.
+        if ( (task_locals.spawn_count % 10 == 0) ):
+            scheduler.spawn_wait()
+        task_locals.spawn_count += 1
 
         return task
 

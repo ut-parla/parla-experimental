@@ -98,16 +98,29 @@ int WorkerPool<AllWorkers_t, ActiveWorkers_t>::increase_num_notified_workers() {
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 int WorkerPool<AllWorkers_t, ActiveWorkers_t>::decrease_num_notified_workers() {
   int before = this->notified_workers.fetch_sub(1);
-  if ((before - 1) == 0) {
+  this->cv.notify_all();
+  //if ((before - 1) == 0) {
     // std::cout << "Notifying waiting spawns: " << before << std::endl;
     // this->cv.notify_all();
-  }
+  //}
   return before;
 }
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::spawn_wait() {
-  std::cout << this->get_num_notified_workers() << std::endl;
+
+  std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
+
+  //std::unique_lock<std::mutex> lck(mtx);
+  
+
+  //auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100), [this]{
+  //        return this->get_num_notified_workers() < 1;
+  //        });
+
+  //while(this->get_num_notified_workers()>0){
+  //    
+  //  }
   // std::unique_lock<std::mutex> lck(mtx);
   // auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100), [this]
   // {

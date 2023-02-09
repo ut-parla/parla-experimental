@@ -174,6 +174,7 @@ class _TaskLocals(threading.local):
     def __init__(self):
         super(_TaskLocals, self).__init__()
         self.task_scopes = []
+        self.spawn_count = 0
 
     @property
     def ctx(self):

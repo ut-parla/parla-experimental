@@ -282,6 +282,9 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Scheduler: Stopping (Called from Python)", flush=True)
         self.inner_scheduler.stop()
 
+    def get_num_running_tasks(self):
+        return self.inner_scheduler.get_num_running_tasks()
+
     def stop_callback(self):
         super().stop()
 
