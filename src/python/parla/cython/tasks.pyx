@@ -197,10 +197,11 @@ task_locals = _TaskLocals()
 
 class TaskID:
 
-    def __init__(self, name, id):
+    def __init__(self, name, id, taskspace):
         self._name = name
         self._id = id
         self._task = None
+        self._taskspace = None
 
     @property
     def task(self):
@@ -361,6 +362,9 @@ class Task:
 
     def __repr__(self):
         return "Task. {}".format(self.taskid.full_name)
+
+    def __dealloc__(self):
+        print("Task Deallocation")
 
 
 class ComputeTask(Task):

@@ -75,6 +75,7 @@ def parse_index(prefix, index,  step,  stop):
     else:
         stop(prefix)
 
+_task_space_globals = {}
 
 class TaskSpace(TaskSet):
 
@@ -85,6 +86,10 @@ class TaskSpace(TaskSet):
     def __init__(self, name="", members=None):
         self._data = members or {}
         self._name = name
+        self._id = id(self)
+
+        global _task_space_globals
+        _task_space_globals[self._id]  = self
 
     def __getitem__(self, index):
 
@@ -93,7 +98,7 @@ class TaskSpace(TaskSet):
         ret = []
 
         parse_index((), index, lambda x, i: x + (i,),
-                    lambda x: ret.append(self._data.setdefault(x, TaskID(self._name, x))))
+                    lambda x: ret.append(self._data.setdefault(x, TaskID(self._name, x, self))))
         # print("index ret", ret, flush=True)
         if len(ret) == 1:
             return ret[0]
@@ -101,3 +106,7 @@ class TaskSpace(TaskSet):
 
     def __repr__(self):
         return "TaskSpace({self._name}, {_data})".format(**self.__dict__)
+
+    def __dealloc__(self):
+        print("TaskSpace dealloc", self._name, flush=True)
+        #pass
