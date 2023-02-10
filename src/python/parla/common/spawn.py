@@ -40,7 +40,7 @@ def spawn(taskid=None,  dependencies=[], vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
     if not taskid:
         taskid = TaskID("global_" + str(len(task_locals.global_tasks)),
-                        (len(task_locals.global_tasks),))
+                        (len(task_locals.global_tasks),), None)
 
         task_locals.global_tasks += [taskid]
 
