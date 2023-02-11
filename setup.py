@@ -30,10 +30,11 @@ def main():
         description="Minimal Example of a C++/Python Extension with CMake, Unit Testing, and Documentation",
         author='William Ruys',
         author_email="will@oden.utexas.edu",
-        packages=["parla", "parla.cython", "parla.common"],
+        packages=["parla", "parla.cython", "parla.common", "parla.utility"],
         package_dir={"parla": "src/python/parla",
                      "parla.cython": "src/python/parla/cython",
-                     "parla.common": "src/python/parla/common"},
+                     "parla.common": "src/python/parla/common",
+                     "parla.utility": "src/python/parla/utility"},
         python_requires=">=3.8",
         cmake_args=cmake_args
     )
