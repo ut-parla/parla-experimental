@@ -1,5 +1,9 @@
 class nvtx_tracer:
-
+    """
+    This is a wrapper class of Python nvtx.
+    (https://docs.nvidia.com/nsight-visual-studio-edition/2020.1/nvtx/index.html)
+    If the nvtx package is not installed, convert nvtx calls to no-ops.
+    """
     def __init__(self):
         try:
             import nvtx
