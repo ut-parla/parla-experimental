@@ -4,8 +4,6 @@ from parla.cython import tasks
 TaskAwaitTasks = tasks.TaskAwaitTasks
 TaskID = tasks.TaskID
 
-import nvtx
-
 class TaskSet(Awaitable, Collection):
 
     def __init__(self, tasks):

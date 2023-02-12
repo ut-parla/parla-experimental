@@ -10,8 +10,6 @@ import threading
 import traceback
 import sys
 
-import nvtx
-
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []
 
