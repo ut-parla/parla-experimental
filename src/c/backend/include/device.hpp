@@ -2,47 +2,12 @@
 #ifndef PARLA_DEVICE_HPP
 #define PARLA_DEVICE_HPP
 
+#include <string>
 #include <vector>
 
-enum ArchID {
+enum DevID {
   CUDA_GPU = 0,
   CPU = 1,
-};
-
-/// `Architecture` class defines a type and provides information of an
-/// architecture.
-class Architecture {
-public:
-  Architecture() = delete;
-
-  Architecture(std::string arch_name, ArchID arch_id) :
-      arch_name_(arch_name), arch_id_(arch_id) {}
-
-  /// Return an architecture name.
-  std::string GetName() {
-    return arch_name_; 
-  }
-
-  /// Return an architecture id.
-  ArchID GetID() {
-    return arch_id_;  
-  }
-
-private:
-  std::string arch_name_;
-  ArchID arch_id_;
-};
-
-///
-class CUDAArch : Architecture {
-public:
-  CUDAArch() : Architecture("CUDA GPU", CUDA_GPU) {}
-};
-
-///
-class CPUArch : Architecture {
-public:
- CPUArch() : Architecture("CPU", CPU) {}
 };
 
 // TODO(hc): To support multi-device task,
@@ -52,24 +17,52 @@ public:
 //           a vector of device.
 //template <typename ArchTy>
 class Device {
+
 public:
+  Device() = delete;
+
+  Device(std::string dev_name, DevID dev_id) :
+      dev_name_(dev_name), dev_id_(dev_id) {}
+
+  /// Return a device name.
+  std::string GetName() {
+    return dev_name_;
+  }
+
+  /// Return a device id.
+  DevID GetID() {
+    return dev_id_;
+  }
+
 protected:
+  std::string dev_name_;
+  DevID dev_id_;
 };
 
 class CUDADevice : public Device {
+public:
+  using Device::Device; // Inherit the parent constructor.
 private:
-  CUDAArch arch_;
 };
 
 class CPUDevice : public Device {
+public:
+  using Device::Device; // Inherit the parent constructor.
 private:
-  CPUArch arch_;
 };
 
 class DeviceSet {
 public:
 protected:
   std::vector<Device> devices_;
+};
+
+class EnvironmentManager {
+public:
+  void InitializeEnvironments();
+  std::vector<Device>& GetAllDevices();
+private:
+  std::vector<Device> managed_devices_;
 };
 
 #endif

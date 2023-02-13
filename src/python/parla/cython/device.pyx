@@ -1,51 +1,26 @@
 import cython
 
-cdef class ArchitectureBinder:
-    cdef Architecture* arch_
-
-    def __cinit__(self, string arch_name, ArchID arch_id):
-        self.arch_ = new Architecture(arch_name, arch_id)
-
-    cpdef get_name(self):
-        return self.arch_.GetName()
-
-    cpdef get_id(self):
-        return self.arch_.GetID()
-
-
-cdef class CUDAArchBinder(ArchitectureBinder):
-    cdef CUDAArch cuda_arch_
- 
-
-cdef class CPUArchBinder(ArchitectureBinder):
-    cdef CPUArch cpu_arch_
-
 
 cdef class DeviceBinder:
-    cdef Device device_
-
-    def __cinit__(self):
-        pass
-
     def __init__(self):
         pass
+
+    cpdef get_name(self):
+        return self.device_.GetName()
+
+    cpdef get_id(self):
+        return self.device_.GetID()
 
 
 cdef class CUDADeviceBinder(DeviceBinder):
-    cdef CUDADevice cu_device_ 
+    cdef CUDADevice* device_
 
-    def __cinit__(self):
-        pass
-
-    def __init__(self):
-        pass
+    def __cinit__(self, string dev_name, DevID dev_id):
+        self.device_ = new CUDADevice(dev_name, dev_id)
 
 
 cdef class CPUDeviceBinder(DeviceBinder):
-    cdef CPUDevice cpu_device_ 
+    cdef CPUDevice* device_
 
-    def __cinit__(self):
-        pass
-
-    def __init__(self):
-        pass
+    def __cinit__(self, string dev_name, DevID dev_id):
+        self.device_ = new CPUDevice(dev_name, dev_id)

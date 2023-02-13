@@ -4,26 +4,16 @@ cimport cython
 from libcpp.string cimport string
 
 cdef extern from "include/device.hpp" nogil:
-    cdef enum ArchID:
+    cdef enum DevID:
       CUDA_GPU,
       CPU
 
-    cdef cppclass Architecture:
-      Architecture(string, ArchID) except + 
-      string GetName()
-      ArchID GetID()
-
-    cdef cppclass CUDAArch(Architecture):
-      CUDAArch()
-
-    cdef cppclass CPUArch(Architecture):
-      CPUArch()
-
     cdef cppclass Device:
-      pass
+      string GetName()
+      DevID GetID()
 
     cdef cppclass CUDADevice(Device):
-      pass
+      CUDADevice(string, DevID) except +
 
     cdef cppclass CPUDevice(Device):
-      pass
+      CPUDevice(string, DevID) except +
