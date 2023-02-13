@@ -21,26 +21,32 @@ class Device {
 public:
   Device() = delete;
 
-  Device(DevIDTy dev_id) : dev_id_(dev_id) {}
+  Device(DevIDTy dev_id, std::string dev_name) :
+      dev_id_(dev_id), dev_name_(dev_name) {}
 
   /// Return a device id.
   DevIDTy GetID() {
     return dev_id_;
   }
 
+  std::string GetName() {
+    return dev_name_ + ":" + std::to_string(dev_id_);
+  }
+
 protected:
   DevIDTy dev_id_;
+  std::string dev_name_;
 };
 
 class CUDADevice : public Device {
 public:
-  using Device::Device; // Inherit the parent constructor.
+  CUDADevice(DevIDTy dev_id) : Device(dev_id, "CUDA") {}
 private:
 };
 
 class CPUDevice : public Device {
 public:
-  using Device::Device; // Inherit the parent constructor.
+  CPUDevice(DevIDTy dev_id) : Device(dev_id, "CPU") {}
 private:
 };
 
