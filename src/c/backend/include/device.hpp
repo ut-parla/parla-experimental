@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-enum DevID {
-  CUDA_GPU = 0,
-  CPU = 1,
-};
+using DevIDTy = uint32_t;
+
+/// Devices can be distinguished from other devices
+/// by a class type and its index.
 
 // TODO(hc): To support multi-device task,
 //           architecture should not be templetized,
@@ -21,22 +21,15 @@ class Device {
 public:
   Device() = delete;
 
-  Device(std::string dev_name, DevID dev_id) :
-      dev_name_(dev_name), dev_id_(dev_id) {}
-
-  /// Return a device name.
-  std::string GetName() {
-    return dev_name_;
-  }
+  Device(DevIDTy dev_id) : dev_id_(dev_id) {}
 
   /// Return a device id.
-  DevID GetID() {
+  DevIDTy GetID() {
     return dev_id_;
   }
 
 protected:
-  std::string dev_name_;
-  DevID dev_id_;
+  DevIDTy dev_id_;
 };
 
 class CUDADevice : public Device {

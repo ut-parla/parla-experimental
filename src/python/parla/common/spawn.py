@@ -1,4 +1,3 @@
-from parla.cython import device
 from parla.common import containers
 from parla.cython import scheduler
 from parla.cython import core
