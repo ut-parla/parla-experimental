@@ -10,12 +10,6 @@ using DevIDTy = uint32_t;
 /// Devices can be distinguished from other devices
 /// by a class type and its index.
 
-// TODO(hc): To support multi-device task,
-//           architecture should not be templetized,
-//           but be contained into Device.
-//           Otherwise, we cannot easily support
-//           a vector of device.
-//template <typename ArchTy>
 class Device {
 
 public:
@@ -38,12 +32,14 @@ protected:
   std::string dev_name_;
 };
 
+///
 class CUDADevice : public Device {
 public:
   CUDADevice(DevIDTy dev_id) : Device(dev_id, "CUDA") {}
 private:
 };
 
+///
 class CPUDevice : public Device {
 public:
   CPUDevice(DevIDTy dev_id) : Device(dev_id, "CPU") {}
@@ -56,12 +52,18 @@ protected:
   std::vector<Device> devices_;
 };
 
-class EnvironmentManager {
+/// `DeviceManager` registers/provides devices and their
+/// information on the current system to the Parla runtime.
+class DeviceManager {
 public:
-  void InitializeEnvironments();
-  std::vector<Device>& GetAllDevices();
+  DeviceManager(uint32_t num_cpus, uint32_t num_gpus) :
+      num_cpus_(num_cpus), num_gpus_(num_gpus) {}
+  void RegisterDevices();
+  const std::vector<Device>& GetAllDevices();
 private:
-  std::vector<Device> managed_devices_;
+  std::vector<Device> registered_devices_;
+  uint32_t num_cpus_;
+  uint32_t num_gpus_;
 };
 
 #endif
