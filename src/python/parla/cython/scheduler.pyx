@@ -17,12 +17,13 @@ TaskID = tasks.TaskID
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 
-from parla.utility import nvtx_tracer
+from parla.utility.tracer import NVTXTracer
 
 PyInnerScheduler = core.PyInnerScheduler
 PyInnerWorker = core.PyInnerWorker
 PyInnerTask = core.PyInnerTask
-nvtx = nvtx_tracer.nvtx_tracer()
+nvtx = NVTXTracer
+nvtx.initialize()
 
 class TaskBodyException(RuntimeError):
     pass
