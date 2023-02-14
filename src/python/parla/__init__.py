@@ -1,3 +1,6 @@
+import os
+import sys
+import signal
 from .cython import tasks
 from .cython import scheduler
 from .cython import core
@@ -11,16 +14,14 @@ sleep_nogil = core.cpu_bsleep_nogil
 TaskSpace = containers.TaskSpace
 Tasks = containers.Tasks
 
-__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
+__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
+           'sleep_nogil', 'Tasks', 'parla_num_threads']
 
-
-import signal
-import sys
-import os
 
 def signal_handler(signal, frame):
     print("You pressed Ctrl+C!")
     sys.exit(0)
+
 
 parla_num_threads = os.environ.get("PARLA_NUM_THREADS", None)
 if parla_num_threads is None:
@@ -29,6 +30,7 @@ if parla_num_threads is None:
 else:
     parla_num_threads = int(parla_num_threads)
 
+
 class Parla:
 
     def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, n_workers=None, **kwds):
@@ -36,6 +38,7 @@ class Parla:
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
+        self.handle_interrupt = True
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
@@ -48,7 +51,6 @@ class Parla:
 
         self.kwds["n_threads"] = n_workers
 
-
     def __enter__(self):
         if hasattr(self, "_sched"):
             raise ValueError(
@@ -56,18 +58,23 @@ class Parla:
         self._sched = self.scheduler_class(**self.kwds)
 
         self.interuppted = False
-        self.released=False
-        self.original_handler = signal.getsignal(self.sig)
+        self.released = False
 
-        def handler(signum, frame):
-            print("YOU PRESSED CTRL+C, INTERRUPTING ALL TASKS", flush=True)
-            self._sched.stop()
-            self.release()
-            self.interrupted = True
+        try:
+            self.original_handler = signal.getsignal(self.sig)
 
-        signal.signal(self.sig, handler)
+            def handler(signum, frame):
+                print("YOU PRESSED CTRL+C, INTERRUPTING ALL TASKS", flush=True)
+                self._sched.stop()
+                self.release()
+                self.interrupted = True
 
-        return self._sched.__enter__()
+            signal.signal(self.sig, handler)
+        except ValueError as e:
+            # This happens if Parla is not running in the main thread.
+            self.handle_interrupt = False
+        finally:
+            return self._sched.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
@@ -81,8 +88,13 @@ class Parla:
         if self.released:
             return False
 
-        signal.signal(self.sig, self.original_handler)
+        try:
+            if self.handle_interrupt:
+                signal.signal(self.sig, self.original_handler)
+        except ValueError as e:
+            # This happens if Parla is not running in the main thread.
+            pass
+        finally:
+            self.released = True
 
-        self.released = True
-
-        return True
+            return True

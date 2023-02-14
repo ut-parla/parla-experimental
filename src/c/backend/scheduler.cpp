@@ -1,5 +1,6 @@
 #include "include/phases.hpp"
 #include "include/runtime.hpp"
+#include <new>
 
 // Worker Implementation
 
@@ -99,9 +100,9 @@ template <typename AllWorkers_t, typename ActiveWorkers_t>
 int WorkerPool<AllWorkers_t, ActiveWorkers_t>::decrease_num_notified_workers() {
   int before = this->notified_workers.fetch_sub(1);
   this->cv.notify_all();
-  //if ((before - 1) == 0) {
-    // std::cout << "Notifying waiting spawns: " << before << std::endl;
-    // this->cv.notify_all();
+  // if ((before - 1) == 0) {
+  //  std::cout << "Notifying waiting spawns: " << before << std::endl;
+  //  this->cv.notify_all();
   //}
   return before;
 }
@@ -111,22 +112,23 @@ void WorkerPool<AllWorkers_t, ActiveWorkers_t>::spawn_wait() {
 
   std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
 
-  //std::unique_lock<std::mutex> lck(mtx);
-  
-
-  //auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100), [this]{
-  //        return this->get_num_notified_workers() < 1;
-  //        });
-
-  //while(this->get_num_notified_workers()>0){
-  //    
-  //  }
   // std::unique_lock<std::mutex> lck(mtx);
-  // auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100), [this]
-  // {
-  //  return this->get_num_notified_workers() < 1;
-  //});
-  // std::cout << "Spawn wait status: " << status << std::endl;
+
+  // auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100),
+  // [this]{
+  //         return this->get_num_notified_workers() < 1;
+  //         });
+
+  // while(this->get_num_notified_workers()>0){
+  //
+  //   }
+  //  std::unique_lock<std::mutex> lck(mtx);
+  //  auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100),
+  //  [this]
+  //  {
+  //   return this->get_num_notified_workers() < 1;
+  // });
+  //  std::cout << "Spawn wait status: " << status << std::endl;
 }
 
 template class WorkerPool<WorkerQueue, WorkerQueue>;
@@ -254,6 +256,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     //  - make sure state ids match
     //  - add and process dependencies
     //  - if true, enqueue task
+    task->instance++;
     bool status = task->process_dependencies();
 
     if (status) {
@@ -296,7 +299,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   // Task::complete:
   //     - signals that the task has finished everything
-
   task->set_state(state);
 }
 

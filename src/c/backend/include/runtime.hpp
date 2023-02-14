@@ -3,8 +3,10 @@
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 
+#include <assert.h>
 #include <atomic>
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <string>
 #include <thread>
@@ -143,6 +145,9 @@ public:
 
   /*Name of the task. Useful for logging and printing.*/
   std::string name = "";
+
+  /*Instance count of the task (Number of continuations of this task)*/
+  int instance = 0;
 
   /* Status of the task */
   std::atomic<Task::State> state{Task::created};
@@ -288,7 +293,7 @@ public:
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(InnerTask, name, get_state)
+LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state)
 #endif
 
 /**
