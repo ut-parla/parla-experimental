@@ -10,6 +10,9 @@ cdef class DeviceBinder:
     cpdef get_name(self):
         return self.device_.GetName().decode()
 
+    def __dealloc__(self):
+        del self.device_
+
 
 cdef class CUDADeviceBinder(DeviceBinder):
     def __cinit__(self, int dev_id):
@@ -58,6 +61,9 @@ cdef class CyDeviceManager:
     def __init__(self):
         self.pydevice_manager_ = []
         self.register_devices()
+
+    def __dealloc__(self):
+        del self.device_manager_
 
     def register_devices(self):
         print(type(self.pydevice_manager_))
