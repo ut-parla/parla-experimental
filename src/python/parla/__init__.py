@@ -35,6 +35,7 @@ class Parla:
 
     def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, n_workers=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
+
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
@@ -44,6 +45,8 @@ class Parla:
             logfile = os.environ.get("PARLA_LOGFILE", None)
         if logfile is None:
             logfile = "parla.blog"
+
+        core.py_init_log(logfile)
 
         self.logfile = logfile
         if n_workers is None:
@@ -80,9 +83,9 @@ class Parla:
         try:
             return self._sched.__exit__(exc_type, exc_val, exc_tb)
         finally:
-            core.py_write_log(self.logfile)
             self.release()
             del self._sched
+            core.py_write_log(self.logfile)
 
     def release(self):
         if self.released:

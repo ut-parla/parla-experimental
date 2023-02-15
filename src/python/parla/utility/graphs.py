@@ -16,6 +16,9 @@ from enum import IntEnum
 
 
 class DeviceType(IntEnum):
+    """
+    Used to specify the valid placement of a device in a synthetic task graph
+    """
     ANY_DEVICE = -2
     CPU_DEVICE = -1
     ANY_GPU_DEVICE = 0
@@ -26,6 +29,9 @@ class DeviceType(IntEnum):
 
 
 class LogState(IntEnum):
+    """
+    Specifies the meaning of a log line. Used for parsing the log file.
+    """
     ADDING_DEPENDENCIES = 0
     ADD_CONSTRAINT = 1
     ASSIGNED_TASK = 2
@@ -34,24 +40,37 @@ class LogState(IntEnum):
 
 
 class MovementType(IntEnum):
+    """
+    Used to specify the type of data movement to be used in a synthetic task graph execution.
+    """
     NO_MOVEMENT = 0
     LAZY_MOVEMENT = 1
     EAGER_MOVEMENT = 2
 
 
 class DataInitType(IntEnum):
+    """
+    Used to specify the data movement pattern and initialization in a synthetic task graph execution.
+    """
     NO_DATA = 0
     INDEPENDENT_DATA = 1
     OVERLAPPED_DATA = 2
 
 
 class TaskID(NamedTuple):
-    taskspace: str = "T"
-    task_idx: Tuple[int] = (0,)
+    """
+    The identifier for a task in a synthetic task graph.
+    """
+    taskspace: str = "T"  # The task space the task belongs to
+    task_idx: Tuple[int] = (0,)  # The index of the task in the task space
+    # How many times the task has been spawned (continuation number)
     instance: int = 0
 
 
 class TaskRuntimeInfo(NamedTuple):
+    """
+    The collection of important runtime information / constraints for a task in a synthetic task graph.
+    """
     task_time: float
     device_fraction: Union[float, Fraction]
     gil_accesses: int
@@ -60,12 +79,18 @@ class TaskRuntimeInfo(NamedTuple):
 
 
 class TaskDataInfo(NamedTuple):
+    """
+    The data dependencies for a task in a synthetic task graph.
+    """
     read: list[int]
     write: list[int]
     read_write: list[int]
 
 
 class TaskInfo(NamedTuple):
+    """
+    The collection of important information for a task in a synthetic task graph.
+    """
     task_id: TaskID
     task_runtime: Dict[Tuple[int, ...], TaskRuntimeInfo]
     task_dependencies: list[TaskID]
@@ -73,12 +98,18 @@ class TaskInfo(NamedTuple):
 
 
 class DataInfo(NamedTuple):
+    """
+    The collection of important information for a data object in a synthetic task graph.
+    """
     idx: int
     size: int
     location: int
 
 
 class TaskTime(NamedTuple):
+    """
+    The parsed timing information from a task from an execution log.
+    """
     assigned_t: float
     start_t: float
     end_t: float
@@ -86,15 +117,22 @@ class TaskTime(NamedTuple):
 
 
 class TimeSample(NamedTuple):
+    """
+    A collection of timing information.
+    """
     mean: float
     median: float
     std: float
     min: float
     max: float
+    n: int
 
 
 @dataclass
 class TaskConfig:
+    """
+    Constraint configuration for a task on a device type in a synthetic task graph.
+    """
     task_time: int = 1000
     gil_accesses: int = 1
     gil_fraction: float = 0
@@ -104,6 +142,9 @@ class TaskConfig:
 
 @dataclass
 class TaskConfigs:
+    """
+    Holds the map of devices to task configurations for a synthetic task graph.
+    """
     configurations: Dict[Tuple, TaskConfig] = field(default_factory=dict)
 
     def add(self, device_id, TaskConfig):
@@ -123,6 +164,9 @@ class TaskConfigs:
 
 @dataclass
 class GraphConfig:
+    """
+    Configures information about generating the synthetic task graph.
+    """
     task_config: TaskConfigs = None
     use_gpus: bool = False
     fixed_placement: bool = False
@@ -131,37 +175,54 @@ class GraphConfig:
 
 @dataclass
 class IndependentConfig(GraphConfig):
+    """
+    Used to configure the generation of an independent synthetic task graph.
+    """
     task_count: int = 1
 
 
 @dataclass
 class SerialConfig(GraphConfig):
-    steps: int = 1
+    """
+    Used to configure the generation of a serial synthetic task graph.
+    """
+    steps: int = 1  # Number of steps in the serial graph chain
+    # Number of dependency backlinks per task (used for stress testing)
     dependency_count: int = 1
-    chains: int = 1
+    chains: int = 1  # Number of chains to generate that can run in parallel
 
 
 @dataclass
 class TreeConfig(GraphConfig):
-    levels: int = 1
-    branch_factor: int = 2
+    """
+    Used to configure the generation of a tree synthetic task graph.
+    """
+    levels: int = 1  # Number of levels in the tree
+    branch_factor: int = 2  # Number of children per node
 
 
 @dataclass
 class RunConfig:
-    outer_iterations: int = 1
+    """
+    Configuration object for executing a synthetic task graph.
+    """
+    outer_iterations: int = 1  # Number of times to launch the Parla runtime and execute the task graph
+    # Number of times to execute the task graph within the same Parla runtime
     inner_iterations: int = 1
-    inner_sync: bool = False
-    outer_sync: bool = False
-    verbose: bool = False
-    device_fraction: float = None
-    data_scale: float = None
-    threads: int = None
+    inner_sync: bool = False  # Whether to synchronize after each kernel launch
+    outer_sync: bool = False  # Whether to synchronize at the end of the task
+    verbose: bool = False  # Whether to print the task graph to the console
+    device_fraction: float = None  # VCUs
+    data_scale: float = None  # Scaling factor to increase the size of the data objects
+    threads: int = None  # Number of threads to use for the Parla runtime
+    # Total time for all tasks (this overrides the time in the graphs)
     task_time: float = None
+    # Fraction of time spent in the GIL (this overrides the time in the graphs)
     gil_fraction: float = None
+    # Number of kernel launches/GIL accesses per task (this overrides the time in the graphs)
     gil_accesses: int = None
-    movement_type: int = MovementType.NO_MOVEMENT
-    logfile: str = "testing.blog"
+    movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
+    logfile: str = "testing.blog"  # The log file location
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')

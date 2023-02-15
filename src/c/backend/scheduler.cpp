@@ -2,6 +2,12 @@
 #include "include/runtime.hpp"
 #include <new>
 
+#ifdef PARLA_ENABLE_LOGGING
+namespace binlog {
+int global_reset_count = 0;
+}
+#endif
+
 // Worker Implementation
 
 void InnerWorker::wait() {

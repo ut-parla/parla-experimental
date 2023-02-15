@@ -14,6 +14,10 @@ cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
     write_log(fname)
 
+cpdef py_init_log(filename):
+    fname = filename.encode('utf-8')
+    initialize_log(fname)
+
 cpdef _log_task(logging_level, category, message, PyInnerTask obj):
     cdef InnerTask* _inner = <InnerTask*> obj.c_task
     msg = message.encode('utf-8')

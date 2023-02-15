@@ -1,12 +1,13 @@
 import pytest
 
-from parla.utility.graphs import DeviceType, TaskConfig, TaskConfigs, SerialConfig, RunConfig
+from parla.utility.graphs import DeviceType, TaskConfig, TaskConfigs
+from parla.utility.graphs import IndependentConfig, SerialConfig, RunConfig
 from parla.utility.graphs import read_pgraph, parse_blog
-from parla.utility.graphs import generate_serial_graph, shuffle_tasks
+from parla.utility.graphs import shuffle_tasks
 
-from parla.utility.execute import run as run_graph
 from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time
-from parla.utility.execute import timeout
+from parla.utility.execute import GraphContext
+
 # from parla.utility.execute import timeout
 
 import tempfile
@@ -72,61 +73,94 @@ def test_read():
         assert (task_info.data_dependencies == ([1], [], [0]))
 
 
-def test_serial():
-    """
-    Test a chain of serial tasks.
-    """
-    with tempfile.TemporaryDirectory() as tempdir:
+@pytest.mark.parametrize("n", [10, 100])
+def test_independent(n):
 
-        tmpfilepath = os.path.join(tempdir, 'test_serial.graph')
-        tmplogpath = os.path.join(tempdir, 'test_serial.blog')
-        logfile = "test_serial.blog"
+    max_time = 3
+    task_time = 1000
+    total_time_factor = 1.05
+    local_task_factor = 2
+    name = "independent"
 
-        with open(tmpfilepath, 'w') as tmpfile:
-            max_time = 3
-            n = 10
-            task_time = 100000
+    # write a test graph
+    task_configs = TaskConfigs()
+    task_configs.add(DeviceType.CPU_DEVICE, TaskConfig(
+        task_time=task_time, gil_accesses=1))
 
-            total_time_factor = 1.05
-            local_task_factor = 1.5
+    config = IndependentConfig(task_count=n, task_config=task_configs)
 
-            # write a test graph
-            task_configs = TaskConfigs()
-            task_configs.add(DeviceType.CPU_DEVICE, TaskConfig(
-                task_time=task_time, gil_accesses=1))
+    with GraphContext(config, name="independent") as g:
 
-            config = SerialConfig(
-                steps=n, task_config=task_configs, dependency_count=3, chains=2)
-            graph = generate_serial_graph(config)
-            print(graph)
-            tmpfile.write(graph)
-
-        data_config, truth_graph = read_pgraph(tmpfilepath)
+        logpath = g.tmplogpath
 
         run_config = RunConfig(
-            outer_iterations=1, inner_iterations=1, verbose=False, logfile=logfile)
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            logfile=logpath)
 
-        @timeout(max_time)
-        def run():
-            timing = run_graph(truth_graph, data_config=data_config,
-                               run_config=run_config)
-            return timing
+        timing = g.run(run_config)
 
-        timing = run()
-
-        log_times, log_graph = parse_blog(logfile)
+        log_times, log_graph = parse_blog(logpath)
 
         # Verify that all tasks have run
-        assert (verify_complete(log_graph, truth_graph))
+        assert (verify_complete(log_graph, g.graph))
 
         # Verify that all depdenencies have run (this would fail even if complete is true if the graph is wrong)
-        assert (verify_dependencies(log_graph, truth_graph))
+        assert (verify_dependencies(log_graph, g.graph))
 
         # Verify that the tasks ran in the correct order
-        assert (verify_order(log_times, truth_graph))
+        assert (verify_order(log_times, g.graph))
 
         # Verify that each task took about the right amount of time
-        assert (verify_time(log_times, truth_graph, factor=local_task_factor))
+        assert (verify_time(log_times, g.graph, factor=local_task_factor))
+
+        # Verify that the total time isn't too long
+        assert (timing.mean < total_time_factor * n * task_time)
+
+
+@pytest.mark.parametrize("n", [10, 100])
+def test_serial(n):
+
+    max_time = 3
+    task_time = 1000
+    total_time_factor = 1.05
+    local_task_factor = 2
+    name = "serial"
+
+    # write a test graph
+    task_configs = TaskConfigs()
+    task_configs.add(DeviceType.CPU_DEVICE, TaskConfig(
+        task_time=task_time, gil_accesses=1))
+
+    config = SerialConfig(steps=n, task_config=task_configs,
+                          dependency_count=3, chains=2)
+
+    with GraphContext(config, name="serial") as g:
+
+        logpath = g.tmplogpath
+
+        run_config = RunConfig(
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            logfile=logpath)
+
+        timing = g.run(run_config)
+
+        log_times, log_graph = parse_blog(logpath)
+
+        # Verify that all tasks have run
+        assert (verify_complete(log_graph, g.graph))
+
+        # Verify that all depdenencies have run (this would fail even if complete is true if the graph is wrong)
+        assert (verify_dependencies(log_graph, g.graph))
+
+        # Verify that the tasks ran in the correct order
+        assert (verify_order(log_times, g.graph))
+
+        # Verify that each task took about the right amount of time
+        assert (verify_time(log_times, g.graph, factor=local_task_factor))
 
         # Verify that the total time isn't too long
         assert (timing.mean < total_time_factor * n * task_time)

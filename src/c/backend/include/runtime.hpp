@@ -1,11 +1,11 @@
 #pragma once
-#include <condition_variable>
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 
 #include <assert.h>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <exception>
 #include <fstream>
 #include <string>

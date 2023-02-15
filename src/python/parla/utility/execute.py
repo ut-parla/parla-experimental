@@ -4,8 +4,11 @@ from typing import Dict, Tuple, Union, List
 from dataclasses import dataclass, field
 
 from .graphs import LogState, DeviceType, MovementType, DataInitType, TaskID, TaskRuntimeInfo, TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample
-from .graphs import RunConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig
+from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig
+from .graphs import generate_serial_graph, generate_independent_graph, shuffle_tasks
+from .graphs import read_pgraph, parse_blog
 
+import os
 import tempfile
 from enum import Enum
 import time
@@ -145,7 +148,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
         graph_times = np.asarray(graph_times)
         graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(
-            graph_times), np.min(graph_times), np.max(graph_times))
+            graph_times), np.min(graph_times), np.max(graph_times), len(graph_times))
 
         timing.append(graph_t)
 
@@ -303,5 +306,50 @@ def timeout(seconds_before_timeout):
     return deco
 
 
+class GraphContext(object):
+
+    def __init__(self, config: GraphConfig, name: str):
+        self.config = config
+        self.graph = None
+        self.data_config = None
+
+        self.name = name
+        self.graph_function = None
+
+        if isinstance(config, SerialConfig):
+            self.graph_function = generate_serial_graph
+        elif isinstance(config, IndependentConfig):
+            self.graph_function = generate_independent_graph
+
+    def __enter__(self):
+
+        self.diro = tempfile.TemporaryDirectory()
+        self.dir = self.diro.__enter__()
+
+        self.tmpfilepath = os.path.join(
+            self.dir, 'test_'+str(self.name)+'.graph')
+        self.tmplogpath = os.path.join(
+            self.dir, 'test_'+str(self.name)+'_.blog')
+
+        with open(self.tmpfilepath, 'w') as tmpfile:
+            graph = self.graph_function(self.config)
+            tmpfile.write(graph)
+
+        self.data_config, self.graph = read_pgraph(self.tmpfilepath)
+
+        return self
+
+    def run(self, run_config: RunConfig, max_time: int = 100):
+
+        @timeout(max_time)
+        def run_with_timeout():
+            return run(self.graph, self.data_config, run_config)
+
+        return run_with_timeout()
+
+    def __exit__(self, type, value, traceback):
+        self.diro.__exit__(type, value, traceback)
+
+
 __all__ = [run, verify_order, verify_dependencies,
-           verify_complete, verify_time, timeout]
+           verify_complete, verify_time, timeout, GraphContext]
