@@ -133,8 +133,7 @@ inline int write_log(std::string filename) {
     return 1;
   }
 
-  std::cout << "Log file written to: " << filename << " "
-            << binlog::detail::this_thread_id_string() << std::endl;
+  std::cout << "Log file written to: " << filename << std::endl;
   return 0;
 }
 
