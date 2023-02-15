@@ -119,7 +119,7 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
 def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
 
-    @spawn()
+    @spawn(vcus=0)
     async def main_task():
 
         graph_times = []
