@@ -2,7 +2,9 @@
 #ifndef PARLA_DEVICE_HPP
 #define PARLA_DEVICE_HPP
 
+#include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using DevIDTy = uint32_t;
@@ -15,8 +17,10 @@ class Device {
 public:
   Device() = delete;
 
-  Device(DevIDTy dev_id, std::string dev_name) :
-      dev_id_(dev_id), dev_name_(dev_name) {}
+  Device(std::string dev_type_name, DevIDTy dev_id, size_t mem_sz,
+         size_t num_vcus, void* py_dev) :
+         py_dev_(py_dev), dev_id_(dev_id), mem_sz_(mem_sz), num_vcus_(num_vcus),
+         dev_type_name_(dev_type_name) {}
 
   /// Return a device id.
   DevIDTy GetID() {
@@ -24,31 +28,52 @@ public:
   }
 
   std::string GetName() {
-    return dev_name_ + ":" + std::to_string(dev_id_);
+    return dev_type_name_ + ":" + std::to_string(dev_id_);
+  }
+
+  size_t GetMemorySize() {
+    return mem_sz_; 
+  }
+
+  size_t GetNumVCUs() {
+    return num_vcus_;
   }
 
 protected:
+  std::string dev_type_name_;
   DevIDTy dev_id_;
-  std::string dev_name_;
+  size_t mem_sz_;
+  size_t num_vcus_;
+  void* py_dev_;
+  std::unordered_map<std::string, size_t> resource_map_;
 };
 
 ///
 class CUDADevice : public Device {
 public:
-  CUDADevice(DevIDTy dev_id) : Device(dev_id, "CUDA") {}
+  CUDADevice(DevIDTy dev_id, size_t mem_sz,
+             size_t num_vcus, void* py_dev) :
+             Device("CUDA", dev_id, mem_sz, num_vcus, py_dev) {}
 private:
 };
 
 ///
 class CPUDevice : public Device {
 public:
-  CPUDevice(DevIDTy dev_id) : Device(dev_id, "CPU") {}
+  CPUDevice(DevIDTy dev_id, size_t mem_sz,
+            size_t num_vcus, void* py_dev) :
+            Device("CPU", dev_id, mem_sz, num_vcus, py_dev) {}
 private:
 };
 
 class DeviceSet {
 public:
-protected:
+  /// This extracts python device objects, and
+  /// constructs and returns a vector of them.
+  std::vector<void*> GetPyDevices();
+private:
+  /// A device object in this vector also contains the
+  /// correpsonding python device object.
   std::vector<Device> devices_;
 };
 
@@ -56,14 +81,23 @@ protected:
 /// information on the current system to the Parla runtime.
 class DeviceManager {
 public:
-  DeviceManager(uint32_t num_cpus, uint32_t num_gpus) :
-      num_cpus_(num_cpus), num_gpus_(num_gpus) {}
-  void RegisterDevices();
-  const std::vector<Device>& GetAllDevices();
+  DeviceManager() {}
+  void RegisterCudaDevice(DevIDTy dev_id, size_t memory_sz,
+                          size_t vcu, void* py_dev);
+
+  void RegisterCpuDevice(DevIDTy dev_id, size_t memory_sz,
+                         size_t vcu, void* py_dev);
+
+  void PrintRegisteredDevices() {
+    for (size_t d = 0; d < registered_devices_.size(); ++d) {
+      Device& dev = registered_devices_[d];
+      std::cout << "[" << dev.GetName() << "] mem. sz:" <<
+        dev.GetMemorySize() << ", num. vcus:" << dev.GetNumVCUs() << "\n";
+    }
+  }
+
 private:
   std::vector<Device> registered_devices_;
-  uint32_t num_cpus_;
-  uint32_t num_gpus_;
 };
 
 #endif

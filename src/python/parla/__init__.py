@@ -1,6 +1,7 @@
 from .cython import tasks
 from .cython import scheduler
 from .cython import core
+from .cython import device
 from .common.spawn import spawn
 
 from .common import containers
@@ -10,6 +11,8 @@ sleep_nogil = core.cpu_bsleep_nogil
 
 TaskSpace = containers.TaskSpace
 Tasks = containers.Tasks
+
+DeviceManager = device.PyDeviceManager
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
 
@@ -36,6 +39,9 @@ class Parla:
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
+        self.device_manager = DeviceManager()
+
+        self.device_manager.print_registered_devices()
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
