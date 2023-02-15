@@ -63,10 +63,10 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
-        placement_set = list(task.task_runtime.keys())
+        placement_set = (-1,)  # list(task.task_runtime.keys())
 
         # TODO: This needs rework with Device support
-        runtime_info = task.task_runtime[placement_set[0]]
+        runtime_info = task.task_runtime[placement_set]
 
         # Task Constraints
         device_fraction = runtime_info.device_fraction
@@ -99,23 +99,14 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                 print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
 
     except Exception as e:
-        print(f"Error creating task {task.task_id}")
-        raise e
+        print(f"Failed creating Task {task.task_id}: {e}", flush=True)
+    finally:
+        return
 
 
-def execute_tasks(tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data=None):
+def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data=None):
 
     spawn_start_t = time.perf_counter()
-
-    # Initialize task spaces
-    taskspaces = {}
-
-    for task, details in tasks.items():
-
-        space_name = details.task_id.taskspace
-
-        if space_name not in taskspaces:
-            taskspaces[space_name] = TaskSpace(space_name)
 
     # Spawn tasks
     for task, details in tasks.items():
@@ -135,9 +126,19 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
         for i in range(run_config.inner_iterations):
             data = generate_data(data_config, run_config.data_scale)
+
+            # Initialize task spaces
+            taskspaces = {}
+
+            for task, details in tasks.items():
+                space_name = details.task_id.taskspace
+                if space_name not in taskspaces:
+                    taskspaces[space_name] = TaskSpace(space_name)
+
             graph_start_t = time.perf_counter()
 
-            taskspaces = execute_tasks(tasks, run_config, data=data)
+            execute_tasks(taskspaces, tasks, run_config, data=data)
+
             for taskspace in taskspaces.values():
                 await taskspace
 
