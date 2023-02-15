@@ -39,6 +39,10 @@ public:
     return num_vcus_;
   }
 
+  void* GetPyDevice() {
+    return py_dev_;
+  }
+
 protected:
   std::string dev_type_name_;
   DevIDTy dev_id_;
@@ -82,11 +86,7 @@ private:
 class DeviceManager {
 public:
   DeviceManager() {}
-  void RegisterCudaDevice(DevIDTy dev_id, size_t memory_sz,
-                          size_t vcu, void* py_dev);
-
-  void RegisterCpuDevice(DevIDTy dev_id, size_t memory_sz,
-                         size_t vcu, void* py_dev);
+  void RegisterDevice(Device* new_dev);
 
   void PrintRegisteredDevices() {
     for (size_t d = 0; d < registered_devices_.size(); ++d) {

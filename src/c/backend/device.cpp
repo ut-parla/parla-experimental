@@ -15,14 +15,6 @@ void DeviceManager::RegisterDevices() {
 }
 */
 
-void DeviceManager::RegisterCudaDevice(DevIDTy dev_id, size_t mem_sz,
-                                       size_t num_vcus, void* py_dev) {
-  CUDADevice new_cuda_dev = CUDADevice(dev_id, mem_sz, num_vcus, py_dev);
-  registered_devices_.emplace_back(new_cuda_dev);
-}
-
-void DeviceManager::RegisterCpuDevice(DevIDTy dev_id, size_t mem_sz,
-                                      size_t num_vcus, void* py_dev) {
-  CPUDevice new_cpu_dev = CPUDevice(dev_id, mem_sz, num_vcus, py_dev);
-  registered_devices_.emplace_back(new_cpu_dev);
+void DeviceManager::RegisterDevice(Device* new_dev) {
+  registered_devices_.emplace_back(*new_dev);
 }
