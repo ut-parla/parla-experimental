@@ -506,6 +506,9 @@ public:
   /*Responsible for launching a task. Holds python launch callback*/
   LauncherPhase *launcher;
 
+  SpawnedPhase* spawned_phase;
+  MappedPhase* mapped_phase;
+
   InnerScheduler();
   // InnerScheduler(int nworkers);
 

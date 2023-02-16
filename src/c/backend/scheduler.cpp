@@ -144,6 +144,8 @@ InnerScheduler::InnerScheduler() {
 
   // Initialize the phases
   this->ready_phase = new ReadyPhase(this);
+  this->spawned_phase = new SpawnedPhase();
+  this->mapped_phase = new MappedPhase();
   this->launcher = new LauncherPhase(this);
   this->resources = new InnerResourcePool<float>();
   // TODO: Clean these up
@@ -190,7 +192,7 @@ void InnerScheduler::stop() {
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-  // this->spawned_phase->run(this->mapped_phase);
+  this->spawned_phase->run(this->mapped_phase);
   // this->mapped_phase->run(this->reserved_phase);
   // this->reserved_phase->run(this->ready_phase);
   this->ready_phase->run(this->launcher);
