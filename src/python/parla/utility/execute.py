@@ -248,7 +248,7 @@ def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Lis
     return True
 
 
-class Propogate(threading.Thread):
+class Propagate(threading.Thread):
     """
     A wrapper of threading.Thread that propagates exceptions to the main thread. 
     Useful for testing race conditions and timeouts in pytest.
@@ -290,14 +290,14 @@ def timeout(seconds_before_timeout):
                     res[0] = func(*args, **kwargs)
                 except Exception as e:
                     res[0] = e
-            t = Propogate(target=newFunc)
+            t = Propagate(target=newFunc)
             t.daemon = True
             try:
                 t.start()
                 t.join(seconds_before_timeout)
                 r = t.value
             except Exception as e:
-                print('Unhandled exception in Propogate wrapper', flush=True)
+                print('Unhandled exception in Propagate wrapper', flush=True)
                 raise e
             ret = res[0]
             if isinstance(ret, BaseException):
