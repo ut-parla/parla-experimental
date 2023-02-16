@@ -22,6 +22,7 @@ from parla.utility.tracer import NVTXTracer
 PyInnerScheduler = core.PyInnerScheduler
 PyInnerWorker = core.PyInnerWorker
 PyInnerTask = core.PyInnerTask
+
 nvtx = NVTXTracer
 nvtx.initialize()
 
