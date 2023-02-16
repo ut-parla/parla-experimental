@@ -59,7 +59,7 @@ class Parla:
         if hasattr(self, "_sched"):
             raise ValueError(
                 "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(**self.kwds)
+        self._sched = self.scheduler_class(self.device_manager, **self.kwds)
 
         self.interuppted = False
         self.released=False

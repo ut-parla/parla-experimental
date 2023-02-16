@@ -25,3 +25,15 @@ cdef extern from "include/device.hpp" nogil:
 
     cdef cppclass DeviceSet:
         vector[void*] GetPyDevices() except +  
+
+
+cdef class CyDevice:
+    cdef Device* _cpp_device
+    cdef Device* get_cpp_device(self)
+
+
+cdef class CyDeviceManager:
+    cdef DeviceManager* cpp_device_manager_
+    cpdef register_device(self, CyDevice cy_device)
+    cpdef print_registered_devices(self)
+    cdef DeviceManager* get_cpp_device_manager(self)

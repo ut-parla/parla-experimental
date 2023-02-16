@@ -1,12 +1,9 @@
-from parla.cython import core
-
 cdef class CyDeviceManager:
     """
     This class manages devices on the current system.
     For convenience, it registers devices specified by users to both
     pure Python and Cython side; So, it replicates processes.
     """
-    cdef DeviceManager* cpp_device_manager_
 
     def __cinit__(self):
         self.cpp_device_manager_ = new DeviceManager()
@@ -24,6 +21,8 @@ cdef class CyDeviceManager:
     cpdef print_registered_devices(self):
         self.cpp_device_manager_.PrintRegisteredDevices()
 
+    cdef DeviceManager* get_cpp_device_manager(self):
+        return self.cpp_device_manager_
 
 
 class PyDevice:
@@ -68,7 +67,6 @@ class PyCPUDevice(PyDevice):
 
 
 cdef class CyDevice:
-    cdef Device* _cpp_device
 
     cdef Device* get_cpp_device(self):
         return self._cpp_device
@@ -123,4 +121,7 @@ class PyDeviceManager:
         for dev in self.py_registered_devices:
             print(f"Registered device: {dev}", flush=True)
         self.cy_device_manager.print_registered_devices()
+
+    def get_cy_device_manager(self):
+        return self.cy_device_manager
 

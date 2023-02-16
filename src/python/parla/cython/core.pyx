@@ -1,5 +1,6 @@
 import cython 
 
+from parla.cython cimport device
 
 #Logging functions
 
@@ -310,12 +311,14 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
-    def __cinit__(self):
+    def __cinit__(self, device.CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
+        cdef device.DeviceManager* _cpp_device_manager = <device.DeviceManager*> cy_device_manager.get_cpp_device_manager()
+
         _inner_scheduler = new InnerScheduler()
         self.inner_scheduler = _inner_scheduler
 
-    def __init__(self, int num_workers, float vcus, object python_scheduler):
+    def __init__(self, device.CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 
