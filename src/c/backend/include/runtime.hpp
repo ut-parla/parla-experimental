@@ -286,6 +286,21 @@ public:
 
   /* Get complete */
   bool get_complete();
+
+  /// TODO(hc): move these to cpp.
+  /// TODO(hc): Camel or snake case?
+  void SetMappedDevice(Device* dev) {
+    assert(mapped_device_ == NULL);
+    mapped_device_ = dev;
+  }
+
+  const Device& GetMappedDevice() {
+    assert(mapped_device_ != NULL);
+    return *mapped_device_;
+  }
+
+private:
+  Device* mapped_device_;
 };
 
 #ifdef PARLA_ENABLE_LOGGING

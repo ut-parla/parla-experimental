@@ -46,14 +46,7 @@ namespace Spawned{
 
 class SpawnedPhase {
   public:
-    std::string name = "Spawned Phase";
-    Spawned::Status status;
-
-    TaskQueue spawned_tasks;
-
-    //TODO: Add any counters and internal state here.
-
-    SpawnedPhase() = default;
+    SpawnedPhase() : dummy_dev_idx_{0} {}
 
     void enqueue(InnerTask* task);
     void enqueue(std::vector<InnerTask*>& tasks);
@@ -62,7 +55,13 @@ class SpawnedPhase {
 
     /* This is the mapper. It moves stuff from spawned to mapped.*/
     //void run(MappedPhase* ready);
-    void run(ReadyPhase* ready);
+    void run(ReadyPhase* ready, DeviceManager* device_manager);
+
+  private:
+    std::string name = "Spawned Phase";
+    Spawned::Status status;
+    TaskQueue spawned_tasks;
+    uint64_t dummy_dev_idx_;
 };
 
 namespace Mapped{

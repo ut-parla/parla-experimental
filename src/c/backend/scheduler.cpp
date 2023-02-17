@@ -195,7 +195,7 @@ Scheduler::Status InnerScheduler::activate() {
   // TODO(hc): the param should be mapped phase but use ready phase
   // for debugging.
   //this->spawned_phase->run(this->mapped_phase);
-  this->spawned_phase->run(this->ready_phase);
+  this->spawned_phase->run(this->ready_phase, device_manager_);
   // this->mapped_phase->run(this->reserved_phase);
   // this->reserved_phase->run(this->ready_phase);
   this->ready_phase->run(this->launcher);
@@ -210,12 +210,14 @@ void InnerScheduler::activate_wrapper() { this->activate(); }
 void InnerScheduler::enqueue_task(InnerTask *task) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  this->ready_phase->enqueue(task);
+  //this->ready_phase->enqueue(task);
+  this->spawned_phase->enqueue(task);
 }
 
 void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
   LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  this->ready_phase->enqueue(tasks);
+  //this->ready_phase->enqueue(tasks);
+  this->spawned_phase->enqueue(tasks);
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {

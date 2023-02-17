@@ -11,11 +11,8 @@ void SpawnedPhase::run(MappedPhase *ready) {
 */
 
 void SpawnedPhase::enqueue(InnerTask *task) {
-   std::cout << "[Spawned] Enqueuing task " << task->name << std::endl;
+  std::cout << "[Spawned] Enqueuing task " << task->name << std::endl;
   this->spawned_tasks.push_back(task);
-   std::cout << "[Spawned] Tasks after enqueue: " <<
-   this->spawned_tasks.atomic_size()
-            << std::endl;
 }
 
 void SpawnedPhase::enqueue(std::vector<InnerTask *> &tasks) {
@@ -33,7 +30,7 @@ size_t SpawnedPhase::get_count() {
   return count;
 }
 
-void SpawnedPhase::run(ReadyPhase *ready_phase_handler) {
+void SpawnedPhase::run(ReadyPhase *ready_phase_handler, DeviceManager* device_manager) {
   NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -50,10 +47,20 @@ void SpawnedPhase::run(ReadyPhase *ready_phase_handler) {
 
   bool has_task = true;
 
+  has_task = this->get_count() > 0;
   while (has_task) {
+    InnerTask* task = this->spawned_tasks.front_and_pop();
+    for (Device& dev : device_manager->GetAllDevices()) {
+      if (dev.GetID() == dummy_dev_idx_ && dev.GetName().find("CUDA") != std::string::npos) {
+        std::cout << "Task :" << task->name << " is mapped to " << dev.GetName() << "\n";
+        task->SetMappedDevice(&dev);
+        dummy_dev_idx_++;
+        break;
+      }
+    }
 
+    ready_phase_handler->enqueue(task);
     has_task = this->get_count() > 0;
-
     /*
     if (has_task) {
       auto task = this->ready_tasks.front();

@@ -96,6 +96,10 @@ public:
     }
   }
 
+  std::vector<Device>& GetAllDevices() {
+    return registered_devices_;
+  }
+
 private:
   std::vector<Device> registered_devices_;
 };
