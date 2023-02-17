@@ -8,8 +8,8 @@ from .common import containers
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
 
-TaskSpace = containers.TaskSpace
-Tasks = containers.Tasks
+TaskSpace = tasks.TaskSpace
+Tasks = tasks.TaskCollection
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
 

@@ -120,47 +120,51 @@ cdef void callback_stop(void* python_function) nogil:
 #Define the Cython Wrapper Classes
 cdef class PyInnerTask:
     cdef InnerTask* c_task
-    cdef string name #This is a hack to keep the name alive
+    cdef string name
 
     def __cinit__(self):
         cdef InnerTask* _c_task
         _c_task = new InnerTask()
         self.c_task = _c_task
 
-    def __init__(self, long long int idx, object python_task, float vcus):
+    def __init__(self, long long int idx, object python_task):
         cdef InnerTask* _c_task
         _c_task = self.c_task
 
         binlog_1("Task", "Creating task", self)
 
-        if(python_task.taskid is not None):
-            name = python_task.taskid.full_name
-        else:
-            name = python_task.name
-            
-        #name = "test"
-        
-        name = name.encode('utf-8')
-        self.name = name
-        _c_task.set_name(name)
-
         _c_task.set_id(idx)
         _c_task.set_py_task(<void *> python_task)
 
-        priority = 0
-        _c_task.set_priority(priority)
-
-        resource_type = "vcus"
-        resource_type = resource_type.encode('utf-8')
-        _c_task.set_resources(resource_type, vcus)
+    cpdef update_name(self, string name):
+        cdef InnerTask* _c_task = self.c_task
+        self.name = name
+        _c_task.set_name(name)
 
     def __dealloc__(self):
         binlog_0("Task", "Task {} is being deallocated".format(self.name))
         del self.c_task
 
+    cpdef add_priority(self, priority):
+        cdef InnerTask* _c_task = self.c_task
+        cdef int c_priority = priority
+        _c_task.set_priority(c_priority)
+
+    cpdef add_constraints(self, vcus):
+        cdef InnerTask* _c_task = self.c_task
+        resource_type = "vcus"
+        resource_type = resource_type.encode('utf-8')
+        cdef float c_vcus = vcus
+        _c_task.set_resources(resource_type, c_vcus)
+
     cpdef get_py_task(self):
         cdef InnerTask* c_self = self.c_task
         return <object> c_self.get_py_task()
+
+    cpdef set_scheduler(self, PyInnerScheduler scheduler):
+        cdef InnerTask* c_self = self.c_task
+        cdef InnerScheduler* c_scheduler = scheduler.inner_scheduler
+        c_self.set_scheduler(c_scheduler)
 
     cpdef add_dependencies(self, dependency_list, process=True):
         cdef InnerTask* c_self = self.c_task
@@ -174,7 +178,6 @@ cdef class PyInnerTask:
             dependency = d.inner_task
             c_dependency = dependency.c_task
             c_self.queue_dependency(c_dependency)
-
 
         if process:
             with nogil:
@@ -245,8 +248,7 @@ cdef class PyInnerTask:
 
     cpdef set_complete(self):
         cdef InnerTask* c_self = self.c_task
-        cdef bool state = True
-        c_self.set_complete(state)
+        c_self.set_complete()
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -352,6 +354,12 @@ cdef class PyInnerScheduler:
     cpdef activate_wrapper(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.activate_wrapper()
+
+    cpdef spawn_task(self, PyInnerTask task, bool should_enqueue):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        cdef InnerTask* c_task = task.c_task
+
+        c_self.spawn_task(c_task, should_enqueue)
 
     cpdef enqueue_task(self, PyInnerTask task):
         cdef InnerScheduler* c_self = self.inner_scheduler

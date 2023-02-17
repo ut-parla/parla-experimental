@@ -2,7 +2,8 @@ from typing import Awaitable, Collection, Iterable
 from parla.cython import tasks
 
 TaskAwaitTasks = tasks.TaskAwaitTasks
-TaskID = tasks.TaskID
+Task = tasks.ComputeTask
+
 
 class TaskSet(Awaitable, Collection):
 
@@ -73,7 +74,9 @@ def parse_index(prefix, index,  step,  stop):
     else:
         stop(prefix)
 
+
 _task_space_globals = {}
+
 
 class TaskSpace(TaskSet):
 
@@ -87,7 +90,7 @@ class TaskSpace(TaskSet):
         self._id = id(self)
 
         global _task_space_globals
-        _task_space_globals[self._id]  = self
+        _task_space_globals[self._id] = self
 
     def __getitem__(self, index):
 
@@ -96,8 +99,9 @@ class TaskSpace(TaskSet):
         ret = []
 
         parse_index((), index, lambda x, i: x + (i,),
-                    lambda x: ret.append(self._data.setdefault(x, TaskID(self._name, x, self))))
+                    lambda x: ret.append(self._data.setdefault(x, Task(self, x))))
         # print("index ret", ret, flush=True)
+        # self._data.setdefault(x, Task(self, x))
         if len(ret) == 1:
             return ret[0]
         return ret
@@ -107,4 +111,4 @@ class TaskSpace(TaskSet):
 
     def __dealloc__(self):
         print("TaskSpace dealloc", self._name, flush=True)
-        #pass
+        # pass

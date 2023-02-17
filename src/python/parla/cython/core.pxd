@@ -20,6 +20,8 @@ cdef extern from "include/runtime.hpp" nogil:
 
     cdef cppclass InnerTask:
         InnerTask()
+
+        void set_scheduler(InnerScheduler* scheduler)
         void set_name(string name)
         void set_id(long long int i)
         void set_py_task(void *py_task)
@@ -43,7 +45,7 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_blocking_dependencies()
 
         void set_state(int state)
-        void set_complete(bool complete)
+        void set_complete()
         int get_complete()
 
 
@@ -88,6 +90,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void activate_wrapper()
 
+        void spawn_task(InnerTask* task, bool should_enqueue)
         void enqueue_task(InnerTask* task)
         void enqueue_tasks(vector[InnerTask*]& tasks)
 

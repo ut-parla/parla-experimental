@@ -13,9 +13,9 @@ from parla.cython import tasks
 cimport core
 from parla.cython import core
 
-TaskID = tasks.TaskID
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
+TaskSpace = tasks.TaskSpace
 
 from parla.utility import nvtx_tracer
 
@@ -33,8 +33,6 @@ class SchedulerException(RuntimeError):
 class WorkerThreadException(RuntimeError):
     pass
 
-
-#TODO: Unspawned Dependencies need to be rethought and implemented at the C++ level
 
 class _SchedulerLocals(threading.local):
     def __init__(self):
@@ -185,9 +183,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
 
-                        
-
-                        #self.inner_worker.remove_task()
+                    
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         nvtx.pop_range(domain="Python Runtime")
 
@@ -225,6 +221,8 @@ class Scheduler(ControllableThread, SchedulerContext):
         self._monitor = threading.Condition(threading.Lock())
 
         self.exception_stack = []
+
+        self.default_taskspace = TaskSpace("global")
 
         #TODO: Handle resources better
         resources = 1.0
@@ -294,29 +292,13 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         #print("Scheduler: Stopped", flush=True)
 
-    def spawn_task(self, function, args, dependencies, taskid, req, name):
-        nvtx.push_range(message="scheduler::spawn_task", domain="Python Runtime", color="blue")
-        self.inner_scheduler.increase_num_active_tasks()
-        
-        task = ComputeTask(function, args, dependencies, taskid, req, name, scheduler=self)
+    def spawn_task(self, task, should_enqueue=False):
+        self.inner_scheduler.spawn_task(task.inner_task, should_enqueue)
 
-        #TODO(will): Combine these into an InnerScheduler function that doens't need the GIL
-        should_enqueue = task.add_dependencies(task.dependencies)
-
-        if should_enqueue:
-            self.inner_scheduler.enqueue_task(task.inner_task)
-        nvtx.pop_range(domain="Python Runtime")
-
-        #print("Created Task", task.taskid.full_name, should_enqueue, flush=True)
-
-        return task
     
     def assign_task(self, task, worker):
-        #print("Updating task state.", task, worker, flush=True)
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)
-        #print("Assigning Task", task, worker, flush=True)
         worker.assign_task(task)
-        #print("Finished Assigning Task", task, worker, flush=True)
 
     def get_num_notified_workers(self):
         return self.inner_scheduler.get_num_notified_workers()

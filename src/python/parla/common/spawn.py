@@ -1,20 +1,20 @@
-from parla.common import containers
 from parla.cython import scheduler
 from parla.cython import core
+from parla.cython import tasks
+
 from parla.utility import nvtx_tracer
 
 import inspect
 
 from parla.cython import tasks
 
-TaskID = tasks.TaskID
+ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
 
 WorkerThread = scheduler.WorkerThread
 _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
 
-Tasks = containers.Tasks
 nvtx = nvtx_tracer.nvtx_tracer()
 
 Resources = core.Resources
@@ -36,18 +36,24 @@ def _make_cell(val):
 
 
 # @profile
-def spawn(taskid=None,  dependencies=[], vcus=1):
+def spawn(task=None,  dependencies=[], vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
-    if not taskid:
-        taskid = TaskID("global_" + str(len(task_locals.global_tasks)),
-                        (len(task_locals.global_tasks),), None)
 
-        task_locals.global_tasks += [taskid]
+    scheduler = get_scheduler_context().scheduler
+
+    if not isinstance(task, tasks.Task):
+        taskspace = scheduler.default_taskspace
+
+        if task is None:
+            idx = len(taskspace)
+
+        task = taskspace[idx]
 
     # @profile
     def decorator(body):
         nonlocal vcus
-        req = Resources(vcus)
+        nonlocal dependencies
+        nonlocal task
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -60,20 +66,24 @@ def spawn(taskid=None,  dependencies=[], vcus=1):
             separated_body.__kwdefaults__ = body.__kwdefaults__
             separated_body.__module__ = body.__module__
 
-        taskid.dependencies = dependencies
-        processed_dependencies = Tasks(*dependencies)._flat_tasks
+        flattened_dependencies = []
+        tasks.flatten_tasks(dependencies, flattened_dependencies)
 
         scheduler = get_scheduler_context().scheduler
 
-        task = scheduler.spawn_task(function=_task_callback, args=(separated_body,),
-                                    dependencies=processed_dependencies, taskid=taskid,
-                                    req=req, name=getattr(body, "___name__", None))
+        task.set_scheduler(scheduler)
+        should_enqueue = task.instantiate(function=_task_callback,
+                                          args=(separated_body,),
+                                          dependencies=dependencies,
+                                          constraints=vcus)
+
+        scheduler.spawn_task(task, should_enqueue)
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
-        #This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
-        #TODO: Make this an optional flag.
-        if ( (task_locals.spawn_count % 10 == 0) ):
+        # This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
+        # TODO: Make this an optional flag.
+        if ((task_locals.spawn_count % 10 == 0)):
             scheduler.spawn_wait()
         task_locals.spawn_count += 1
 
