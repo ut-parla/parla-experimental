@@ -1,6 +1,8 @@
 import cython
 cimport cython
 
+from parla.cython cimport device
+
 from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -75,7 +77,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
-        InnerScheduler()
+        InnerScheduler(device.DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
         void set_resources(string resource_name, float amount)

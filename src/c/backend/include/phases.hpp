@@ -9,33 +9,65 @@
 //TODO(will): This is a mock implementation of the phases. They may need to be rearranged, renamed, etc. Just a baseline organization.
 
 namespace Spawned{
-
-    enum State { failure, success};
-
+    enum State { failure, task_miss, success };
     class Status{
-        private:
-            const static int size = 2;
-        public:
-            int status[size];
+      private:
+        const static int size = 3;
+      public:
+        int status[size];
+
+        void reset() {
+          for (int i = 0; i < size; ++i) {
+            this->status[i] = 0;
+          }
+        }
+
+        void set(int index, int value) {
+          this->status[index] = value;
+        }
+
+        int get(int index) {
+          return this->status[index];
+        }
+
+        void update(State state) {
+          this->status[state]++;
+        }
+
+        void print() {
+          std::cout << "Ready Status: (";
+          for (int i = 0; i < size; ++i) {
+            std::cout << this->status[i];
+          }
+          std::cout << "\n";
+        }
     };
 }
 
 class SpawnedPhase {
-    public:
-        std::string name = "Spawned Phase";
-        Spawned::Status status;
+  public:
+    std::string name = "Spawned Phase";
+    Spawned::Status status;
 
-        //TODO: Add any counters and internal state here.
+    TaskQueue spawned_tasks;
 
-        SpawnedPhase() = default;
+    //TODO: Add any counters and internal state here.
 
-        /* This is the mapper. It moves stuff from spawned to mapped.*/
-        void run(MappedPhase* ready);
+    SpawnedPhase() = default;
+
+    void enqueue(InnerTask* task);
+    void enqueue(std::vector<InnerTask*>& tasks);
+
+    size_t get_count();
+
+    /* This is the mapper. It moves stuff from spawned to mapped.*/
+    //void run(MappedPhase* ready);
+    void run(ReadyPhase* ready);
 };
 
 namespace Mapped{
 
-    enum State { failure, success};
+    enum State { failure, success };
 
     class Status{
         private:
@@ -141,7 +173,7 @@ class ReadyPhase {
         void set_scheduler(InnerScheduler *scheduler){
             this->scheduler = scheduler;
         }
-        
+
         void enqueue(InnerTask* task);
         void enqueue(std::vector<InnerTask*>& tasks);
 

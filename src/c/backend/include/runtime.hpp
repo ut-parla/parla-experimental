@@ -13,6 +13,7 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
+#include "device.hpp"
 #include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
@@ -509,7 +510,7 @@ public:
   SpawnedPhase* spawned_phase;
   MappedPhase* mapped_phase;
 
-  InnerScheduler();
+  InnerScheduler(DeviceManager* device_manager);
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
@@ -599,6 +600,9 @@ public:
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
   void spawn_wait();
+
+private:
+  DeviceManager* device_manager_;
 };
 
 #endif // PARLA_BACKEND_HPP

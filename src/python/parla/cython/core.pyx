@@ -315,7 +315,7 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* _inner_scheduler
         cdef device.DeviceManager* _cpp_device_manager = <device.DeviceManager*> cy_device_manager.get_cpp_device_manager()
 
-        _inner_scheduler = new InnerScheduler()
+        _inner_scheduler = new InnerScheduler(_cpp_device_manager)
         self.inner_scheduler = _inner_scheduler
 
     def __init__(self, device.CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
