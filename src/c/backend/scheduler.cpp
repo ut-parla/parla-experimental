@@ -193,6 +193,17 @@ Scheduler::Status InnerScheduler::activate() {
 
 void InnerScheduler::activate_wrapper() { this->activate(); }
 
+void InnerScheduler::spawn_task(InnerTask *task, bool should_enqueue) {
+  LOG_INFO(SCHEDULER, "Spawning task: {}", task);
+  NVTX_RANGE("Scheduler::spawn_task", NVTX_COLOR_RED)
+  this->increase_num_active_tasks();
+  task->set_state(Task::spawned);
+
+  if (should_enqueue) {
+    this->enqueue_task(task);
+  }
+}
+
 void InnerScheduler::enqueue_task(InnerTask *task) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
@@ -220,6 +231,8 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
+
+  // TODO: Rethink this. Need to split and have better state names
 
   // std::cout << "Task Cleanup: " << task->name << " " << state << std::endl;
 
@@ -255,7 +268,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     }
   }
 
-  if (state == Task::complete) {
+  if (state == Task::dispatched) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
 
@@ -275,6 +288,9 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // We also need to decrease the number of active tasks
     // If this is the last active task, the scheduler is stopped
     this->decrease_num_active_tasks();
+    
+    //TODO: Move this when we do runahead
+    task->set_state(Task::completed);
   }
 
   // TODO: for runahead, we need to do this AFTER the task body is complete
@@ -283,14 +299,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   this->resources->increase(task->resources);
   this->enqueue_worker(worker);
 
-  // NOTE: Task::complete is NOT equivalent to task->complete
-  // Task->complete:
-  //      - only signals that notify_dependencies has been completed
-  //      - Has a valid state for use in dependency handling
-
-  // Task::complete:
-  //     - signals that the task has finished everything
-  task->set_state(state);
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }

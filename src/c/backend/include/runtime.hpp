@@ -122,14 +122,15 @@ enum State {
   reserved = 3,
   ready = 4,
   running = 5,
-  complete = 6
+  dispatched = 6,
+  completed = 7
 };
 
 } // namespace Task
 
 #ifdef PARLA_ENABLE_LOGGING
 BINLOG_ADAPT_ENUM(Task::State, created, spawned, mapped, reserved, ready,
-                  running, complete)
+                  running, dispatched, completed)
 #endif
 
 /**
@@ -153,11 +154,26 @@ public:
   /* Status of the task */
   std::atomic<Task::State> state{Task::created};
 
+  /* Reference to the scheduler (used for synchronizing state on events) */
+  InnerScheduler *scheduler = nullptr;
+
   /*Task monitor*/
   std::mutex mtx;
 
   /* Whether the task has finished running. */
   std::atomic<bool> complete{false};
+
+  /*Whether the task is ready to run */
+  std::atomic<bool> ready{false};
+
+  /*Whether the task is reservable */
+  std::atomic<bool> reservable{false};
+
+  /*Whether the task is mappable */
+  std::atomic<bool> mappable{false};
+
+  /*Whether the task is spawnable */
+  std::atomic<bool> spawnable{false};
 
   /* Priority of the task. Higher priority tasks are scheduled first. */
   std::atomic<int> priority{0};
@@ -177,11 +193,14 @@ public:
   /* Number of blocking (uncompleted) dependencies */
   std::atomic<int> num_blocking_dependencies{0};
 
-  /* Number of mapped dependencies */
-  std::atomic<int> num_mapped_dependencies{0};
+  /* Number of unspawned dependencies */
+  std::atomic<int> num_unspawned_dependencies{0};
 
-  /* Number of reserved dependencies */
-  std::atomic<int> num_reserved_dependencies{0};
+  /* Number of unmapped dependencies */
+  std::atomic<int> num_unmapped_dependencies{0};
+
+  /* Number of unreserved dependencies */
+  std::atomic<int> num_unreserved_dependencies{0};
 
   /* Tasks Internal Resource Pool. */
   InnerResourcePool<float> resources;
@@ -189,6 +208,9 @@ public:
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
+
+  /* Set the scheduler */
+  void set_scheduler(InnerScheduler *scheduler);
 
   /* Set the name of the task */
   void set_name(std::string name);
@@ -222,14 +244,14 @@ public:
   void clear_dependencies();
 
   /* Add a dependency to the task and process it*/
-  bool add_dependency(InnerTask *task);
+  Task::State add_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
   bool add_dependencies(std::vector<InnerTask *> &tasks);
 
   /* Add a dependent to the task */
-  bool add_dependent(InnerTask *task);
+  Task::State add_dependent(InnerTask *task);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
@@ -287,7 +309,7 @@ public:
   }
 
   /* Set complete */
-  void set_complete(bool complete);
+  void set_complete();
 
   /* Get complete */
   bool get_complete();
@@ -570,6 +592,9 @@ public:
 
   /* Activate wrapper for Python layer (for use as scheduler callback) */
   void activate_wrapper();
+
+  /*Spawn a Task (increment active, set state, possibly enqueue)*/
+  void spawn_task(InnerTask *task, bool should_enqueue);
 
   /* Enqueue task. */
   void enqueue_task(InnerTask *task);

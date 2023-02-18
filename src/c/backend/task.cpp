@@ -25,6 +25,10 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task) {
   this->py_task = py_task;
 }
 
+void InnerTask::set_scheduler(InnerScheduler *scheduler) {
+  this->scheduler = scheduler;
+}
+
 void InnerTask::set_name(std::string name) {
   // std::cout << "Setting name to " << name << std::endl;
   this->name = name;
@@ -56,7 +60,7 @@ void InnerTask::clear_dependencies() {
   this->dependencies.clear();
 }
 
-bool InnerTask::add_dependency(InnerTask *task) {
+Task::State InnerTask::add_dependency(InnerTask *task) {
 
   // Store all added dependencies for bookkeeping
   // I cannot think of a scenario when multiple writers would be adding
@@ -67,18 +71,25 @@ bool InnerTask::add_dependency(InnerTask *task) {
 
   bool dependency_complete = false;
 
-  if (task->add_dependent(this)) {
-    this->num_blocking_dependencies--;
+  Task::State dependent_state = task->add_dependent(this);
 
-    // Return that the dependency was already complete
-    dependency_complete = true;
+  if (dependent_state >= Task::dispatched) {
+    this->num_blocking_dependencies.fetch_sub(1);
+    this->num_unspawned_dependencies.fetch_sub(1);
+    this->num_unmapped_dependencies.fetch_sub(1);
+    this->num_unreserved_dependencies.fetch_sub(1);
+  } else if (dependent_state >= Task::reserved) {
+    this->num_unspawned_dependencies.fetch_sub(1);
+    this->num_unmapped_dependencies.fetch_sub(1);
+    this->num_unreserved_dependencies.fetch_sub(1);
+  } else if (dependent_state >= Task::mapped) {
+    this->num_unspawned_dependencies.fetch_sub(1);
+    this->num_unmapped_dependencies.fetch_sub(1);
+  } else if (dependent_state >= Task::spawned) {
+    this->num_unspawned_dependencies.fetch_sub(1);
   }
 
-  // << "Added dependency " << task->name << " to " << this->name
-  //          << " Status: " << dependency_complete << std::endl;
-
-  // Return the dependency status
-  return dependency_complete;
+  return dependent_state;
 }
 
 bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
@@ -91,27 +102,39 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
   //       unless we change to creating a task object on first taskspace
   //       reference instead of at spawn time. Something to consider.
 
+  // TODO: Change all of this to lock free.
+  //       Handle phase events
+
+  this->num_unspawned_dependencies.store(tasks.size() + 1);
+  this->num_unmapped_dependencies.store(tasks.size() + 1);
+  this->num_unreserved_dependencies.store(tasks.size() + 1);
   this->num_blocking_dependencies.store(tasks.size() + 1);
 
   for (size_t i = 0; i < tasks.size(); i++) {
     this->add_dependency(tasks[i]);
   }
 
-  int before_value = this->num_blocking_dependencies.fetch_sub(1);
-  bool ready_state = before_value == 1;
+  int unspawned_before_value = this->num_unspawned_dependencies.fetch_sub(1);
+  int unmapped_before_value = this->num_unmapped_dependencies.fetch_sub(1);
+  int unreserved_before_value = this->num_unreserved_dependencies.fetch_sub(1);
+  int blocking_before_value = this->num_blocking_dependencies.fetch_sub(1);
 
-  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this, ready_state);
+  bool spawnable = unspawned_before_value == 1;
+  bool mappable = unmapped_before_value == 1;
+  bool reservable = unreserved_before_value == 1;
+  bool ready = blocking_before_value == 1;
 
-  if (before_value == 1) {
-    return true;
-  }
+  this->spawnable = spawnable;
+  this->mappable = mappable;
+  this->reservable = reservable;
+  this->ready = ready;
 
-  return false;
+  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this, ready);
 
-  // If true, this task is ready to run. Launching must be handled
+  return ready;
+
+  // If true, this task is ready to launch. Launching must be handled
   // Otherwise launching will be handled by another task's notify_dependents
-
-  // return ready_state;
 }
 
 /*
@@ -143,7 +166,7 @@ bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
  *    I am sure there is a better implementation of this.
  */
 
-bool InnerTask::add_dependent(InnerTask *task) {
+Task::State InnerTask::add_dependent(InnerTask *task) {
 
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
@@ -158,18 +181,12 @@ bool InnerTask::add_dependent(InnerTask *task) {
   //       run yet.
   this->dependents.lock();
 
-  bool state = this->complete;             // s1
+  Task::State state = this->get_state();   // s1
   this->dependents.push_back_unsafe(task); // s3
 
   this->dependents.unlock();
 
-  if (state) {
-    // Dependency was already complete, so we need to decrement the dependency
-    // count
-    return true;
-  }
-  // Dependency was not complete before adding to dependents list.
-  return false;
+  return state;
 }
 
 std::vector<InnerTask *> &
@@ -198,7 +215,7 @@ InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
     }
   }
 
-  this->set_complete(true);
+  this->set_state(Task::dispatched);
   this->dependents.unlock();
 
   // std::cout << "Notified dependents of " << this->name << ". Ready tasks: "
@@ -216,14 +233,24 @@ bool InnerTask::notify_dependents_wrapper() {
 }
 
 bool InnerTask::notify() {
-  int remaining = this->num_blocking_dependencies.fetch_sub(1) - 1;
+  // TODO: Improve this. This has *lots* of problems for building the rest of
+  // the phases.
+  int remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1) - 1;
+  int reminaint_unmapped = this->num_unmapped_dependencies.fetch_sub(1) - 1;
+  int remaining_unreserved = this->num_unreserved_dependencies.fetch_sub(1) - 1;
+  int remaining_blocking = this->num_blocking_dependencies.fetch_sub(1) - 1;
 
-  if (remaining == 0) {
-    // This task is now ready to run
-    return true;
-  }
-  // This task has more dependencies to wait on
-  return false;
+  bool spawnable = remaining_unspawned == 0;
+  bool mappable = reminaint_unmapped == 0;
+  bool reservable = remaining_unreserved == 0;
+  bool ready = remaining_blocking == 0;
+
+  this->spawnable = spawnable;
+  this->mappable = mappable;
+  this->reservable = reservable;
+  this->ready = ready;
+
+  return ready;
 }
 
 bool InnerTask::blocked() { return this->num_blocking_dependencies.load() > 0; }
@@ -268,6 +295,9 @@ void InnerTask::set_state(int state) {
 
 void InnerTask::set_state(Task::State state) { this->state.store(state); }
 
-void InnerTask::set_complete(bool complete) { this->complete.store(complete); }
+void InnerTask::set_complete() {
+  this->set_state(Task::completed);
+  this->complete = true;
+}
 
 bool InnerTask::get_complete() { return this->complete.load(); }

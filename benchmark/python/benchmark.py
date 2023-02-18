@@ -9,7 +9,6 @@ from parla.utility.graphs import shuffle_tasks
 from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time
 from parla.utility.execute import GraphContext
 
-
 @benchmark.register(name="SerialScaling")
 @benchmark.option.range_multiplier(2)
 @benchmark.option.range(1, 8)
@@ -73,7 +72,6 @@ def independent_scaling(state):
             timing = g.run(run_config, max_time=max_time)
 
         state.set_iteration_time(timing.mean)
-
 
 if __name__ == "__main__":
     benchmark.main()
