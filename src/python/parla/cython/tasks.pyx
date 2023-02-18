@@ -450,7 +450,8 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
-            if (lower_boundary <= i) and (upper_boundary >= 0) and (i < upper_boundary):
+            print(prefix, i, lower_boundary, upper_boundary)
+            if (lower_boundary <= i) and ( (upper_boundary < 0) or (i < upper_boundary) ):
                 cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
         else:
             cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
@@ -550,11 +551,25 @@ class TaskSpace(TaskCollection):
         create = self._create
         tasks = self._tasks
 
-        if isinstance(index, int) or isinstance(index, str):
+        if isinstance(index, int):
+            start_flag = (self.start is not None)
+            shape_flag = (self.shape is not None)
+            lower_boundary = self.start[0] if start_flag else 0
+            upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
+            print(index, lower_boundary, upper_boundary)
+            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
+            task_list = get_or_create_tasks(self, idx, create=create)
+
+            if len(task_list) == 1:
+                return task_list[0]
+            return task_list
+
+        if isinstance(index, str):
             task_list = get_or_create_tasks(self, [(index,)], create=create)
             if len(task_list) == 1:
                 return task_list[0]
             return task_list
+
 
         if not isinstance(index, tuple):
             index = (index,)

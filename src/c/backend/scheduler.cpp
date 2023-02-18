@@ -302,7 +302,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   worker->remove_task();
   this->resources->increase(task->resources);
   this->enqueue_worker(worker);
-  // task->set_state(state);
+  task->set_state(Task::completed);
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }

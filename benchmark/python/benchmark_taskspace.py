@@ -4,7 +4,7 @@ import google_benchmark as benchmark
 from parla.cython import tasks as cy_tasks
 from parla.common.containers import TaskSpace
 flag = True
-n=10
+n=1000
 
 @benchmark.register(name="Create Tasks Python")
 def test(state):
