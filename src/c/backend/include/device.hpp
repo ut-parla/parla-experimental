@@ -89,6 +89,7 @@ public:
   void RegisterDevice(Device* new_dev);
 
   void PrintRegisteredDevices() {
+    std::cout << "C++ device list:\n";
     for (size_t d = 0; d < registered_devices_.size(); ++d) {
       Device& dev = registered_devices_[d];
       std::cout << "[" << dev.GetName() << "] mem. sz:" <<

@@ -40,7 +40,7 @@ class Parla:
         self.kwds = kwds
         self.sig = sig_type
         self.device_manager = DeviceManager()
-
+        # TODO(hc): It might be necessary to return this to users?
         self.device_manager.print_registered_devices()
 
         if logfile is None:
