@@ -219,8 +219,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 class Scheduler(ControllableThread, SchedulerContext):
 
-    def __init__(self, n_threads=6, period=0.001):
+    def __init__(self, device_manager, n_threads=6, period=0.001):
         super().__init__()
+
+        self.device_manager = device_manager
 
         self.start_monitor = threading.Condition(threading.Lock())
 
@@ -231,7 +233,8 @@ class Scheduler(ControllableThread, SchedulerContext):
         #TODO: Handle resources better
         resources = 1.0
 
-        self.inner_scheduler = PyInnerScheduler(n_threads, resources, self)
+        cy_device_manager = self.device_manager.get_cy_device_manager()
+        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
