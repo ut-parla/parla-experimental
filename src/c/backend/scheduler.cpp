@@ -119,7 +119,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler() {
+InnerScheduler::InnerScheduler(DeviceManager* device_manager) : device_manager_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -130,6 +130,8 @@ InnerScheduler::InnerScheduler() {
 
   // Initialize the phases
   this->ready_phase = new ReadyPhase(this);
+  this->spawned_phase = new SpawnedPhase();
+  this->mapped_phase = new MappedPhase();
   this->launcher = new LauncherPhase(this);
   this->resources = new InnerResourcePool<float>();
   // TODO: Clean these up
@@ -176,7 +178,10 @@ void InnerScheduler::stop() {
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-  // this->spawned_phase->run(this->mapped_phase);
+  // TODO(hc): the param should be mapped phase but use ready phase
+  // for debugging.
+  //this->spawned_phase->run(this->mapped_phase);
+  this->spawned_phase->run(this->ready_phase, device_manager_);
   // this->mapped_phase->run(this->reserved_phase);
   // this->reserved_phase->run(this->ready_phase);
   this->ready_phase->run(this->launcher);
@@ -191,12 +196,14 @@ void InnerScheduler::activate_wrapper() { this->activate(); }
 void InnerScheduler::enqueue_task(InnerTask *task) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  this->ready_phase->enqueue(task);
+  //this->ready_phase->enqueue(task);
+  this->spawned_phase->enqueue(task);
 }
 
 void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
   LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  this->ready_phase->enqueue(tasks);
+  //this->ready_phase->enqueue(tasks);
+  this->spawned_phase->enqueue(tasks);
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {

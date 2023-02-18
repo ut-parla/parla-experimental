@@ -4,6 +4,7 @@ import signal
 from .cython import tasks
 from .cython import scheduler
 from .cython import core
+from .cython import device
 from .common.spawn import spawn
 
 from .common import containers
@@ -14,8 +15,10 @@ sleep_nogil = core.cpu_bsleep_nogil
 TaskSpace = containers.TaskSpace
 Tasks = containers.Tasks
 
-__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
-           'sleep_nogil', 'Tasks', 'parla_num_threads']
+DeviceManager = device.PyDeviceManager
+
+__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
+
 
 
 def signal_handler(signal, frame):
@@ -39,7 +42,12 @@ class Parla:
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
+
         self.handle_interrupt = True
+
+        self.device_manager = DeviceManager()
+        # TODO(hc): It might be necessary to return this to users?
+        self.device_manager.print_registered_devices()
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
@@ -58,7 +66,7 @@ class Parla:
         if hasattr(self, "_sched"):
             raise ValueError(
                 "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(**self.kwds)
+        self._sched = self.scheduler_class(self.device_manager, **self.kwds)
 
         self.interuppted = False
         self.released = False
@@ -99,5 +107,5 @@ class Parla:
             pass
         finally:
             self.released = True
-
             return True
+

@@ -15,6 +15,7 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
+#include "device.hpp"
 #include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
@@ -290,6 +291,21 @@ public:
 
   /* Get complete */
   bool get_complete();
+
+  /// TODO(hc): move these to cpp.
+  /// TODO(hc): Camel or snake case?
+  void SetMappedDevice(Device* dev) {
+    assert(mapped_device_ == NULL);
+    mapped_device_ = dev;
+  }
+
+  const Device& GetMappedDevice() {
+    assert(mapped_device_ != NULL);
+    return *mapped_device_;
+  }
+
+private:
+  Device* mapped_device_;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -511,7 +527,10 @@ public:
   /*Responsible for launching a task. Holds python launch callback*/
   LauncherPhase *launcher;
 
-  InnerScheduler();
+  SpawnedPhase* spawned_phase;
+  MappedPhase* mapped_phase;
+
+  InnerScheduler(DeviceManager* device_manager);
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
@@ -601,6 +620,9 @@ public:
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
   void spawn_wait();
+
+private:
+  DeviceManager* device_manager_;
 };
 
 #endif // PARLA_BACKEND_HPP

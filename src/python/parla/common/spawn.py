@@ -1,7 +1,8 @@
 from parla.common import containers
 from parla.cython import scheduler
 from parla.cython import core
-from parla.utility import nvtx_tracer
+from parla.utility.tracer import NVTXTracer
+
 
 import inspect
 
@@ -15,7 +16,10 @@ _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
 
 Tasks = containers.Tasks
-nvtx = nvtx_tracer.nvtx_tracer()
+
+nvtx = NVTXTracer
+nvtx.initialize()
+
 
 Resources = core.Resources
 
@@ -71,9 +75,9 @@ def spawn(taskid=None,  dependencies=[], vcus=1):
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
-        #This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
-        #TODO: Make this an optional flag.
-        if ( (task_locals.spawn_count % 10 == 0) ):
+        # This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
+        # TODO: Make this an optional flag.
+        if ((task_locals.spawn_count % 10 == 0)):
             scheduler.spawn_wait()
         task_locals.spawn_count += 1
 
