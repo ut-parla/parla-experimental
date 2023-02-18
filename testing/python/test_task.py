@@ -124,8 +124,8 @@ def test_dependency_notify_parallel(n_deps):
         status = A.add_dependencies(dependency_list)
         status_list.append(status)
 
-    thread1 = Propogate(target=notify_task, args=(notify_status_list,))
-    thread2 = Propogate(target=create_task, args=(create_status_list,))
+    thread1 = Propagate(target=notify_task, args=(notify_status_list,))
+    thread2 = Propagate(target=create_task, args=(create_status_list,))
 
     thread1.start()
     thread2.start()

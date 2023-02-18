@@ -17,8 +17,6 @@ _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
 
 
-Tasks = containers.Tasks
-
 nvtx = NVTXTracer
 nvtx.initialize()
 
