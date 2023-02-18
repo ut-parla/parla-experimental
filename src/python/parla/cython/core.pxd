@@ -112,7 +112,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
 
 cdef extern from "include/profiling.hpp" nogil:
-
+    void initialize_log(string filename)
     void write_log(string filename)
 
     void log_task_msg(int t, string msg)

@@ -8,7 +8,7 @@ local:
 	python setup.py build_ext --inplace
 
 test: local
-	. unittests/run_tests.sh
+	. testing/run_tests.sh
 
 
 

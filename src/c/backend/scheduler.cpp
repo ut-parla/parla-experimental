@@ -1,5 +1,12 @@
 #include "include/phases.hpp"
 #include "include/runtime.hpp"
+#include <new>
+
+#ifdef PARLA_ENABLE_LOGGING
+namespace binlog {
+int global_reset_count = 0;
+}
+#endif
 
 // Worker Implementation
 
@@ -240,6 +247,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     //  - make sure state ids match
     //  - add and process dependencies
     //  - if true, enqueue task
+    task->instance++;
     bool status = task->process_dependencies();
 
     if (status) {
@@ -282,7 +290,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   // Task::complete:
   //     - signals that the task has finished everything
-
   task->set_state(state);
 }
 

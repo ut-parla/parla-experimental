@@ -65,10 +65,10 @@ add_subdirectory(src/c/backend)
 add_subdirectory(src/python/parla)
 
 if(PARLA_BUILD_TESTS)
-    add_subdirectory(unittests)
+    add_subdirectory(testing)
 endif(PARLA_BUILD_TESTS)
 
-set(test_path_file ${CMAKE_SOURCE_DIR}/unittests/run_tests.sh)
-file(WRITE ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/unittests\n")
+set(test_path_file ${CMAKE_SOURCE_DIR}/testing/run_tests.sh)
+file(WRITE ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/testing\n")
 file(APPEND ${test_path_file} "py.test $PARLA_TESTS\n")
 file(APPEND ${test_path_file} "ctest --test-dir $PARLA_TESTS\n")
