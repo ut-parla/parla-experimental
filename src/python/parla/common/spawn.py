@@ -1,8 +1,9 @@
 from parla.cython import scheduler
 from parla.cython import core
-from parla.cython import tasks
 
-from parla.utility import nvtx_tracer
+from parla.cython import tasks
+from parla.utility.tracer import NVTXTracer
+
 
 import inspect
 
@@ -15,7 +16,11 @@ WorkerThread = scheduler.WorkerThread
 _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
 
-nvtx = nvtx_tracer.nvtx_tracer()
+
+Tasks = containers.Tasks
+
+nvtx = NVTXTracer
+nvtx.initialize()
 
 Resources = core.Resources
 

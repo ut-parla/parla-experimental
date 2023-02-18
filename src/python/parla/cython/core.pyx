@@ -1,5 +1,6 @@
 import cython 
 
+from parla.cython cimport device
 
 #Logging functions
 
@@ -13,6 +14,10 @@ LOG_FATAL = 5
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
     write_log(fname)
+
+cpdef py_init_log(filename):
+    fname = filename.encode('utf-8')
+    initialize_log(fname)
 
 cpdef _log_task(logging_level, category, message, PyInnerTask obj):
     cdef InnerTask* _inner = <InnerTask*> obj.c_task
@@ -312,12 +317,14 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
-    def __cinit__(self):
+    def __cinit__(self, device.CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
-        _inner_scheduler = new InnerScheduler()
+        cdef device.DeviceManager* _cpp_device_manager = <device.DeviceManager*> cy_device_manager.get_cpp_device_manager()
+
+        _inner_scheduler = new InnerScheduler(_cpp_device_manager)
         self.inner_scheduler = _inner_scheduler
 
-    def __init__(self, int num_workers, float vcus, object python_scheduler):
+    def __init__(self, device.CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 

@@ -3,26 +3,11 @@ import time
 import threading
 import pytest
 from parla.cython import tasks
+from parla.utility.execute import Propagate
+
 Task = tasks.Task
 
 dep_count = [1, 10, 100]
-
-
-class Propogate(threading.Thread):
-    def __init__(self, target, args):
-        super().__init__(target=target, args=args)
-        self.ex = None
-
-    def run(self):
-        try:
-            self._target(self._args[0])
-        except BaseException as e:
-            self.ex = e
-
-    def join(self):
-        super().join()
-        if self.ex is not None:
-            raise self.ex
 
 
 def test_task_creation():

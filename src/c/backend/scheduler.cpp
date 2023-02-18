@@ -1,5 +1,12 @@
 #include "include/phases.hpp"
 #include "include/runtime.hpp"
+#include <new>
+
+#ifdef PARLA_ENABLE_LOGGING
+namespace binlog {
+int global_reset_count = 0;
+}
+#endif
 
 // Worker Implementation
 
@@ -95,14 +102,10 @@ int WorkerPool<AllWorkers_t, ActiveWorkers_t>::increase_num_notified_workers() {
   int before = this->notified_workers.fetch_add(1);
   return before;
 }
+
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 int WorkerPool<AllWorkers_t, ActiveWorkers_t>::decrease_num_notified_workers() {
   int before = this->notified_workers.fetch_sub(1);
-  this->cv.notify_all();
-  // if ((before - 1) == 0) {
-  //  std::cout << "Notifying waiting spawns: " << before << std::endl;
-  //  this->cv.notify_all();
-  //}
   return before;
 }
 
@@ -110,31 +113,13 @@ template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::spawn_wait() {
 
   std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
-
-  // std::unique_lock<std::mutex> lck(mtx);
-
-  // auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100),
-  // [this]{
-  //         return this->get_num_notified_workers() < 1;
-  //         });
-
-  // while(this->get_num_notified_workers()>0){
-  //
-  //   }
-  //  std::unique_lock<std::mutex> lck(mtx);
-  //  auto status = this->cv.wait_for(lck, std::chrono::milliseconds(100),
-  //  [this]
-  //  {
-  //   return this->get_num_notified_workers() < 1;
-  // });
-  //  std::cout << "Spawn wait status: " << status << std::endl;
 }
 
 template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler() {
+InnerScheduler::InnerScheduler(DeviceManager* device_manager) : device_manager_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -145,6 +130,8 @@ InnerScheduler::InnerScheduler() {
 
   // Initialize the phases
   this->ready_phase = new ReadyPhase(this);
+  this->spawned_phase = new SpawnedPhase();
+  this->mapped_phase = new MappedPhase();
   this->launcher = new LauncherPhase(this);
   this->resources = new InnerResourcePool<float>();
   // TODO: Clean these up
@@ -191,7 +178,10 @@ void InnerScheduler::stop() {
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-  // this->spawned_phase->run(this->mapped_phase);
+  // TODO(hc): the param should be mapped phase but use ready phase
+  // for debugging.
+  //this->spawned_phase->run(this->mapped_phase);
+  this->spawned_phase->run(this->ready_phase, device_manager_);
   // this->mapped_phase->run(this->reserved_phase);
   // this->reserved_phase->run(this->ready_phase);
   this->ready_phase->run(this->launcher);
@@ -217,12 +207,14 @@ void InnerScheduler::spawn_task(InnerTask *task, bool should_enqueue) {
 void InnerScheduler::enqueue_task(InnerTask *task) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  this->ready_phase->enqueue(task);
+  //this->ready_phase->enqueue(task);
+  this->spawned_phase->enqueue(task);
 }
 
 void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
   LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  this->ready_phase->enqueue(tasks);
+  //this->ready_phase->enqueue(tasks);
+  this->spawned_phase->enqueue(tasks);
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {
@@ -268,6 +260,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     //  - make sure state ids match
     //  - add and process dependencies
     //  - if true, enqueue task
+    task->instance++;
     bool status = task->process_dependencies();
 
     if (status) {
@@ -295,6 +288,9 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // We also need to decrease the number of active tasks
     // If this is the last active task, the scheduler is stopped
     this->decrease_num_active_tasks();
+    
+    //TODO: Move this when we do runahead
+    task->set_state(Task::completed);
   }
 
   // TODO: for runahead, we need to do this AFTER the task body is complete
@@ -302,7 +298,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   worker->remove_task();
   this->resources->increase(task->resources);
   this->enqueue_worker(worker);
-  task->set_state(Task::completed);
+
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }

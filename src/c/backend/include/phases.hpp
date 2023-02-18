@@ -9,33 +9,64 @@
 //TODO(will): This is a mock implementation of the phases. They may need to be rearranged, renamed, etc. Just a baseline organization.
 
 namespace Spawned{
-
-    enum State { failure, success};
-
+    enum State { failure, task_miss, success };
     class Status{
-        private:
-            const static int size = 2;
-        public:
-            int status[size];
+      private:
+        const static int size = 3;
+      public:
+        int status[size];
+
+        void reset() {
+          for (int i = 0; i < size; ++i) {
+            this->status[i] = 0;
+          }
+        }
+
+        void set(int index, int value) {
+          this->status[index] = value;
+        }
+
+        int get(int index) {
+          return this->status[index];
+        }
+
+        void update(State state) {
+          this->status[state]++;
+        }
+
+        void print() {
+          std::cout << "Ready Status: (";
+          for (int i = 0; i < size; ++i) {
+            std::cout << this->status[i];
+          }
+          std::cout << "\n";
+        }
     };
 }
 
 class SpawnedPhase {
-    public:
-        std::string name = "Spawned Phase";
-        Spawned::Status status;
+  public:
+    SpawnedPhase() : dummy_dev_idx_{0} {}
 
-        //TODO: Add any counters and internal state here.
+    void enqueue(InnerTask* task);
+    void enqueue(std::vector<InnerTask*>& tasks);
 
-        SpawnedPhase() = default;
+    size_t get_count();
 
-        /* This is the mapper. It moves stuff from spawned to mapped.*/
-        void run(MappedPhase* ready);
+    /* This is the mapper. It moves stuff from spawned to mapped.*/
+    //void run(MappedPhase* ready);
+    void run(ReadyPhase* ready, DeviceManager* device_manager);
+
+  private:
+    std::string name = "Spawned Phase";
+    Spawned::Status status;
+    TaskQueue spawned_tasks;
+    uint64_t dummy_dev_idx_;
 };
 
 namespace Mapped{
 
-    enum State { failure, success};
+    enum State { failure, success };
 
     class Status{
         private:
@@ -141,7 +172,7 @@ class ReadyPhase {
         void set_scheduler(InnerScheduler *scheduler){
             this->scheduler = scheduler;
         }
-        
+
         void enqueue(InnerTask* task);
         void enqueue(std::vector<InnerTask*>& tasks);
 

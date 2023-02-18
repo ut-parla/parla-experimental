@@ -161,6 +161,7 @@ public:
 
   T front_unsafe() { return this->vec.front(); }
 
+  // TODO(hc): I think this can be just called "pop"
   T front_and_pop() {
     this->mtx.lock();
     T val = this->front_unsafe();
