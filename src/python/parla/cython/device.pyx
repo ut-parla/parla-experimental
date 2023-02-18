@@ -2,6 +2,7 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
+from parla.common.global_enums import DeviceType 
 
 cdef class CyDeviceManager:
     """
@@ -75,7 +76,8 @@ class PyDevice:
     This class is to abstract a single device in Python and manages
     a device context as a task runs in Python.
     """
-    def __init__(self, dev_type_name, dev_id: int):
+    def __init__(self, dev_type, dev_type_name, dev_id: int):
+        self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         print(f"Device: {self._device_name} is registered.", flush=True)
 
@@ -105,7 +107,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
-        super().__init__("CUDA", dev_id)
+        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vucs, self)
 
 
@@ -114,7 +116,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
-        super().__init__("CPU", dev_id)
+        super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vucs, self)
 
 
