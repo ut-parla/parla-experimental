@@ -3,22 +3,10 @@ from parla.cython.device import CyDevice, PyCUDADevice, PyCPUDevice
 from parla.cython.device cimport Device
 
 import nvidia_smi
+import os
+import psutil
 
-def get_cuda_device_info():
-    nvidia_smi.nvmlInit()
-    num_of_gpus = nvidia_smi.nvmlDeviceGetCount()
-    print("Number of GPUs:", num_of_gpus)
-    if num_of_gpus > 0:
-        for i in range(num_of_gpus):
-            handle = nvidia_smi.nvmlDeviceGetHandleByIndex(i)
-            mem_info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-            print(f"GPU-{i}: GPU-Memory: {mem_info.used}/{mem_info.total} Bytes")
-            dev_name = nvidia_smi.nvmlDeviceGetName(handle).decode("utf-8")
-            print(f"Device name: {dev_name}")
-
-
-get_cuda_device_info()
-
+VCU_BASELINE=1000
 
 cdef class CyDeviceManager:
     """
@@ -56,33 +44,43 @@ class PyDeviceManager:
     def __init__(self, config = None):
         self.cy_device_manager = CyDeviceManager()
         self.py_registered_devices = []
+        # TODO(hc): pack those config. to a data class.
         if config == None:
-            # For now, use hand-written device specs and register devices.
-            # TODO(hc): query to OS or get configuration from users.
-            # TODO(hc): pack those config. to a data class.
-            self.register_cuda_device(0, 16000000000, 1)
-            self.register_cuda_device(1, 16000000000, 1)
-            self.register_cuda_device(2, 16000000000, 1)
-            self.register_cuda_device(3, 16000000000, 1)
-            self.register_cpu_device(0, 190000000000, 1)
- 
-    def register_cuda_device(self, dev_id: int, mem_sz: int, num_vcus: int):
-        """
-        Register a CUDA device to the both Python/C++ runtime.
-        """
-        py_cuda_device = PyCUDADevice(dev_id, mem_sz, num_vcus)
-        self.py_registered_devices.append(py_cuda_device)
-        cy_cuda_device = py_cuda_device.get_cy_device()
-        self.cy_device_manager.register_device(cy_cuda_device)
+            self.register_cuda_devices_nvidia_smi()
+            self.register_cpu_devices()
+            self.register_devices_to_cpp()
 
-    def register_cpu_device(self, dev_id: int, mem_sz: int, num_vcus: int):
-        """
-        Register a CPU device to the both Python/C++ runtime.
-        """
-        py_cpu_device = PyCPUDevice(dev_id, mem_sz, num_vcus)
+    def register_cuda_devices_nvidia_smi(self):
+        nvidia_smi.nvmlInit()
+        num_of_gpus = nvidia_smi.nvmlDeviceGetCount()
+        print("Number of GPUs:", num_of_gpus)
+        if num_of_gpus > 0:
+            for dev_id in range(num_of_gpus):
+                handle = nvidia_smi.nvmlDeviceGetHandleByIndex(dev_id)
+                mem_info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
+                print(f"GPU-{dev_id}: GPU-Memory: {mem_info.used}/{mem_info.total} Bytes")
+                dev_name = nvidia_smi.nvmlDeviceGetName(handle).decode("utf-8")
+                print(f"Device name: {dev_name}")
+                mem_sz = float(mem_info.total)
+                py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
+                self.py_registered_devices.append(py_cuda_device)
+
+    def register_cpu_devices(self):
+        # Get the number of usable CPUs from this process.
+        # This might not be equal to the number of CPUs in the system.
+        num_cores = len(os.sched_getaffinity(0))
+        mem_sz = float(psutil.virtual_memory().total)
+        print(f"Number of CPU cores: {num_cores}, and memory size: {mem_sz} B", flush=True)
+        py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
         self.py_registered_devices.append(py_cpu_device)
-        cy_cpu_device = py_cpu_device.get_cy_device()
-        self.cy_device_manager.register_device(cy_cpu_device)
+
+    def register_devices_to_cpp(self):
+        """
+        Register devices to the both Python/C++ runtime.
+        """
+        for py_device in self.py_registered_devices:
+            cy_device = py_device.get_cy_device()
+            self.cy_device_manager.register_device(cy_device)
 
     def print_registered_devices(self):
         for dev in self.py_registered_devices:
