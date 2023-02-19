@@ -26,6 +26,7 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
+# TODO(hc): Should this be separated from device manager information?
 parla_num_threads = os.environ.get("PARLA_NUM_THREADS", None)
 if parla_num_threads is None:
     import psutil
@@ -36,17 +37,16 @@ else:
 
 class Parla:
 
-    def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, n_workers=None, **kwds):
+    def __init__(self, scheduler_class=scheduler.Scheduler,
+                 sig_type=signal.SIGINT, logfile=None, n_workers=None, \
+                 dev_config_file=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
 
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
-
         self.handle_interrupt = True
-
-        self.device_manager = DeviceManager()
-        # TODO(hc): It might be necessary to return this to users?
+        self.device_manager = DeviceManager(dev_config_file)
         self.device_manager.print_registered_devices()
 
         if logfile is None:

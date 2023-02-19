@@ -1,0 +1,15 @@
+CPU:
+  # The number of CPU cores available.
+  num_cores: !!int 48
+  # Available CPU DRAM size in bytes.
+  mem_sz: !!float 180000000
+
+# For now, consider GPU as CUDA GPU.
+GPU:
+  # The number of GPU devices.
+  num_devices: 4
+  # Available memory size for each GPU.
+  # This should be a list type and its
+  # dimension should match with the number
+  # of vcus.
+  mem_sz: [ !!float 11000000, !!float 11000000, !!float 11000000, !!float 11000000 ]

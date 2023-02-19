@@ -1,7 +1,13 @@
+import argparse
+
 from parla import Parla, spawn, TaskSpace, sleep_nogil
 # from sleep.core import bsleep
 
 bsleep = sleep_nogil
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-dev_config", type=str)
+args = parser.parse_args()
 
 def main(T):
 
@@ -30,6 +36,6 @@ def main(T):
 
 
 if __name__ == "__main__":
-    with Parla():
+    with Parla(dev_config_file=args.dev_config):
         T = TaskSpace("T")
         main(T)

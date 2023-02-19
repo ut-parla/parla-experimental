@@ -31,7 +31,6 @@ class NVTXTracer:
     @staticmethod
     def push_range(message=None, color="blue", domain=None):
         nvtx = NVTXTracer.nvtx
-        print(nvtx)
         if nvtx is not None:
             nvtx.push_range(message, color, domain)
 

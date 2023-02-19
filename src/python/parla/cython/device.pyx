@@ -54,7 +54,6 @@ class PyDevice:
     def __init__(self, dev_type, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
-        print(f"Device: {self._device_name} is registered.", flush=True)
 
     def __enter__(self):
         print(f"Entered device, {self.get_name()}, context", flush=True)
