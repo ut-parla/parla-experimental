@@ -4,7 +4,7 @@ import signal
 from .cython import tasks
 from .cython import scheduler
 from .cython import core
-from .cython import device
+from .cython import device_manager
 from .common.spawn import spawn
 
 from .common import containers
@@ -15,7 +15,7 @@ sleep_nogil = core.cpu_bsleep_nogil
 TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 
-DeviceManager = device.PyDeviceManager
+DeviceManager = device_manager.PyDeviceManager
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
 
