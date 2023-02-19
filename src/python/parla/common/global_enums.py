@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import IntEnum
 
-class DeviceType(Enum):
+class DeviceType(IntEnum):
     """
     This class declares device types.
     These types are declared for the general purpose

@@ -26,7 +26,6 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
-# TODO(hc): Should this be separated from device manager information?
 parla_num_threads = os.environ.get("PARLA_NUM_THREADS", None)
 if parla_num_threads is None:
     import psutil

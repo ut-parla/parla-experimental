@@ -2,7 +2,7 @@ from parla.common.global_dataclasses import DeviceConfig
 from parla.cython.device import CyDevice, PyCUDADevice, PyCPUDevice
 from parla.cython.device cimport Device
 
-import nvidia_smi
+import cupy
 import os
 import psutil
 import yaml
@@ -47,21 +47,20 @@ class PyDeviceManager:
         self.py_registered_devices = []
         # TODO(hc): pack those config. to a data class.
         if dev_config == None or dev_config == "":
-            self.register_cuda_devices_nvidia_smi()
+            self.register_cuda_devices_cupy()
             self.register_cpu_devices()
         else:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
 
-    def register_cuda_devices_nvidia_smi(self):
-        nvidia_smi.nvmlInit()
-        num_of_gpus = nvidia_smi.nvmlDeviceGetCount()
+    def register_cuda_devices_cupy(self):
+        num_of_gpus = cupy.cuda.runtime.getDeviceCount()
         if num_of_gpus > 0:
             for dev_id in range(num_of_gpus):
-                handle = nvidia_smi.nvmlDeviceGetHandleByIndex(dev_id)
-                mem_info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-                dev_name = nvidia_smi.nvmlDeviceGetName(handle).decode("utf-8")
-                mem_sz = float(mem_info.total)
+                gpu_dev = cupy.cuda.Device(dev_id)
+                mem_info = gpu_dev.mem_info # tuple of free and total memory
+                                            # in bytes.
+                mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
                 self.py_registered_devices.append(py_cuda_device)
 
@@ -69,7 +68,7 @@ class PyDeviceManager:
         # Get the number of usable CPUs from this process.
         # This might not be equal to the number of CPUs in the system.
         num_cores = len(os.sched_getaffinity(0))
-        mem_sz = float(psutil.virtual_memory().total)
+        mem_sz = long(psutil.virtual_memory().total)
         py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
         self.py_registered_devices.append(py_cpu_device)
 
