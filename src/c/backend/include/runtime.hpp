@@ -15,7 +15,7 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
-#include "device.hpp"
+#include "device_manager.hpp"
 #include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.

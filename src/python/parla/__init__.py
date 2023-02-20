@@ -4,7 +4,7 @@ import signal
 from .cython import tasks
 from .cython import scheduler
 from .cython import core
-from .cython import device
+from .cython import device_manager
 from .common.spawn import spawn
 
 from .common import containers
@@ -15,7 +15,7 @@ sleep_nogil = core.cpu_bsleep_nogil
 TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 
-DeviceManager = device.PyDeviceManager
+DeviceManager = device_manager.PyDeviceManager
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
 
@@ -36,17 +36,16 @@ else:
 
 class Parla:
 
-    def __init__(self, scheduler_class=scheduler.Scheduler, sig_type=signal.SIGINT, logfile=None, n_workers=None, **kwds):
+    def __init__(self, scheduler_class=scheduler.Scheduler,
+                 sig_type=signal.SIGINT, logfile=None, n_workers=None, \
+                 dev_config_file=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
 
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
-
         self.handle_interrupt = True
-
-        self.device_manager = DeviceManager()
-        # TODO(hc): It might be necessary to return this to users?
+        self.device_manager = DeviceManager(dev_config_file)
         self.device_manager.print_registered_devices()
 
         if logfile is None:

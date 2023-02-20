@@ -6,11 +6,13 @@ add_cython_target(core core.pyx CXX PY3)
 add_cython_target(tasks tasks.pyx CXX PY3)
 add_cython_target(scheduler scheduler.pyx CXX PY3)
 add_cython_target(device device.pyx CXX PY3)
+add_cython_target(device_manager device_manager.pyx CXX PY3)
 
 add_library(core MODULE ${core})
 add_library(tasks MODULE ${tasks})
 add_library(scheduler MODULE ${scheduler})
 add_library(device MODULE ${device})
+add_library(device_manager MODULE ${device_manager})
 
 
 message(STATUS "PYTHON_RELATIVE_SITE_PACKAGES_DIR: ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}")
@@ -20,6 +22,7 @@ install(TARGETS core LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/pa
 install(TARGETS tasks LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 install(TARGETS scheduler LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 install(TARGETS device LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
+install(TARGETS device_manager LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 
@@ -55,7 +58,16 @@ target_include_directories(device PUBLIC ${NumPy_INCLUDE_DIRS})
 target_include_directories(device PUBLIC ${PYTHON_INCLUDE_DIRS})
 target_include_directories(device PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_link_libraries(device_manager ${PYTHON_LIBRARIES})
+target_link_libraries(device_manager backend)
+target_include_directories(device_manager PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
+target_include_directories(device_manager PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
+target_include_directories(device_manager PUBLIC ${NumPy_INCLUDE_DIRS})
+target_include_directories(device_manager PUBLIC ${PYTHON_INCLUDE_DIRS})
+target_include_directories(device_manager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 python_extension_module(core)
 python_extension_module(tasks)
 python_extension_module(scheduler)
 python_extension_module(device)
+python_extension_module(device_manager)
