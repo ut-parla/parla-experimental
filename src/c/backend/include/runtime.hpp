@@ -392,20 +392,17 @@ public:
   /* Get complete */
   bool get_complete();
 
-  /// TODO(hc): move these to cpp.
-  /// TODO(hc): Camel or snake case?
-  void SetMappedDevice(Device *dev) {
-    assert(mapped_device_ == NULL);
-    this->mapped_device_ = dev;
+  void SetResourceRequirement(ResourceRequirement* res_req) {
+    assert(res_req_ == NULL);
+    res_req_ = res_req;
   }
 
-  const Device &GetMappedDevice() {
-    assert(mapped_device_ != NULL);
-    return *this->mapped_device_;
+  const ResourceRequirement& GetResourceRequirement() {
+    return (*res_req_);
   }
 
 private:
-  Device *mapped_device_;
+  ResourceRequirement* res_req_;
 };
 
 class InnerDataTask : public InnerTask {

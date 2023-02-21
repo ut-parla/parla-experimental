@@ -48,6 +48,9 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         this->dummy_dev_idx_++;
         break;
       }
+      if (dev.GetName().find("CPU") != std::string::npos) {
+
+      }
     }
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;

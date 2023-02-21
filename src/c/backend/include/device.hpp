@@ -81,6 +81,28 @@ public:
 private:
 };
 
+/// This class contains a single resource requirement for devices 
+/// in the same architecture type for a task.
+class ResourceRequirement {
+public:
+  ResourceRequirement() = delete;
+  ResourceRequirement(std::vector<bool> has_arch_constraint,
+                      std::vector<std::vector<Device*>> dev_ptr_vec,
+                      std::vector<DeviceResources> reqs) :
+                      has_arch_constraint_(std::move(has_arch_constraint)),
+                      dev_ptr_vec_(std::move(dev_ptr_vec)),
+                      reqs_(std::move(reqs)) {}
+
+  // TODO(hc): From the factory function in the device manager,
+  //           accumulate (merge) another requirement.
+  //           This is for multi-arch or arch requirement.
+private:
+  std::vector<bool> has_arch_constraint_;
+  std::vector<std::vector<Device*>> dev_ptr_vec_;
+  std::vector<DeviceResources> reqs_;
+};
+
+#if 0
 // Base class for device requirement classes.
 class ResourceRequirement {};
 
@@ -127,5 +149,6 @@ private:
   std::vector<std::vector<Device*>> dev_ptr_vec_;
   std::vector<DeviceResources> reqs_;
 };
+#endif
 
 #endif
