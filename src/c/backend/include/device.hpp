@@ -9,6 +9,7 @@
 
 using DevIDTy = uint32_t;
 
+// TODO(hc): This will be a dictionary in the later.
 struct DeviceResources {
   /// Supporting device resources.
   size_t mem_sz_; /* Memory size. */
