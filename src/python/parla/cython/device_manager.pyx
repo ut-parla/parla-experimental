@@ -1,4 +1,3 @@
-from parla.common.global_dataclasses import DeviceConfig 
 from parla.cython.device import CyDevice, PyCUDADevice, PyCPUDevice
 from parla.cython.device cimport Device
 
