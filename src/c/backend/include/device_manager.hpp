@@ -32,6 +32,7 @@ public:
 
   std::vector<Device> &GetAllDevices() { return registered_devices_; }
 
+#if 0
   ResourceRequirement* CreateResourceRequirement(Device* dev, DeviceResources req) {
     // TODO(hc): This can be known at Python.
     //           Later get this information from Python.
@@ -54,6 +55,7 @@ public:
     return new ResourceRequirement(has_arch_constraint,
                                    dev_ptr_vec, req_vec);
   }
+#endif
 
 private:
   // TODO(hc): This should use a vector of vector and

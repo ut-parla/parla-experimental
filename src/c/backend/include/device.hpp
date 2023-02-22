@@ -86,20 +86,26 @@ private:
 class ResourceRequirement {
 public:
   ResourceRequirement() = delete;
-  ResourceRequirement(std::vector<bool> has_arch_constraint,
-                      std::vector<std::vector<Device*>> dev_ptr_vec,
-                      std::vector<DeviceResources> reqs) :
-                      has_arch_constraint_(std::move(has_arch_constraint)),
-                      dev_ptr_vec_(std::move(dev_ptr_vec)),
-                      reqs_(std::move(reqs)) {}
+  ResourceRequirement(std::vector<std::vector<DeviceResources>> reqs_candidates) :
+                      reqs_candidates_(std::move(reqs_candidates)) {}
 
   // TODO(hc): From the factory function in the device manager,
   //           accumulate (merge) another requirement.
   //           This is for multi-arch or arch requirement.
 private:
-  std::vector<bool> has_arch_constraint_;
-  std::vector<std::vector<Device*>> dev_ptr_vec_;
+  /// Requirements should be maintained in a vector of vector 
+  /// as multiple options can be provided by users at spawning phase.
+  /// After task mapping, one of the options would be chosen.
+  std::vector<std::vector<DeviceResources>> reqs_candidates_;
+  /// Task requirements that will be actually used.
   std::vector<DeviceResources> reqs_;
+  // TODO(hc): How to efficiently get selected device pointers?
+  //           Should I get them from spawn decorators? (then need
+  //           a vector of pointer of vector)
+  //           Or, should I fill them during task mapping? (but need 
+  //           device iterations)
+  //           I will revisit this when we get a complete task mapping.
+  std::vector<Device*> dev_ptr_vec_;
 };
 
 #if 0
