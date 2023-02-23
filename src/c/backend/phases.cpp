@@ -2,35 +2,26 @@
 #include "include/runtime.hpp"
 
 /**************************/
-// Spawned Phase implementation
+// Mapper Implementation
 
-/*
-void SpawnedPhase::run(MappedPhase *ready) {
-  // NOT IMPLEMENTED
-}
-*/
-
-void SpawnedPhase::enqueue(InnerTask *task) {
-  std::cout << "[Spawned] Enqueuing task " << task->name << std::endl;
-  this->spawned_tasks.push_back(task);
+void Mapper::enqueue(InnerTask *task) {
+  std::cout << "[Mapper] Enqueuing task " << task->name << std::endl;
+  this->mappable_tasks.push_back(task);
 }
 
-void SpawnedPhase::enqueue(std::vector<InnerTask *> &tasks) {
+void Mapper::enqueue(std::vector<InnerTask *> &tasks) {
   std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
-  // for (auto task : tasks) {
-  //  this->enqueue(task);
-  //}
-  this->spawned_tasks.push_back(tasks);
-  std::cout << "Ready tasks after: " << this->spawned_tasks.atomic_size()
+  this->mappable_tasks.push_back(tasks);
+  std::cout << "Ready tasks after: " << this->mappable_tasks.atomic_size()
             << std::endl;
 }
 
-size_t SpawnedPhase::get_count() {
-  size_t count = this->spawned_tasks.atomic_size();
+size_t Mapper::get_count() {
+  size_t count = this->mappable_tasks.atomic_size();
   return count;
 }
 
-void SpawnedPhase::run(ReadyPhase *ready_phase_handler, DeviceManager* device_manager) {
+void Mapper::run(SchedulerPhase *memory_reserver) {
   NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -49,103 +40,87 @@ void SpawnedPhase::run(ReadyPhase *ready_phase_handler, DeviceManager* device_ma
 
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask* task = this->spawned_tasks.front_and_pop();
-    for (Device& dev : device_manager->GetAllDevices()) {
-      if (dev.GetID() == dummy_dev_idx_ && dev.GetName().find("CUDA") != std::string::npos) {
-        std::cout << "Task :" << task->name << " is mapped to " << dev.GetName() << "\n";
+    InnerTask *task = this->mappable_tasks.front_and_pop();
+    for (Device &dev : device_manager->GetAllDevices()) {
+      if (dev.GetID() == this->dummy_dev_idx_ &&
+          dev.GetName().find("CUDA") != std::string::npos) {
+        std::cout << "Task :" << task->name << " is mapped to " << dev.GetName()
+                  << "\n";
         task->SetMappedDevice(&dev);
-        dummy_dev_idx_++;
+        this->dummy_dev_idx_++;
         break;
       }
     }
 
-    ready_phase_handler->enqueue(task);
+    this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
-    /*
-    if (has_task) {
-      auto task = this->ready_tasks.front();
-      bool has_resources = scheduler->resources->check_greater(task->resources);
+  } // while there are mappable tasks
 
-      if (has_resources) {
+  for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
 
-        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+    mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
+    this->scheduler->enqueue_tasks(this->enqueue_buffer);
+    this->enqueue_buffer.clear();
 
-        if (has_thread) {
+    bool enqueue_flag =
+        (mapped_task->num_unreserved_dependencies.fetch_sub(1) == 1);
 
-          InnerTask *task = this->ready_tasks.front_and_pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
-
-          // Decrease Resources
-          scheduler->resources->decrease(task->resources);
-
-          launcher->enqueue(task, worker);
-
-          this->status.update(Spawned::success);
-        } else {
-          this->status.update(Ready::worker_miss);
-          break; // No more workers available
-        }
-      } else {
-        this->status.update(Ready::resource_miss);
-        break; // No more resources available
-      }
-    } else {
-      this->status.update(Ready::task_miss);
-      break; // No more tasks available
+    if (enqueue_flag) {
+      memory_reserver->enqueue(mapped_task);
     }
-    */
   }
 }
 
 /**************************/
-// Mapped Phase implementation
+// Reserved Phase implementation
 
-void MappedPhase::run(ReservedPhase *ready) {
-  // NOT IMPLEMENTED
+void MemoryReserver::enqueue(InnerTask *task) {
+  this->reservable_tasks.push_back(task);
 }
 
-/**************************/
-// Reserved Phase implementation
-void ReservedPhase::run(ReadyPhase *ready) {
-  // NOT IMPLEMENTED
+void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
+  this->reservable_tasks.push_back(tasks);
+}
+
+void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
+  // Loop through all the tasks in the reservable_tasks queue, reserve memory on
+  // device if possible;
 }
 
 /**************************/
 // Ready Phase implementation
 
-void ReadyPhase::enqueue(InnerTask *task) {
+void RuntimeReserver::enqueue(InnerTask *task) {
   // std::cout << "Enqueuing task " << task->name << std::endl;
-  this->ready_tasks.push_back(task);
+  this->runnable_tasks.push_back(task);
   // std::cout << "Ready tasks after enqueue: " <<
   // this->ready_tasks.atomic_size()
   //          << std::endl;
 }
 
-void ReadyPhase::enqueue(std::vector<InnerTask *> &tasks) {
+void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
   // std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
   // for (auto task : tasks) {
   //  this->enqueue(task);
   //}
-  this->ready_tasks.push_back(tasks);
+  this->runnable_tasks.push_back(tasks);
   // std::cout << "Ready tasks after: " << this->ready_tasks.atomic_size()
   //          << std::endl;
 }
 
-int ReadyPhase::get_count() {
+size_t RuntimeReserver::get_count() {
   // std::cout << "Ready tasks: " << this->ready_tasks.atomic_size() <<
   // std::endl;
-  int count = this->ready_tasks.atomic_size();
+  size_t count = this->runnable_tasks.atomic_size();
   // std::cout << "Ready tasks: " << count << std::endl;
   return count;
 }
 
-bool ReadyPhase::condition() {
-  // NOT IMPLEMENTED
-  return true;
-}
+void RuntimeReserver::run(SchedulerPhase *next_phase) {
+  NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-void ReadyPhase::run(LauncherPhase *launcher) {
-  NVTX_RANGE("ReadyPhase::run", NVTX_COLOR_LIGHT_GREEN)
+  // TODO(wlr): Is this really the right way to handle this inheritance?
+  Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -180,7 +155,7 @@ void ReadyPhase::run(LauncherPhase *launcher) {
     has_task = this->get_count() > 0;
 
     if (has_task) {
-      auto task = this->ready_tasks.front();
+      auto task = this->runnable_tasks.front();
       bool has_resources = scheduler->resources->check_greater(task->resources);
 
       if (has_resources) {
@@ -189,7 +164,7 @@ void ReadyPhase::run(LauncherPhase *launcher) {
 
         if (has_thread) {
 
-          InnerTask *task = this->ready_tasks.front_and_pop();
+          InnerTask *task = this->runnable_tasks.front_and_pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
@@ -197,17 +172,17 @@ void ReadyPhase::run(LauncherPhase *launcher) {
 
           launcher->enqueue(task, worker);
 
-          this->status.update(Ready::success);
+          this->status.increase(Ready::success);
         } else {
-          this->status.update(Ready::worker_miss);
+          this->status.increase(Ready::worker_miss);
           break; // No more workers available
         }
       } else {
-        this->status.update(Ready::resource_miss);
+        this->status.increase(Ready::resource_miss);
         break; // No more resources available
       }
     } else {
-      this->status.update(Ready::task_miss);
+      this->status.increase(Ready::task_miss);
       break; // No more tasks available
     }
   }
@@ -218,24 +193,15 @@ void ReadyPhase::run(LauncherPhase *launcher) {
 /**************************/
 // Launcher Phase implementation
 
-void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
-  NVTX_RANGE("LauncherPhase::enqueue", NVTX_COLOR_LIGHT_GREEN)
+void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
+  NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
   // Immediately launch task
-  task->set_state(Task::running);
+  task->set_state(Task::RUNNING);
   this->num_running_tasks++;
 
-  // std::cout << "Assigning " << task->name << " to " << worker->thread_idx
-  //          << std::endl;
-
-  /*
-  //Acquire GIL to assign task to worker and notify worker through python
-  callback void* py_task = task->py_task; void* py_worker = worker->py_worker;
-  launch_task_callback(this->launch_callback, py_scheduler, py_task, py_worker);
-  */
-
-  // Assign task to thread and notify via c++ condition variable. No GIL needed
-  // until worker wakes.
+  // Assign task to thread and notify via c++ condition variable.
+  // No GIL needed until worker wakes.
   worker->assign_task(task);
 
   // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
@@ -243,6 +209,6 @@ void LauncherPhase::enqueue(InnerTask *task, InnerWorker *worker) {
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
-void LauncherPhase::run() {
-  // NOT IMPLEMENTED
+void Launcher::run() {
+  throw std::runtime_error("Launcher::run() not implemented.");
 }

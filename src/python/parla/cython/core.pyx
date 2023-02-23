@@ -171,7 +171,7 @@ cdef class PyInnerTask:
         cdef InnerScheduler* c_scheduler = scheduler.inner_scheduler
         c_self.set_scheduler(c_scheduler)
 
-    cpdef add_dependencies(self, dependency_list, process=True):
+    cpdef add_dependencies(self, dependency_list, process=False):
         cdef InnerTask* c_self = self.c_task
 
         cdef PyInnerTask dependency
