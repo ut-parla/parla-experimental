@@ -229,17 +229,20 @@ public:
   /*Local depdendency buffer*/
   std::vector<InnerTask *> dependency_buffer = std::vector<InnerTask *>();
 
-  /* Number of blocking (uncompleted) dependencies */
-  std::atomic<int> num_blocking_dependencies{0};
+  /* Number of blocking (uncompleted) compute task dependencies */
+  std::atomic<int> num_blocking_compute_dependencies{1};
+
+  /* Number of  blocking (uncompleted) task (compute+data) dependencies */
+  std::atomic<int> num_blocking_dependencies{1};
 
   /* Number of unspawned dependencies */
-  std::atomic<int> num_unspawned_dependencies{0};
+  std::atomic<int> num_unspawned_dependencies{1};
 
   /* Number of unmapped dependencies */
-  std::atomic<int> num_unmapped_dependencies{0};
+  std::atomic<int> num_unmapped_dependencies{1};
 
   /* Number of unreserved dependencies */
-  std::atomic<int> num_unreserved_dependencies{0};
+  std::atomic<int> num_unreserved_dependencies{1};
 
   /* Tasks Internal Resource Pool. */
   InnerResourcePool<float> resources;
@@ -318,7 +321,19 @@ public:
    *  Return true if 0 blocking dependencies remain.
    *  Used by "notify_dependents"
    */
-  Task::StatusFlags notify(Task::State dependency_state);
+  Task::StatusFlags notify(Task::State dependency_state, bool is_data = false);
+
+  /* Reset state and increment all internal counters. Used by continuation */
+  void reset() {
+    // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
+    this->state.store(Task::CREATED);
+    this->status.store(Task::INITIAL);
+    this->num_blocking_compute_dependencies.load(1);
+    this->num_blocking_dependencies.load(1);
+    this->num_unspawned_dependencies.load(1);
+    this->num_unmapped_dependencies.load(1);
+    this->num_unreserved_dependencies.load(1);
+  }
 
   /* Return whether the task is ready to run */
   bool blocked();
@@ -342,7 +357,7 @@ public:
   void *get_py_task();
 
   /* Set the task status */
-  Task::State set_state(int state);
+  int set_state(int state);
 
   /* Set the task state */
   Task::State set_state(Task::State state);
@@ -656,7 +671,7 @@ public:
   void activate_wrapper();
 
   /*Spawn a Task (increment active, set state, possibly enqueue)*/
-  void spawn_task(InnerTask *task, bool should_enqueue);
+  void spawn_task(InnerTask *task);
 
   /* Enqueue task. */
   void enqueue_task(InnerTask *task, Task::StatusFlags flags);

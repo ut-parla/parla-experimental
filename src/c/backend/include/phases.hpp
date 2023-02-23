@@ -148,7 +148,7 @@ public:
 protected:
   std::string name = "Runtime Reserver";
   TaskQueue runnable_tasks;
-  std::vector<InnerTask *> ready_tasks_buffer;
+  std::vector<InnerTask *> launchable_tasks_buffer;
 };
 
 #ifdef PARLA_ENABLE_LOGGING

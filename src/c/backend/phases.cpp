@@ -27,6 +27,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
   // TODO: Refactor this so its readable without as many nested conditionals
 
   // This is a non-critical region
+  // Comment(wlr): Why is this a noncritical region?
 
   // Assumptions:
   // Scheduler maps a task to a device.
@@ -38,6 +39,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   bool has_task = true;
 
+  /*
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
@@ -51,10 +53,18 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         break;
       }
     }
-
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
+  */
+
+  // TODO:: Dummy implementation that just passes tasks through
+  has_task = this->get_count() > 0;
+  while (has_task) {
+    InnerTask *task = this->mappable_tasks.front_and_pop();
+    this->mapped_tasks_buffer.push_back(task);
+    has_task = this->get_count() > 0;
+  }
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
 
@@ -82,9 +92,38 @@ void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
   this->reservable_tasks.push_back(tasks);
 }
 
+size_t MemoryReserver::get_count() {
+  size_t count = this->reservable_tasks.atomic_size();
+  return count;
+}
+
 void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   // Loop through all the tasks in the reservable_tasks queue, reserve memory on
   // device if possible;
+
+  // TODO:: Dummy implementation that just passes tasks through
+  bool has_task = this->get_count() > 0;
+  while (has_task) {
+    InnerTask *task = this->reservable_tasks.front_and_pop();
+    this->reserved_tasks_buffer.push_back(task);
+    has_task = this->get_count() > 0;
+  }
+
+  for (InnerTask *reserved_task : this->reserved_tasks_buffer) {
+    reserved_task->notify_dependents(this->enqueue_buffer, Task::RESERVED);
+    this->scheduler->enqueue_tasks(this->enqueue_buffer);
+    this->enqueue_buffer.clear();
+
+    // TODO:(wlr) Create and possibly enqueue data movement tasks
+
+    // Possibly enqueue this task
+    bool enqueue_flag =
+        (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
+
+    if (enqueue_flag) {
+      runtime_reserver->enqueue(mapped_task);
+    }
+  }
 }
 
 /**************************/

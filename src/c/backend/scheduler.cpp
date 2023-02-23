@@ -187,7 +187,7 @@ Scheduler::Status InnerScheduler::activate() {
 
 void InnerScheduler::activate_wrapper() { this->activate(); }
 
-void InnerScheduler::spawn_task(InnerTask *task, bool should_enqueue) {
+void InnerScheduler::spawn_task(InnerTask *task) {
   LOG_INFO(SCHEDULER, "Spawning task: {}", task);
   NVTX_RANGE("Scheduler::spawn_task", NVTX_COLOR_RED)
 
@@ -201,7 +201,13 @@ void InnerScheduler::spawn_task(InnerTask *task, bool should_enqueue) {
 void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  this->mapper->enqueue(task);
+  if (status.mappable && (task.get_state() >= Task::MAPPED)) {
+    this->mapper->enqueue(task);
+  } else if (status.reservable && (task.get_state() == Task::MAPPED)) {
+    this->memory_reserver->enqueue(task);
+  } else if (status.runnable && (task.get_state() == Task::RESERVED)) {
+    this->runtime_reserver->enqueue(task);
+  }
 }
 
 void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
@@ -265,6 +271,8 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
     // std::cout << "Task Complete: " << task->name << std::endl;
 
+    // Reset all runtime counters and state of the continuation task.
+    task->reset();
     auto &enqueue_buffer = worker->enqueue_buffer;
     task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {

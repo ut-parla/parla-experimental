@@ -20,6 +20,13 @@ cdef extern from "include/runtime.hpp" nogil:
     #ctypedef void* Ptr_t
     #ctypedef InnerTask* InnerTaskPtr_t
 
+    cdef cppclass _StatusFlags "Task::StatusFlags":
+        bool spawnable
+        bool mappable
+        bool reservable
+        bool compute_runnable
+        bool runnable
+
     cdef cppclass InnerTask:
         InnerTask()
 
@@ -31,7 +38,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_resources(string resource_name, float amount)
 
         void queue_dependency(InnerTask* task)
-        bool process_dependencies()
+        _StatusFlags process_dependencies()
         void clear_dependencies()
 
         vector[void*] get_dependencies()
@@ -46,9 +53,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         int get_num_blocking_dependencies()
 
-        void set_state(int state)
-        void set_complete()
-        int get_complete()
+        int set_state(int state)
 
 
     #ctypedef InnerTask* InnerTaskPtr_t
@@ -85,16 +90,13 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_resources(string resource_name, float amount)
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
-        void set_launch_callback(launchfunc_t func)
 
         void run() except +
         void stop()
 
         void activate_wrapper()
 
-        void spawn_task(InnerTask* task, bool should_enqueue)
-        void enqueue_task(InnerTask* task)
-        void enqueue_tasks(vector[InnerTask*]& tasks)
+        void spawn_task(InnerTask* task)
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)

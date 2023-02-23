@@ -120,23 +120,22 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
   //       Handle phase events
 
   if (data_tasks == false) {
-    this->num_unspawned_dependencies.fetch_add(tasks.size() + 1);
-    this->num_unmapped_dependencies.fetch_add(tasks.size() + 1);
-    this->num_unreserved_dependencies.fetch_add(tasks.size() + 1);
-    this->num_blocking_dependencies.fetch_add(tasks.size() + 1);
+    this->num_unspawned_dependencies.fetch_add(tasks.size());
+    this->num_unmapped_dependencies.fetch_add(tasks.size());
+    this->num_unreserved_dependencies.fetch_add(tasks.size());
+    this->num_blocking_compute_dependencies.fetch_add(tasks.size());
   }
-  this->num_blocking_dependencies.fetch_add(tasks.size() + 1);
+  this->num_blocking_dependencies.fetch_add(tasks.size());
 
   for (size_t i = 0; i < tasks.size(); i++) {
     this->add_dependency(tasks[i]);
   }
 
   // Decrement overcount to free this region
-  int unspawned_before_value = this->num_unspawned_dependencies.fetch_sub(1);
-  int unmapped_before_value = this->num_unmapped_dependencies.fetch_sub(1);
+  bool spawnable = this->num_unspawned_dependencies.fetch_sub(1) == 1;
+  bool mappable = this->num_unspawned_dependencies.fetch_sub(1) == 1;
 
-  bool spawnable = unspawned_before_value == 1;
-  bool mappable = unmapped_before_value == 1;
+  // Other counters are 'freed' in each phase before entering the next phase
 
   Task::StatusFlags status = Task::StatusFlags();
   status.spawnable = spawnable;
@@ -245,39 +244,33 @@ bool InnerTask::notify_dependents_wrapper() {
   return buffer.size() > 0;
 }
 
-Task::StatusFlags InnerTask::notify(Task::State dependency_state) {
+Task::StatusFlags InnerTask::notify(Task::State dependency_state,
+                                    bool is_data) {
 
-  int remaining_unspawned = 1;
-  int remaining_unmapped = 1;
-  int remaining_unreserved = 1;
-  int remaining_blocking = 1;
+  bool spawnable = false;
+  bool mappable = false;
+  bool reservable = false;
+  bool compute_runnable = false;
+  bool runnable = false;
 
-  if (dependency_state >= Task::RUNAHEAD) {
-    remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1);
-    remaining_unmapped = this->num_unmapped_dependencies.fetch_sub(1);
-    remaining_unreserved = this->num_unreserved_dependencies.fetch_sub(1);
-    remaining_blocking = this->num_blocking_dependencies.fetch_sub(1);
-  } else if (dependency_state >= Task::RESERVED) {
-    remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1);
-    remaining_unmapped = this->num_unmapped_dependencies.fetch_sub(1);
-    remaining_unreserved = this->num_unreserved_dependencies.fetch_sub(1);
-  } else if (dependency_state >= Task::MAPPED) {
-    remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1);
-    remaining_unmapped = this->num_unmapped_dependencies.fetch_sub(1);
-  } else if (dependency_state >= Task::SPAWNED) {
-    remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1);
+  if (is_data) {
+    if (dependency_state >= Task::RUNAHEAD) {
+      // A data task never notifies for the other stages
+      runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+    }
+  } else {
+    if (dependency_state >= Task::RUNAHEAD) {
+      compute_runnable ==
+          (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
+      runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::RESERVED) {
+      reservable = (this->num_unreserved_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::MAPPED) {
+      mappable = (this->num_unmapped_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::SPAWNED) {
+      spawnable = (this->num_unspawned_dependencies.fetch_sub(1) == 1);
+    }
   }
-
-  bool spawnable = remaining_unspawned == 1;
-  bool mappable = remaining_unmapped == 1;
-  bool reservable = remaining_unreserved == 1;
-
-  // TODO(wlr): This is not currently used and is likely not correct
-  // Usage would be to set a priority for tasks that are ready to run
-  bool compute_runnable =
-      (remaining_blocking == 1) && (this->get_state() < Task::RESERVED);
-
-  bool runnable = (remaining_blocking == 1) && (this->processed_data);
 
   Task::StatusFlags status;
   status.spawnable = spawnable;
@@ -324,40 +317,20 @@ std::vector<void *> InnerTask::get_dependents() {
 
 void *InnerTask::get_py_task() { return this->py_task; }
 
-Task::State InnerTask::set_state(int state) {
+int InnerTask::set_state(int state) {
   Task::State new_state = static_cast<Task::State>(state);
-  Task::State old_state;
-  bool success = true;
-
-  do {
-    old_state = this->state.load();
-    if (old_state > new_state) {
-      success = false;
-    }
-  } while (!this->state.compare_exchange_weak(old_state, new_state));
-
-  if (!success) {
-    throw std::runtime_error("Task States must always be increasing.");
-  }
-
-  return old_state;
+  Task::State old_state = this->set_state(new_state);
+  int old_state_id = static_cast<int>(new_state);
+  return old_state_id;
 }
 
 Task::State InnerTask::set_state(Task::State state) {
   Task::State new_state = state;
   Task::State old_state;
-  bool success = true;
 
   do {
     old_state = this->state.load();
-    if (old_state > new_state) {
-      success = false;
-    }
   } while (!this->state.compare_exchange_weak(old_state, new_state));
-
-  if (!success) {
-    throw std::runtime_error("Task States must always be increasing.");
-  }
 
   return old_state;
 }
@@ -365,18 +338,10 @@ Task::State InnerTask::set_state(Task::State state) {
 Task::Status InnerTask::set_status(Task::Status status) {
   Task::Status new_status = status;
   Task::Status old_status;
-  bool success = true;
 
   do {
     old_status = this->status.load();
-    if (old_status > new_status) {
-      success = false;
-    }
   } while (!this->status.compare_exchange_weak(old_status, new_status));
-
-  if (!success) {
-    throw std::runtime_error("Task Status must always be increasing.");
-  }
 
   return old_status;
 }
