@@ -81,13 +81,18 @@ public:
 private:
 };
 
+struct DeviceResourceReq {
+  Device* dev_;
+  DeviceResources res_req_; 
+};
+
 /// This class contains a single resource requirement for devices 
 /// in the same architecture type for a task.
 class ResourceRequirement {
 public:
   ResourceRequirement() = delete;
-  ResourceRequirement(std::vector<std::vector<DeviceResources>> reqs_candidates) :
-                      reqs_candidates_(std::move(reqs_candidates)) {}
+  ResourceRequirement(std::vector<std::vector<DeviceResourceReq>> dev_reqs_candidates) :
+                      dev_reqs_candidates_(std::move(dev_reqs_candidates)) {}
 
   // TODO(hc): From the factory function in the device manager,
   //           accumulate (merge) another requirement.
@@ -96,16 +101,9 @@ private:
   /// Requirements should be maintained in a vector of vector 
   /// as multiple options can be provided by users at spawning phase.
   /// After task mapping, one of the options would be chosen.
-  std::vector<std::vector<DeviceResources>> reqs_candidates_;
+  std::vector<std::vector<DeviceResourceReq>> dev_reqs_candidates_;
   /// Task requirements that will be actually used.
-  std::vector<DeviceResources> reqs_;
-  // TODO(hc): How to efficiently get selected device pointers?
-  //           Should I get them from spawn decorators? (then need
-  //           a vector of pointer of vector)
-  //           Or, should I fill them during task mapping? (but need 
-  //           device iterations)
-  //           I will revisit this when we get a complete task mapping.
-  std::vector<Device*> dev_ptr_vec_;
+  std::vector<DeviceResourceReq> dev_reqs_;
 };
 
 #if 0
