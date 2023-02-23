@@ -1,16 +1,21 @@
 from parla.cython import scheduler
 from parla.cython import core
-
 from parla.cython import tasks
+from parla.cython import device_manager
 from parla.utility.tracer import NVTXTracer
-
 
 import inspect
 
 from parla.cython import tasks
 
+from typing import Union, Collection, Any
+
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
+PyArchitecture = device_manager.PyArchitecture
+PyDevice = device_manager.PyDevice
+
+PlacementSource = Union[PyArchitecture, PyDevice]
 
 WorkerThread = scheduler.WorkerThread
 _task_callback = scheduler._task_callback
@@ -39,7 +44,11 @@ def _make_cell(val):
 
 
 # @profile
-def spawn(task=None,  dependencies=[], vcus=1):
+def spawn(task=None,
+          dependencies=[],
+          # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
+          placement: Union[Collection[PlacementSource], Any, None] = None,
+          vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler

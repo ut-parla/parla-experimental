@@ -1,5 +1,6 @@
-from parla.cython.device import CyDevice, PyCUDADevice, PyCPUDevice
+from parla.cython import device
 from parla.cython.device cimport Device
+from parla.common.global_enums import DeviceType
 
 try:
     import cupy
@@ -11,6 +12,19 @@ import psutil
 import yaml
 
 VCU_BASELINE=1000
+
+PyDevice = device.PyDevice
+PyCUDADevice = device.PyCUDADevice
+PyCPUDevice = device.PyCPUDevice
+PyArchitecture = device.PyArchitecture
+PyCUDAArchitecture = device.PyCUDAArchitecture
+PyCPUArchitecture = device.PyCPUArchitecture
+
+# Architecture declaration.
+# To use these in the placement of @spawn,
+# declare these as global variables.
+cuda = PyCUDAArchitecture(DeviceType.CUDA)
+cpu = PyCPUArchitecture(DeviceType.CPU)
 
 cdef class CyDeviceManager:
     """
@@ -47,7 +61,10 @@ class PyDeviceManager:
 
     def __init__(self, dev_config = None):
         self.cy_device_manager = CyDeviceManager()
-        self.py_registered_devices = []
+        # TODO(hc): I don't know a better way to register architecture.
+        self.py_registered_archs = [None] * 2
+        self.py_registered_archs[DeviceType.CPU] = cpu
+        self.py_registered_archs[DeviceType.CUDA] = cuda
         # TODO(hc): pack those config. to a data class.
         if dev_config == None or dev_config == "":
             self.register_cuda_devices_cupy()
@@ -80,20 +97,22 @@ class PyDeviceManager:
         num_cores = len(os.sched_getaffinity(0))
         mem_sz = long(psutil.virtual_memory().total)
         py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
-        self.py_registered_devices.append(py_cpu_device)
+        py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
+        py_cpu_arch.add_device(py_cpu_device)
 
     def register_devices_to_cpp(self):
         """
         Register devices to the both Python/C++ runtime.
         """
-        for py_device in self.py_registered_devices:
-            cy_device = py_device.get_cy_device()
-            self.cy_device_manager.register_device(cy_device)
+        for py_arch in self.py_registered_archs:
+            for py_device in py_arch.devices:
+                cy_device = py_device.get_cy_device()
+                self.cy_device_manager.register_device(cy_device)
 
     def print_registered_devices(self):
         print("Python devices:", flush=True)
-        for dev in self.py_registered_devices:
-            print(f"Registered device: {dev}", flush=True)
+        for dev in self.py_registered_archs:
+            print(f"\t Registered device: {dev}", flush=True)
         self.cy_device_manager.print_registered_devices()
 
     def get_cy_device_manager(self):
@@ -108,13 +127,15 @@ class PyDeviceManager:
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, \
                                             cpu_num_cores * VCU_BASELINE) 
-                self.py_registered_devices.append(py_cpu_device)
+                py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
+                py_cpu_arch.add_device(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
+                py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \
                                                   VCU_BASELINE)
-                    self.py_registered_devices.append(py_cuda_device)
+                    py_cuda_arch.add_device(py_cuda_device)

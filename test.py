@@ -1,6 +1,7 @@
 import argparse
 
 from parla import Parla, spawn, TaskSpace, sleep_nogil
+from parla.cython.device_manager import cpu, cuda
 # from sleep.core import bsleep
 
 bsleep = sleep_nogil
@@ -12,7 +13,7 @@ args = parser.parse_args()
 def main(T):
 
 
-    @spawn(T[0], vcus=0)
+    @spawn(T[0], placement=[cpu(0), cuda(0)], vcus=0)
     def task1():
         print("+HELLO OUTER 0", flush=True)
         bsleep(1000)

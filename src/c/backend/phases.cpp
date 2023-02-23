@@ -38,15 +38,13 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
   /*
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask *task = this->mappable_tasks.front_and_pop();
-    for (Device &dev : device_manager->GetAllDevices()) {
-      if (dev.GetID() == this->dummy_dev_idx_ &&
-          dev.GetName().find("CUDA") != std::string::npos) {
-        std::cout << "Task :" << task->name << " is mapped to " << dev.GetName()
-                  << "\n";
-        task->SetMappedDevice(&dev);
-        this->dummy_dev_idx_++;
-        break;
+    InnerTask* task = this->spawned_tasks.front_and_pop();
+    for (Device& dev : device_manager->GetAllDevices()) {
+      if (dev.GetID() == dummy_dev_idx_ && dev.GetName().find("CUDA") != std::string::npos) {
+        std::vector<std::vector<DeviceResources>> dev_req = {{DeviceResources{1000, 10}}};
+        ResourceRequirement* req = new ResourceRequirement(std::move(dev_req));
+        task->SetResourceRequirement(req);
+        dummy_dev_idx_++;
       }
       if (dev.GetName().find("CPU") != std::string::npos) {
 

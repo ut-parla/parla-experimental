@@ -4,6 +4,9 @@
 
 from parla.common.global_enums import DeviceType 
 
+from typing import Union, List, Iterable
+from abc import ABCMeta, abstractmethod
+
 cdef class CyDevice:
     """
     A bridge between pure Python and C++ device objects.
@@ -83,7 +86,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(DeviceType.CUDA, "CUDADev", dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vucs, self)
 
 
@@ -92,5 +95,91 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(DeviceType.CPU, "CPUDev", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vucs, self)
+
+
+class PyArchitecture(metaclass=ABCMeta):
+    """
+    This class is to abstract a single architecture and is utilized for
+    two purposes.
+    First, an architecture class holds and provides device instances.
+    (through a device manager)
+    Second, users can specify the architecture at task spawn's placement
+    parameter.
+    """
+
+    def __init__(self, name, id):
+        """
+        Create a new Architecture with a name and the ID which the runtime
+        will use to identify it.
+        """
+        self._name = name
+        self._id = id
+        self._devices = []
+
+    def __call__(self, index, *args, **kwds):
+        """
+        Create a device with this architecture.
+        The arguments can specify which physical device you are requesting,
+        but the runtime may override you.
+
+        >>> gpu(0)
+        """
+        try:
+            return self._devices[index]
+        except IndexError:
+            # If a requested device does not exist,
+            # ignore that placement.
+            print(f"{self._name} does not have device({index}).", flush=True)
+            print(f"Ignore this placement.", flush=True)
+            return None
+
+    def __getitem__(self, ind):
+        if isinstance(ind, Iterable):
+            return [self(i) for i in ind]
+        else:
+            return self(ind)
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def devices(self):
+        """
+        :return: all `devices<Device>` with this architecture in the system.
+        """
+        return self._devices
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, type(self)) and \
+               self.id == o.id and self._name == o.name
+
+    def __hash__(self):
+        return hash(self._id)
+
+    def __repr__(self):
+        return type(self).__name__
+
+ 
+class PyCUDAArchitecture(PyArchitecture):
+    def __init__(self, id):
+        super().__init__("CUDAArch", id)
+
+    def add_device(self, device):
+        assert isinstance(device, PyCUDADevice)
+        self._devices.append(device)
+
+ 
+class PyCPUArchitecture(PyArchitecture):
+    def __init__(self, id):
+        super().__init__("CPUArch", id)
+
+    def add_device(self, device):
+        assert isinstance(device, PyCPUDevice)
+        self._devices.append(device)
