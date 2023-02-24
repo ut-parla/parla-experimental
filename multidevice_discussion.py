@@ -4,7 +4,7 @@
 # Case A: A multidevice task launches a multi-device application. Task body is run a single time.
 #########
 
-# Comment(wlr): Case A is what I thought MultiDevice semantics are/what we are building
+# Comment(wlr): Case A is what I thought our MultiDevice semantics are
 
 def worker_run():
     # Pseudo-code of Parla internals
@@ -23,6 +23,8 @@ def worker_run():
         events = [stream.record_event() for stream in stream_list]
         # Pass events to dependents
         task.notify_dependents(events)
+
+    #Implicit synchronization on all streams at the end of the context manager
 
 
 ########
@@ -87,7 +89,7 @@ def multidevice_application(locals):
 #         Semantics are MPI-like. Task body is run once for each device.
 #########
 
-# Comment(wlr): Case B is how I interpret hc's SIMD-like example
+# Comment(wlr): Case B is how I interpret hc's SIMD-like example. Please rewrite this if I interpreted wrong. 
 # Comment(wlr): Can't internally synchronize.
 
 # Single worker version (runs in serial async loop)
@@ -110,7 +112,12 @@ def worker_run():
             events.append(stream.record_event())
             # Pass events to dependents
 
+            #DO NOT SYNCHRONIZE at the end of context
+
     task.notify_dependents(events)
+
+    for stream in stream_list:
+        stream.synchronize()
 
 
 # Multiple worker version (runs in parallel, a thread per device)
@@ -130,17 +137,23 @@ def task_launch():
 
 
 def workgroup_run():
+    #From the perspective of 1 worker
+
+    task, device, stream =  self.get_assignment()
 
     with create_environment(device, stream) as e:
         # Run the task body
         task.body(e.locals)
         # Record events on the streams
         event = stream.record_event()
+        #DO NOT SYNCHRONIZE at the end of context
 
     events = workgroup.gather(from=workgroup.self, to=workgroup.master(), object=event)
 
     if workgroup.self == workgroup.master():
         task.notify_dependents(events)
+
+    stream.synchronize()
 
 
 ########
@@ -180,4 +193,5 @@ B = Crosspy(10, [devices[0], devices[1]])
 @spawn(gpus=2)
 def multidevice_application(locals):
     # Comment(wlr): I'm not sure of a nicer way to specify the index set here.
-    B.get(locals.active_device) = single_gpu_kernel(locals.active_device)
+    #Here CrossPy.get() returns the partition on the provided device. 
+    B.get(locals.active_device) = single_gpu_kernel(A.get(locals.active_device))
