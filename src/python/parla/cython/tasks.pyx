@@ -450,7 +450,6 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
-            print(prefix, i, lower_boundary, upper_boundary)
             if (lower_boundary <= i) and ( (upper_boundary < 0) or (i < upper_boundary) ):
                 cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
         else:
@@ -556,7 +555,7 @@ class TaskSpace(TaskCollection):
             shape_flag = (self.shape is not None)
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
-            print(index, lower_boundary, upper_boundary)
+
             idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
             task_list = get_or_create_tasks(self, idx, create=create)
 

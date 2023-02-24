@@ -11,18 +11,18 @@ void SpawnedPhase::run(MappedPhase *ready) {
 */
 
 void SpawnedPhase::enqueue(InnerTask *task) {
-  std::cout << "[Spawned] Enqueuing task " << task->name << std::endl;
+  // std::cout << "[Spawned] Enqueuing task " << task->name << std::endl;
   this->spawned_tasks.push_back(task);
 }
 
 void SpawnedPhase::enqueue(std::vector<InnerTask *> &tasks) {
-  std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
-  // for (auto task : tasks) {
-  //  this->enqueue(task);
-  //}
+  // std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
+  //  for (auto task : tasks) {
+  //   this->enqueue(task);
+  // }
   this->spawned_tasks.push_back(tasks);
-  std::cout << "Ready tasks after: " << this->spawned_tasks.atomic_size()
-            << std::endl;
+  // std::cout << "Ready tasks after: " << this->spawned_tasks.atomic_size()
+  //           << std::endl;
 }
 
 size_t SpawnedPhase::get_count() {
@@ -30,7 +30,8 @@ size_t SpawnedPhase::get_count() {
   return count;
 }
 
-void SpawnedPhase::run(ReadyPhase *ready_phase_handler, DeviceManager* device_manager) {
+void SpawnedPhase::run(ReadyPhase *ready_phase_handler,
+                       DeviceManager *device_manager) {
   NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -49,10 +50,12 @@ void SpawnedPhase::run(ReadyPhase *ready_phase_handler, DeviceManager* device_ma
 
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask* task = this->spawned_tasks.front_and_pop();
-    for (Device& dev : device_manager->GetAllDevices()) {
-      if (dev.GetID() == dummy_dev_idx_ && dev.GetName().find("CUDA") != std::string::npos) {
-        std::cout << "Task :" << task->name << " is mapped to " << dev.GetName() << "\n";
+    InnerTask *task = this->spawned_tasks.front_and_pop();
+    for (Device &dev : device_manager->GetAllDevices()) {
+      if (dev.GetID() == dummy_dev_idx_ &&
+          dev.GetName().find("CUDA") != std::string::npos) {
+        // std::cout << "Task :" << task->name << " is mapped to " <<
+        // dev.GetName() << "\n";
         task->SetMappedDevice(&dev);
         dummy_dev_idx_++;
         break;
