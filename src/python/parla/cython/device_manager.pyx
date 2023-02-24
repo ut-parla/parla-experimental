@@ -7,6 +7,8 @@ try:
 except ImportError:
     cupy = None
 
+from typing import Collection, Iterable, Set 
+
 import os
 import psutil
 import yaml
@@ -139,3 +141,51 @@ class PyDeviceManager:
                                                   gpu_mem_sizes[dev_id], \
                                                   VCU_BASELINE)
                     py_cuda_arch.add_device(py_cuda_device)
+
+    def get_all_devices(self):
+        devs = []
+        for arch in self.py_registered_archs:
+            for dev in arch.devices:
+                devs.append(dev)
+        return devs
+
+    def unpack_devices(self, placement_component):
+        """ Unpack the placement and return a list of
+            devices. The placement can be an iteratable collection
+            and this function handles it through a recursive call. """
+        if isinstance(placement_component, PyArchitecture):
+            return placement_component.devices
+        elif isinstance(placement_component, PyDevice):
+            return [placement_component]
+        elif isinstance(placement_component, Collection):
+            unpacked_devices = []
+            for c in placement_component:
+                # If a device specified by users does not exit 
+                # and was not registered to the Parla runtime,
+                # its instance is set to None and should be
+                # ignored.
+                if c is None:
+                    continue
+                tmp_unpacked_devices = self.unpack_devices(c)
+                if isinstance(c, Set):
+                    # Multi-device placement is specified
+                    # through a set. Therefore, each set in the
+                    # placement specifies a single placement for
+                    # a task, and multiple sets allow the task
+                    # mapper to choose one of them depending
+                    # on device status.
+                    unpacked_devices += [tmp_unpacked_devices]
+                else:
+                    unpacked_devices += tmp_unpacked_devices
+            return unpacked_devices
+
+    def get_devices_from_placement(self, placement):
+        """ Unpack placement and return device objects that are specified
+            (or implied) through the placement argument of @spawn.
+            If None is passed to the placement, all devices exiting
+            in the current system become candidates of the placement. """
+        if placement is not None:
+            ps = placement if isinstance(placement, Iterable) else [placement]
+            return self.unpack_devices(ps)
+        else:
+            return self.get_all_devices()

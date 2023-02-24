@@ -218,8 +218,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     def __init__(self, device_manager, n_threads=6, period=0.001):
         super().__init__()
 
-        self.device_manager = device_manager
-
         self.start_monitor = threading.Condition(threading.Lock())
 
         self._monitor = threading.Condition(threading.Lock())
@@ -231,6 +229,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         #TODO: Handle resources better
         resources = 1.0
 
+        self.device_manager = device_manager
         cy_device_manager = self.device_manager.get_cy_device_manager()
         self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
 
@@ -247,6 +246,9 @@ class Scheduler(ControllableThread, SchedulerContext):
     @property
     def scheduler(self):
         return self
+
+    def get_devices_from_placement(self, placement):
+        return self.device_manager.get_devices_from_placement(placement)
 
     def __enter__(self):
         if self.inner_scheduler.get_num_active_tasks() != 1:

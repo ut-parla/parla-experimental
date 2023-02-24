@@ -4,8 +4,9 @@
 
 from parla.common.global_enums import DeviceType 
 
-from typing import Union, List, Iterable
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
+from typing import Union, List, Iterable
 
 cdef class CyDevice:
     """
@@ -183,3 +184,25 @@ class PyCPUArchitecture(PyArchitecture):
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
         self._devices.append(device)
+
+@dataclass
+class DeviceResource:
+    memory_sz: long
+    num_vcus: int
+
+    def __post_init__(self):
+        """
+        Initialize all resources to 0.
+        This would be useful when types of resource are
+        diversified.
+        """
+        self.memory_sz = 0
+        self.num_vcus = 0
+
+@dataclass
+class DeviceResourceRequirement:
+    device: PyDevice
+    res_req: DeviceResource
+
+
+PlacementSource = Union[PyArchitecture, PyDevice]

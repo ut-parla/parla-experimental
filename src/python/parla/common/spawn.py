@@ -1,7 +1,7 @@
 from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
-from parla.cython import device_manager
+from parla.cython import device, device_manager
 from parla.utility.tracer import NVTXTracer
 
 import inspect
@@ -14,13 +14,11 @@ ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
 PyArchitecture = device_manager.PyArchitecture
 PyDevice = device_manager.PyDevice
-
-PlacementSource = Union[PyArchitecture, PyDevice]
+PlacementSource = device.PlacementSource
 
 WorkerThread = scheduler.WorkerThread
 _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
-
 
 nvtx = NVTXTracer
 nvtx.initialize()
@@ -47,7 +45,7 @@ def _make_cell(val):
 def spawn(task=None,
           dependencies=[],
           # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
-          placement: Union[Collection[PlacementSource], Any, None] = None,
+          placement: Collection[Union[Collection[PlacementSource], Any, None]] = None,
           vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
@@ -66,6 +64,7 @@ def spawn(task=None,
         nonlocal vcus
         nonlocal dependencies
         nonlocal task
+        nonlocal placement
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -82,6 +81,10 @@ def spawn(task=None,
         tasks.flatten_tasks(dependencies, flattened_dependencies)
 
         scheduler = get_scheduler_context().scheduler
+
+        # Get a set of candidate devices for a task.
+        set_candidate_devices = scheduler.get_devices_from_placement(placement)
+        print("Candidate devices:", set_candidate_devices)
 
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,
