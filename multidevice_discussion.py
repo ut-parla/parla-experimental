@@ -66,7 +66,7 @@ def multidevice_application(locals):
 
 ########
 # Case A3: A multidevice task launches a user written multi-device application
-#          Abstracted with CrossPy
+#          Abstracted with CrossPy, assume each device only operates on predefined static partitions
 ########
 
 @spawn(gpus=2)
@@ -170,7 +170,7 @@ def multidevice_application(locals):
 ########
 # Case B3: A multidevice task launches a user written multidevice kernel
 #          Multidevice task is shorthand for launching many single-device tasks?
-#          Abstracted with CrossPy, assume task *only* operates on predefined partitions
+#          Abstracted with CrossPy, assume task *only* operates on predefined static partitions
 ########
 # Assume default is equipartitioning
 A = Crosspy(10, [devices[0], devices[1]])
