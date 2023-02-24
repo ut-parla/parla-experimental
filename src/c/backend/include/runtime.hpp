@@ -175,6 +175,8 @@ enum Status {
 } // namespace Task
 
 #ifdef PARLA_ENABLE_LOGGING
+BINLOG_ADAPT_STRUCT(Task::StatusFlags, spawnable, mappable, reservable,
+                    compute_runnable, runnable)
 BINLOG_ADAPT_ENUM(Task::State, CREATED, SPAWNED, MAPPED, RESERVED, READY,
                   RUNNING, RUNAHEAD, COMPLETED)
 BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,

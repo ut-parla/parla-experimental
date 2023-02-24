@@ -56,10 +56,12 @@ class PyDevice:
         self._device_name = dev_type_name + ":" + str(dev_id)
 
     def __enter__(self):
-        print(f"Entered device, {self.get_name()}, context", flush=True)
+        pass
+        #print(f"Entered device, {self.get_name()}, context", flush=True)
 
     def __exit__(self):
-        print(f"Exited device, {self.get_name()}, context", flush=True)
+        pass
+        #print(f"Exited device, {self.get_name()}, context", flush=True)
 
     def get_name(self):
         return self._device_name

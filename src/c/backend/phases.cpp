@@ -4,16 +4,10 @@
 /**************************/
 // Mapper Implementation
 
-void Mapper::enqueue(InnerTask *task) {
-  std::cout << "[Mapper] Enqueuing task " << task->name << std::endl;
-  this->mappable_tasks.push_back(task);
-}
+void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }
 
 void Mapper::enqueue(std::vector<InnerTask *> &tasks) {
-  std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
   this->mappable_tasks.push_back(tasks);
-  std::cout << "Ready tasks after: " << this->mappable_tasks.atomic_size()
-            << std::endl;
 }
 
 size_t Mapper::get_count() {
@@ -79,6 +73,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
       memory_reserver->enqueue(mapped_task);
     }
   }
+
+  this->mapped_tasks_buffer.clear();
 }
 
 /**************************/
@@ -121,9 +117,11 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
         (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
 
     if (enqueue_flag) {
-      runtime_reserver->enqueue(mapped_task);
+      runtime_reserver->enqueue(reserved_task);
     }
   }
+
+  this->reserved_tasks_buffer.clear();
 }
 
 /**************************/

@@ -178,7 +178,8 @@ Scheduler::Status InnerScheduler::activate() {
   // TODO(hc): the param should be mapped phase but use ready phase
   // for debugging.
 
-  this->mapper->run(this->runtime_reserver);
+  this->mapper->run(this->memory_reserver);
+  this->memory_reserver->run(this->runtime_reserver);
   this->runtime_reserver->run(this->launcher);
 
   // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->runtime_reserver);
@@ -200,18 +201,21 @@ void InnerScheduler::spawn_task(InnerTask *task) {
 
 void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
-  LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  if (status.mappable && (task.get_state() >= Task::MAPPED)) {
+  LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
+  if (status.mappable && (task->get_state() < Task::MAPPED)) {
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
     this->mapper->enqueue(task);
-  } else if (status.reservable && (task.get_state() == Task::MAPPED)) {
+  } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
     this->memory_reserver->enqueue(task);
-  } else if (status.runnable && (task.get_state() == Task::RESERVED)) {
+  } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
 }
 
 void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
-  LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
+  // LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
   for (auto task_status : tasks) {
     this->enqueue_task(task_status.first, task_status.second);
   }

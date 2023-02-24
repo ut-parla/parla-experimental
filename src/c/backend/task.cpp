@@ -133,7 +133,7 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
 
   // Decrement overcount to free this region
   bool spawnable = this->num_unspawned_dependencies.fetch_sub(1) == 1;
-  bool mappable = this->num_unspawned_dependencies.fetch_sub(1) == 1;
+  bool mappable = this->num_unmapped_dependencies.fetch_sub(1) == 1;
 
   // Other counters are 'freed' in each phase before entering the next phase
 

@@ -250,9 +250,7 @@ class Task:
         self.constraints = constraints
 
         self.add_constraints(constraints)
-        spawnable_flag = self.add_dependencies(dependencies)
-
-        return spawnable_flag
+        self.add_dependencies(dependencies)
 
     def _wait_for_dependency_events(self, enviornment):
         pass
@@ -308,7 +306,7 @@ class Task:
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
 
-    def add_dependencies(self, dependency_list, process=True):
+    def add_dependencies(self, dependency_list, process=False):
         return self.inner_task.add_dependencies(dependency_list, process)
 
     def get_num_dependencies(self):
@@ -377,8 +375,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        spawnable_flag = super().instantiate(dependencies, constraints, priority)
-        return spawnable_flag
+        super().instantiate(dependencies, constraints, priority)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -450,7 +447,6 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
-            print(prefix, i, lower_boundary, upper_boundary)
             if (lower_boundary <= i) and ( (upper_boundary < 0) or (i < upper_boundary) ):
                 cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
         else:
@@ -556,7 +552,6 @@ class TaskSpace(TaskCollection):
             shape_flag = (self.shape is not None)
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
-            print(index, lower_boundary, upper_boundary)
             idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
             task_list = get_or_create_tasks(self, idx, create=create)
 
