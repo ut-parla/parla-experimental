@@ -328,11 +328,11 @@ public:
     // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
     this->state.store(Task::CREATED);
     this->status.store(Task::INITIAL);
-    this->num_blocking_compute_dependencies.load(1);
-    this->num_blocking_dependencies.load(1);
-    this->num_unspawned_dependencies.load(1);
-    this->num_unmapped_dependencies.load(1);
-    this->num_unreserved_dependencies.load(1);
+    this->num_blocking_compute_dependencies.store(1);
+    this->num_blocking_dependencies.store(1);
+    this->num_unspawned_dependencies.store(1);
+    this->num_unmapped_dependencies.store(1);
+    this->num_unreserved_dependencies.store(1);
   }
 
   /* Return whether the task is ready to run */
