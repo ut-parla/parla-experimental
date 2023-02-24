@@ -244,7 +244,7 @@ class Task:
         self.inner_task.update_name(name)
         
 
-    def instantiate(self, dependencies=None, constraints=None, priority=None):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
 
         self.dependencies = dependencies
         self.constraints = constraints

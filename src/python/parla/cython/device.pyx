@@ -23,9 +23,9 @@ cdef class CyCUDADevice(CyDevice):
     """
     An inherited class from `CyDevice` for a device object specialized to CUDA.
     """
-    def __cinit__(self, int dev_id, long mem_sz, long num_vucs, py_device):
+    def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # This object will be deallocated at CyDevice's dealloc().
-        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vucs, \
+        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, \
                                           <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
@@ -36,9 +36,9 @@ cdef class CyCPUDevice(CyDevice):
     """
     An inherited class from `CyDevice` for a device object specialized to CPU.
     """
-    def __cinit__(self, int dev_id, long mem_sz, long num_vucs, py_device):
+    def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # This object will be deallocated at CyDevice's dealloc().
-        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vucs, \
+        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, \
                                          <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
@@ -86,18 +86,18 @@ class PyCUDADevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
-    def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
+    def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CUDA, "CUDADev", dev_id)
-        self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vucs, self)
+        self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
 class PyCPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
-    def __init__(self, dev_id: int, mem_sz: long, num_vucs: long):
+    def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CPU, "CPUDev", dev_id)
-        self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vucs, self)
+        self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
 class PyArchitecture(metaclass=ABCMeta):
@@ -185,24 +185,29 @@ class PyCPUArchitecture(PyArchitecture):
         assert isinstance(device, PyCPUDevice)
         self._devices.append(device)
 
-@dataclass
 class DeviceResource:
-    memory_sz: long
-    num_vcus: int
+    def __init__(self, memory_sz = -1, num_vcus = -1):
+        # This class represents a device total resource size.
+        # This can also be used to specify resource requirements
+        # of a task for task mapping. 
+        # -1 value implies that there is no constraint in a
+        # resource. In the same sense, -1 value in a requirement
+        # implies that it can be mapped to a device even though 
+        # that device does not have enough resource.
+        # TODO(hc): better design? map still has a problem that
+        #           users should remember keys.
+        self.memory_sz = memory_sz
+        self.num_vcus = num_vcus
 
-    def __post_init__(self):
-        """
-        Initialize all resources to 0.
-        This would be useful when types of resource are
-        diversified.
-        """
-        self.memory_sz = 0
-        self.num_vcus = 0
 
-@dataclass
+# TODO(hc): use dataclass later.
 class DeviceResourceRequirement:
-    device: PyDevice
-    res_req: DeviceResource
+    def __init__(self, device: PyDevice, res_req: DeviceResource):
+        self.device = device
+        self.res_req = res_req
 
+    def __repr__(self):
+        return "("+self.device.get_name()+", memory:"+str(self.res_req.memory_sz)+ \
+               ", num_vcus:"+str(self.res_req.num_vcus)+")\n" 
 
 PlacementSource = Union[PyArchitecture, PyDevice]

@@ -83,7 +83,7 @@ def spawn(task=None,
         scheduler = get_scheduler_context().scheduler
 
         # Get a set of candidate devices for a task.
-        set_candidate_devices = scheduler.get_devices_from_placement(placement)
+        set_candidate_devices = scheduler.get_device_reqs_from_placement(placement)
         print("Candidate devices:", set_candidate_devices)
 
         task.set_scheduler(scheduler)

@@ -7,7 +7,7 @@ try:
 except ImportError:
     cupy = None
 
-from typing import Collection, Iterable, Set 
+from typing import Collection, Iterable, Set, List
 
 import os
 import psutil
@@ -21,6 +21,8 @@ PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
+DeviceResource = device.DeviceResource
+DeviceResourceRequirement = device.DeviceResourceRequirement
 
 # Architecture declaration.
 # To use these in the placement of @spawn,
@@ -189,3 +191,26 @@ class PyDeviceManager:
             return self.unpack_devices(ps)
         else:
             return self.get_all_devices()
+
+    def construct_single_device_reqs(self, d, r):
+        return DeviceResourceRequirement(device=d, res_req=r)
+
+    def construct_multi_device_reqs(self, devices):
+        reqs = []
+        for d in devices:
+            reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
+        return reqs
+
+    def get_device_reqs_from_placement(self, placement):
+        device_candidates = self.get_devices_from_placement(placement)
+        assert(isinstance(device_candidates, List))
+        device_reqs = []
+        for dc in device_candidates:
+            if isinstance(dc, List):
+                device_reqs.append(self.construct_multi_device_reqs(dc))
+            else:
+                device_reqs.append(self.construct_single_device_reqs(dc, DeviceResource()))
+        return device_reqs
+
+                
+
