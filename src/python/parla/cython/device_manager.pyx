@@ -81,9 +81,9 @@ class PyDeviceManager:
             self.cy_device_manager.register_device(cy_device)
 
     def print_registered_devices(self):
-        print("Python devices:", flush=True)
+        #print("Python devices:", flush=True)
         for dev in self.py_registered_devices:
-            print(f"Registered device: {dev}", flush=True)
+            #print(f"Registered device: {dev}", flush=True)
         self.cy_device_manager.print_registered_devices()
 
     def get_cy_device_manager(self):

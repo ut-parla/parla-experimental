@@ -240,7 +240,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
 
 bool InnerTask::notify_dependents_wrapper() {
   TaskStateList buffer = TaskStateList();
-  this->notify_dependents(buffer, Task::COMPLETED);
+  this->notify_dependents(buffer, Task::MAPPED);
   return buffer.size() > 0;
 }
 
@@ -292,6 +292,10 @@ int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
 
 int InnerTask::get_num_blocking_dependencies() const {
   return this->num_blocking_dependencies.load();
+}
+
+int InnerTask::get_num_unmapped_dependencies() const {
+  return this->num_unmapped_dependencies.load();
 }
 
 std::vector<void *> InnerTask::get_dependencies() {

@@ -52,6 +52,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
 
         int get_num_blocking_dependencies()
+        int get_num_unmapped_dependencies()
 
         int set_state(int state)
 

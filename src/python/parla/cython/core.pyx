@@ -242,6 +242,10 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         return c_self.get_num_blocking_dependencies()
 
+    cpdef get_num_unmapped_dependencies(self):
+        cdef InnerTask* c_self = self.c_task
+        return c_self.get_num_unmapped_dependencies()
+
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
         cdef bool status = False

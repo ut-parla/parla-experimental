@@ -330,6 +330,7 @@ public:
     // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
     this->state.store(Task::CREATED);
     this->status.store(Task::INITIAL);
+    this->instance++;
     this->num_blocking_compute_dependencies.store(1);
     this->num_blocking_dependencies.store(1);
     this->num_unspawned_dependencies.store(1);
@@ -348,6 +349,7 @@ public:
 
   /* Get number of blocking dependencies */
   int get_num_blocking_dependencies() const;
+  int get_num_unmapped_dependencies() const;
 
   /* Get dependency list. Used for testing Python interface. */
   std::vector<void *> get_dependencies();

@@ -318,6 +318,9 @@ class Task:
     def get_num_blocking_dependencies(self):
         return self.inner_task.get_num_blocking_dependencies()
 
+    def get_num_unmapped_dependencies(self):
+        return self.inner_task.get_num_unmapped_dependencies()
+
     def get_dependencies(self):
         dependency_list = self.inner_task.get_dependencies()
         return dependency_list

@@ -12,9 +12,9 @@ class NVTXTracer:
             try:
                 import nvtx as nvtx_module
                 NVTXTracer.nvtx = nvtx_module
-                print("NVTX is enabled", flush=True)
+                # print("NVTX is enabled", flush=True)
             except ImportError:
-                print("NVTX is disabled", flush=True)
+                # print("NVTX is disabled", flush=True)
                 NVTXTracer.nvtx = None
 
     def __getattr__(self, name):

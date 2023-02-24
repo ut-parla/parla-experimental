@@ -264,7 +264,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     //  - make sure state ids match
     //  - add and process dependencies
     //  - if true, enqueue task
-    task->instance++;
+    task->reset();
     auto status = task->process_dependencies();
     this->enqueue_task(task, status);
   }
@@ -276,7 +276,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // std::cout << "Task Complete: " << task->name << std::endl;
 
     // Reset all runtime counters and state of the continuation task.
-    task->reset();
     auto &enqueue_buffer = worker->enqueue_buffer;
     task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {

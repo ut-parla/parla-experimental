@@ -77,7 +77,7 @@ def spawn(task=None,  dependencies=[], vcus=1):
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
-                         dependencies=dependencies,
+                         dependencies=flattened_dependencies,
                          constraints=vcus)
 
         scheduler.spawn_task(task)
