@@ -208,6 +208,6 @@ class DeviceResourceRequirement:
 
     def __repr__(self):
         return "("+self.device.get_name()+", memory:"+str(self.res_req.memory_sz)+ \
-               ", num_vcus:"+str(self.res_req.num_vcus)+")\n" 
+               ", num_vcus:"+str(self.res_req.num_vcus)+")" 
 
 PlacementSource = Union[PyArchitecture, PyDevice]

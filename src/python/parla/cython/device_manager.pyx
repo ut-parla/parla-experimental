@@ -7,7 +7,7 @@ try:
 except ImportError:
     cupy = None
 
-from typing import Collection, Iterable, Set, List
+from typing import FrozenSet, Collection, Iterable, Set, List
 
 import os
 import psutil
@@ -53,6 +53,21 @@ cdef class CyDeviceManager:
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_
+
+
+class PrintableFrozenSet(frozenset):
+    """
+    Add __repr__ to frozenset.
+    """
+    def get_name(self):
+        # TODO(hc): better way?
+        name = "[FrozenSet] "
+        for elem in self:
+            name += str(elem) + ","
+        return name[:-1]
+
+    def __repr__(self):
+        return self.get_name()
 
 
 class PyDeviceManager:
@@ -156,7 +171,7 @@ class PyDeviceManager:
             devices. The placement can be an iteratable collection
             and this function handles it through a recursive call. """
         if isinstance(placement_component, PyArchitecture):
-            return placement_component.devices
+            return PrintableFrozenSet(placement_component.devices)
         elif isinstance(placement_component, PyDevice):
             return [placement_component]
         elif isinstance(placement_component, Collection):
@@ -177,6 +192,15 @@ class PyDeviceManager:
                     # mapper to choose one of them depending
                     # on device status.
                     unpacked_devices += [tmp_unpacked_devices]
+                elif isinstance(c, PyArchitecture):
+                    # Architecture placement means one placement
+                    # of the entire devices in the architecture.
+                    # For example, if `gpu` is specified, all gpu devices
+                    # become target candidate devices and one of them
+                    # might be chosen.
+                    # To distinguish architecture placement from others,
+                    # it is converted to a frozen set of the entire devices.
+                    unpacked_devices.append(tmp_unpacked_devices)
                 else:
                     unpacked_devices += tmp_unpacked_devices
             return unpacked_devices
@@ -198,7 +222,13 @@ class PyDeviceManager:
     def construct_multi_device_reqs(self, devices):
         reqs = []
         for d in devices:
-            reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
+            if isinstance(d, PrintableFrozenSet):
+                set_reqs = []
+                for set_d in d:
+                    set_reqs.append(self.construct_single_device_reqs(set_d, DeviceResource()))
+                reqs.append(PrintableFrozenSet(set_reqs))
+            else:
+                reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
         return reqs
 
     def get_device_reqs_from_placement(self, placement):
