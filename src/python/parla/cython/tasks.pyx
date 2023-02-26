@@ -347,6 +347,29 @@ class Task:
     def set_complete(self):
         self.inner_task.set_complete()
 
+    def set_device_reqs(self, device_reqs):
+        """
+        # device_reqs: a list of device requirements,
+        # a list of list of devices and frozensets
+        # a list of a single frozenset
+        for req in device_reqs:
+            if isinstance(req, DeviceResourceRequirement):
+                # Single device.
+                self.inner_task.add_single_dev_req()
+            elif isinstance(req, FrozenSet):
+                # Single architecture
+                self.inner_task.begin_singlearch_reqs_add()
+                self.inner_task.add_single_arch_req()
+                self.inner_task.end_singlearch_reqs_add()
+            elif isinstance(req, List):
+                # Multi-optional requirements
+                self.inner_task.begin_multidev_reqs_add()
+                for member in req: 
+                    self.set_device_reqs(member)
+                self.inner_task.end_multidev_reqs_add()
+        """
+        
+
     def __repr__(self):
         return f"Task({self.name})"
 
