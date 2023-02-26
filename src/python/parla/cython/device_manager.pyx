@@ -251,6 +251,3 @@ class PyDeviceManager:
             else:
                 device_reqs.append(self.construct_single_device_reqs(dc, DeviceResource()))
         return device_reqs
-
-                
-
