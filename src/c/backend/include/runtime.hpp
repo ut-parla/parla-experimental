@@ -17,6 +17,7 @@ using namespace std::chrono_literals;
 
 #include "containers.hpp"
 #include "device_manager.hpp"
+#include "resource_requirements.hpp"
 #include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
@@ -392,17 +393,8 @@ public:
   /* Get complete */
   bool get_complete();
 
-  void SetResourceRequirement(ResourceRequirement* res_req) {
-    assert(res_req_ == NULL);
-    res_req_ = res_req;
-  }
-
-  const ResourceRequirement& GetResourceRequirement() {
-    return (*res_req_);
-  }
-
 private:
-  ResourceRequirement* res_req_;
+  ResourceRequirementCollections* res_reqs_;
 };
 
 class InnerDataTask : public InnerTask {

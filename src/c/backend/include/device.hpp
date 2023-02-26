@@ -8,12 +8,14 @@
 #include <vector>
 
 using DevIDTy = uint32_t;
+using MemorySzTy = uint64_t;
+using VCUTy = uint32_t;
 
 // TODO(hc): This will be a dictionary in the later.
 struct DeviceResources {
   /// Supporting device resources.
-  size_t mem_sz_; /* Memory size. */
-  size_t num_vcus_; /* The number of virtual computing units (VCU). */
+  MemorySzTy mem_sz_; /* Memory size. */
+  VCUTy num_vcus_; /* The number of virtual computing units (VCU). */
 };
 
 enum DeviceType {
@@ -43,11 +45,11 @@ public:
     return dev_type_name_ + ":" + std::to_string(dev_id_);
   }
 
-  size_t GetMemorySize() {
+  MemorySzTy GetMemorySize() {
     return res_.mem_sz_; 
   }
 
-  size_t GetNumVCUs() {
+  VCUTy GetNumVCUs() {
     return res_.num_vcus_;
   }
 
@@ -80,79 +82,4 @@ public:
             Device("CPU", dev_id, mem_sz, num_vcus, py_dev) {}
 private:
 };
-
-struct DeviceResourceReq {
-  Device* dev_;
-  DeviceResources res_req_; 
-};
-
-/// This class contains a single resource requirement for devices 
-/// in the same architecture type for a task.
-class ResourceRequirement {
-public:
-  ResourceRequirement() = delete;
-  ResourceRequirement(std::vector<std::vector<DeviceResourceReq>> dev_reqs_candidates) :
-                      dev_reqs_candidates_(std::move(dev_reqs_candidates)) {}
-
-  // TODO(hc): From the factory function in the device manager,
-  //           accumulate (merge) another requirement.
-  //           This is for multi-arch or arch requirement.
-private:
-  /// Requirements should be maintained in a vector of vector 
-  /// as multiple options can be provided by users at spawning phase.
-  /// After task mapping, one of the options would be chosen.
-  std::vector<std::vector<DeviceResourceReq>> dev_reqs_candidates_;
-  /// Task requirements that will be actually used.
-  std::vector<DeviceResourceReq> dev_reqs_;
-};
-
-#if 0
-// Base class for device requirement classes.
-class ResourceRequirement {};
-
-/// This class contains resource requirements for a single device
-/// for a task.
-class SingleDevRequirement : ResourceRequirement {
-public:
-  SingleDevRequirement() = delete;
-  SingleDevRequirement(Device* dev_ptr, DeviceResources res_req) :
-                       dev_ptr_(dev_ptr), res_req_(res_req) {}
-
-private:
-  Device* dev_ptr_;
-  DeviceResources res_req_;
-};
-
-/// This class contains a single resource requirement for
-/// devices in a single and the same architecture for a task.
-class SingleArchRequirement : ResourceRequirement {
-public:
-  SingleArchRequirement(DeviceType dev_type, std::vector<Device*> dev_ptr_vec,
-                        DeviceResources res_req) : dev_type_(dev_type),
-                        dev_ptr_vec_(std::move(dev_ptr_vec)),
-                        res_req_(res_req) {}
-private:
-  DeviceType dev_type_;
-  std::vector<Device*> dev_ptr_vec_;
-  DeviceResources res_req_;
-};
-
-/// This class contains a single resource requirement for devices 
-/// in the same architecture type for a task.
-class MultiArchsRequirement : ResourceRequirement {
-public:
-  MultiArchsRequirement(std::vector<bool> has_arch_constraint,
-                        std::vector<std::vector<Device*>> dev_ptr_vec,
-                        std::vector<DeviceResources> reqs) :
-                        has_arch_constraint_(std::move(has_arch_constraint)),
-                        dev_ptr_vec_(std::move(dev_ptr_vec)),
-                        reqs_(std::move(reqs)) {}
-
-private:
-  std::vector<bool> has_arch_constraint_;
-  std::vector<std::vector<Device*>> dev_ptr_vec_;
-  std::vector<DeviceResources> reqs_;
-};
-#endif
-
 #endif

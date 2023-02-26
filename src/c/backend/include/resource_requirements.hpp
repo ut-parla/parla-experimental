@@ -11,6 +11,12 @@ class SingleDeviceRequirementBase : DeviceRequirementBase {};
 using MemorySzTy = uint64_t;
 using VCUTy = uint32_t;
 
+
+struct DeviceResourceReq {
+  Device* dev_;
+  DeviceResources res_req_; 
+};
+
 /// Resource contains device types (architectures), specific devices, their
 /// memory and virtual computation units.
 class ResourceRequirementCollections {

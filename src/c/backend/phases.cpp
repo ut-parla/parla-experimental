@@ -39,6 +39,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask* task = this->spawned_tasks.front_and_pop();
+#if 0
     for (Device& dev : device_manager->GetAllDevices()) {
       if (dev.GetID() == dummy_dev_idx_ && dev.GetName().find("CUDA") != std::string::npos) {
         std::vector<std::vector<DeviceResourceReq>> dev_req = {{DeviceResourceReq{&dev, DeviceResources{1000, 10}}}};
@@ -51,6 +52,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
       }
     }
     this->mapped_tasks_buffer.push_back(task);
+#endif
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
   */
