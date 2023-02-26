@@ -231,13 +231,23 @@ class PyDeviceManager:
                 reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
         return reqs
 
+    def construct_single_arch_reqs(self, archs):
+        reqs = []
+        for d in archs:
+            reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
+        return frozenset(reqs)
+
     def get_device_reqs_from_placement(self, placement):
         device_candidates = self.get_devices_from_placement(placement)
+        print(device_candidates)
         assert(isinstance(device_candidates, List))
         device_reqs = []
         for dc in device_candidates:
             if isinstance(dc, List):
+                # TODO(hc): just architecture specification didn't make pairs.
                 device_reqs.append(self.construct_multi_device_reqs(dc))
+            elif isinstance(dc, FrozenSet):
+                device_reqs.append(self.construct_single_arch_reqs(dc))
             else:
                 device_reqs.append(self.construct_single_device_reqs(dc, DeviceResource()))
         return device_reqs
