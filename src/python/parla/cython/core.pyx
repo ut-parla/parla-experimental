@@ -1,5 +1,6 @@
 import cython 
 
+from parla.cython.device cimport Device
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
 
 #Logging functions
@@ -260,6 +261,28 @@ cdef class PyInnerTask:
     cpdef set_complete(self):
         cdef InnerTask* c_self = self.c_task
         c_self.set_state(7)
+
+    cpdef add_device_req(self, CyDevice cy_device, long mem_sz, int num_vcus):
+        cdef InnerTask* c_self = self.c_task
+        cdef Device* cpp_device = cy_device.get_cpp_device()
+        c_self.add_device_req(cpp_device, mem_sz, num_vcus)
+
+    cpdef begin_arch_req_addition(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.begin_arch_req_addition()
+
+    cpdef end_arch_req_addition(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.end_arch_req_addition()
+
+    cpdef begin_multidev_req_addition(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.begin_multidev_req_addition()
+
+    cpdef end_multidev_req_addition(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.end_multidev_req_addition()
+
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker

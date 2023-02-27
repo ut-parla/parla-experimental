@@ -2,6 +2,7 @@ import cython
 cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
+from parla.cython.device cimport CyDevice
 
 from libcpp  cimport bool
 from libcpp.string cimport string
@@ -55,9 +56,12 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_unmapped_dependencies()
 
         int set_state(int state)
+        void add_device_req(void* dev_ptr, long mem_sz, int num_vcus)
+        void begin_arch_req_addition()
+        void end_arch_req_addition()
+        void begin_multidev_req_addition()
+        void end_multidev_req_addition()
 
-
-    #ctypedef InnerTask* InnerTaskPtr_t
 
     cdef cppclass InnerWorker:
         void* py_worker

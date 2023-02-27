@@ -358,20 +358,25 @@ class Task:
             if isinstance(req, DeviceResourceRequirement):
                 # Single device.
                 print("Single device: ", str(req), flush=True)
-                #self.inner_task.add_single_dev_req()
+                self.inner_task.add_device_req(
+                    req.device.get_cy_device(),
+                    req.res_req.memory_sz, req.res_req.num_vcus)
             elif isinstance(req, FrozenSet):
                 # Single architecture
                 print("Architecture:", str(req), flush=True)
-                #self.inner_task.begin_singlearch_reqs_add()
-                #self.inner_task.add_single_arch_req()
-                #self.inner_task.end_singlearch_reqs_add()
+                self.inner_task.begin_arch_req_addition()
+                for member in req:
+                    self.inner_task.add_device_req(
+                        member.device.get_cy_device(),
+                        member.res_req.memory_sz, member.res_req.num_vcus)
+                self.inner_task.end_arch_req_addition()
             elif isinstance(req, List):
                 # Multi-optional requirements
-                #self.inner_task.begin_multidev_reqs_add()
+                self.inner_task.begin_multidev_req_addition()
                 for member in req: 
                     print("List:", str(member), flush=True)
                     self.set_device_reqs([member])
-                #self.inner_task.end_multidev_reqs_add()
+                self.inner_task.end_multidev_req_addition()
 
     def __repr__(self):
         return f"Task({self.name})"

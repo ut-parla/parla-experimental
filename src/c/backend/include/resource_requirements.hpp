@@ -6,26 +6,22 @@
 /// Base classes.
 
 class DeviceRequirementBase {};
-class SingleDeviceRequirementBase : DeviceRequirementBase {};
+class SingleDeviceRequirementBase : public DeviceRequirementBase {};
 
 using MemorySzTy = uint64_t;
 using VCUTy = uint32_t;
-
-
-struct DeviceResourceReq {
-  Device* dev_;
-  DeviceResources res_req_; 
-};
 
 /// Resource contains device types (architectures), specific devices, their
 /// memory and virtual computation units.
 class ResourceRequirementCollections {
 public:
+  void AppendDeviceRequirementOption(DeviceRequirementBase* dev_req);
 private:
   std::vector<DeviceRequirementBase*> dev_reqs_;
 };
 
-class MultiDeviceRequirements : DeviceRequirementBase {
+class MultiDeviceRequirements : public DeviceRequirementBase {
+public:
   void AppendDeviceRequirement(SingleDeviceRequirementBase* req);
 private:
   std::vector<SingleDeviceRequirementBase*> dev_reqs_;
@@ -42,6 +38,7 @@ private:
 };
 
 class ArchitectureRequirement : public SingleDeviceRequirementBase {
+public:
   void AppendDeviceRequirementOption(DeviceRequirement* req);
 private:
   std::vector<DeviceRequirement*> dev_reqs_;

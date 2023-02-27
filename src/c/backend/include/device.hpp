@@ -31,8 +31,8 @@ class Device {
 public:
   Device() = delete;
 
-  Device(std::string dev_type_name, DevIDTy dev_id, size_t mem_sz,
-         size_t num_vcus, void* py_dev) :
+  Device(std::string dev_type_name, DevIDTy dev_id, MemorySzTy mem_sz,
+         VCUTy num_vcus, void* py_dev) :
          py_dev_(py_dev), dev_id_(dev_id), res_(DeviceResources{mem_sz, num_vcus}),
          dev_type_name_(dev_type_name) {}
 
