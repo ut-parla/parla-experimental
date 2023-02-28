@@ -7,7 +7,7 @@ try:
 except ImportError:
     cupy = None
 
-from typing import FrozenSet, Collection, Iterable, Set, List
+from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 
 import os
 import psutil
@@ -184,13 +184,13 @@ class PyDeviceManager:
                 if c is None:
                     continue
                 tmp_unpacked_devices = self.unpack_devices(c)
-                if isinstance(c, Set):
+                if isinstance(c, Tuple):
                     # Multi-device placement is specified
-                    # through a set. Therefore, each set in the
+                    # through a nested list. Therefore, each nested list in the
                     # placement specifies a single placement for
-                    # a task, and multiple sets allow the task
-                    # mapper to choose one of them depending
-                    # on device status.
+                    # a task, and multiple lists allow the task
+                    # mapper to choose one of those lists as resource
+                    # requirements depending on device status.
                     unpacked_devices += [tmp_unpacked_devices]
                 elif isinstance(c, PyArchitecture):
                     # Architecture placement means one placement
@@ -239,7 +239,6 @@ class PyDeviceManager:
 
     def get_device_reqs_from_placement(self, placement):
         device_candidates = self.get_devices_from_placement(placement)
-        print(device_candidates)
         assert(isinstance(device_candidates, List))
         device_reqs = []
         for dc in device_candidates:

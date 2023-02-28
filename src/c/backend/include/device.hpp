@@ -8,14 +8,17 @@
 #include <vector>
 
 using DevIDTy = uint32_t;
-using MemorySzTy = uint64_t;
-using VCUTy = uint32_t;
+// `-1` is used to disable resource constraints.
+// In this case, a task can be mapped to any compatible
+// regardless of its resource states.
+using MemorySzTy = int64_t;
+using VCUTy = int32_t;
 
 // TODO(hc): This will be a dictionary in the later.
 struct DeviceResources {
   /// Supporting device resources.
-  MemorySzTy mem_sz_; /* Memory size. */
-  VCUTy num_vcus_; /* The number of virtual computing units (VCU). */
+  MemorySzTy mem_sz; /* Memory size. */
+  VCUTy num_vcus; /* The number of virtual computing units (VCU). */
 };
 
 enum DeviceType {
@@ -37,20 +40,20 @@ public:
          dev_type_name_(dev_type_name) {}
 
   /// Return a device id.
-  DevIDTy GetID() {
+  const DevIDTy GetID() const {
     return dev_id_;
   }
 
-  std::string GetName() {
+  const std::string GetName() const {
     return dev_type_name_ + ":" + std::to_string(dev_id_);
   }
 
-  MemorySzTy GetMemorySize() {
-    return res_.mem_sz_; 
+  const MemorySzTy GetMemorySize() const {
+    return res_.mem_sz; 
   }
 
-  VCUTy GetNumVCUs() {
-    return res_.num_vcus_;
+  const VCUTy GetNumVCUs() const {
+    return res_.num_vcus;
   }
 
   void* GetPyDevice() {

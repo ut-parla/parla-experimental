@@ -387,12 +387,14 @@ void InnerTask::begin_arch_req_addition() {
 void InnerTask::end_arch_req_addition() {
   assert(req_addition_mode_ % 2 == 0);
   if (req_addition_mode_ == 4) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(tmp_arch_req_));
+    tmp_multdev_reqs_->AppendDeviceRequirement(tmp_arch_req_);
   } else {
-    dev_res_reqs_.AppendDeviceRequirementOption(std::move(tmp_arch_req_));
+    dev_res_reqs_.AppendDeviceRequirementOption(tmp_arch_req_);
   }
-  assert(tmp_arch_req_->size() == 0);
-  delete tmp_arch_req_;
+  // This should not delete this pointer since this object
+  // is moved to either multi-device or the topmost device
+  // requirement vector.
+  tmp_arch_req_ = nullptr;
   --req_addition_mode_;
 }
 
@@ -404,9 +406,11 @@ void InnerTask::begin_multidev_req_addition() {
 }
 
 void InnerTask::end_multidev_req_addition() {
-  dev_res_reqs_.AppendDeviceRequirementOption(std::move(tmp_multdev_reqs_));
-  assert(tmp_multdev_reqs_->size() == 0);
-  delete tmp_multdev_reqs_;
+  assert(tmp_multdev_reqs_ != nullptr);
+  dev_res_reqs_.AppendDeviceRequirementOption(tmp_multdev_reqs_);
+  // This should not delete this pointer since this object
+  // is moved to the topmost device requirement vector.
+  tmp_multdev_reqs_ == nullptr;
   req_addition_mode_ = SingleDevAdd;
 }
 >>>>>>> Add a bridge of device reqs additions between C and Python tasks; not yet validated but passed a simple test

@@ -399,6 +399,10 @@ public:
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
 
+  ResourceRequirementCollections& GetResourceRequirements() {
+    return dev_res_reqs_;
+  }
+
 private:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)

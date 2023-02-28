@@ -357,13 +357,11 @@ class Task:
         for req in device_reqs:
             if isinstance(req, DeviceResourceRequirement):
                 # Single device.
-                print("Single device: ", str(req), flush=True)
                 self.inner_task.add_device_req(
                     req.device.get_cy_device(),
                     req.res_req.memory_sz, req.res_req.num_vcus)
             elif isinstance(req, FrozenSet):
                 # Single architecture
-                print("Architecture:", str(req), flush=True)
                 self.inner_task.begin_arch_req_addition()
                 for member in req:
                     self.inner_task.add_device_req(
@@ -374,7 +372,6 @@ class Task:
                 # Multi-optional requirements
                 self.inner_task.begin_multidev_req_addition()
                 for member in req: 
-                    print("List:", str(member), flush=True)
                     self.set_device_reqs([member])
                 self.inner_task.end_multidev_req_addition()
 

@@ -8,7 +8,7 @@ import inspect
 
 from parla.cython import tasks
 
-from typing import Union, Collection, Any
+from typing import Optional, Collection, Any, Union
 
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
@@ -45,6 +45,9 @@ def _make_cell(val):
 def spawn(task=None,
           dependencies=[],
           # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
+          # This collection does not contain Union anymore, which was used by the
+          # old Parla, since we now allow support {arch, arch, arch} placement
+          # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource], Any, None]] = None,
           vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
