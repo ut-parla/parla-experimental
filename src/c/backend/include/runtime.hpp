@@ -328,7 +328,7 @@ public:
   /* Reset state and increment all internal counters. Used by continuation */
   void reset() {
     // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
-    this->state.store(Task::CREATED);
+    this->state.store(Task::SPAWNED);
     this->status.store(Task::INITIAL);
     this->instance++;
     this->num_blocking_compute_dependencies.store(1);
@@ -414,7 +414,7 @@ public:
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state)
+LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status)
 LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 
