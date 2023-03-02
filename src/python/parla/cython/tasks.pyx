@@ -5,7 +5,7 @@ cimport core
 from parla.cython import core
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, Union
-from typing import Awaitable, Collection, Iterable
+from typing import Awaitable, Collection, Iterable, FrozenSet
 from copy import copy
 import threading
 
@@ -15,6 +15,9 @@ import sys
 import cython 
 cimport cython
 
+from parla.cython import device
+
+DeviceResourceRequirement = device.DeviceResourceRequirement 
 
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []
@@ -244,7 +247,7 @@ class Task:
         self.inner_task.update_name(name)
         
 
-    def instantiate(self, dependencies=None, constraints=None, priority=None):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
 
         self.dependencies = dependencies
         self.constraints = constraints
@@ -346,6 +349,31 @@ class Task:
 
     def set_complete(self):
         self.inner_task.set_complete()
+
+    def set_device_reqs(self, device_reqs):
+        # device_reqs: a list of device requirements,
+        # a list of list of devices and frozensets
+        # a list of a single frozenset
+        for req in device_reqs:
+            if isinstance(req, DeviceResourceRequirement):
+                # Single device.
+                self.inner_task.add_device_req(
+                    req.device.get_cy_device(),
+                    req.res_req.memory_sz, req.res_req.num_vcus)
+            elif isinstance(req, FrozenSet):
+                # Single architecture
+                self.inner_task.begin_arch_req_addition()
+                for member in req:
+                    self.inner_task.add_device_req(
+                        member.device.get_cy_device(),
+                        member.res_req.memory_sz, member.res_req.num_vcus)
+                self.inner_task.end_arch_req_addition()
+            elif isinstance(req, List):
+                # Multi-optional requirements
+                self.inner_task.begin_multidev_req_addition()
+                for member in req: 
+                    self.set_device_reqs([member])
+                self.inner_task.end_multidev_req_addition()
 
     def __repr__(self):
         return f"Task({self.name})"

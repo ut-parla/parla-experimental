@@ -17,6 +17,7 @@ using namespace std::chrono_literals;
 
 #include "containers.hpp"
 #include "device_manager.hpp"
+#include "resource_requirements.hpp"
 #include "profiling.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
@@ -392,20 +393,26 @@ public:
   /* Get complete */
   bool get_complete();
 
-  /// TODO(hc): move these to cpp.
-  /// TODO(hc): Camel or snake case?
-  void SetMappedDevice(Device *dev) {
-    assert(mapped_device_ == NULL);
-    this->mapped_device_ = dev;
-  }
+  void add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcus);
+  void begin_arch_req_addition();
+  void end_arch_req_addition();
+  void begin_multidev_req_addition();
+  void end_multidev_req_addition();
 
-  const Device &GetMappedDevice() {
-    assert(mapped_device_ != NULL);
-    return *this->mapped_device_;
+  ResourceRequirementCollections& GetResourceRequirements() {
+    return dev_res_reqs_;
   }
 
 private:
-  Device *mapped_device_;
+  /*
+   *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
+   *  1 <--> 2 (SingleArchAdd)        
+   */
+  enum ReqAdditionState { SingleDevAdd = 1, /* SingleArchAdd == 2n */ MultiDevAdd = 3 };
+  uint32_t req_addition_mode_;
+  ArchitectureRequirement* tmp_arch_req_;
+  MultiDeviceRequirements* tmp_multdev_reqs_;
+  ResourceRequirementCollections dev_res_reqs_;
 };
 
 class InnerDataTask : public InnerTask {

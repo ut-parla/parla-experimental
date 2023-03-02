@@ -1,21 +1,24 @@
 from parla.cython import scheduler
 from parla.cython import core
-
 from parla.cython import tasks
+from parla.cython import device, device_manager
 from parla.utility.tracer import NVTXTracer
-
 
 import inspect
 
 from parla.cython import tasks
 
+from typing import Optional, Collection, Any, Union
+
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
+PyArchitecture = device_manager.PyArchitecture
+PyDevice = device_manager.PyDevice
+PlacementSource = device.PlacementSource
 
 WorkerThread = scheduler.WorkerThread
 _task_callback = scheduler._task_callback
 get_scheduler_context = scheduler.get_scheduler_context
-
 
 nvtx = NVTXTracer
 nvtx.initialize()
@@ -39,7 +42,14 @@ def _make_cell(val):
 
 
 # @profile
-def spawn(task=None,  dependencies=[], vcus=1):
+def spawn(task=None,
+          dependencies=[],
+          # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
+          # This collection does not contain Union anymore, which was used by the
+          # old Parla, since we now allow support {arch, arch, arch} placement
+          # to map a task to three devices.
+          placement: Collection[Union[Collection[PlacementSource], Any, None]] = None,
+          vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -57,6 +67,7 @@ def spawn(task=None,  dependencies=[], vcus=1):
         nonlocal vcus
         nonlocal dependencies
         nonlocal task
+        nonlocal placement
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -73,6 +84,10 @@ def spawn(task=None,  dependencies=[], vcus=1):
         tasks.flatten_tasks(dependencies, flattened_dependencies)
 
         scheduler = get_scheduler_context().scheduler
+
+        # Get a set of candidate devices for a task.
+        device_reqs = scheduler.get_device_reqs_from_placement(placement)
+        task.set_device_reqs(device_reqs)
 
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,

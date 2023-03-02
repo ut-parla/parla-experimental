@@ -6,19 +6,23 @@
 
 // Task Implementation
 
-InnerTask::InnerTask() {
+// TODO(hc) member initialization list is preferable as it can reduce
+//          instructions (e.g., https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
+InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
 }
 
-InnerTask::InnerTask(long long int id, void *py_task) {
+InnerTask::InnerTask(long long int id, void *py_task) :
+    req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = id;
   this->py_task = py_task;
 }
 
-InnerTask::InnerTask(std::string name, long long int id, void *py_task) {
+InnerTask::InnerTask(std::string name, long long int id, void *py_task) :
+    req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->name = name;
   this->id = id;
@@ -354,3 +358,58 @@ Task::Status InnerTask::set_status(Task::Status status) {
 void InnerTask::set_complete() { this->set_state(Task::COMPLETED); }
 
 bool InnerTask::get_complete() { return this->get_state(); }
+
+
+// TODO(hc): The current Parla exploits two types of resources,
+//           memory and vcus. Later, this can be extended with
+//           a map.
+void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcus) {
+  DeviceResources res_req = {mem_sz, num_vcus};
+  DeviceRequirement* dev_req = new DeviceRequirement(dev_ptr, res_req);
+  if (req_addition_mode_ == SingleDevAdd) {
+    dev_res_reqs_.AppendDeviceRequirementOption(dev_req);
+  } else if (req_addition_mode_ % 2 == 0) { /* Architecture requirement */
+    tmp_arch_req_->AppendDeviceRequirementOption(dev_req);
+  } else if (req_addition_mode_ == MultiDevAdd) {
+    tmp_multdev_reqs_->AppendDeviceRequirement(dev_req);
+  }
+}
+
+void InnerTask::begin_arch_req_addition() {
+  // Setting architecture resource requirement 
+  // could be called within multi-device requirement
+  // setup.
+  ++req_addition_mode_;
+  assert(tmp_arch_req_ == nullptr);
+  tmp_arch_req_ = new ArchitectureRequirement();
+}
+
+void InnerTask::end_arch_req_addition() {
+  assert(req_addition_mode_ % 2 == 0);
+  if (req_addition_mode_ == 4) {
+    tmp_multdev_reqs_->AppendDeviceRequirement(tmp_arch_req_);
+  } else {
+    dev_res_reqs_.AppendDeviceRequirementOption(tmp_arch_req_);
+  }
+  // This should not delete this pointer since this object
+  // is moved to either multi-device or the topmost device
+  // requirement vector.
+  tmp_arch_req_ = nullptr;
+  --req_addition_mode_;
+}
+
+void InnerTask::begin_multidev_req_addition() {
+  assert(req_addition_mode_ == SingleDevAdd);
+  assert(tmp_multdev_reqs_ == nullptr);
+  tmp_multdev_reqs_ = new MultiDeviceRequirements();
+  req_addition_mode_ = MultiDevAdd;
+}
+
+void InnerTask::end_multidev_req_addition() {
+  assert(tmp_multdev_reqs_ != nullptr);
+  dev_res_reqs_.AppendDeviceRequirementOption(tmp_multdev_reqs_);
+  // This should not delete this pointer since this object
+  // is moved to the topmost device requirement vector.
+  tmp_multdev_reqs_ == nullptr;
+  req_addition_mode_ = SingleDevAdd;
+}
