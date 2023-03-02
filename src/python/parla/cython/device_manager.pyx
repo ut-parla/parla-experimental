@@ -167,6 +167,12 @@ class PyDeviceManager:
                 devs.append(dev)
         return devs
 
+    def is_multidevice_placement(self, placement_tuple):
+        if len(placement_tuple) == 2 and \
+                isinstance(placement_tuple[1], DeviceResource):
+            return False
+        return True
+
     def unpack_devices(self, placement_component):
         """ Unpack the placement and return a list of
             devices. The placement can be an iteratable collection
@@ -175,34 +181,54 @@ class PyDeviceManager:
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
-        print(">>", placement_component)
-        if isinstance(placement_component, Tuple): # Devcie or Architecture.
-            placement_component, req = placement_component
-            if placement_component is None:
-                # If a device specified by users does not exit 
-                # and was not registered to the Parla runtime,
-                # its instance is set to None and should be
-                # ignored.
-                return None
-            if isinstance(placement_component, PyArchitecture):
-                return PrintableFrozenSet(placement_component.devices)
-            elif isinstance(placement_component, PyDevice):
-                return [placement_component]
+        if isinstance(placement_component, Tuple) and \
+              not self.is_multidevice_placement(placement_component):
+                # The placement component consists of
+                # Device or Architecture, with its resource requirement.
+                placement, req = placement_component
+                if placement is None:
+                    # If a device specified by users does not exit 
+                    # and was not registered to the Parla runtime,
+                    # its instance is set to None and should be
+                    # ignored.
+                    return None
+                if isinstance(placement, PyArchitecture):
+                    return PrintableFrozenSet(placement.devices)
+                elif isinstance(placement, PyDevice):
+                    return [placement]
+        elif isinstance(placement_component, PyArchitecture):
+            return PrintableFrozenSet(placement_component.devices)
+        elif isinstance(placement_component, PyDevice):
+            return [placement_component]
         elif isinstance(placement_component, Collection):
+            # Multi-device resource requirement or
+            # a list of devices, architectures, or multi-device 
+            # requirements.
             unpacked_devices = []
             for c in placement_component:
                 tmp_unpacked_devices = self.unpack_devices(c)
                 if tmp_unpacked_devices is None:
                     continue
-                elif isinstance(c, Tuple):
-                    # Multi-device placement is specified
-                    # through a nested list. Therefore, each nested list in the
-                    # placement specifies a single placement for
-                    # a task, and multiple lists allow the task
-                    # mapper to choose one of those lists as resource
-                    # requirements depending on device status.
-                    unpacked_devices += [tmp_unpacked_devices]
-                elif isinstance(c, PyArchitecture):
+                if isinstance(c, Tuple):
+                    if self.is_multidevice_placement(c):
+                        # Multi-device placement is specified
+                        # through a nested tuple of the placement API.
+                        # Which means that, each nested tuple in the
+                        # placement specifies a single placement for
+                        # a task. The placement API allows multiple tuples for
+                        # multi-device placements (e.g., placement=[(), (), ..]),
+                        # and the task mapper chooses one of those options
+                        # as the target requirement based on device states.
+                        # To distinguish multiple multi-device placements,
+                        # we add one complete multi-device placement and
+                        # its requirements as a list.
+                        unpacked_devices += [tmp_unpacked_devices]
+                        continue
+                    # In this case, c is a tuple of a device or an architecture,
+                    # and its resource requirement. So, the 0th element points
+                    # to a device or an architecture object.
+                    c = c[0]
+                if isinstance(c, PyArchitecture):
                     # Architecture placement means one placement
                     # of the entire devices in the architecture.
                     # For example, if `gpu` is specified, all gpu devices
@@ -211,8 +237,10 @@ class PyDeviceManager:
                     # To distinguish architecture placement from others,
                     # it is converted to a frozen set of the entire devices.
                     unpacked_devices.append(tmp_unpacked_devices)
-                else:
+                elif isinstance(c, PyDevice):
                     unpacked_devices += tmp_unpacked_devices
+                else:
+                    raise TypeError("Incorrect placement")
             return unpacked_devices
 
     def get_devices_from_placement(self, placement):
@@ -249,6 +277,7 @@ class PyDeviceManager:
 
     def get_device_reqs_from_placement(self, placement):
         device_candidates = self.get_devices_from_placement(placement)
+        print(">>", device_candidates)
         assert(isinstance(device_candidates, List))
         device_reqs = []
         for dc in device_candidates:

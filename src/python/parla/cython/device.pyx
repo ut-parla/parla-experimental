@@ -164,9 +164,7 @@ class PyArchitecture(metaclass=ABCMeta):
             num_vcus = -1 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         elif isinstance(param, int):
-            print("Param:", param)
             return self(param)
-            #return (self(param), DeviceResource())
         return (self, DeviceResource())
 
     @property
