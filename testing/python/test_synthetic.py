@@ -5,7 +5,7 @@ from parla.utility.graphs import IndependentConfig, SerialConfig, RunConfig
 from parla.utility.graphs import read_pgraph, parse_blog
 from parla.utility.graphs import shuffle_tasks
 
-from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time
+from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time, verify_ntasks, verify_states
 from parla.utility.execute import GraphContext
 
 # from parla.utility.execute import timeout
@@ -14,6 +14,7 @@ import tempfile
 import os
 from ast import literal_eval as make_tuple
 import warnings
+
 
 def test_read():
     """
@@ -44,7 +45,6 @@ def test_read():
         # the first task
         task = next(task_iter)
         task_info = tasks[task]
-        # print(task_info)
         assert (task_info.task_id == ("T", (0,), 0))
         assert (task_info.task_runtime == {(0,): (1, 0.5, 0, 200, 10)})
         assert (task_info.task_dependencies == [])
@@ -98,7 +98,7 @@ def test_independent(n):
 
         timing = g.run(run_config)
 
-        log_times, log_graph = parse_blog(logpath)
+        log_times, log_graph, log_states = parse_blog(logpath)
 
         # Verify that all tasks have run
         assert (verify_complete(log_graph, g.graph))
@@ -109,10 +109,18 @@ def test_independent(n):
         # Verify that the tasks ran in the correct order
         assert (verify_order(log_times, g.graph))
 
+        # Verify that all tasks ran
+        assert (len(log_times) == n+1)
+        assert (verify_ntasks(log_times, g.graph))
+
+        # Verify that each task has hit all states
+        assert (verify_states(log_states))
+
         # Verify that each task took about the right amount of time
         time_check = verify_time(log_times, g.graph, factor=local_task_factor)
         if not time_check:
-            warnings.warn("At least one task took longer than expected", UserWarning)
+            warnings.warn(
+                "At least one task took longer than expected", UserWarning)
 
         # Verify that the total time isn't too long
         assert (timing.mean < total_time_factor * n * task_time)
@@ -126,6 +134,7 @@ def test_serial(n):
     total_time_factor = 1.05
     local_task_factor = 2
     name = "serial"
+    chains = 2
 
     # write a test graph
     task_configs = TaskConfigs()
@@ -133,7 +142,7 @@ def test_serial(n):
         task_time=task_time, gil_accesses=1))
 
     config = SerialConfig(steps=n, task_config=task_configs,
-                          dependency_count=3, chains=2)
+                          dependency_count=3, chains=chains)
 
     with GraphContext(config, name="serial") as g:
 
@@ -147,7 +156,7 @@ def test_serial(n):
 
         timing = g.run(run_config)
 
-        log_times, log_graph = parse_blog(logpath)
+        log_times, log_graph, log_states = parse_blog(logpath)
 
         # Verify that all tasks have run
         assert (verify_complete(log_graph, g.graph))
@@ -158,10 +167,18 @@ def test_serial(n):
         # Verify that the tasks ran in the correct order
         assert (verify_order(log_times, g.graph))
 
+        # Verify that all tasks ran
+        assert (len(log_times) == n*chains+1)
+        assert (verify_ntasks(log_times, g.graph))
+
+        # Verify that each task has hit all states
+        assert (verify_states(log_states))
+
         # Verify that each task took about the right amount of time
         time_check = verify_time(log_times, g.graph, factor=local_task_factor)
         if not time_check:
-            warnings.warn("At least one task took longer than expected", UserWarning)
+            warnings.warn(
+                "At least one task took longer than expected", UserWarning)
 
         # Verify that the total time isn't too long
         assert (timing.mean < total_time_factor * n * task_time)

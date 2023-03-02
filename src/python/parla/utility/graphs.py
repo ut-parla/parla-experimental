@@ -521,6 +521,13 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[dict[TaskID, TaskTime],  d
             notifying_task = task_properties[0]
             current_name = notifying_task['name']
             current_state = notifying_task['get_state']
+            instance = notifying_task['instance']
+
+            if int(instance) > 0:
+                base_name = TaskID(current_name.taskspace,
+                                   current_name.task_idx,
+                                   0)
+                task_states[base_name] += [current_state]
 
             task_states[current_name] += [current_state]
 

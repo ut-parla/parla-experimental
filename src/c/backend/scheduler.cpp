@@ -204,11 +204,14 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
   if (status.mappable && (task->get_state() < Task::MAPPED)) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
+    task->set_status(Task::MAPPABLE);
     this->mapper->enqueue(task);
   } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
+    task->set_status(Task::RESERVABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
+    task->set_status(Task::RUNNABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }

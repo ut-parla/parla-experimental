@@ -70,6 +70,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         (mapped_task->num_unreserved_dependencies.fetch_sub(1) == 1);
 
     if (enqueue_flag) {
+      mapped_task->set_status(Task::RESERVABLE);
       memory_reserver->enqueue(mapped_task);
     }
   }
@@ -117,6 +118,7 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
         (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
 
     if (enqueue_flag) {
+      reserved_task->set_status(Task::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
     }
   }
