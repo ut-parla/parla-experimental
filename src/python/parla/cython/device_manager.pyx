@@ -260,7 +260,7 @@ class PyDeviceManager:
                     raise TypeError("Incorrect placement")
             return unpacked_devices
 
-    def get_devices_from_placement(self, placement):
+    def get_device_reqs_from_placement(self, placement):
         """ Unpack placement and return device objects that are specified
             (or implied) through the placement argument of @spawn.
             If None is passed to the placement, all devices exiting
@@ -269,9 +269,5 @@ class PyDeviceManager:
             ps = placement if isinstance(placement, Iterable) else [placement]
             return self.unpack_devices(ps)
         else:
-            return self.get_all_devices()
-
-    def get_device_reqs_from_placement(self, placement):
-        device_reqs = self.get_devices_from_placement(placement)
-        print("!!!!!", device_reqs)
-        return device_reqs
+            return [DeviceResourceRequirement(d, DeviceResource()) \
+                    for d in self.get_all_devices()]
