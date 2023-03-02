@@ -102,13 +102,14 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
+            py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
                                             # in bytes.
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
-                self.py_registered_devices.append(py_cuda_device)
+                py_cuda_arch.add_device(py_cuda_device)
 
     def register_cpu_devices(self):
         # Get the number of usable CPUs from this process.

@@ -413,4 +413,3 @@ void InnerTask::end_multidev_req_addition() {
   tmp_multdev_reqs_ == nullptr;
   req_addition_mode_ = SingleDevAdd;
 }
->>>>>>> Add a bridge of device reqs additions between C and Python tasks; not yet validated but passed a simple test

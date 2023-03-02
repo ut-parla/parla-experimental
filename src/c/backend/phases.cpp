@@ -37,7 +37,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask* task = this->spawned_tasks.front_and_pop();
+    InnerTask* task = this->mappable_tasks.front_and_pop();
     ResourceRequirementCollections& res_reqs = task->GetResourceRequirements();
     std::vector<DeviceRequirementBase*> dev_res_reqs = res_reqs.GetDeviceRequirementOptions();
     for (DeviceRequirementBase* r : dev_res_reqs) {
@@ -88,17 +88,9 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
       }
     }
 
-    ready_phase_handler->enqueue(task);
-    has_task = this->get_count() > 0;
-  } // while there are mappable tasks
-
-  // TODO:: Dummy implementation that just passes tasks through
-  has_task = this->get_count() > 0;
-  while (has_task) {
-    InnerTask *task = this->mappable_tasks.front_and_pop();
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
-  }
+  } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
 

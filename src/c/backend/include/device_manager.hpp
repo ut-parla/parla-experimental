@@ -14,9 +14,6 @@ using DevIDTy = uint32_t;
 /// `DeviceManager` registers/provides devices and their
 /// information on the current system to the Parla runtime.
 class DeviceManager {
-protected:
-  std::vector<Device> registered_devices_;
-
 public:
   DeviceManager() {}
   void RegisterDevice(Device *new_dev);
