@@ -170,22 +170,31 @@ class PyDeviceManager:
     def unpack_devices(self, placement_component):
         """ Unpack the placement and return a list of
             devices. The placement can be an iteratable collection
-            and this function handles it through a recursive call. """
-        if isinstance(placement_component, PyArchitecture):
-            return PrintableFrozenSet(placement_component.devices)
-        elif isinstance(placement_component, PyDevice):
-            return [placement_component]
-        elif isinstance(placement_component, Collection):
-            unpacked_devices = []
-            for c in placement_component:
+            and this function handles it through a recursive call.
+            Placements (from @spawn) could be collections, for
+            multi-device placements, a pair of architecture and
+            resource requirement, or a pair of device and resource requirement.
+        """
+        print(">>", placement_component)
+        if isinstance(placement_component, Tuple): # Devcie or Architecture.
+            placement_component, req = placement_component
+            if placement_component is None:
                 # If a device specified by users does not exit 
                 # and was not registered to the Parla runtime,
                 # its instance is set to None and should be
                 # ignored.
-                if c is None:
-                    continue
+                return None
+            if isinstance(placement_component, PyArchitecture):
+                return PrintableFrozenSet(placement_component.devices)
+            elif isinstance(placement_component, PyDevice):
+                return [placement_component]
+        elif isinstance(placement_component, Collection):
+            unpacked_devices = []
+            for c in placement_component:
                 tmp_unpacked_devices = self.unpack_devices(c)
-                if isinstance(c, Tuple):
+                if tmp_unpacked_devices is None:
+                    continue
+                elif isinstance(c, Tuple):
                     # Multi-device placement is specified
                     # through a nested list. Therefore, each nested list in the
                     # placement specifies a single placement for
