@@ -173,6 +173,17 @@ class PyDeviceManager:
             return False
         return True
 
+    def construct_single_device_reqs(self, dev, res_req = None):
+        res_req_ = res_req if res_req is not None else DeviceResource()
+        return DeviceResourceRequirement(dev, res_req_)
+
+    def construct_single_arch_reqs(self, arch, res_req = None):
+        arch_reqs = []
+        res_req_ = res_req if res_req is not None else DeviceResource()
+        for d in arch.devices:
+            arch_reqs.append(self.construct_single_device_reqs(d, res_req_))
+        return PrintableFrozenSet(arch_reqs)
+
     def unpack_devices(self, placement_component):
         """ Unpack the placement and return a list of
             devices. The placement can be an iteratable collection
@@ -193,13 +204,21 @@ class PyDeviceManager:
                     # ignored.
                     return None
                 if isinstance(placement, PyArchitecture):
-                    return PrintableFrozenSet(placement.devices)
+                    # Architecture placement means that the task mapper
+                    # could choose one of the devices in the specified
+                    # architecture.
+                    # For example, if `gpu` is specified, all gpu devices
+                    # become target candidate devices and one of them
+                    # might be chosen as the final placement for a task.
+                    # To distinguish architecture placement from others,
+                    # it is converted to a frozen set of the entire devices.
+                    return self.construct_single_arch_reqs(placement, req)
                 elif isinstance(placement, PyDevice):
-                    return [placement]
+                    return self.construct_single_device_reqs(placement, req)
         elif isinstance(placement_component, PyArchitecture):
-            return PrintableFrozenSet(placement_component.devices)
+            return self.construct_single_arch_reqs(placement_component)
         elif isinstance(placement_component, PyDevice):
-            return [placement_component]
+            return self.construct_single_device_reqs(placement_component)
         elif isinstance(placement_component, Collection):
             # Multi-device resource requirement or
             # a list of devices, architectures, or multi-device 
@@ -209,6 +228,8 @@ class PyDeviceManager:
                 tmp_unpacked_devices = self.unpack_devices(c)
                 if tmp_unpacked_devices is None:
                     continue
+                req_exist = False
+                res_req = None
                 if isinstance(c, Tuple):
                     if self.is_multidevice_placement(c):
                         # Multi-device placement is specified
@@ -224,21 +245,17 @@ class PyDeviceManager:
                         # its requirements as a list.
                         unpacked_devices += [tmp_unpacked_devices]
                         continue
+                    req_exist = True
+                if req_exist:
                     # In this case, c is a tuple of a device or an architecture,
                     # and its resource requirement. So, the 0th element points
-                    # to a device or an architecture object.
-                    c = c[0]
+                    # to a device or an architecture object, and the 1st element
+                    # is a resource requirement.
+                    (c, res_req) = c
                 if isinstance(c, PyArchitecture):
-                    # Architecture placement means one placement
-                    # of the entire devices in the architecture.
-                    # For example, if `gpu` is specified, all gpu devices
-                    # become target candidate devices and one of them
-                    # might be chosen.
-                    # To distinguish architecture placement from others,
-                    # it is converted to a frozen set of the entire devices.
                     unpacked_devices.append(tmp_unpacked_devices)
                 elif isinstance(c, PyDevice):
-                    unpacked_devices += tmp_unpacked_devices
+                    unpacked_devices.append(tmp_unpacked_devices)
                 else:
                     raise TypeError("Incorrect placement")
             return unpacked_devices
@@ -254,38 +271,7 @@ class PyDeviceManager:
         else:
             return self.get_all_devices()
 
-    def construct_single_device_reqs(self, d, r):
-        return DeviceResourceRequirement(device=d, res_req=r)
-
-    def construct_multi_device_reqs(self, devices):
-        reqs = []
-        for d in devices:
-            if isinstance(d, PrintableFrozenSet):
-                set_reqs = []
-                for set_d in d:
-                    set_reqs.append(self.construct_single_device_reqs(set_d, DeviceResource()))
-                reqs.append(PrintableFrozenSet(set_reqs))
-            else:
-                reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
-        return reqs
-
-    def construct_single_arch_reqs(self, archs):
-        reqs = []
-        for d in archs:
-            reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
-        return frozenset(reqs)
-
     def get_device_reqs_from_placement(self, placement):
-        device_candidates = self.get_devices_from_placement(placement)
-        print(">>", device_candidates)
-        assert(isinstance(device_candidates, List))
-        device_reqs = []
-        for dc in device_candidates:
-            if isinstance(dc, List):
-                # TODO(hc): just architecture specification didn't make pairs.
-                device_reqs.append(self.construct_multi_device_reqs(dc))
-            elif isinstance(dc, FrozenSet):
-                device_reqs.append(self.construct_single_arch_reqs(dc))
-            else:
-                device_reqs.append(self.construct_single_device_reqs(dc, DeviceResource()))
+        device_reqs = self.get_devices_from_placement(placement)
+        print("!!!!!", device_reqs)
         return device_reqs

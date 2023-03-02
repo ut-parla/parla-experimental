@@ -84,7 +84,7 @@ class PyDevice:
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = -1 if "memory" not in param else param["vcus"]
+            memory_sz = -1 if "memory" not in param else param["memory"]
             num_vcus = -1 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         return (self, DeviceResource())
@@ -160,7 +160,7 @@ class PyArchitecture(metaclass=ABCMeta):
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = -1 if "memory" not in param else param["vcus"]
+            memory_sz = -1 if "memory" not in param else param["memory"]
             num_vcus = -1 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         elif isinstance(param, int):
