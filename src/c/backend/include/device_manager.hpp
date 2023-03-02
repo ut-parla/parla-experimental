@@ -14,14 +14,17 @@ using DevIDTy = uint32_t;
 /// `DeviceManager` registers/provides devices and their
 /// information on the current system to the Parla runtime.
 class DeviceManager {
+protected:
+  std::vector<Device> registered_devices_;
+
 public:
   DeviceManager() {}
   void RegisterDevice(Device *new_dev);
 
   void PrintRegisteredDevices() {
     // std::cout << "C++ device list:\n";
-    for (size_t d = 0; d < registered_devices_.size(); ++d) {
-      Device &dev = registered_devices_[d];
+    for (size_t d = 0; d < this->registered_devices_.size(); ++d) {
+      Device &dev = this->registered_devices_[d];
       // std::cout << "[" << dev.GetName() << "] mem. sz:" <<
       //   dev.GetMemorySize() << ", num. vcus:" << dev.GetNumVCUs() << "\n";
     }
@@ -29,8 +32,6 @@ public:
 
   std::vector<Device> &GetAllDevices() { return registered_devices_; }
 
-private:
-  std::vector<Device> registered_devices_;
 };
 
 #endif

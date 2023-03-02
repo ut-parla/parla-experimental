@@ -33,11 +33,11 @@ def test_add_dependency_add_incomplete(n_deps):
         task = Task(name=str(i))
         dependency_list.append(task)
 
-    A.add_dependencies(dependency_list)
+    A.add_dependencies(dependency_list, process=True)
 
     # Check that the number of dependencies is correct
     assert A.get_num_dependencies() == n_deps
-    assert A.get_num_blocking_dependencies() == n_deps
+    assert A.get_num_unmapped_dependencies() == n_deps
 
     # Check that the stored values are correct and retrievable
     output_deps = A.get_dependencies()
@@ -69,10 +69,10 @@ def test_add_dependency_add_complete(n_deps):
         task.set_complete()
         dependency_list.append(task)
 
-    A.add_dependencies(dependency_list)
+    A.add_dependencies(dependency_list, process=True)
 
     assert A.get_num_dependencies() == n_deps
-    assert A.get_num_blocking_dependencies() == 0
+    assert A.get_num_unmapped_dependencies() == 0
 
 
 @pytest.mark.parametrize("n_deps", dep_count)
@@ -85,7 +85,7 @@ def test_dependency_notify_serial(n_deps):
         task = Task(name=str(i))
         dependency_list.append(task)
 
-    A.add_dependencies(dependency_list)
+    A.add_dependencies(dependency_list, process=True)
 
     for i, task in enumerate(dependency_list):
         status = task.notify_dependents_wrapper()
@@ -94,7 +94,7 @@ def test_dependency_notify_serial(n_deps):
         else:
             assert status == 0
 
-    assert A.get_num_blocking_dependencies() == 0
+    assert A.get_num_unmapped_dependencies() == 0
 
 
 @pytest.mark.parametrize("n_deps", dep_count)
@@ -121,7 +121,7 @@ def test_dependency_notify_parallel(n_deps):
             status_list.append(status)
 
     def create_task(status_list):
-        status = A.add_dependencies(dependency_list)
+        status = A.add_dependencies(dependency_list, process=True)
         status_list.append(status)
 
     thread1 = Propagate(target=notify_task, args=(notify_status_list,))
@@ -133,8 +133,8 @@ def test_dependency_notify_parallel(n_deps):
     thread1.join()
     thread2.join()
 
-    # Check that the number of completed dependencies is corrects
-    assert A.get_num_blocking_dependencies() == 0
+    # Check that the number of completed dependencies is correct
+    assert A.get_num_unmapped_dependencies() == 0
 
     # Only one of these creation or notify steps should have launched the task
     assert sum(notify_status_list + create_status_list) == 1

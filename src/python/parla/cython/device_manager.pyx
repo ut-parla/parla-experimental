@@ -2,7 +2,11 @@ from parla.common.global_dataclasses import DeviceConfig
 from parla.cython.device import CyDevice, PyCUDADevice, PyCPUDevice
 from parla.cython.device cimport Device
 
-import cupy
+try:
+    import cupy
+except ImportError:
+    cupy = None
+
 import os
 import psutil
 import yaml
@@ -54,7 +58,14 @@ class PyDeviceManager:
         self.register_devices_to_cpp()
 
     def register_cuda_devices_cupy(self):
-        num_of_gpus = cupy.cuda.runtime.getDeviceCount()
+        if cupy is not None:
+            try:
+                num_of_gpus = cupy.cuda.runtime.getDeviceCount()
+            except cupy.cuda.runtime.CUDARuntimeError:
+                num_of_gpus = 0
+        else:
+            num_of_gpus = 0
+
         if num_of_gpus > 0:
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)

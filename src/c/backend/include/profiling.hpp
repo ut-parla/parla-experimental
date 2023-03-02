@@ -108,6 +108,7 @@ inline SessionWriter &parla_writer() {
 #define LOG_ADAPT_STRUCT(args...) BINLOG_ADAPT_STRUCT(args)
 #define LOG_ADAPT_DERIVED(args...) BINLOG_ADAPT_DERIVED(args)
 #define LOG_ADAPT_ENUM(args...) BINLOG_ADAPT_ENUM(args)
+#define LOG_ADAPT_DERIVED(args...) BINLOG_ADAPT_DERIVED(args)
 
 inline int initialize_log(std::string filename) {
   std::ofstream logfile(filename.c_str(),

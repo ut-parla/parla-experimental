@@ -3,271 +3,201 @@
 #define PARLA_PHASES_HPP
 
 #include "containers.hpp"
+#include "device.hpp"
+#include "device_manager.hpp"
 #include "runtime.hpp"
+
 #include <string.h>
 
-//TODO(will): This is a mock implementation of the phases. They may need to be rearranged, renamed, etc. Just a baseline organization.
+class PhaseStatus {
+protected:
+  const static int size = 3;
+  std::string name = "Status";
 
-namespace Spawned{
-    enum State { failure, task_miss, success };
-    class Status{
-      private:
-        const static int size = 3;
-      public:
-        int status[size];
+public:
+  int status[size];
 
-        void reset() {
-          for (int i = 0; i < size; ++i) {
-            this->status[i] = 0;
-          }
-        }
+  void reset() {
+    for (int i = 0; i < size; ++i) {
+      this->status[i] = 0;
+    }
+  }
 
-        void set(int index, int value) {
-          this->status[index] = value;
-        }
+  void set(int index, int value) { this->status[index] = value; }
+  int get(int index) { return this->status[index]; }
+  void increase(int state) { this->status[state]++; }
 
-        int get(int index) {
-          return this->status[index];
-        }
-
-        void update(State state) {
-          this->status[state]++;
-        }
-
-        void print() {
-          std::cout << "Ready Status: (";
-          for (int i = 0; i < size; ++i) {
-            std::cout << this->status[i];
-          }
-          std::cout << "\n";
-        }
-    };
-}
-
-class SpawnedPhase {
-  public:
-    SpawnedPhase() : dummy_dev_idx_{0} {}
-
-    void enqueue(InnerTask* task);
-    void enqueue(std::vector<InnerTask*>& tasks);
-
-    size_t get_count();
-
-    /* This is the mapper. It moves stuff from spawned to mapped.*/
-    //void run(MappedPhase* ready);
-    void run(ReadyPhase* ready, DeviceManager* device_manager);
-
-  private:
-    std::string name = "Spawned Phase";
-    Spawned::Status status;
-    TaskQueue spawned_tasks;
-    uint64_t dummy_dev_idx_;
+  void print() {
+    std::cout << this->name + "(";
+    for (int i = 0; i < size; ++i) {
+      std::cout << this->status[i];
+    }
+    std::cout << ")\n";
+  }
 };
 
-namespace Mapped{
+class SchedulerPhase {
+public:
+  SchedulerPhase() = default;
+  SchedulerPhase(InnerScheduler *scheduler, DeviceManager *devices)
+      : scheduler(scheduler), device_manager(devices) {}
 
-    enum State { failure, success };
+  virtual void enqueue(InnerTask *task) = 0;
+  virtual void enqueue(std::vector<InnerTask *> &tasks) = 0;
+  virtual void run(SchedulerPhase *next_phase) = 0;
+  virtual size_t get_count() = 0;
 
-    class Status{
-        private:
-            const static int size = 2;
-        public:
-            int status[size];
-    };
-}
+  PhaseStatus status;
 
-class MappedPhase {
-    public:
-        std::string name = "Mapped Phase";
-        Mapped::Status status;
-
-        //TODO: Add any counters and internal state here.
-
-        MappedPhase() = default;
-
-        /* This is the reserver. It moves stuff from mapped to reserved.*/
-        void run(ReservedPhase* ready);
+protected:
+  std::string name = "Phase";
+  std::mutex mtx;
+  InnerScheduler *scheduler;
+  DeviceManager *device_manager;
+  TaskStateList enqueue_buffer;
 };
 
-namespace Reserved{
+namespace Map {
 
-    enum State { failure, success};
-
-    class Status{
-        private:
-            const static int size = 2;
-        public:
-            int status[size];
-    };
-}
-
-class ReservedPhase {
-    public:
-        std::string name = "Reserved Phase";
-        Reserved::Status status;
-
-        //TODO: Add any counters and internal state here.
-
-        ReservedPhase() = default;
-
-        /* This is the readier. It it is a no op. As tasks move themselves to the Ready Phase. */
-        void run(ReadyPhase* ready);
+enum State { failure, success };
+class Status : public PhaseStatus {
+protected:
+  const static int size = 2;
+  std::string name = "Mapper";
 };
 
-namespace Ready{
+} // namespace Map
 
-    enum State { entered, task_miss, resource_miss, worker_miss, success};
+class Mapper : virtual public SchedulerPhase {
+public:
+  Map::Status status;
+  Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
 
-    class Status{
-        private:
-            const static int size = 5;
-        public:
-            int status[size];
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices)
+      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {}
 
-            void reset(){
-                for(int i = 0; i < size; i++){
-                    this->status[i] = 0;
-                }
-            }
+  void enqueue(InnerTask *task);
+  void enqueue(std::vector<InnerTask *> &tasks);
+  void run(SchedulerPhase *next_phase);
+  size_t get_count();
 
-            void set(int index, int value){
-                this->status[index] = value;
-            }
+protected:
+  std::string name = "Mapper";
+  TaskQueue mappable_tasks;
+  std::vector<InnerTask *> mapped_tasks_buffer;
+  uint64_t dummy_dev_idx_;
+};
 
-            int get(int index){
-                return this->status[index];
-            }
+namespace Reserved {
 
-            void update(State state){
-                this->status[state]++;
-            }
+enum State { failure, success };
 
-            void print(){
-                std::cout << "Ready Status: (" << this->status[0] << " " << this->status[1] << " " << this->status[2] << " " << this->status[3] << " " << this->status[4] << ")" << std::endl;
-            }
-    };
-}
+class Status : public PhaseStatus {
+protected:
+  const static int size = 2;
+  std::string name = "MemoryReserver";
+};
+} // namespace Reserved
+
+class MemoryReserver : virtual public SchedulerPhase {
+public:
+  Reserved::Status status;
+
+  MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
+      : SchedulerPhase(scheduler, devices) {}
+
+  void enqueue(InnerTask *task);
+  void enqueue(std::vector<InnerTask *> &tasks);
+  void run(SchedulerPhase *next_phase);
+  size_t get_count();
+
+protected:
+  std::string name = "Memory Reserver";
+  TaskQueue reservable_tasks;
+  std::vector<InnerTask *> reserved_tasks_buffer;
+};
+
+namespace Ready {
+
+enum State { entered, task_miss, resource_miss, worker_miss, success };
+
+class Status : virtual public PhaseStatus {
+protected:
+  const static int size = 5;
+  std::string name = "RuntimeReserver";
+};
+} // namespace Ready
 
 #ifdef PARLA_ENABLE_LOGGING
-    LOG_ADAPT_STRUCT(Ready::Status, status)
+LOG_ADAPT_STRUCT(Ready::Status, status)
 #endif
 
-class ReadyPhase {
+class RuntimeReserver : virtual public SchedulerPhase {
 
-    public:
-        TaskQueue ready_tasks;
-        
-        std::string name = "Ready Phase";
+public:
+  Ready::Status status;
 
-        InnerScheduler *scheduler;
-        Ready::Status status;
+  RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
+      : SchedulerPhase(scheduler, devices) {}
 
-        std::mutex mtx;
+  void enqueue(InnerTask *task);
+  void enqueue(std::vector<InnerTask *> &tasks);
+  void run(SchedulerPhase *next_phase);
+  size_t get_count();
 
-        ReadyPhase() = default;
-        ReadyPhase(InnerScheduler *scheduler){
-            this->scheduler = scheduler;
-        }
-
-        void set_scheduler(InnerScheduler *scheduler){
-            this->scheduler = scheduler;
-        }
-
-        void enqueue(InnerTask* task);
-        void enqueue(std::vector<InnerTask*>& tasks);
-
-        int get_count();
-
-        bool condition();
-
-        void run(LauncherPhase* launcher);
+protected:
+  std::string name = "Runtime Reserver";
+  TaskQueue runnable_tasks;
+  std::vector<InnerTask *> launchable_tasks_buffer;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-    LOG_ADAPT_STRUCT(ReadyPhase, status)
+LOG_ADAPT_STRUCT(RuntimeReserver, status)
 #endif
 
-namespace Launcher{
+namespace Launch {
 
-    enum State { failure, success};
+enum State { failure, success };
 
-    class Status{
-        public:
-            int status[2];
-
-            void reset(){
-                status[0] = 0;
-                status[1] = 0;
-            }
-
-            void set(int index, int value){
-                status[index] = value;
-            }
-
-            int get(int index){
-                return status[index];
-            }
-
-            void update(State state){
-                status[state]++;
-            }
-
-            void print(){
-                std::cout << "Launcher Status: (" << this->status[0] << " " << this->status[1] << ")" << std::endl;
-            }
-    };
-}
-
-class LauncherPhase {
-    public:
-        std::string name = "Launcher Phase";
-        Launcher::Status status;
-
-        launchfunc_t launch_callback;
-        
-        /*Buffer to store not yet launched tasks. Currently unused. Placeholder in case it becomes useful.*/
-        TaskList task_buffer;
-        WorkerList worker_buffer;
-
-        InnerScheduler *scheduler;
-        void* py_scheduler;
-
-        /*Number of running tasks. A task is running if it has been assigned to a worker and is not complete*/
-        std::atomic<int> num_running_tasks;
-
-        LauncherPhase() = default;
-        LauncherPhase(InnerScheduler *scheduler){
-            this->scheduler = scheduler;
-        }
-
-        LauncherPhase(InnerScheduler *scheduler, launchfunc_t launch_callback){
-            this->scheduler = scheduler;
-            this->launch_callback = launch_callback;
-        }
-
-        /* Pointer to the C++ scheduler */
-        void set_scheduler(InnerScheduler *scheduler){
-            this->scheduler = scheduler;
-        }
-
-        /* Set Python launch callback */
-        void set_launch_callback(launchfunc_t launch_callback, void* py_scheduler){
-            this->launch_callback = launch_callback;
-            this->py_scheduler = py_scheduler;
-        }
-
-        /*Add a task to the launcher. Currently this acquires the GIL and dispatches the work to a Python Worker for each task */
-        void enqueue(InnerTask* task, InnerWorker* worker);
-
-        /* A placeholder function in case work needs to be done at this stage. For example, dispatching a whole buffer of tasks*/
-        void run();
-
-        /* Number of running tasks. A task is running if it has been assigned to a worker and is not complete */
-        int get_num_running_tasks(){
-            return this->num_running_tasks.load();
-        }
+class Status : public PhaseStatus {
+protected:
+  const static int size = 2;
+  std::string name = "Launcher";
 };
+} // namespace Launch
 
+class Launcher : virtual public SchedulerPhase {
+public:
+  Launch::Status status;
 
+  /*Number of running tasks. A task is running if it has been assigned to a
+   * worker and is not complete*/
+  std::atomic<size_t> num_running_tasks;
+
+  Launcher(InnerScheduler *scheduler, DeviceManager *devices)
+      : SchedulerPhase(scheduler, devices) {}
+
+  /*Add a task to the launcher. Currently this acquires the GIL and dispatches
+   * the work to a Python Worker for each task */
+  void enqueue(InnerTask *task){};
+  void enqueue(InnerTask *task, InnerWorker *worker);
+  void enqueue(std::vector<InnerTask *> &tasks){};
+
+  /* A placeholder function in case work needs to be done at this stage. For
+   * example, dispatching a whole buffer of tasks*/
+  void run();
+  void run(SchedulerPhase *next_phase) { this->run(); };
+
+  /* Number of running tasks. A task is running if it has been assigned to a
+   * worker and is not complete */
+  size_t get_count() { return this->num_running_tasks.load(); }
+
+protected:
+  std::string name = "Launcher";
+  /*Buffer to store not yet launched tasks. Currently unused. Placeholder in
+   * case it becomes useful.*/
+  TaskList task_buffer;
+  WorkerList worker_buffer;
+};
 
 #endif // PARLA_PHASES_HPP

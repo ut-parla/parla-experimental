@@ -119,7 +119,8 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(DeviceManager* device_manager) : device_manager_(device_manager) {
+InnerScheduler::InnerScheduler(DeviceManager *device_manager)
+    : device_manager_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -129,10 +130,10 @@ InnerScheduler::InnerScheduler(DeviceManager* device_manager) : device_manager_(
   this->workers.set_num_workers(1);
 
   // Initialize the phases
-  this->ready_phase = new ReadyPhase(this);
-  this->spawned_phase = new SpawnedPhase();
-  this->mapped_phase = new MappedPhase();
-  this->launcher = new LauncherPhase(this);
+  this->mapper = new Mapper(this, device_manager);
+  this->memory_reserver = new MemoryReserver(this, device_manager);
+  this->runtime_reserver = new RuntimeReserver(this, device_manager);
+  this->launcher = new Launcher(this, device_manager);
   this->resources = new InnerResourcePool<float>();
   // TODO: Clean these up
 }
@@ -152,10 +153,6 @@ void InnerScheduler::set_py_scheduler(void *py_scheduler) {
 
 void InnerScheduler::set_stop_callback(stopfunc_t stop_callback) {
   this->stop_callback = stop_callback;
-}
-
-void InnerScheduler::set_launch_callback(launchfunc_t launch_callback) {
-  this->launcher->set_launch_callback(launch_callback, this->py_scheduler);
 }
 
 void InnerScheduler::run() {
@@ -180,41 +177,51 @@ Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
   // TODO(hc): the param should be mapped phase but use ready phase
   // for debugging.
-  //this->spawned_phase->run(this->mapped_phase);
-  this->spawned_phase->run(this->ready_phase, device_manager_);
-  // this->mapped_phase->run(this->reserved_phase);
-  // this->reserved_phase->run(this->ready_phase);
-  this->ready_phase->run(this->launcher);
-  // this->launcher->run();
-  // this->ready_phase->status.print();
-  // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->ready_phase);
+
+  this->mapper->run(this->memory_reserver);
+  this->memory_reserver->run(this->runtime_reserver);
+  this->runtime_reserver->run(this->launcher);
+
+  // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->runtime_reserver);
   return this->status;
 }
 
 void InnerScheduler::activate_wrapper() { this->activate(); }
 
-void InnerScheduler::spawn_task(InnerTask *task, bool should_enqueue) {
+void InnerScheduler::spawn_task(InnerTask *task) {
   LOG_INFO(SCHEDULER, "Spawning task: {}", task);
   NVTX_RANGE("Scheduler::spawn_task", NVTX_COLOR_RED)
-  this->increase_num_active_tasks();
-  task->set_state(Task::spawned);
 
-  if (should_enqueue) {
-    this->enqueue_task(task);
+  auto status = task->process_dependencies();
+  this->increase_num_active_tasks();
+  task->set_state(Task::SPAWNED);
+
+  this->enqueue_task(task, status);
+}
+
+void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
+  // TODO: Change this to appropriate phase as it becomes implemented
+  LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
+  if (status.mappable && (task->get_state() < Task::MAPPED)) {
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
+    task->set_status(Task::MAPPABLE);
+    this->mapper->enqueue(task);
+  } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
+    task->set_status(Task::RESERVABLE);
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
+    this->memory_reserver->enqueue(task);
+  } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
+    task->set_status(Task::RUNNABLE);
+    LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
+    this->runtime_reserver->enqueue(task);
   }
 }
 
-void InnerScheduler::enqueue_task(InnerTask *task) {
-  // TODO: Change this to appropriate phase as it becomes implemented
-  LOG_INFO(SCHEDULER, "Enqueing task: {}", task);
-  //this->ready_phase->enqueue(task);
-  this->spawned_phase->enqueue(task);
-}
-
-void InnerScheduler::enqueue_tasks(std::vector<InnerTask *> &tasks) {
-  LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  //this->ready_phase->enqueue(tasks);
-  this->spawned_phase->enqueue(tasks);
+void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
+  // LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
+  for (auto task_status : tasks) {
+    this->enqueue_task(task_status.first, task_status.second);
+  }
 }
 
 void InnerScheduler::add_worker(InnerWorker *worker) {
@@ -252,7 +259,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   this->launcher->num_running_tasks--;
 
-  if (state == Task::running) {
+  if (state == Task::RUNNING) {
     // std::cout << "Task Continuation (C++) " << task->name << " " << state
     //          << std::endl;
     // Do continuation handling
@@ -260,22 +267,20 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     //  - make sure state ids match
     //  - add and process dependencies
     //  - if true, enqueue task
-    task->instance++;
-    bool status = task->process_dependencies();
-
-    if (status) {
-      this->enqueue_task(task);
-    }
+    task->reset();
+    auto status = task->process_dependencies();
+    this->enqueue_task(task, status);
   }
 
-  if (state == Task::dispatched) {
+  if (state == Task::RUNAHEAD) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
 
     // std::cout << "Task Complete: " << task->name << std::endl;
 
+    // Reset all runtime counters and state of the continuation task.
     auto &enqueue_buffer = worker->enqueue_buffer;
-    task->notify_dependents(enqueue_buffer);
+    task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {
       this->enqueue_tasks(enqueue_buffer);
       enqueue_buffer.clear();
@@ -288,9 +293,9 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // We also need to decrease the number of active tasks
     // If this is the last active task, the scheduler is stopped
     this->decrease_num_active_tasks();
-    
-    //TODO: Move this when we do runahead
-    task->set_state(Task::completed);
+
+    // TODO: Move this when we do runahead
+    task->set_state(Task::COMPLETED);
   }
 
   // TODO: for runahead, we need to do this AFTER the task body is complete
@@ -298,7 +303,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   worker->remove_task();
   this->resources->increase(task->resources);
   this->enqueue_worker(worker);
-
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }
@@ -328,11 +332,11 @@ int InnerScheduler::decrease_num_notified_workers() {
 }
 
 int InnerScheduler::get_num_running_tasks() {
-  return this->launcher->num_running_tasks;
+  return this->launcher->get_count();
 }
 
 int InnerScheduler::get_num_ready_tasks() {
-  return this->ready_phase->get_count();
+  return this->runtime_reserver->get_count();
 }
 
 void InnerScheduler::spawn_wait() { this->workers.spawn_wait(); }

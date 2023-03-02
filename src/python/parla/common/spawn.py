@@ -75,12 +75,12 @@ def spawn(task=None,  dependencies=[], vcus=1):
         scheduler = get_scheduler_context().scheduler
 
         task.set_scheduler(scheduler)
-        should_enqueue = task.instantiate(function=_task_callback,
-                                          args=(separated_body,),
-                                          dependencies=dependencies,
-                                          constraints=vcus)
+        task.instantiate(function=_task_callback,
+                         args=(separated_body,),
+                         dependencies=flattened_dependencies,
+                         constraints=vcus)
 
-        scheduler.spawn_task(task, should_enqueue)
+        scheduler.spawn_task(task)
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 

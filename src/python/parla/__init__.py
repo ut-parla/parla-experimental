@@ -17,8 +17,8 @@ Tasks = tasks.TaskCollection
 
 DeviceManager = device_manager.PyDeviceManager
 
-__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil', 'sleep_nogil', 'Tasks', 'parla_num_threads']
-
+__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
+           'sleep_nogil', 'Tasks', 'parla_num_threads']
 
 
 def signal_handler(signal, frame):
@@ -37,7 +37,7 @@ else:
 class Parla:
 
     def __init__(self, scheduler_class=scheduler.Scheduler,
-                 sig_type=signal.SIGINT, logfile=None, n_workers=None, \
+                 sig_type=signal.SIGINT, logfile=None, n_workers=None,
                  dev_config_file=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
 
@@ -46,7 +46,7 @@ class Parla:
         self.sig = sig_type
         self.handle_interrupt = True
         self.device_manager = DeviceManager(dev_config_file)
-        self.device_manager.print_registered_devices()
+        # self.device_manager.print_registered_devices()
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
@@ -107,4 +107,3 @@ class Parla:
         finally:
             self.released = True
             return True
-

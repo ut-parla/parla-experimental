@@ -248,6 +248,47 @@ def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Lis
     return True
 
 
+def verify_ntasks(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]]):
+    """
+    Verify that the number of tasks in the log graph is the same as the number of tasks in the truth graph.
+    """
+
+    if len(log_times) != len(truth_graph)+1:
+        print(
+            f"Number of tasks in log graph ({len(log_times)}) does not match number of tasks in truth graph ({len(truth_graph)})")
+        return False
+
+    return True
+
+
+def verify_states(log_states) -> bool:
+    """
+    Verify that all tasks have visited all states in a valid order.
+    """
+
+    for task in log_states:
+        states = log_states[task]
+        instance = task.instance
+
+        # if ('SPAWNED' not in states):
+        #    print(f"Task {task} did not spawn", flush=True)
+        #    return False
+        if ('MAPPED' not in states):
+            print(f"Task {task} was not mapped.", states, flush=True)
+            return False
+        if ('RESERVED' not in states):
+            print(f"Task {task} was not reserved.", states, flush=True)
+            return False
+        # if ('RUNNING' not in states):
+        #    print(f"Task {task} did not run.", states, flush=True)
+        #    return False
+        if ('RUNAHEAD' not in states):
+            print(f"Task {task} was not runahead", states, flush=True)
+            return False
+
+    return True
+
+
 class Propagate(threading.Thread):
     """
     A wrapper of threading.Thread that propagates exceptions to the main thread. 

@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -114,24 +115,76 @@ public:
 
 namespace Task {
 
-/*State of the task. Shows which phase it is in.*/
+/*State of the task. Shows which part of the runtime the task is in.*/
 enum State {
-  created = 0,
-  spawned = 1,
-  mapped = 2,
-  reserved = 3,
-  ready = 4,
-  running = 5,
-  dispatched = 6,
-  completed = 7
+  // Initial State. Task has been created but not spawned
+  CREATED = 0,
+  // Task has been spawned
+  SPAWNED = 1,
+  // Task has been mapped
+  MAPPED = 2,
+  // Task has persistent resources reserved
+  RESERVED = 3,
+  // Task is ready to run
+  READY = 4,
+  // Task is currently running and has runtime resources reserved
+  RUNNING = 5,
+  // Task body has completed but GPU kernels may be asynchronously running
+  RUNAHEAD = 6,
+  // Task has completed
+  COMPLETED = 7
+};
+
+class StatusFlags {
+public:
+  bool spawnable{false};
+  bool mappable{false};
+  bool reservable{false};
+  bool compute_runnable{false};
+  bool runnable{false};
+
+  StatusFlags() = default;
+
+  StatusFlags(bool spawnable, bool mappable, bool reservable,
+              bool compute_runnable, bool runnable)
+      : spawnable(spawnable), mappable(mappable), reservable(reservable),
+        compute_runnable(compute_runnable), runnable(runnable) {}
+
+  bool any() {
+    return spawnable || mappable || reservable || compute_runnable || runnable;
+  }
+};
+
+/* Properties of the tasks dependencies */
+enum Status {
+  // Initial State. Status of dependencies is unknown or not spawned
+  INITIAL = 0,
+  // All dependencies are spawned (this task can be safely spawned)
+  SPAWNABLE = 1,
+  // All dependencies are mapped (this task can be safely mapped)
+  MAPPABLE = 2,
+  // All dependencies have persistent resources reserved (this task can be
+  // safely reserved)
+  RESERVABLE = 3,
+  // All compute dependencies have RUNAHEAD/COMPLETED status
+  COMPUTE_RUNNABLE = 4,
+  // All (including data) dependencies have RUNAHEAD/COMPLETED status
+  RUNNABLE = 5
 };
 
 } // namespace Task
 
 #ifdef PARLA_ENABLE_LOGGING
-BINLOG_ADAPT_ENUM(Task::State, created, spawned, mapped, reserved, ready,
-                  running, dispatched, completed)
+BINLOG_ADAPT_STRUCT(Task::StatusFlags, spawnable, mappable, reservable,
+                    compute_runnable, runnable)
+BINLOG_ADAPT_ENUM(Task::State, CREATED, SPAWNED, MAPPED, RESERVED, READY,
+                  RUNNING, RUNAHEAD, COMPLETED)
+BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
+                  COMPUTE_RUNNABLE, RUNNABLE)
 #endif
+
+using TaskState = std::pair<InnerTask *, Task::StatusFlags>;
+using TaskStateList = std::vector<TaskState>;
 
 /**
  *   The C++ "Mirror" of Parla's Python Tasks
@@ -151,29 +204,17 @@ public:
   /*Instance count of the task (Number of continuations of this task)*/
   int instance = 0;
 
-  /* Status of the task */
-  std::atomic<Task::State> state{Task::created};
+  /* State of the task (where is this task)*/
+  std::atomic<Task::State> state{Task::CREATED};
+
+  /* Status of the task (state of its dependencies)*/
+  std::atomic<Task::Status> status{Task::INITIAL};
 
   /* Reference to the scheduler (used for synchronizing state on events) */
   InnerScheduler *scheduler = nullptr;
 
   /*Task monitor*/
   std::mutex mtx;
-
-  /* Whether the task has finished running. */
-  std::atomic<bool> complete{false};
-
-  /*Whether the task is ready to run */
-  std::atomic<bool> ready{false};
-
-  /*Whether the task is reservable */
-  std::atomic<bool> reservable{false};
-
-  /*Whether the task is mappable */
-  std::atomic<bool> mappable{false};
-
-  /*Whether the task is spawnable */
-  std::atomic<bool> spawnable{false};
 
   /* Priority of the task. Higher priority tasks are scheduled first. */
   std::atomic<int> priority{0};
@@ -190,20 +231,30 @@ public:
   /*Local depdendency buffer*/
   std::vector<InnerTask *> dependency_buffer = std::vector<InnerTask *>();
 
-  /* Number of blocking (uncompleted) dependencies */
-  std::atomic<int> num_blocking_dependencies{0};
+  /* Number of blocking (uncompleted) compute task dependencies */
+  std::atomic<int> num_blocking_compute_dependencies{1};
+
+  /* Number of  blocking (uncompleted) task (compute+data) dependencies */
+  std::atomic<int> num_blocking_dependencies{1};
 
   /* Number of unspawned dependencies */
-  std::atomic<int> num_unspawned_dependencies{0};
+  std::atomic<int> num_unspawned_dependencies{1};
 
   /* Number of unmapped dependencies */
-  std::atomic<int> num_unmapped_dependencies{0};
+  std::atomic<int> num_unmapped_dependencies{1};
 
   /* Number of unreserved dependencies */
-  std::atomic<int> num_unreserved_dependencies{0};
+  std::atomic<int> num_unreserved_dependencies{1};
 
   /* Tasks Internal Resource Pool. */
   InnerResourcePool<float> resources;
+
+  /* Task has data to be moved */
+  std::atomic<bool> has_data{false};
+
+  /* Task has processed data into data tasks (if any exists). Defaults to true
+   * if none exist. */
+  std::atomic<bool> processed_data{true};
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -224,21 +275,20 @@ public:
   /* Set the priority of the task */
   void set_priority(int priority);
 
+  /*Add a data arguments to Task (list of Parrays)*/
+  void add_data(/*vector of cpp parray type*/) {
+    this->has_data = true;
+    this->processed_data = false;
+  }
+
   /*Set a resource of the task*/
   void set_resources(std::string resource_name, float resource_value);
-
-  // template<typename T>
-  // void set_resources(InnerResourcePool<T> resource_pool);
-
-  /*Get a resource of the task*/
-  // template<typename T>
-  // T get_resources(std::string resource_name);
 
   /* Add a dependency to the task buffer but don't process it*/
   void queue_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task. For external use.*/
-  bool process_dependencies();
+  Task::StatusFlags process_dependencies();
 
   /* Clear the dependency list */
   void clear_dependencies();
@@ -248,7 +298,7 @@ public:
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
-  bool add_dependencies(std::vector<InnerTask *> &tasks);
+  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks);
 
   /* Add a dependent to the task */
   Task::State add_dependent(InnerTask *task);
@@ -263,7 +313,7 @@ public:
    *  Returns a container of tasks that are now ready to run
    *  TODO: Decide on a container to use for this
    */
-  std::vector<InnerTask *> &notify_dependents(std::vector<InnerTask *> &tasks);
+  void notify_dependents(TaskStateList &tasks, Task::State new_state);
 
   /* Wrapper for testing */
   bool notify_dependents_wrapper();
@@ -273,7 +323,20 @@ public:
    *  Return true if 0 blocking dependencies remain.
    *  Used by "notify_dependents"
    */
-  bool notify();
+  Task::StatusFlags notify(Task::State dependency_state, bool is_data = false);
+
+  /* Reset state and increment all internal counters. Used by continuation */
+  void reset() {
+    // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
+    this->state.store(Task::SPAWNED);
+    this->status.store(Task::INITIAL);
+    this->instance++;
+    this->num_blocking_compute_dependencies.store(1);
+    this->num_blocking_dependencies.store(1);
+    this->num_unspawned_dependencies.store(1);
+    this->num_unmapped_dependencies.store(1);
+    this->num_unreserved_dependencies.store(1);
+  }
 
   /* Return whether the task is ready to run */
   bool blocked();
@@ -286,6 +349,7 @@ public:
 
   /* Get number of blocking dependencies */
   int get_num_blocking_dependencies() const;
+  int get_num_unmapped_dependencies() const;
 
   /* Get dependency list. Used for testing Python interface. */
   std::vector<void *> get_dependencies();
@@ -297,15 +361,29 @@ public:
   void *get_py_task();
 
   /* Set the task status */
-  void set_state(int state);
+  int set_state(int state);
 
-  /* Set the task status */
-  void set_state(Task::State state);
+  /* Set the task state */
+  Task::State set_state(Task::State state);
 
-  /* Get the task status */
+  /* Get the task state */
   Task::State get_state() const {
     const Task::State state = this->state.load();
     return state;
+  }
+
+  /*Set the task status */
+  Task::Status set_status(Task::Status status);
+
+  /*Determine status from parts*/
+  // TODO(wlr): this should be private
+  Task::Status determine_status(bool spawnable, bool mappable, bool reservable,
+                                bool ready);
+
+  /*Get the task status*/
+  Task::Status get_status() const {
+    const Task::Status status = this->status.load();
+    return status;
   }
 
   /* Set complete */
@@ -316,22 +394,28 @@ public:
 
   /// TODO(hc): move these to cpp.
   /// TODO(hc): Camel or snake case?
-  void SetMappedDevice(Device* dev) {
+  void SetMappedDevice(Device *dev) {
     assert(mapped_device_ == NULL);
-    mapped_device_ = dev;
+    this->mapped_device_ = dev;
   }
 
-  const Device& GetMappedDevice() {
+  const Device &GetMappedDevice() {
     assert(mapped_device_ != NULL);
-    return *mapped_device_;
+    return *this->mapped_device_;
   }
 
 private:
-  Device* mapped_device_;
+  Device *mapped_device_;
+};
+
+class InnerDataTask : public InnerTask {
+public:
+  InnerDataTask() : InnerTask() { this->has_data = true; }
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state)
+LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status)
+LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 
 /**
@@ -360,7 +444,7 @@ public:
   int thread_idx = -1;
 
   /* Task Buffer (for enqueing new ready tasks at task cleanup ) */
-  std::vector<InnerTask *> enqueue_buffer;
+  TaskStateList enqueue_buffer;
 
   // TODO: (improvement?) Custom Barrier and Event Handling
 
@@ -463,11 +547,10 @@ typedef WorkerPool<WorkerQueue, WorkerQueue> WorkerPool_t;
 
 // Forward declaration of scheduler phases
 
-class SpawnedPhase;
-class MappedPhase;
-class ReservedPhase;
-class ReadyPhase;
-class LauncherPhase;
+class Mapper;
+class MemoryReserver;
+class RuntimeReserver;
+class Launcher;
 
 namespace Scheduler {
 
@@ -543,16 +626,17 @@ public:
   /* Should Run, Stop Condition */
   std::atomic<bool> should_run = true;
 
-  /* Incapsulation of Scheduler Ready Phase */
-  ReadyPhase *ready_phase;
+  /* Phase: maps tasks to devices */
+  Mapper *mapper;
 
-  /*Responsible for launching a task. Holds python launch callback*/
-  LauncherPhase *launcher;
+  /* Phase reserves resources to limit/plan task execution*/
+  MemoryReserver *memory_reserver;
+  RuntimeReserver *runtime_reserver;
 
-  SpawnedPhase* spawned_phase;
-  MappedPhase* mapped_phase;
+  /*Responsible for launching a task. Signals worker thread*/
+  Launcher *launcher;
 
-  InnerScheduler(DeviceManager* device_manager);
+  InnerScheduler(DeviceManager *device_manager);
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
@@ -578,9 +662,6 @@ public:
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
 
-  /* Set Python "launch" callback */
-  void set_launch_callback(launchfunc_t launch_callback);
-
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
   void run();
 
@@ -594,13 +675,13 @@ public:
   void activate_wrapper();
 
   /*Spawn a Task (increment active, set state, possibly enqueue)*/
-  void spawn_task(InnerTask *task, bool should_enqueue);
+  void spawn_task(InnerTask *task);
 
   /* Enqueue task. */
-  void enqueue_task(InnerTask *task);
+  void enqueue_task(InnerTask *task, Task::StatusFlags flags);
 
   /* Enqueue more than one task */
-  void enqueue_tasks(std::vector<InnerTask *> &tasks);
+  void enqueue_tasks(TaskStateList &tasks);
 
   /* Add worker */
   void add_worker(InnerWorker *worker);
@@ -646,8 +727,8 @@ public:
    * threads can start*/
   void spawn_wait();
 
-private:
-  DeviceManager* device_manager_;
+protected:
+  DeviceManager *device_manager_;
 };
 
 #endif // PARLA_BACKEND_HPP

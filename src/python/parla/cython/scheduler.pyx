@@ -297,8 +297,8 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         #print("Scheduler: Stopped", flush=True)
 
-    def spawn_task(self, task, should_enqueue=False):
-        self.inner_scheduler.spawn_task(task.inner_task, should_enqueue)
+    def spawn_task(self, task):
+        self.inner_scheduler.spawn_task(task.inner_task)
 
     
     def assign_task(self, task, worker):

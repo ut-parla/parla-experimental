@@ -48,9 +48,9 @@ void InnerTask::queue_dependency(InnerTask *task) {
   this->dependency_buffer.push_back(task);
 }
 
-bool InnerTask::process_dependencies() {
+Task::StatusFlags InnerTask::process_dependencies() {
   NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
-  bool status = this->add_dependencies(this->dependency_buffer);
+  Task::StatusFlags status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
   return status;
 }
@@ -73,65 +73,80 @@ Task::State InnerTask::add_dependency(InnerTask *task) {
 
   Task::State dependent_state = task->add_dependent(this);
 
-  if (dependent_state >= Task::dispatched) {
+  if (dependent_state >= Task::RUNAHEAD) {
     this->num_blocking_dependencies.fetch_sub(1);
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
     this->num_unreserved_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::reserved) {
+  } else if (dependent_state >= Task::RESERVED) {
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
     this->num_unreserved_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::mapped) {
+  } else if (dependent_state >= Task::MAPPED) {
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::spawned) {
+  } else if (dependent_state >= Task::SPAWNED) {
     this->num_unspawned_dependencies.fetch_sub(1);
   }
 
   return dependent_state;
 }
 
-bool InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
-  LOG_INFO(TASK, "Adding dependencies to {}. D={}", this, tasks);
-  // TODO: This will need to include all other dependency trackers
-  // (num_mapped_dependencies, etc)
+Task::Status InnerTask::determine_status(bool new_spawnable, bool new_mappable,
+                                         bool new_reservable,
+                                         bool new_runnable) {
+  if (new_runnable and this->processed_data) {
+    return Task::RUNNABLE;
+  } else if (new_runnable and !this->processed_data) {
+    return Task::COMPUTE_RUNNABLE;
+  } else if (new_reservable) {
+    return Task::RESERVABLE;
+  } else if (new_mappable) {
+    return Task::MAPPABLE;
+  } else if (new_spawnable) {
+    return Task::SPAWNABLE;
+  } else {
+    return Task::INITIAL;
+  }
+}
 
-  // TODO: num_spawned_dependencies should be handled before this stage as this
-  // tasks predecessors need to exist
-  //       unless we change to creating a task object on first taskspace
-  //       reference instead of at spawn time. Something to consider.
+Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
+
+  bool data_tasks = false;
+
+  LOG_INFO(TASK, "Adding dependencies to {}. D={}", this, tasks);
 
   // TODO: Change all of this to lock free.
   //       Handle phase events
 
-  this->num_unspawned_dependencies.store(tasks.size() + 1);
-  this->num_unmapped_dependencies.store(tasks.size() + 1);
-  this->num_unreserved_dependencies.store(tasks.size() + 1);
-  this->num_blocking_dependencies.store(tasks.size() + 1);
+  if (data_tasks == false) {
+    this->num_unspawned_dependencies.fetch_add(tasks.size());
+    this->num_unmapped_dependencies.fetch_add(tasks.size());
+    this->num_unreserved_dependencies.fetch_add(tasks.size());
+    this->num_blocking_compute_dependencies.fetch_add(tasks.size());
+  }
+  this->num_blocking_dependencies.fetch_add(tasks.size());
 
   for (size_t i = 0; i < tasks.size(); i++) {
     this->add_dependency(tasks[i]);
   }
 
-  int unspawned_before_value = this->num_unspawned_dependencies.fetch_sub(1);
-  int unmapped_before_value = this->num_unmapped_dependencies.fetch_sub(1);
-  int unreserved_before_value = this->num_unreserved_dependencies.fetch_sub(1);
-  int blocking_before_value = this->num_blocking_dependencies.fetch_sub(1);
+  // Decrement overcount to free this region
+  bool spawnable = this->num_unspawned_dependencies.fetch_sub(1) == 1;
+  bool mappable = this->num_unmapped_dependencies.fetch_sub(1) == 1;
 
-  bool spawnable = unspawned_before_value == 1;
-  bool mappable = unmapped_before_value == 1;
-  bool reservable = unreserved_before_value == 1;
-  bool ready = blocking_before_value == 1;
+  // Other counters are 'freed' in each phase before entering the next phase
 
-  this->spawnable = spawnable;
-  this->mappable = mappable;
-  this->reservable = reservable;
-  this->ready = ready;
+  Task::StatusFlags status = Task::StatusFlags();
+  status.spawnable = spawnable;
+  status.mappable = mappable;
 
-  LOG_INFO(TASK, "Added dependencies to {}. Ready = {}", this, ready);
+  // Task::Status status =
+  //     this->determine_status(spawnable, mappable, reservable, ready);
 
-  return ready;
+  LOG_INFO(TASK, "Added dependencies to {}. Status = {}", this, status);
+
+  return status;
 
   // If true, this task is ready to launch. Launching must be handled
   // Otherwise launching will be handled by another task's notify_dependents
@@ -189,8 +204,8 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-std::vector<InnerTask *> &
-InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
+void InnerTask::notify_dependents(TaskStateList &buffer,
+                                  Task::State new_state) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
   NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
 
@@ -206,51 +221,65 @@ InnerTask::notify_dependents(std::vector<InnerTask *> &buffer) {
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
 
     auto task = this->dependents.get_unsafe(i);
+    Task::StatusFlags status = task->notify(new_state);
 
-    bool ready = task->notify();
-
-    if (ready) {
+    if (status.any()) {
       // std::cout << "Dependent Task Ready: " << task->name << std::endl;
-      buffer.push_back(task);
+      buffer.push_back(std::make_pair(task, status));
     }
   }
 
-  this->set_state(Task::dispatched);
+  this->set_state(new_state);
   this->dependents.unlock();
 
   // std::cout << "Notified dependents of " << this->name << ". Ready tasks: "
   // << buffer.size() << std::endl;
 
   LOG_INFO(TASK, "Notified dependents of {}. Ready tasks: {}", this, buffer);
-
-  return buffer;
 }
 
 bool InnerTask::notify_dependents_wrapper() {
-  std::vector<InnerTask *> buffer = std::vector<InnerTask *>();
-  this->notify_dependents(buffer);
+  TaskStateList buffer = TaskStateList();
+  this->notify_dependents(buffer, Task::MAPPED);
   return buffer.size() > 0;
 }
 
-bool InnerTask::notify() {
-  // TODO: Improve this. This has *lots* of problems for building the rest of
-  // the phases.
-  int remaining_unspawned = this->num_unspawned_dependencies.fetch_sub(1) - 1;
-  int reminaint_unmapped = this->num_unmapped_dependencies.fetch_sub(1) - 1;
-  int remaining_unreserved = this->num_unreserved_dependencies.fetch_sub(1) - 1;
-  int remaining_blocking = this->num_blocking_dependencies.fetch_sub(1) - 1;
+Task::StatusFlags InnerTask::notify(Task::State dependency_state,
+                                    bool is_data) {
 
-  bool spawnable = remaining_unspawned == 0;
-  bool mappable = reminaint_unmapped == 0;
-  bool reservable = remaining_unreserved == 0;
-  bool ready = remaining_blocking == 0;
+  bool spawnable = false;
+  bool mappable = false;
+  bool reservable = false;
+  bool compute_runnable = false;
+  bool runnable = false;
 
-  this->spawnable = spawnable;
-  this->mappable = mappable;
-  this->reservable = reservable;
-  this->ready = ready;
+  if (is_data) {
+    if (dependency_state >= Task::RUNAHEAD) {
+      // A data task never notifies for the other stages
+      runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+    }
+  } else {
+    if (dependency_state >= Task::RUNAHEAD) {
+      compute_runnable ==
+          (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
+      runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::RESERVED) {
+      reservable = (this->num_unreserved_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::MAPPED) {
+      mappable = (this->num_unmapped_dependencies.fetch_sub(1) == 1);
+    } else if (dependency_state >= Task::SPAWNED) {
+      spawnable = (this->num_unspawned_dependencies.fetch_sub(1) == 1);
+    }
+  }
 
-  return ready;
+  Task::StatusFlags status;
+  status.spawnable = spawnable;
+  status.mappable = mappable;
+  status.reservable = reservable;
+  status.compute_runnable = compute_runnable;
+  status.runnable = runnable;
+
+  return status;
 }
 
 bool InnerTask::blocked() { return this->num_blocking_dependencies.load() > 0; }
@@ -263,6 +292,10 @@ int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
 
 int InnerTask::get_num_blocking_dependencies() const {
   return this->num_blocking_dependencies.load();
+}
+
+int InnerTask::get_num_unmapped_dependencies() const {
+  return this->num_unmapped_dependencies.load();
 }
 
 std::vector<void *> InnerTask::get_dependencies() {
@@ -288,16 +321,36 @@ std::vector<void *> InnerTask::get_dependents() {
 
 void *InnerTask::get_py_task() { return this->py_task; }
 
-void InnerTask::set_state(int state) {
-  Task::State new_state = (Task::State)state;
-  this->state.store(new_state);
+int InnerTask::set_state(int state) {
+  Task::State new_state = static_cast<Task::State>(state);
+  Task::State old_state = this->set_state(new_state);
+  int old_state_id = static_cast<int>(new_state);
+  return old_state_id;
 }
 
-void InnerTask::set_state(Task::State state) { this->state.store(state); }
+Task::State InnerTask::set_state(Task::State state) {
+  Task::State new_state = state;
+  Task::State old_state;
 
-void InnerTask::set_complete() {
-  this->set_state(Task::completed);
-  this->complete = true;
+  do {
+    old_state = this->state.load();
+  } while (!this->state.compare_exchange_weak(old_state, new_state));
+
+  return old_state;
 }
 
-bool InnerTask::get_complete() { return this->complete.load(); }
+Task::Status InnerTask::set_status(Task::Status status) {
+  Task::Status new_status = status;
+  Task::Status old_status;
+
+  do {
+    old_status = this->status.load();
+  } while (!this->status.compare_exchange_weak(old_status, new_status));
+
+  return old_status;
+}
+
+/*TODO(wlr): Deprecate this before merge.Need to update pxd and tests*/
+void InnerTask::set_complete() { this->set_state(Task::COMPLETED); }
+
+bool InnerTask::get_complete() { return this->get_state(); }

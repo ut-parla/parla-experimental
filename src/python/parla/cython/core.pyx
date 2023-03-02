@@ -171,13 +171,14 @@ cdef class PyInnerTask:
         cdef InnerScheduler* c_scheduler = scheduler.inner_scheduler
         c_self.set_scheduler(c_scheduler)
 
-    cpdef add_dependencies(self, dependency_list, process=True):
+    cpdef add_dependencies(self, dependency_list, process=False):
         cdef InnerTask* c_self = self.c_task
 
         cdef PyInnerTask dependency
         cdef InnerTask* c_dependency
 
         cdef bool status = False 
+        cdef _StatusFlags status_flags
 
         for d in dependency_list:
             dependency = d.inner_task
@@ -186,7 +187,8 @@ cdef class PyInnerTask:
 
         if process:
             with nogil:
-                status = c_self.process_dependencies()
+                status_flags = c_self.process_dependencies()
+                status = status_flags.mappable
 
         return status
 
@@ -240,6 +242,10 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         return c_self.get_num_blocking_dependencies()
 
+    cpdef get_num_unmapped_dependencies(self):
+        cdef InnerTask* c_self = self.c_task
+        return c_self.get_num_unmapped_dependencies()
+
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
         cdef bool status = False
@@ -249,11 +255,11 @@ cdef class PyInnerTask:
 
     cpdef set_state(self, int state):
         cdef InnerTask* c_self = self.c_task
-        c_self.set_state(state)
+        return c_self.set_state(state)
 
     cpdef set_complete(self):
         cdef InnerTask* c_self = self.c_task
-        c_self.set_complete()
+        c_self.set_state(7)
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -339,9 +345,6 @@ cdef class PyInnerScheduler:
         cdef stopfunc_t py_stop = callback_stop
         _inner_scheduler.set_stop_callback(py_stop)
 
-        cdef launchfunc_t py_launch = callback_launch
-        _inner_scheduler.set_launch_callback(py_launch)
-
     cpdef get_status(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.should_run
@@ -362,16 +365,11 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.activate_wrapper()
 
-    cpdef spawn_task(self, PyInnerTask task, bool should_enqueue):
+    cpdef spawn_task(self, PyInnerTask task):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerTask* c_task = task.c_task
 
-        c_self.spawn_task(c_task, should_enqueue)
-
-    cpdef enqueue_task(self, PyInnerTask task):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        cdef InnerTask* c_task = task.c_task
-        c_self.enqueue_task(c_task)
+        c_self.spawn_task(c_task)
 
     cpdef add_worker(self, PyInnerWorker worker):
         cdef InnerScheduler* c_self = self.inner_scheduler

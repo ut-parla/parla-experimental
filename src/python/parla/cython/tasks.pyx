@@ -250,9 +250,7 @@ class Task:
         self.constraints = constraints
 
         self.add_constraints(constraints)
-        spawnable_flag = self.add_dependencies(dependencies)
-
-        return spawnable_flag
+        self.add_dependencies(dependencies)
 
     def _wait_for_dependency_events(self, enviornment):
         pass
@@ -308,7 +306,7 @@ class Task:
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
 
-    def add_dependencies(self, dependency_list, process=True):
+    def add_dependencies(self, dependency_list, process=False):
         return self.inner_task.add_dependencies(dependency_list, process)
 
     def get_num_dependencies(self):
@@ -319,6 +317,9 @@ class Task:
 
     def get_num_blocking_dependencies(self):
         return self.inner_task.get_num_blocking_dependencies()
+
+    def get_num_unmapped_dependencies(self):
+        return self.inner_task.get_num_unmapped_dependencies()
 
     def get_dependencies(self):
         dependency_list = self.inner_task.get_dependencies()
@@ -377,8 +378,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        spawnable_flag = super().instantiate(dependencies, constraints, priority)
-        return spawnable_flag
+        super().instantiate(dependencies, constraints, priority)
 
     def _execute_task(self):
         return self.func(self, *self.args)

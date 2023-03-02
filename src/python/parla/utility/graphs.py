@@ -12,6 +12,8 @@ import tempfile
 import time
 from enum import IntEnum
 
+from collections import defaultdict
+
 # Synthetic Graphs ENUMS
 
 
@@ -36,7 +38,9 @@ class LogState(IntEnum):
     ADD_CONSTRAINT = 1
     ASSIGNED_TASK = 2
     START_TASK = 3
-    COMPLETED_TASK = 4
+    NOTIFY_DEPENDENTS = 4
+    COMPLETED_TASK = 5
+    UNKNOWN = 6
 
 
 class MovementType(IntEnum):
@@ -404,9 +408,11 @@ def get_time(line: str) -> int:
     return int(logged_time)
 
 
-def check_line(line: str) -> int:
+def check_log_line(line: str) -> int:
     if "Running task" in line:
         return LogState.START_TASK
+    elif "Notified dependents" in line:
+        return LogState.NOTIFY_DEPENDENTS
     elif "Assigned " in line:
         return LogState.ASSIGNED_TASK
     elif "Completed task" in line:
@@ -416,7 +422,7 @@ def check_line(line: str) -> int:
     elif "has constraints" in line:
         return LogState.ADD_CONSTRAINT
     else:
-        return None
+        return LogState.UNKNOWN
 
 
 def convert_task_id(task_id: str, instance: int = 0) -> TaskID:
@@ -466,13 +472,14 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[dict[TaskID, TaskTime],  d
     task_end_order = []
 
     task_times = {}
+    task_states = defaultdict(list)
 
     task_dependencies = {}
 
     final_instance_map = {}
 
     for line in output:
-        line_type = check_line(line)
+        line_type = check_log_line(line)
         if line_type == LogState.START_TASK:
             start_time = get_time(line)
             task_properties = get_task_properties(line)
@@ -508,6 +515,22 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[dict[TaskID, TaskTime],  d
 
             task_end_times[base_name] = end_time
             task_end_order.append(base_name)
+
+        elif line_type == LogState.NOTIFY_DEPENDENTS:
+            task_properties = get_task_properties(line)
+            notifying_task = task_properties[0]
+            current_name = notifying_task['name']
+            current_state = notifying_task['get_state']
+            instance = notifying_task['instance']
+
+            if int(instance) > 0:
+                base_name = TaskID(current_name.taskspace,
+                                   current_name.task_idx,
+                                   0)
+                task_states[base_name] += [current_state]
+
+            task_states[current_name] += [current_state]
+
         elif line_type == LogState.ASSIGNED_TASK:
             assigned_time = get_time(line)
             task_properties = get_task_properties(line)
@@ -538,7 +561,7 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[dict[TaskID, TaskTime],  d
         duration = end_t - start_t
         task_times[task] = TaskTime(assigned_t, start_t, end_t, duration)
 
-    return task_times, task_dependencies
+    return task_times, task_dependencies, task_states
 
 
 def generate_serial_graph(config: SerialConfig) -> str:
