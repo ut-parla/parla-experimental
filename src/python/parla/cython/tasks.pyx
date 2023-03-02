@@ -555,6 +555,7 @@ class TaskSpace(TaskCollection):
             shape_flag = (self.shape is not None)
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
+
             idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
             task_list = get_or_create_tasks(self, idx, create=create)
 

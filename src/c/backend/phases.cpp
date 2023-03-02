@@ -15,7 +15,9 @@ size_t Mapper::get_count() {
   return count;
 }
 
+
 void Mapper::run(SchedulerPhase *memory_reserver) {
+
   NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
