@@ -9,7 +9,7 @@
 
 #include <vector>
 
-using DevIDTy = uint32_t;
+using DevID_t = uint32_t;
 
 /// `DeviceManager` registers/provides devices and their
 /// information on the current system to the Parla runtime.

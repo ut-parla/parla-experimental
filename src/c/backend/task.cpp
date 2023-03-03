@@ -1,4 +1,5 @@
 #include "include/containers.hpp"
+#include "include/resources.hpp"
 #include "include/runtime.hpp"
 #include <string.h>
 
@@ -7,22 +8,23 @@
 // Task Implementation
 
 // TODO(hc) member initialization list is preferable as it can reduce
-//          instructions (e.g., https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
+//          instructions (e.g.,
+//          https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
 InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
 }
 
-InnerTask::InnerTask(long long int id, void *py_task) :
-    req_addition_mode_(SingleDevAdd) {
+InnerTask::InnerTask(long long int id, void *py_task)
+    : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = id;
   this->py_task = py_task;
 }
 
-InnerTask::InnerTask(std::string name, long long int id, void *py_task) :
-    req_addition_mode_(SingleDevAdd) {
+InnerTask::InnerTask(std::string name, long long int id, void *py_task)
+    : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->name = name;
   this->id = id;
@@ -45,7 +47,7 @@ void InnerTask::set_py_task(void *py_task) { this->py_task = py_task; }
 void InnerTask::set_priority(int priority) { this->priority = priority; }
 
 void InnerTask::set_resources(std::string resource_name, float resource_value) {
-  this->resources.set(resource_name, resource_value);
+  this->resources.set(Resource::VCU, resource_value);
 }
 
 void InnerTask::queue_dependency(InnerTask *task) {
@@ -359,13 +361,16 @@ void InnerTask::set_complete() { this->set_state(Task::COMPLETED); }
 
 bool InnerTask::get_complete() { return this->get_state(); }
 
-
 // TODO(hc): The current Parla exploits two types of resources,
 //           memory and vcus. Later, this can be extended with
 //           a map.
-void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcus) {
-  DeviceResources res_req = {mem_sz, num_vcus};
-  DeviceRequirement* dev_req = new DeviceRequirement(dev_ptr, res_req);
+void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
+                               VCU_t num_vcus) {
+  ResourcePool_t res_req;
+  res_req.set(MEMORY, mem_sz);
+  res_req.set(VCU, num_vcus);
+
+  DeviceRequirement *dev_req = new DeviceRequirement(dev_ptr, res_req);
   if (req_addition_mode_ == SingleDevAdd) {
     dev_res_reqs_.AppendDeviceRequirementOption(dev_req);
   } else if (req_addition_mode_ % 2 == 0) { /* Architecture requirement */
@@ -376,7 +381,7 @@ void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcu
 }
 
 void InnerTask::begin_arch_req_addition() {
-  // Setting architecture resource requirement 
+  // Setting architecture resource requirement
   // could be called within multi-device requirement
   // setup.
   ++req_addition_mode_;

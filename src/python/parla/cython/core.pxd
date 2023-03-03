@@ -8,6 +8,12 @@ from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
+
+cdef extern from "include/resources.hpp" nogil:
+    cdef enum Resource:
+        MEMORY = 0,
+        VCUS = 1,
+
 cdef extern from "include/runtime.hpp" nogil:
 
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)

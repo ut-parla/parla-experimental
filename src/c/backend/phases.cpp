@@ -15,7 +15,6 @@ size_t Mapper::get_count() {
   return count;
 }
 
-
 void Mapper::run(SchedulerPhase *memory_reserver) {
 
   NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
@@ -37,52 +36,60 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask* task = this->mappable_tasks.front_and_pop();
-    ResourceRequirementCollections& res_reqs = task->GetResourceRequirements();
-    std::vector<DeviceRequirementBase*> dev_res_reqs = res_reqs.GetDeviceRequirementOptions();
-    for (DeviceRequirementBase* r : dev_res_reqs) {
+    InnerTask *task = this->mappable_tasks.front_and_pop();
+    ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
+    std::vector<DeviceRequirementBase *> dev_res_reqs =
+        res_reqs.GetDeviceRequirementOptions();
+    for (DeviceRequirementBase *r : dev_res_reqs) {
       if (r->is_multidev_req()) {
         // TODO(hc): It can be refactored later and its length
         //           can be reduced.
         //           Refactor it when we implement a policy.
         std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements* mdev_res_reqs =
-            dynamic_cast<MultiDeviceRequirements*>(r);
-        const std::vector<SingleDeviceRequirementBase*> mdev_res_reqs_vec =
+        MultiDeviceRequirements *mdev_res_reqs =
+            dynamic_cast<MultiDeviceRequirements *>(r);
+        const std::vector<SingleDeviceRequirementBase *> mdev_res_reqs_vec =
             mdev_res_reqs->GetDeviceRequirements();
-        for (DeviceRequirementBase* m_r : mdev_res_reqs_vec) {
+        for (DeviceRequirementBase *m_r : mdev_res_reqs_vec) {
           if (m_r->is_dev_req()) {
-            DeviceRequirement* dev_res_req = dynamic_cast<DeviceRequirement*>(m_r);
+            DeviceRequirement *dev_res_req =
+                dynamic_cast<DeviceRequirement *>(m_r);
             std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
             std::cout << "\t" << dev_res_req->device().GetName() << " -> "
-              << dev_res_req->res_req().mem_sz << "B, VCU "
-              << dev_res_req->res_req().num_vcus << "\n";
+                      << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                      << dev_res_req->res_req().get(VCU) << "\n";
           } else if (m_r->is_arch_req()) {
-            std::cout << "\t[Architecture Requirement in Multi-device Requirement]\n";
-            ArchitectureRequirement* arch_res_req = dynamic_cast<ArchitectureRequirement*>(m_r);
+            std::cout
+                << "\t[Architecture Requirement in Multi-device Requirement]\n";
+            ArchitectureRequirement *arch_res_req =
+                dynamic_cast<ArchitectureRequirement *>(m_r);
             uint32_t i = 0;
-            for (DeviceRequirement* dev_res_req : arch_res_req->GetDeviceRequirementOptions()) {
-              std::cout << "\t\t[" << i << "]" << dev_res_req->device().GetName() << " -> "
-                << dev_res_req->res_req().mem_sz << "B, VCU "
-                << dev_res_req->res_req().num_vcus << "\n";
+            for (DeviceRequirement *dev_res_req :
+                 arch_res_req->GetDeviceRequirementOptions()) {
+              std::cout << "\t\t[" << i << "]"
+                        << dev_res_req->device().GetName() << " -> "
+                        << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                        << dev_res_req->res_req().get(VCU) << "\n";
               ++i;
             }
           }
         }
       } else if (r->is_dev_req()) {
-        DeviceRequirement* dev_res_req = dynamic_cast<DeviceRequirement*>(r);
+        DeviceRequirement *dev_res_req = dynamic_cast<DeviceRequirement *>(r);
         std::cout << "[Device Requirement]\n";
         std::cout << dev_res_req->device().GetName() << " -> "
-          << dev_res_req->res_req().mem_sz << "B, VCU "
-          << dev_res_req->res_req().num_vcus << "\n";
+                  << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                  << dev_res_req->res_req().get(VCU) << "\n";
       } else if (r->is_arch_req()) {
         std::cout << "[Architecture Requirement]\n";
-        ArchitectureRequirement* arch_res_req = dynamic_cast<ArchitectureRequirement*>(r);
+        ArchitectureRequirement *arch_res_req =
+            dynamic_cast<ArchitectureRequirement *>(r);
         uint32_t i = 0;
-        for (DeviceRequirement* dev_res_req : arch_res_req->GetDeviceRequirementOptions()) {
-          std::cout << "\t[" << i << "]" << dev_res_req->device().GetName() << " -> "
-            << dev_res_req->res_req().mem_sz << "B, VCU "
-            << dev_res_req->res_req().num_vcus << "\n";
+        for (DeviceRequirement *dev_res_req :
+             arch_res_req->GetDeviceRequirementOptions()) {
+          std::cout << "\t[" << i << "]" << dev_res_req->device().GetName()
+                    << " -> " << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                    << dev_res_req->res_req().get(VCU) << "\n";
           ++i;
         }
       }
@@ -227,8 +234,9 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
     if (has_task) {
       auto task = this->runnable_tasks.front();
-      bool has_resources = scheduler->resources->check_greater(task->resources);
-
+      // bool has_resources =
+      // scheduler->resources->check_greater(task->resources);
+      bool has_resources = true;
       if (has_resources) {
 
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
@@ -239,7 +247,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
-          scheduler->resources->decrease(task->resources);
+          // scheduler->resources->decrease(task->resources);
 
           launcher->enqueue(task, worker);
 
