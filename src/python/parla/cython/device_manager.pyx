@@ -229,7 +229,6 @@ class PyDeviceManager:
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
-        print(placement_components)
         assert(isinstance(placement_components, List) or \
             isinstance(placement_components, Tuple))
         # Multi-device resource requirement or
