@@ -186,14 +186,6 @@ class PyDeviceManager:
         return PrintableFrozenSet(arch_reqs)
 
     def construct_resouce_requirements(self, placement_component):
-        """ Unpack a placement parameter and return a list of
-            a pair of devices and requirements in a proper structure.
-            A placement parameter can be composed as an iteratable
-            collection and this function processes it through a recursive call.
-            Placements (from @spawn) could be collections, for
-            multi-device placements, a pair of architecture and
-            resource requirement, or a pair of device and resource requirement.
-        """
         if isinstance(placement_component, Tuple) and \
               not self.is_multidevice_placement(placement_component):
                 # In this case, the placement component consists of
@@ -220,14 +212,23 @@ class PyDeviceManager:
                     return self.construct_single_device_requirements(
                         placement, req)
         elif isinstance(placement_component, PyArchitecture):
-            return self.construct_single_architecture_requirementsts(
+            return self.construct_single_architecture_requirements(
                 placement_component)
         elif isinstance(placement_component, PyDevice):
             return self.construct_single_device_requirements(
                 placement_component)
+        else:
+            raise TypeError("Incorrect placement")
+
 
 
     def unpack_placements(self, placement_components):
+        """ Unpack a placement parameter and return a list of
+            a pair of devices and requirements in a proper hierarchy structure.
+            Placements (from @spawn) could be collections, for
+            multi-device placements, a pair of architecture and
+            resource requirement, or a pair of device and resource requirement.
+        """
         print(placement_components)
         assert(isinstance(placement_components, List) or \
             isinstance(placement_components, Tuple))
@@ -236,14 +237,6 @@ class PyDeviceManager:
         # requirements.
         unpacked_devices = []
         for c in placement_components:
-            if isinstance(c, Tuple) and self.is_multidevice_placement(c):
-                tmp_unpacked_placement = self.unpack_placements(c)
-            else:
-                tmp_unpacked_placement = self.construct_resouce_requirements(c)
-            if tmp_unpacked_placement is None:
-                continue
-            req_exist = False
-            res_req = None
             if isinstance(c, Tuple):
                 if self.is_multidevice_placement(c):
                     # Multi-device placement is specified
@@ -254,24 +247,13 @@ class PyDeviceManager:
                     # multi-device placements (e.g., placement=[(), (), ..]),
                     # and the task mapper chooses one of those options
                     # as the target requirement based on device states.
-                    # To distinguish multiple multi-device placements,
-                    # we add one complete multi-device placement and
-                    # its requirements as a list.
-                    unpacked_devices += [tmp_unpacked_placement]
+                    # In this case, recursively call this function and
+                    # construct a list of member devices and their resource
+                    # requirements to distinguish them from other flat
+                    # resource requirements.
+                    unpacked_devices += [self.unpack_placements(c)]
                     continue
-                req_exist = True
-            if req_exist:
-                # In this case, c is a tuple of a device or an architecture,
-                # and its resource requirement. So, the 0th element points
-                # to a device or an architecture object, and the 1st element
-                # is a resource requirement.
-                (c, res_req) = c
-            if isinstance(c, PyArchitecture):
-                unpacked_devices.append(tmp_unpacked_placement)
-            elif isinstance(c, PyDevice):
-                unpacked_devices.append(tmp_unpacked_placement)
-            else:
-                raise TypeError("Incorrect placement")
+            unpacked_devices.append(self.construct_resouce_requirements(c))
         return unpacked_devices
 
     def get_device_reqs_from_placement(self, placement):
