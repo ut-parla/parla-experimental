@@ -1,4 +1,5 @@
 #include "include/phases.hpp"
+#include "include/profiling.hpp"
 #include "include/runtime.hpp"
 
 /**************************/
@@ -17,7 +18,7 @@ size_t Mapper::get_count() {
 
 void Mapper::run(SchedulerPhase *memory_reserver) {
 
-  NVTX_RANGE("SpawnedPhase::run", NVTX_COLOR_LIGHT_GREEN)
+  NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -134,6 +135,7 @@ size_t MemoryReserver::get_count() {
 }
 
 void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
+  NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
   // Loop through all the tasks in the reservable_tasks queue, reserve memory on
   // device if possible;
 
