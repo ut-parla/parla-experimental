@@ -2,6 +2,11 @@ import cython
 
 from parla.cython.device cimport Device
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
+from enum import IntEnum, auto
+
+#Resource Types
+#TODO: Python ENUM
+
 
 #Logging functions
 

@@ -57,8 +57,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
                 dynamic_cast<DeviceRequirement *>(m_r);
             std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
             std::cout << "\t" << dev_res_req->device().GetName() << " -> "
-                      << dev_res_req->res_req().mem_sz << "B, VCU "
-                      << dev_res_req->res_req().num_vcus << "\n";
+                      << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                      << dev_res_req->res_req().get(VCU) << "\n";
           } else if (m_r->is_arch_req()) {
             std::cout
                 << "\t[Architecture Requirement in Multi-device Requirement]\n";
@@ -69,8 +69,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
                  arch_res_req->GetDeviceRequirementOptions()) {
               std::cout << "\t\t[" << i << "]"
                         << dev_res_req->device().GetName() << " -> "
-                        << dev_res_req->res_req().mem_sz << "B, VCU "
-                        << dev_res_req->res_req().num_vcus << "\n";
+                        << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                        << dev_res_req->res_req().get(VCU) << "\n";
               ++i;
             }
           }
@@ -79,8 +79,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         DeviceRequirement *dev_res_req = dynamic_cast<DeviceRequirement *>(r);
         std::cout << "[Device Requirement]\n";
         std::cout << dev_res_req->device().GetName() << " -> "
-                  << dev_res_req->res_req().mem_sz << "B, VCU "
-                  << dev_res_req->res_req().num_vcus << "\n";
+                  << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                  << dev_res_req->res_req().get(VCU) << "\n";
       } else if (r->is_arch_req()) {
         std::cout << "[Architecture Requirement]\n";
         ArchitectureRequirement *arch_res_req =
@@ -89,8 +89,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         for (DeviceRequirement *dev_res_req :
              arch_res_req->GetDeviceRequirementOptions()) {
           std::cout << "\t[" << i << "]" << dev_res_req->device().GetName()
-                    << " -> " << dev_res_req->res_req().mem_sz << "B, VCU "
-                    << dev_res_req->res_req().num_vcus << "\n";
+                    << " -> " << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+                    << dev_res_req->res_req().get(VCU) << "\n";
           ++i;
         }
       }
@@ -236,8 +236,9 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
     if (has_task) {
       auto task = this->runnable_tasks.front();
-      bool has_resources = scheduler->resources->check_greater(task->resources);
-
+      // bool has_resources =
+      // scheduler->resources->check_greater(task->resources);
+      bool has_resources = true;
       if (has_resources) {
 
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
@@ -248,7 +249,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
-          scheduler->resources->decrease(task->resources);
+          // scheduler->resources->decrease(task->resources);
 
           launcher->enqueue(task, worker);
 

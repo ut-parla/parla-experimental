@@ -1,5 +1,7 @@
 #include "include/phases.hpp"
+#include "include/resources.hpp"
 #include "include/runtime.hpp"
+
 #include <new>
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -134,7 +136,7 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
-  this->resources = new InnerResourcePool<float>();
+  this->resources = new ResourcePool<std::atomic<int64_t>>();
   // TODO: Clean these up
 }
 
@@ -144,7 +146,7 @@ void InnerScheduler::set_num_workers(int nworkers) {
 
 void InnerScheduler::set_resources(std::string resource_name,
                                    float resource_value) {
-  this->resources->set(resource_name, resource_value);
+  this->resources->set(Resource::VCU, resource_value);
 }
 
 void InnerScheduler::set_py_scheduler(void *py_scheduler) {
@@ -301,7 +303,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // TODO: for runahead, we need to do this AFTER the task body is complete
   //      Need to add back to the pool after notify_dependents
   worker->remove_task();
-  this->resources->increase(task->resources);
+  // this->resources->increase(task->resources);
   this->enqueue_worker(worker);
 }
 

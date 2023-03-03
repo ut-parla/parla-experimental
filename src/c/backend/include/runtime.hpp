@@ -17,8 +17,8 @@ using namespace std::chrono_literals;
 
 #include "containers.hpp"
 #include "device_manager.hpp"
-#include "resource_requirements.hpp"
 #include "profiling.hpp"
+#include "resource_requirements.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -73,46 +73,6 @@ inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
 }
-
-/**
- *   The C++ backend of Parla's ResourcePool
- *   All scheduling logic should be handled by these after creation.
- */
-template <typename T> class InnerResourcePool {
-  /*TODO : This is a mock placeholder for now. Used to test the scheduler and
-   * settle on API. Assumes setup happens sequentially and is externally
-   * thread-safe. : Internal representation should be a map of strings to types.
-   *      : This should be able to subtract, check, and add a resource to the
-   * bool in an internally thread-safe manner. : This should be able to do the
-   * above for all resources in another pool : This only handles a single type
-   * of resource. Ideal should be able to handle multiple types like the Python
-   * dictionary :( : (Needed) Multilevel dispatch for mixed types. e.g.
-   * threads->int, vcus->rational. constexpr if? : (Optional) Be able to compare
-   * pools of different types
-   */
-public:
-  std::atomic<T> vcus{0};
-
-  InnerResourcePool() = default;
-
-  void set(std::string name, T value);
-
-  T get(std::string name);
-
-  // bool check(std::string name, int value);
-  // bool check(std::vector<std::string> names, std::vector<int> values);
-  template <typename J> bool check_greater(InnerResourcePool<J> &other);
-
-  template <typename J> bool check_lesser(InnerResourcePool<J> &other);
-
-  // bool increase(std::string name, T value);
-  // bool increase(std::vector<std::string> names, std::vector<T> values);
-  template <typename J> T increase(InnerResourcePool<J> &other);
-
-  // bool decrease(std::string name, T value);
-  // bool decrease(std::vector<std::string> names, std::vector<T> values);
-  template <typename J> T decrease(InnerResourcePool<J> &other);
-};
 
 namespace Task {
 
@@ -248,7 +208,7 @@ public:
   std::atomic<int> num_unreserved_dependencies{1};
 
   /* Tasks Internal Resource Pool. */
-  InnerResourcePool<float> resources;
+  ResourcePool<std::atomic<int64_t>> resources;
 
   /* Task has data to be moved */
   std::atomic<bool> has_data{false};
@@ -393,25 +353,29 @@ public:
   /* Get complete */
   bool get_complete();
 
-  void add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcus);
+  void add_device_req(Device *dev_ptr, MemorySz_t mem_sz, VCU_t num_vcus);
   void begin_arch_req_addition();
   void end_arch_req_addition();
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
 
-  ResourceRequirementCollections& GetResourceRequirements() {
+  ResourceRequirementCollections &GetResourceRequirements() {
     return dev_res_reqs_;
   }
 
-private:
+protected:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
-   *  1 <--> 2 (SingleArchAdd)        
+   *  1 <--> 2 (SingleArchAdd)
    */
-  enum ReqAdditionState { SingleDevAdd = 1, /* SingleArchAdd == 2n */ MultiDevAdd = 3 };
+  enum ReqAdditionState {
+    SingleDevAdd = 1,
+    /* SingleArchAdd == 2, */
+    MultiDevAdd = 3
+  };
   uint32_t req_addition_mode_;
-  ArchitectureRequirement* tmp_arch_req_;
-  MultiDeviceRequirements* tmp_multdev_reqs_;
+  ArchitectureRequirement *tmp_arch_req_;
+  MultiDeviceRequirements *tmp_multdev_reqs_;
   ResourceRequirementCollections dev_res_reqs_;
 };
 
@@ -624,7 +588,7 @@ public:
   WorkerPool_t workers;
 
   /* Resource Pool */
-  InnerResourcePool<float>
+  ResourcePool<std::atomic<int64_t>>
       *resources; // TODO: Dummy class, needs complete rework with devices
 
   /* Active task counter (thread-safe) */
