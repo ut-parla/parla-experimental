@@ -173,28 +173,30 @@ class PyDeviceManager:
             return False
         return True
 
-    def construct_single_device_reqs(self, dev, res_req = None):
+    def construct_single_device_requirements(self, dev, res_req = None):
         res_req_ = res_req if res_req is not None else DeviceResource()
         return DeviceResourceRequirement(dev, res_req_)
 
-    def construct_single_arch_reqs(self, arch, res_req = None):
+    def construct_single_architecture_requirements(self, arch, res_req = None):
         arch_reqs = []
         res_req_ = res_req if res_req is not None else DeviceResource()
         for d in arch.devices:
-            arch_reqs.append(self.construct_single_device_reqs(d, res_req_))
+            arch_reqs.append(self.construct_single_device_requirements(
+                  d, res_req_))
         return PrintableFrozenSet(arch_reqs)
 
-    def unpack_devices(self, placement_component):
-        """ Unpack the placement and return a list of
-            devices. The placement can be an iteratable collection
-            and this function handles it through a recursive call.
+    def construct_resouce_requirements(self, placement_component):
+        """ Unpack a placement parameter and return a list of
+            a pair of devices and requirements in a proper structure.
+            A placement parameter can be composed as an iteratable
+            collection and this function processes it through a recursive call.
             Placements (from @spawn) could be collections, for
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
         if isinstance(placement_component, Tuple) and \
               not self.is_multidevice_placement(placement_component):
-                # The placement component consists of
+                # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
                 if placement is None:
@@ -212,53 +214,65 @@ class PyDeviceManager:
                     # might be chosen as the final placement for a task.
                     # To distinguish architecture placement from others,
                     # it is converted to a frozen set of the entire devices.
-                    return self.construct_single_arch_reqs(placement, req)
+                    return self.construct_single_architecture_requirements(
+                        placement, req)
                 elif isinstance(placement, PyDevice):
-                    return self.construct_single_device_reqs(placement, req)
+                    return self.construct_single_device_requirements(
+                        placement, req)
         elif isinstance(placement_component, PyArchitecture):
-            return self.construct_single_arch_reqs(placement_component)
+            return self.construct_single_architecture_requirementsts(
+                placement_component)
         elif isinstance(placement_component, PyDevice):
-            return self.construct_single_device_reqs(placement_component)
-        elif isinstance(placement_component, Collection):
-            # Multi-device resource requirement or
-            # a list of devices, architectures, or multi-device 
-            # requirements.
-            unpacked_devices = []
-            for c in placement_component:
-                tmp_unpacked_devices = self.unpack_devices(c)
-                if tmp_unpacked_devices is None:
+            return self.construct_single_device_requirements(
+                placement_component)
+
+
+    def unpack_placements(self, placement_components):
+        print(placement_components)
+        assert(isinstance(placement_components, List) or \
+            isinstance(placement_components, Tuple))
+        # Multi-device resource requirement or
+        # a list of devices, architectures, or multi-device 
+        # requirements.
+        unpacked_devices = []
+        for c in placement_components:
+            if isinstance(c, Tuple) and self.is_multidevice_placement(c):
+                tmp_unpacked_placement = self.unpack_placements(c)
+            else:
+                tmp_unpacked_placement = self.construct_resouce_requirements(c)
+            if tmp_unpacked_placement is None:
+                continue
+            req_exist = False
+            res_req = None
+            if isinstance(c, Tuple):
+                if self.is_multidevice_placement(c):
+                    # Multi-device placement is specified
+                    # through a nested tuple of the placement API.
+                    # Which means that, each nested tuple in the
+                    # placement specifies a single placement for
+                    # a task. The placement API allows multiple tuples for
+                    # multi-device placements (e.g., placement=[(), (), ..]),
+                    # and the task mapper chooses one of those options
+                    # as the target requirement based on device states.
+                    # To distinguish multiple multi-device placements,
+                    # we add one complete multi-device placement and
+                    # its requirements as a list.
+                    unpacked_devices += [tmp_unpacked_placement]
                     continue
-                req_exist = False
-                res_req = None
-                if isinstance(c, Tuple):
-                    if self.is_multidevice_placement(c):
-                        # Multi-device placement is specified
-                        # through a nested tuple of the placement API.
-                        # Which means that, each nested tuple in the
-                        # placement specifies a single placement for
-                        # a task. The placement API allows multiple tuples for
-                        # multi-device placements (e.g., placement=[(), (), ..]),
-                        # and the task mapper chooses one of those options
-                        # as the target requirement based on device states.
-                        # To distinguish multiple multi-device placements,
-                        # we add one complete multi-device placement and
-                        # its requirements as a list.
-                        unpacked_devices += [tmp_unpacked_devices]
-                        continue
-                    req_exist = True
-                if req_exist:
-                    # In this case, c is a tuple of a device or an architecture,
-                    # and its resource requirement. So, the 0th element points
-                    # to a device or an architecture object, and the 1st element
-                    # is a resource requirement.
-                    (c, res_req) = c
-                if isinstance(c, PyArchitecture):
-                    unpacked_devices.append(tmp_unpacked_devices)
-                elif isinstance(c, PyDevice):
-                    unpacked_devices.append(tmp_unpacked_devices)
-                else:
-                    raise TypeError("Incorrect placement")
-            return unpacked_devices
+                req_exist = True
+            if req_exist:
+                # In this case, c is a tuple of a device or an architecture,
+                # and its resource requirement. So, the 0th element points
+                # to a device or an architecture object, and the 1st element
+                # is a resource requirement.
+                (c, res_req) = c
+            if isinstance(c, PyArchitecture):
+                unpacked_devices.append(tmp_unpacked_placement)
+            elif isinstance(c, PyDevice):
+                unpacked_devices.append(tmp_unpacked_placement)
+            else:
+                raise TypeError("Incorrect placement")
+        return unpacked_devices
 
     def get_device_reqs_from_placement(self, placement):
         """ Unpack placement and return device objects that are specified
@@ -267,7 +281,7 @@ class PyDeviceManager:
             in the current system become candidates of the placement. """
         if placement is not None:
             ps = placement if isinstance(placement, Iterable) else [placement]
-            return self.unpack_devices(ps)
+            return self.unpack_placements(ps)
         else:
             return [DeviceResourceRequirement(d, DeviceResource()) \
                     for d in self.get_all_devices()]
