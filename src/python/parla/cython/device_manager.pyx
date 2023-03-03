@@ -236,23 +236,22 @@ class PyDeviceManager:
         # requirements.
         unpacked_devices = []
         for c in placement_components:
-            if isinstance(c, Tuple):
-                if self.is_multidevice_placement(c):
-                    # Multi-device placement is specified
-                    # through a nested tuple of the placement API.
-                    # Which means that, each nested tuple in the
-                    # placement specifies a single placement for
-                    # a task. The placement API allows multiple tuples for
-                    # multi-device placements (e.g., placement=[(), (), ..]),
-                    # and the task mapper chooses one of those options
-                    # as the target requirement based on device states.
-                    # In this case, recursively call this function and
-                    # construct a list of member devices and their resource
-                    # requirements to distinguish them from other flat
-                    # resource requirements.
-                    unpacked_devices += [self.unpack_placements(c)]
-                    continue
-            unpacked_devices.append(self.construct_resouce_requirements(c))
+            if isinstance(c, Tuple) and self.is_multidevice_placement(c):
+                # Multi-device placement is specified
+                # through a nested tuple of the placement API.
+                # Which means that, each nested tuple in the
+                # placement specifies a single placement for
+                # a task. The placement API allows multiple tuples for
+                # multi-device placements (e.g., placement=[(), (), ..]),
+                # and the task mapper chooses one of those options
+                # as the target requirement based on device states.
+                # In this case, recursively call this function and
+                # construct a list of member devices and their resource
+                # requirements to distinguish them from other flat
+                # resource requirements.
+                unpacked_devices.append(self.unpack_placements(c))
+            else:
+                unpacked_devices.append(self.construct_resouce_requirements(c))
         return unpacked_devices
 
     def get_device_reqs_from_placement(self, placement):
