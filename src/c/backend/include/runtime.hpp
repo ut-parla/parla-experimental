@@ -220,6 +220,7 @@ public:
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
+  ~InnerTask();
 
   /* Set the scheduler */
   void set_scheduler(InnerScheduler *scheduler);
@@ -608,6 +609,7 @@ public:
   Launcher *launcher;
 
   InnerScheduler(DeviceManager *device_manager);
+  ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */

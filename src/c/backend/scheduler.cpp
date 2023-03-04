@@ -140,6 +140,10 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   // TODO: Clean these up
 }
 
+InnerScheduler::~InnerScheduler() {
+  delete device_manager_;
+}
+
 void InnerScheduler::set_num_workers(int nworkers) {
   this->workers.set_num_workers(nworkers);
 }

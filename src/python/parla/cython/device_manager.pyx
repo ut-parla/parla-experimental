@@ -167,87 +167,101 @@ class PyDeviceManager:
                 devs.append(dev)
         return devs
 
-    def unpack_devices(self, placement_component):
-        """ Unpack the placement and return a list of
-            devices. The placement can be an iteratable collection
-            and this function handles it through a recursive call. """
-        if isinstance(placement_component, PyArchitecture):
-            return PrintableFrozenSet(placement_component.devices)
-        elif isinstance(placement_component, PyDevice):
-            return [placement_component]
-        elif isinstance(placement_component, Collection):
-            unpacked_devices = []
-            for c in placement_component:
-                # If a device specified by users does not exit 
-                # and was not registered to the Parla runtime,
-                # its instance is set to None and should be
-                # ignored.
-                if c is None:
-                    continue
-                tmp_unpacked_devices = self.unpack_devices(c)
-                if isinstance(c, Tuple):
-                    # Multi-device placement is specified
-                    # through a nested list. Therefore, each nested list in the
-                    # placement specifies a single placement for
-                    # a task, and multiple lists allow the task
-                    # mapper to choose one of those lists as resource
-                    # requirements depending on device status.
-                    unpacked_devices += [tmp_unpacked_devices]
-                elif isinstance(c, PyArchitecture):
-                    # Architecture placement means one placement
-                    # of the entire devices in the architecture.
+    def is_multidevice_placement(self, placement_tuple):
+        if len(placement_tuple) == 2 and \
+                isinstance(placement_tuple[1], DeviceResource):
+            return False
+        return True
+
+    def construct_single_device_requirements(self, dev, res_req = None):
+        res_req_ = res_req if res_req is not None else DeviceResource()
+        return DeviceResourceRequirement(dev, res_req_)
+
+    def construct_single_architecture_requirements(self, arch, res_req = None):
+        arch_reqs = []
+        res_req_ = res_req if res_req is not None else DeviceResource()
+        for d in arch.devices:
+            arch_reqs.append(self.construct_single_device_requirements(
+                  d, res_req_))
+        return PrintableFrozenSet(arch_reqs)
+
+    def construct_resouce_requirements(self, placement_component):
+        if isinstance(placement_component, Tuple) and \
+              not self.is_multidevice_placement(placement_component):
+                # In this case, the placement component consists of
+                # Device or Architecture, with its resource requirement.
+                placement, req = placement_component
+                if placement is None:
+                    # If a device specified by users does not exit 
+                    # and was not registered to the Parla runtime,
+                    # its instance is set to None and should be
+                    # ignored.
+                    return None
+                if isinstance(placement, PyArchitecture):
+                    # Architecture placement means that the task mapper
+                    # could choose one of the devices in the specified
+                    # architecture.
                     # For example, if `gpu` is specified, all gpu devices
                     # become target candidate devices and one of them
-                    # might be chosen.
+                    # might be chosen as the final placement for a task.
                     # To distinguish architecture placement from others,
                     # it is converted to a frozen set of the entire devices.
-                    unpacked_devices.append(tmp_unpacked_devices)
-                else:
-                    unpacked_devices += tmp_unpacked_devices
-            return unpacked_devices
+                    return self.construct_single_architecture_requirements(
+                        placement, req)
+                elif isinstance(placement, PyDevice):
+                    return self.construct_single_device_requirements(
+                        placement, req)
+        elif isinstance(placement_component, PyArchitecture):
+            return self.construct_single_architecture_requirements(
+                placement_component)
+        elif isinstance(placement_component, PyDevice):
+            return self.construct_single_device_requirements(
+                placement_component)
+        else:
+            raise TypeError("Incorrect placement")
 
-    def get_devices_from_placement(self, placement):
+
+
+    def unpack_placements(self, placement_components):
+        """ Unpack a placement parameter and return a list of
+            a pair of devices and requirements in a proper hierarchy structure.
+            Placements (from @spawn) could be collections, for
+            multi-device placements, a pair of architecture and
+            resource requirement, or a pair of device and resource requirement.
+        """
+        assert(isinstance(placement_components, List) or \
+            isinstance(placement_components, Tuple))
+        # Multi-device resource requirement or
+        # a list of devices, architectures, or multi-device 
+        # requirements.
+        unpacked_devices = []
+        for c in placement_components:
+            if isinstance(c, Tuple) and self.is_multidevice_placement(c):
+                # Multi-device placement is specified
+                # through a nested tuple of the placement API.
+                # Which means that, each nested tuple in the
+                # placement specifies a single placement for
+                # a task. The placement API allows multiple tuples for
+                # multi-device placements (e.g., placement=[(), (), ..]),
+                # and the task mapper chooses one of those options
+                # as the target requirement based on device states.
+                # In this case, recursively call this function and
+                # construct a list of member devices and their resource
+                # requirements to distinguish them from other flat
+                # resource requirements.
+                unpacked_devices.append(self.unpack_placements(c))
+            else:
+                unpacked_devices.append(self.construct_resouce_requirements(c))
+        return unpacked_devices
+
+    def get_device_reqs_from_placement(self, placement):
         """ Unpack placement and return device objects that are specified
             (or implied) through the placement argument of @spawn.
             If None is passed to the placement, all devices exiting
             in the current system become candidates of the placement. """
         if placement is not None:
             ps = placement if isinstance(placement, Iterable) else [placement]
-            return self.unpack_devices(ps)
+            return self.unpack_placements(ps)
         else:
-            return self.get_all_devices()
-
-    def construct_single_device_reqs(self, d, r):
-        return DeviceResourceRequirement(device=d, res_req=r)
-
-    def construct_multi_device_reqs(self, devices):
-        reqs = []
-        for d in devices:
-            if isinstance(d, PrintableFrozenSet):
-                set_reqs = []
-                for set_d in d:
-                    set_reqs.append(self.construct_single_device_reqs(set_d, DeviceResource()))
-                reqs.append(PrintableFrozenSet(set_reqs))
-            else:
-                reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
-        return reqs
-
-    def construct_single_arch_reqs(self, archs):
-        reqs = []
-        for d in archs:
-            reqs.append(self.construct_single_device_reqs(d, DeviceResource()))
-        return frozenset(reqs)
-
-    def get_device_reqs_from_placement(self, placement):
-        device_candidates = self.get_devices_from_placement(placement)
-        assert(isinstance(device_candidates, List))
-        device_reqs = []
-        for dc in device_candidates:
-            if isinstance(dc, List):
-                # TODO(hc): just architecture specification didn't make pairs.
-                device_reqs.append(self.construct_multi_device_reqs(dc))
-            elif isinstance(dc, FrozenSet):
-                device_reqs.append(self.construct_single_arch_reqs(dc))
-            else:
-                device_reqs.append(self.construct_single_device_reqs(dc, DeviceResource()))
-        return device_reqs
+            return [DeviceResourceRequirement(d, DeviceResource()) \
+                    for d in self.get_all_devices()]

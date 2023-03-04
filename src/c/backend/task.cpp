@@ -31,6 +31,11 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task)
   this->py_task = py_task;
 }
 
+InnerTask::~InnerTask() {
+  delete tmp_arch_req_;
+  delete tmp_multdev_reqs_;
+}
+
 void InnerTask::set_scheduler(InnerScheduler *scheduler) {
   this->scheduler = scheduler;
 }

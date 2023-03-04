@@ -6,7 +6,7 @@ from parla.common.global_enums import DeviceType
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Union, List, Iterable
+from typing import Union, List, Iterable, Dict, Tuple
 
 cdef class CyDevice:
     """
@@ -50,6 +50,21 @@ cdef class CyCPUDevice(CyDevice):
 ################################################################################
 
 
+class DeviceResource:
+    def __init__(self, memory_sz = 0, num_vcus = 0):
+        # This class represents a device total resource size.
+        # This can also be used to specify resource requirements
+        # of a task for task mapping. 
+        # 0 value implies that there is no constraint in a
+        # resource. In the same sense, 0 value in a requirement
+        # implies that it can be mapped to a device even though 
+        # that device does not have enough resource.
+        # TODO(hc): better design? map still has a problem that
+        #           users should remember keys.
+        self.memory_sz = memory_sz
+        self.num_vcus = num_vcus
+
+
 class PyDevice:
     """
     This class is to abstract a single device in Python and manages
@@ -66,6 +81,15 @@ class PyDevice:
     def __exit__(self):
         pass
         #print(f"Exited device, {self.get_name()}, context", flush=True)
+
+    def __getitem__(self, param):
+        if isinstance(param, Dict):
+            memory_sz = 0 if "memory" not in param else param["memory"]
+            num_vcus = 0 if "vcus" not in param else param["vcus"]
+            return (self, DeviceResource(memory_sz, num_vcus))
+        print("[PyDevice] Parameter should be a dictionary specifying resource",
+              " requirements.", flush=True)
+        assert False
 
     def get_name(self):
         return self._device_name
@@ -136,11 +160,14 @@ class PyArchitecture(metaclass=ABCMeta):
             print(f"Ignore this placement.", flush=True)
             return None
 
-    def __getitem__(self, ind):
-        if isinstance(ind, Iterable):
-            return [self(i) for i in ind]
-        else:
-            return self(ind)
+    def __getitem__(self, param):
+        if isinstance(param, Dict):
+            memory_sz = 0 if "memory" not in param else param["memory"]
+            num_vcus = 0 if "vcus" not in param else param["vcus"]
+            return (self, DeviceResource(memory_sz, num_vcus))
+        print("[PyArchitecture] Parameter should be a dictionary specifying resource",
+              " requirements.", flush=True)
+        assert False
 
     @property
     def id(self):
@@ -185,20 +212,6 @@ class PyCPUArchitecture(PyArchitecture):
         assert isinstance(device, PyCPUDevice)
         self._devices.append(device)
 
-class DeviceResource:
-    def __init__(self, memory_sz = -1, num_vcus = -1):
-        # This class represents a device total resource size.
-        # This can also be used to specify resource requirements
-        # of a task for task mapping. 
-        # -1 value implies that there is no constraint in a
-        # resource. In the same sense, -1 value in a requirement
-        # implies that it can be mapped to a device even though 
-        # that device does not have enough resource.
-        # TODO(hc): better design? map still has a problem that
-        #           users should remember keys.
-        self.memory_sz = memory_sz
-        self.num_vcus = num_vcus
-
 
 # TODO(hc): use dataclass later.
 class DeviceResourceRequirement:
@@ -210,4 +223,5 @@ class DeviceResourceRequirement:
         return "("+self.device.get_name()+", memory:"+str(self.res_req.memory_sz)+ \
                ", num_vcus:"+str(self.res_req.num_vcus)+")" 
 
-PlacementSource = Union[PyArchitecture, PyDevice]
+PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource], \
+                        Tuple[PyDevice, DeviceResource]]
