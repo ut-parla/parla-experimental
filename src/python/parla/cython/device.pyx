@@ -51,12 +51,12 @@ cdef class CyCPUDevice(CyDevice):
 
 
 class DeviceResource:
-    def __init__(self, memory_sz = -1, num_vcus = -1):
+    def __init__(self, memory_sz = 0, num_vcus = 0):
         # This class represents a device total resource size.
         # This can also be used to specify resource requirements
         # of a task for task mapping. 
-        # -1 value implies that there is no constraint in a
-        # resource. In the same sense, -1 value in a requirement
+        # 0 value implies that there is no constraint in a
+        # resource. In the same sense, 0 value in a requirement
         # implies that it can be mapped to a device even though 
         # that device does not have enough resource.
         # TODO(hc): better design? map still has a problem that
@@ -84,8 +84,8 @@ class PyDevice:
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = -1 if "memory" not in param else param["memory"]
-            num_vcus = -1 if "vcus" not in param else param["vcus"]
+            memory_sz = 0 if "memory" not in param else param["memory"]
+            num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         print("[PyDevice] Parameter should be a dictionary specifying resource",
               " requirements.", flush=True)
@@ -162,8 +162,8 @@ class PyArchitecture(metaclass=ABCMeta):
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = -1 if "memory" not in param else param["memory"]
-            num_vcus = -1 if "vcus" not in param else param["vcus"]
+            memory_sz = 0 if "memory" not in param else param["memory"]
+            num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         print("[PyArchitecture] Parameter should be a dictionary specifying resource",
               " requirements.", flush=True)
