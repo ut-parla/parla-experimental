@@ -19,7 +19,7 @@ def main(T):
         print("-HELLO OUTER 0", flush=True)
 
     """
-    @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}]), (cpu[0], cuda[1][{"vcus":10, "memory":2000}])])
+    @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}]), (cpu(0), cuda(1)[{"vcus":10, "memory":2000}])])
     def task1():
         print("+HELLO OUTER 0", flush=True)
         bsleep(1000)
@@ -30,7 +30,7 @@ def main(T):
         bsleep(1000)
         print("-HELLO OUTER 1", flush=True)
 
-    @spawn(T[2], placement=[(cuda[1], cuda[2])], vcus=0)
+    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0)
     def task3():
         print("+HELLO OUTER 2", flush=True)
         bsleep(1000)

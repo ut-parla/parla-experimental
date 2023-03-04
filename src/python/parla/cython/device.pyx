@@ -87,11 +87,9 @@ class PyDevice:
             memory_sz = -1 if "memory" not in param else param["memory"]
             num_vcus = -1 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        # If any resource requirement was not specified,
-        # both resources, the number of vcus and memory size, are
-        # set to -1 and the task mapper disable resource compatiblity
-        # during task mapping.
-        return (self, DeviceResource())
+        print("[PyDevice] Parameter should be a dictionary specifying resource",
+              " requirements.", flush=True)
+        assert False
 
     def get_name(self):
         return self._device_name
@@ -167,16 +165,9 @@ class PyArchitecture(metaclass=ABCMeta):
             memory_sz = -1 if "memory" not in param else param["memory"]
             num_vcus = -1 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        elif isinstance(param, int):
-            # This should return a device object without a device
-            # resource requirement object and the resource requirement
-            # should be passed to and processed by the device object.
-            return self(param)
-        # If any resource requirement was not specified,
-        # both resources, the number of vcus and memory size, are
-        # set to -1 and the task mapper disable resource compatiblity
-        # during task mapping.
-        return (self, DeviceResource())
+        print("[PyArchitecture] Parameter should be a dictionary specifying resource",
+              " requirements.", flush=True)
+        assert False
 
     @property
     def id(self):
