@@ -220,7 +220,6 @@ public:
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
-  ~InnerTask();
 
   /* Set the scheduler */
   void set_scheduler(InnerScheduler *scheduler);
@@ -375,8 +374,8 @@ protected:
     MultiDevAdd = 3
   };
   uint32_t req_addition_mode_;
-  ArchitectureRequirement *tmp_arch_req_;
-  MultiDeviceRequirements *tmp_multdev_reqs_;
+  std::shared_ptr<ArchitectureRequirement> tmp_arch_req_;
+  std::shared_ptr<MultiDeviceRequirements> tmp_multdev_reqs_;
   ResourceRequirementCollections dev_res_reqs_;
 };
 
@@ -523,6 +522,8 @@ class Mapper;
 class MemoryReserver;
 class RuntimeReserver;
 class Launcher;
+class MappingPolicy;
+class LocalityLoadBalancingMappingPolicy;
 
 namespace Scheduler {
 
@@ -609,7 +610,6 @@ public:
   Launcher *launcher;
 
   InnerScheduler(DeviceManager *device_manager);
-  ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
@@ -701,6 +701,8 @@ public:
   void spawn_wait();
 
 protected:
+  /// This manager manages all device instances in C++.
+  /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
 };
 

@@ -10,7 +10,8 @@
 // TODO(hc) member initialization list is preferable as it can reduce
 //          instructions (e.g.,
 //          https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
-InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd) {
+InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd),
+    tmp_arch_req_(nullptr), tmp_multdev_reqs_(nullptr) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
@@ -29,11 +30,6 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task)
   this->name = name;
   this->id = id;
   this->py_task = py_task;
-}
-
-InnerTask::~InnerTask() {
-  delete tmp_arch_req_;
-  delete tmp_multdev_reqs_;
 }
 
 void InnerTask::set_scheduler(InnerScheduler *scheduler) {
@@ -375,13 +371,14 @@ void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
   res_req.set(MEMORY, mem_sz);
   res_req.set(VCU, num_vcus);
 
-  DeviceRequirement *dev_req = new DeviceRequirement(dev_ptr, res_req);
+  std::shared_ptr<DeviceRequirement> dev_req =
+      std::make_shared<DeviceRequirement>(dev_ptr, res_req);
   if (req_addition_mode_ == SingleDevAdd) {
-    dev_res_reqs_.AppendDeviceRequirementOption(dev_req);
+    dev_res_reqs_.AppendDeviceRequirementOption(std::move(dev_req));
   } else if (req_addition_mode_ % 2 == 0) { /* Architecture requirement */
-    tmp_arch_req_->AppendDeviceRequirementOption(dev_req);
+    tmp_arch_req_->AppendDeviceRequirementOption(std::move(dev_req));
   } else if (req_addition_mode_ == MultiDevAdd) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(dev_req);
+    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(dev_req));
   }
 }
 
@@ -391,35 +388,29 @@ void InnerTask::begin_arch_req_addition() {
   // setup.
   ++req_addition_mode_;
   assert(tmp_arch_req_ == nullptr);
-  tmp_arch_req_ = new ArchitectureRequirement();
+  tmp_arch_req_ = std::make_shared<ArchitectureRequirement>();
 }
 
 void InnerTask::end_arch_req_addition() {
   assert(req_addition_mode_ % 2 == 0);
   if (req_addition_mode_ == 4) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(tmp_arch_req_);
+    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(tmp_arch_req_));
   } else {
-    dev_res_reqs_.AppendDeviceRequirementOption(tmp_arch_req_);
+    dev_res_reqs_.AppendDeviceRequirementOption(std::move(tmp_arch_req_));
   }
-  // This should not delete this pointer since this object
-  // is moved to either multi-device or the topmost device
-  // requirement vector.
-  tmp_arch_req_ = nullptr;
   --req_addition_mode_;
 }
 
 void InnerTask::begin_multidev_req_addition() {
   assert(req_addition_mode_ == SingleDevAdd);
   assert(tmp_multdev_reqs_ == nullptr);
-  tmp_multdev_reqs_ = new MultiDeviceRequirements();
+  tmp_multdev_reqs_ = std::make_shared<MultiDeviceRequirements>();
   req_addition_mode_ = MultiDevAdd;
 }
 
 void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
-  dev_res_reqs_.AppendDeviceRequirementOption(tmp_multdev_reqs_);
-  // This should not delete this pointer since this object
-  // is moved to the topmost device requirement vector.
-  tmp_multdev_reqs_ == nullptr;
+  dev_res_reqs_.AppendDeviceRequirementOption(
+      std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }

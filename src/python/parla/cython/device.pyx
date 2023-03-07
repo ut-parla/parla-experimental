@@ -12,9 +12,6 @@ cdef class CyDevice:
     """
     A bridge between pure Python and C++ device objects.
     """
-    def __dealloc__(self):
-        del self._cpp_device
-
     cdef Device* get_cpp_device(self):
         return self._cpp_device
 
@@ -24,7 +21,8 @@ cdef class CyCUDADevice(CyDevice):
     An inherited class from `CyDevice` for a device object specialized to CUDA.
     """
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
-        # This object will be deallocated at CyDevice's dealloc().
+        # C++ device object.
+        # This object is deallocated by the C++ device manager.
         self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, \
                                           <void *> py_device)
 
@@ -37,7 +35,8 @@ cdef class CyCPUDevice(CyDevice):
     An inherited class from `CyDevice` for a device object specialized to CPU.
     """
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
-        # This object will be deallocated at CyDevice's dealloc().
+        # C++ device object.
+        # This object is deallocated by the C++ device manager.
         self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, \
                                          <void *> py_device)
 

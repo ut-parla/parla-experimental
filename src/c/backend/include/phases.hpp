@@ -6,8 +6,10 @@
 #include "device.hpp"
 #include "device_manager.hpp"
 #include "runtime.hpp"
+#include "policy.hpp"
 
-#include <string.h>
+#include <string>
+#include <memory>
 
 class PhaseStatus {
 protected:
@@ -73,8 +75,10 @@ public:
   Map::Status status;
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
 
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {}
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices, 
+         std::shared_ptr<MappingPolicy> policy) :
+          SchedulerPhase(scheduler, devices),
+          dummy_dev_idx_{0}, policy_{policy} {}
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -86,6 +90,8 @@ protected:
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
+
+  std::shared_ptr<MappingPolicy> policy_;
 };
 
 namespace Reserved {
