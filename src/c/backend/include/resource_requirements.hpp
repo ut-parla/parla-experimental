@@ -3,6 +3,8 @@
 
 #include "device.hpp"
 
+#include <memory>
+
 /// Base classes.
 
 class DeviceRequirementBase {
@@ -17,23 +19,24 @@ class SingleDeviceRequirementBase : public DeviceRequirementBase {};
 /// memory and virtual computation units.
 class ResourceRequirementCollections {
 public:
-  void AppendDeviceRequirementOption(DeviceRequirementBase *dev_req);
-  const std::vector<DeviceRequirementBase *> &GetDeviceRequirementOptions();
+  void AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirementBase> dev_req);
+  const std::vector<std::shared_ptr<DeviceRequirementBase>>& GetDeviceRequirementOptions();
 
 private:
-  std::vector<DeviceRequirementBase *> dev_reqs_;
+  std::vector<std::shared_ptr<DeviceRequirementBase>> dev_reqs_;
 };
 
 class MultiDeviceRequirements : public DeviceRequirementBase {
 public:
-  void AppendDeviceRequirement(SingleDeviceRequirementBase *req);
-  const std::vector<SingleDeviceRequirementBase *> &GetDeviceRequirements();
+  void AppendDeviceRequirement(std::shared_ptr<SingleDeviceRequirementBase> req);
   bool is_multidev_req() override { return true; }
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return false; }
 
+  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>& GetDeviceRequirements();
+
 private:
-  std::vector<SingleDeviceRequirementBase *> dev_reqs_;
+  std::vector<std::shared_ptr<SingleDeviceRequirementBase>> dev_reqs_;
 };
 
 class DeviceRequirement : public SingleDeviceRequirementBase {
@@ -45,25 +48,25 @@ public:
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return true; }
 
-  const Device &device() { return (*dev_); }
+  Device* device() { return dev_; }
 
-  const ResourcePool_t &res_req() { return res_reqs_; }
+  const ResourcePool_t& res_req() { return res_reqs_; }
 
 private:
-  Device *dev_;
+  Device* dev_;
   ResourcePool_t res_reqs_;
 };
 
 class ArchitectureRequirement : public SingleDeviceRequirementBase {
 public:
-  void AppendDeviceRequirementOption(DeviceRequirement *req);
-  const std::vector<DeviceRequirement *> &GetDeviceRequirementOptions();
+  void AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirement> req);
+  const std::vector<std::shared_ptr<DeviceRequirement>>& GetDeviceRequirementOptions();
   bool is_multidev_req() override { return false; }
   bool is_arch_req() override { return true; }
   bool is_dev_req() override { return false; }
 
 private:
-  std::vector<DeviceRequirement *> dev_reqs_;
+  std::vector<std::shared_ptr<DeviceRequirement>> dev_reqs_;
 };
 
 #endif
