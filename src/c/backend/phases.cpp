@@ -22,6 +22,35 @@ size_t Mapper::get_count() {
   return count;
 }
 
+void Mapper::CalcScoreOfArchPlacement(InnerTask* task,
+    std::shared_ptr<DeviceRequirementBase> base_res_req) {
+  std::cout
+      << "\t[Architecture Requirement in Multi-device Requirement]\n";
+  ArchitectureRequirement *arch_res_req =
+      dynamic_cast<ArchitectureRequirement *>(base_res_req.get());
+  uint32_t i = 0;
+  for (std::shared_ptr<DeviceRequirement> dev_res_req :
+       arch_res_req->GetDeviceRequirementOptions()) {
+    policy_->MapTask(task, *(dev_res_req->device()));
+    std::cout << "\t\t[" << i << "]"
+              << dev_res_req->device()->GetName() << " -> "
+              << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+              << dev_res_req->res_req().get(VCU) << "\n";
+    ++i;
+  }
+}
+
+void Mapper::CalcScoreOfDevPlacement(InnerTask* task,
+    std::shared_ptr<DeviceRequirementBase> base_res_req) {
+  DeviceRequirement *dev_res_req =
+      dynamic_cast<DeviceRequirement *>(base_res_req.get());
+  policy_->MapTask(task, *(dev_res_req->device()));
+  std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
+  std::cout << "\t" << dev_res_req->device()->GetName() << " -> "
+            << dev_res_req->res_req().get(MEMORY) << "B, VCU "
+            << dev_res_req->res_req().get(VCU) << "\n";
+}
+
 void Mapper::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
@@ -43,6 +72,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
+#if 0
 
     // TODO(wlr): Testing
     // Assign a random device set to each task
@@ -89,6 +119,31 @@ void Mapper::run(SchedulerPhase *next_phase) {
     // std::cout << "Mapping task " << task->get_name() << " to devices "
     //           << devices[0]->get_name() << " and " << devices[1]->get_name()
     //           << std::endl;
+#endif
+    ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
+    std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
+        res_reqs.GetDeviceRequirementOptions();
+    for (std::shared_ptr<DeviceRequirementBase> base_res_req : dev_res_reqs) {
+      if (base_res_req->is_multidev_req()) {
+        std::cout << "[Multi-device requirement]\n";
+        MultiDeviceRequirements *mdev_res_req =
+            dynamic_cast<MultiDeviceRequirements *>(base_res_req.get());
+        const std::vector<
+          std::shared_ptr<SingleDeviceRequirementBase>>
+            unpacked_mdev_res_reqs = mdev_res_req->GetDeviceRequirements();
+        for (std::shared_ptr<DeviceRequirementBase> base_mdev_res_req : unpacked_mdev_res_reqs) {
+          if (base_mdev_res_req->is_dev_req()) {
+            CalcScoreOfDevPlacement(task, base_mdev_res_req);
+          } else if (base_mdev_res_req->is_arch_req()) {
+            CalcScoreOfArchPlacement(task, base_mdev_res_req);
+          }
+        }
+      } else if (base_res_req->is_dev_req()) {
+        CalcScoreOfDevPlacement(task, base_res_req);
+      } else if (base_res_req->is_arch_req()) {
+        CalcScoreOfArchPlacement(task, base_res_req);
+      }
+    }
 
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
