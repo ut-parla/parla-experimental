@@ -39,12 +39,12 @@ public:
 class SchedulerPhase {
 public:
   SchedulerPhase() = default;
-  SchedulerPhase(InnerScheduler *scheduler, DeviceManager *devices)
+  SchedulerPhase(InnerScheduler* scheduler, DeviceManager* devices)
       : scheduler(scheduler), device_manager(devices) {}
 
-  virtual void enqueue(InnerTask *task) = 0;
-  virtual void enqueue(std::vector<InnerTask *> &tasks) = 0;
-  virtual void run(SchedulerPhase *next_phase) = 0;
+  virtual void enqueue(InnerTask* task) = 0;
+  virtual void enqueue(std::vector<InnerTask*>& tasks) = 0;
+  virtual void run(SchedulerPhase* next_phase) = 0;
   virtual size_t get_count() = 0;
 
   PhaseStatus status;
@@ -52,8 +52,8 @@ public:
 protected:
   std::string name = "Phase";
   std::mutex mtx;
-  InnerScheduler *scheduler;
-  DeviceManager *device_manager;
+  InnerScheduler* scheduler;
+  DeviceManager* device_manager;
   TaskStateList enqueue_buffer;
 };
 
@@ -73,18 +73,18 @@ public:
   Map::Status status;
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
 
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices)
+  Mapper(InnerScheduler* scheduler, DeviceManager* devices)
       : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {}
 
-  void enqueue(InnerTask *task);
-  void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void enqueue(InnerTask* task);
+  void enqueue(std::vector<InnerTask*>& tasks);
+  void run(SchedulerPhase* next_phase);
   size_t get_count();
 
 protected:
   std::string name = "Mapper";
   TaskQueue mappable_tasks;
-  std::vector<InnerTask *> mapped_tasks_buffer;
+  std::vector<InnerTask*> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
 };
 
@@ -103,18 +103,18 @@ class MemoryReserver : virtual public SchedulerPhase {
 public:
   Reserved::Status status;
 
-  MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
+  MemoryReserver(InnerScheduler* scheduler, DeviceManager* devices)
       : SchedulerPhase(scheduler, devices) {}
 
-  void enqueue(InnerTask *task);
-  void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void enqueue(InnerTask* task);
+  void enqueue(std::vector<InnerTask*>& tasks);
+  void run(SchedulerPhase* next_phase);
   size_t get_count();
 
 protected:
   std::string name = "Memory Reserver";
   TaskQueue reservable_tasks;
-  std::vector<InnerTask *> reserved_tasks_buffer;
+  std::vector<InnerTask*> reserved_tasks_buffer;
 };
 
 namespace Ready {
@@ -137,18 +137,18 @@ class RuntimeReserver : virtual public SchedulerPhase {
 public:
   Ready::Status status;
 
-  RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
+  RuntimeReserver(InnerScheduler* scheduler, DeviceManager* devices)
       : SchedulerPhase(scheduler, devices) {}
 
-  void enqueue(InnerTask *task);
-  void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void enqueue(InnerTask* task);
+  void enqueue(std::vector<InnerTask*>& tasks);
+  void run(SchedulerPhase* next_phase);
   size_t get_count();
 
 protected:
   std::string name = "Runtime Reserver";
   TaskQueue runnable_tasks;
-  std::vector<InnerTask *> launchable_tasks_buffer;
+  std::vector<InnerTask*> launchable_tasks_buffer;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -174,19 +174,19 @@ public:
    * worker and is not complete*/
   std::atomic<size_t> num_running_tasks;
 
-  Launcher(InnerScheduler *scheduler, DeviceManager *devices)
+  Launcher(InnerScheduler* scheduler, DeviceManager* devices)
       : SchedulerPhase(scheduler, devices) {}
 
   /*Add a task to the launcher. Currently this acquires the GIL and dispatches
    * the work to a Python Worker for each task */
-  void enqueue(InnerTask *task){};
-  void enqueue(InnerTask *task, InnerWorker *worker);
-  void enqueue(std::vector<InnerTask *> &tasks){};
+  void enqueue(InnerTask* task){};
+  void enqueue(InnerTask* task, InnerWorker* worker);
+  void enqueue(std::vector<InnerTask*>& tasks){};
 
   /* A placeholder function in case work needs to be done at this stage. For
    * example, dispatching a whole buffer of tasks*/
   void run();
-  void run(SchedulerPhase *next_phase) { this->run(); };
+  void run(SchedulerPhase* next_phase) { this->run(); };
 
   /* Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete */

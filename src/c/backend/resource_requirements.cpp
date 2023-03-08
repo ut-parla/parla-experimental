@@ -6,7 +6,7 @@ void ResourceRequirementCollections::AppendDeviceRequirementOption(
 }
 
 const std::vector<DeviceRequirementBase*>&
-    ResourceRequirementCollections::GetDeviceRequirementOptions() {
+ResourceRequirementCollections::GetDeviceRequirementOptions() {
   return dev_reqs_;
 }
 
@@ -16,7 +16,7 @@ void MultiDeviceRequirements::AppendDeviceRequirement(
 }
 
 const std::vector<SingleDeviceRequirementBase*>&
-    MultiDeviceRequirements::GetDeviceRequirements() {
+MultiDeviceRequirements::GetDeviceRequirements() {
   return dev_reqs_;
 }
 
@@ -24,7 +24,6 @@ void ArchitectureRequirement::AppendDeviceRequirementOption(
     DeviceRequirement* req) {
   dev_reqs_.emplace_back(req);
 }
-
 
 const std::vector<DeviceRequirement*>&
 ArchitectureRequirement::GetDeviceRequirementOptions() {

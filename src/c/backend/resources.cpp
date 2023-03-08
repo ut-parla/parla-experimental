@@ -19,7 +19,7 @@ template <typename T> T InnerResourcePool<T>::get(std::string) {
 
 template <typename T>
 template <typename J>
-bool InnerResourcePool<T>::check_greater(InnerResourcePool<J> &other) {
+bool InnerResourcePool<T>::check_greater(InnerResourcePool<J>& other) {
   /*
   if constexpr (is_atomic<J> && is_atomic<T>){
       return this->vcus.load() >= other.vcus.load();
@@ -41,7 +41,7 @@ bool InnerResourcePool<T>::check_greater(InnerResourcePool<J> &other) {
 
 template <typename T>
 template <typename J>
-bool InnerResourcePool<T>::check_lesser(InnerResourcePool<J> &other) {
+bool InnerResourcePool<T>::check_lesser(InnerResourcePool<J>& other) {
   /*
   if constexpr (is_atomic<J> && is_atomic<T>){
       return this->vcus.load() <= other.vcus.load();
@@ -60,7 +60,7 @@ bool InnerResourcePool<T>::check_lesser(InnerResourcePool<J> &other) {
 
 template <typename T>
 template <typename J>
-T InnerResourcePool<T>::increase(InnerResourcePool<J> &other) {
+T InnerResourcePool<T>::increase(InnerResourcePool<J>& other) {
   /*
   if constexpr (is_atomic<J> && is_atomic<T>){
       return this->vcus.fetch_add(other.vcus.load());
@@ -81,7 +81,7 @@ T InnerResourcePool<T>::increase(InnerResourcePool<J> &other) {
 
 template <typename T>
 template <typename J>
-T InnerResourcePool<T>::decrease(InnerResourcePool<J> &other) {
+T InnerResourcePool<T>::decrease(InnerResourcePool<J>& other) {
   /*
   if constexpr (is_atomic<J> && is_atomic<T>){
       return this->vcus.fetch_sub(other.vcus.load());
@@ -103,9 +103,8 @@ T InnerResourcePool<T>::decrease(InnerResourcePool<J> &other) {
 // template class InnerResourcePool<int>;
 
 template class InnerResourcePool<float>;
-template float InnerResourcePool<float>::decrease(InnerResourcePool<float> &);
-template float InnerResourcePool<float>::increase(InnerResourcePool<float> &);
+template float InnerResourcePool<float>::decrease(InnerResourcePool<float>&);
+template float InnerResourcePool<float>::increase(InnerResourcePool<float>&);
+template bool InnerResourcePool<float>::check_lesser(InnerResourcePool<float>&);
 template bool
-InnerResourcePool<float>::check_lesser(InnerResourcePool<float> &);
-template bool
-InnerResourcePool<float>::check_greater(InnerResourcePool<float> &);
+InnerResourcePool<float>::check_greater(InnerResourcePool<float>&);

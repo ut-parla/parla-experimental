@@ -17,8 +17,8 @@ using namespace std::chrono_literals;
 
 #include "containers.hpp"
 #include "device_manager.hpp"
-#include "resource_requirements.hpp"
 #include "profiling.hpp"
+#include "resource_requirements.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -29,11 +29,11 @@ class InnerScheduler;
 
 // Type Aliases for common containers
 
-using WorkerQueue = ProtectedQueue<InnerWorker *>;
-using WorkerList = ProtectedVector<InnerWorker *>;
+using WorkerQueue = ProtectedQueue<InnerWorker*>;
+using WorkerList = ProtectedVector<InnerWorker*>;
 
-using TaskQueue = ProtectedQueue<InnerTask *>;
-using TaskList = ProtectedVector<InnerTask *>;
+using TaskQueue = ProtectedQueue<InnerTask*>;
+using TaskList = ProtectedVector<InnerTask*>;
 
 // Busy sleep for a given number of microseconds
 inline void cpu_busy_sleep(unsigned int micro) {
@@ -56,21 +56,21 @@ inline void cpu_busy_sleep(unsigned int micro) {
 // Forward declaration of python callbacks
 
 /* Python function to assign a task to a worker */
-typedef void (*launchfunc_t)(void *scheduler, void *task, void *worker);
+typedef void (*launchfunc_t)(void* scheduler, void* task, void* worker);
 
 /* Python function to stop the scheduler */
-typedef void (*stopfunc_t)(void *scheduler);
+typedef void (*stopfunc_t)(void* scheduler);
 
 // Callback Launchers
 
 /* C++ -> Cython callback to launch a single task */
-inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
-                                 void *worker) {
+inline void launch_task_callback(launchfunc_t func, void* scheduler, void* task,
+                                 void* worker) {
   func(scheduler, task, worker);
 }
 
 /* C*+ -> Cython callback to stop the main scheduler. Called at runtime exit. */
-inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
+inline void launch_stop_callback(stopfunc_t func, void* scheduler) {
   func(scheduler);
 }
 
@@ -101,17 +101,17 @@ public:
 
   // bool check(std::string name, int value);
   // bool check(std::vector<std::string> names, std::vector<int> values);
-  template <typename J> bool check_greater(InnerResourcePool<J> &other);
+  template <typename J> bool check_greater(InnerResourcePool<J>& other);
 
-  template <typename J> bool check_lesser(InnerResourcePool<J> &other);
+  template <typename J> bool check_lesser(InnerResourcePool<J>& other);
 
   // bool increase(std::string name, T value);
   // bool increase(std::vector<std::string> names, std::vector<T> values);
-  template <typename J> T increase(InnerResourcePool<J> &other);
+  template <typename J> T increase(InnerResourcePool<J>& other);
 
   // bool decrease(std::string name, T value);
   // bool decrease(std::vector<std::string> names, std::vector<T> values);
-  template <typename J> T decrease(InnerResourcePool<J> &other);
+  template <typename J> T decrease(InnerResourcePool<J>& other);
 };
 
 namespace Task {
@@ -184,7 +184,7 @@ BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
                   COMPUTE_RUNNABLE, RUNNABLE)
 #endif
 
-using TaskState = std::pair<InnerTask *, Task::StatusFlags>;
+using TaskState = std::pair<InnerTask*, Task::StatusFlags>;
 using TaskStateList = std::vector<TaskState>;
 
 /**
@@ -212,7 +212,7 @@ public:
   std::atomic<Task::Status> status{Task::INITIAL};
 
   /* Reference to the scheduler (used for synchronizing state on events) */
-  InnerScheduler *scheduler = nullptr;
+  InnerScheduler* scheduler = nullptr;
 
   /*Task monitor*/
   std::mutex mtx;
@@ -221,7 +221,7 @@ public:
   std::atomic<int> priority{0};
 
   /* The pointer to the Python Task which contains the class body */
-  void *py_task = nullptr; // TODO: Refactor to PyObject type?
+  void* py_task = nullptr; // TODO: Refactor to PyObject type?
 
   /* Container of Task Dependencies (should be thread-safe)*/
   TaskList dependencies;
@@ -230,7 +230,7 @@ public:
   TaskList dependents;
 
   /*Local depdendency buffer*/
-  std::vector<InnerTask *> dependency_buffer = std::vector<InnerTask *>();
+  std::vector<InnerTask*> dependency_buffer = std::vector<InnerTask*>();
 
   /* Number of blocking (uncompleted) compute task dependencies */
   std::atomic<int> num_blocking_compute_dependencies{1};
@@ -258,11 +258,11 @@ public:
   std::atomic<bool> processed_data{true};
 
   InnerTask();
-  InnerTask(long long int id, void *py_task);
-  InnerTask(std::string name, long long int id, void *py_task);
+  InnerTask(long long int id, void* py_task);
+  InnerTask(std::string name, long long int id, void* py_task);
 
   /* Set the scheduler */
-  void set_scheduler(InnerScheduler *scheduler);
+  void set_scheduler(InnerScheduler* scheduler);
 
   /* Set the name of the task */
   void set_name(std::string name);
@@ -271,7 +271,7 @@ public:
   void set_id(long long int name);
 
   /* Set the python task */
-  void set_py_task(void *py_task);
+  void set_py_task(void* py_task);
 
   /* Set the priority of the task */
   void set_priority(int priority);
@@ -286,7 +286,7 @@ public:
   void set_resources(std::string resource_name, float resource_value);
 
   /* Add a dependency to the task buffer but don't process it*/
-  void queue_dependency(InnerTask *task);
+  void queue_dependency(InnerTask* task);
 
   /* Add a list of dependencies to the task. For external use.*/
   Task::StatusFlags process_dependencies();
@@ -295,14 +295,14 @@ public:
   void clear_dependencies();
 
   /* Add a dependency to the task and process it*/
-  Task::State add_dependency(InnerTask *task);
+  Task::State add_dependency(InnerTask* task);
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
-  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks);
+  Task::StatusFlags add_dependencies(std::vector<InnerTask*>& tasks);
 
   /* Add a dependent to the task */
-  Task::State add_dependent(InnerTask *task);
+  Task::State add_dependent(InnerTask* task);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
@@ -314,7 +314,7 @@ public:
    *  Returns a container of tasks that are now ready to run
    *  TODO: Decide on a container to use for this
    */
-  void notify_dependents(TaskStateList &tasks, Task::State new_state);
+  void notify_dependents(TaskStateList& tasks, Task::State new_state);
 
   /* Wrapper for testing */
   bool notify_dependents_wrapper();
@@ -353,13 +353,13 @@ public:
   int get_num_unmapped_dependencies() const;
 
   /* Get dependency list. Used for testing Python interface. */
-  std::vector<void *> get_dependencies();
+  std::vector<void*> get_dependencies();
 
   /* Get dependents list. Used for testing Python interface. */
-  std::vector<void *> get_dependents();
+  std::vector<void*> get_dependents();
 
   /* Get python task */
-  void *get_py_task();
+  void* get_py_task();
 
   /* Set the task status */
   int set_state(int state);
@@ -406,9 +406,12 @@ public:
 private:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
-   *  1 <--> 2 (SingleArchAdd)        
+   *  1 <--> 2 (SingleArchAdd)
    */
-  enum ReqAdditionState { SingleDevAdd = 1, /* SingleArchAdd == 2n */ MultiDevAdd = 3 };
+  enum ReqAdditionState {
+    SingleDevAdd = 1,
+    /* SingleArchAdd == 2n */ MultiDevAdd = 3
+  };
   uint32_t req_addition_mode_;
   ArchitectureRequirement* tmp_arch_req_;
   MultiDeviceRequirements* tmp_multdev_reqs_;
@@ -435,13 +438,13 @@ class InnerWorker {
 
 public:
   /* Pointer to Python Worker object */
-  void *py_worker = nullptr;
+  void* py_worker = nullptr;
 
   /* Pointer to the active task */
   // void* py_task = nullptr;
-  InnerTask *task = nullptr;
+  InnerTask* task = nullptr;
 
-  InnerScheduler *scheduler = nullptr;
+  InnerScheduler* scheduler = nullptr;
 
   std::mutex mtx;
   std::condition_variable cv;
@@ -458,13 +461,13 @@ public:
   // TODO: (improvement?) A buffer for multiple tasks assigned to a worker
 
   InnerWorker() = default;
-  InnerWorker(void *worker) : py_worker(worker){};
+  InnerWorker(void* worker) : py_worker(worker){};
 
   /* Set the Python Worker */
-  void set_py_worker(void *worker) { this->py_worker = worker; };
+  void set_py_worker(void* worker) { this->py_worker = worker; };
 
   /*Set the scheduler*/
-  void set_scheduler(InnerScheduler *scheduler) {
+  void set_scheduler(InnerScheduler* scheduler) {
     this->scheduler = scheduler;
   };
 
@@ -475,10 +478,10 @@ public:
   void wait();
 
   /* Assign a task to the worker and notify worker that it is available*/
-  void assign_task(InnerTask *task);
+  void assign_task(InnerTask* task);
 
   /* Get task */
-  InnerTask *get_task();
+  InnerTask* get_task();
 
   /* Remove task */
   void remove_task();
@@ -515,13 +518,13 @@ public:
   WorkerPool(int nworkers) : max_workers(nworkers){};
 
   /* Add a worker to the active pool */
-  void enqueue_worker(InnerWorker *worker);
+  void enqueue_worker(InnerWorker* worker);
 
   /* Remove a worker from the active pool */
-  InnerWorker *dequeue_worker();
+  InnerWorker* dequeue_worker();
 
   /* Add a worker to the all pool */
-  void add_worker(InnerWorker *worker);
+  void add_worker(InnerWorker* worker);
 
   /* Get number of available workers */
   int get_num_available_workers();
@@ -618,14 +621,14 @@ public:
   int sleep_time = 20;
 
   /* Task Buffer */
-  std::vector<InnerTask *> task_buffer = std::vector<InnerTask *>(10);
+  std::vector<InnerTask*> task_buffer = std::vector<InnerTask*>(10);
 
   /* Container of Thread Workers */
   WorkerPool_t workers;
 
   /* Resource Pool */
-  InnerResourcePool<float>
-      *resources; // TODO: Dummy class, needs complete rework with devices
+  InnerResourcePool<float>*
+      resources; // TODO: Dummy class, needs complete rework with devices
 
   /* Active task counter (thread-safe) */
   std::atomic<int> num_active_tasks{1};
@@ -634,23 +637,23 @@ public:
   std::atomic<bool> should_run = true;
 
   /* Phase: maps tasks to devices */
-  Mapper *mapper;
+  Mapper* mapper;
 
   /* Phase reserves resources to limit/plan task execution*/
-  MemoryReserver *memory_reserver;
-  RuntimeReserver *runtime_reserver;
+  MemoryReserver* memory_reserver;
+  RuntimeReserver* runtime_reserver;
 
   /*Responsible for launching a task. Signals worker thread*/
-  Launcher *launcher;
+  Launcher* launcher;
 
-  InnerScheduler(DeviceManager *device_manager);
+  InnerScheduler(DeviceManager* device_manager);
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
   stopfunc_t stop_callback;
 
   /* Pointer to Python scheduler */
-  void *py_scheduler;
+  void* py_scheduler;
 
   /* Scheduler Status */
   Scheduler::Status status;
@@ -664,7 +667,7 @@ public:
                                             // complete rework with devices
 
   /* Set Python Scheduler */
-  void set_py_scheduler(void *py_scheduler);
+  void set_py_scheduler(void* py_scheduler);
 
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
@@ -682,23 +685,23 @@ public:
   void activate_wrapper();
 
   /*Spawn a Task (increment active, set state, possibly enqueue)*/
-  void spawn_task(InnerTask *task);
+  void spawn_task(InnerTask* task);
 
   /* Enqueue task. */
-  void enqueue_task(InnerTask *task, Task::StatusFlags flags);
+  void enqueue_task(InnerTask* task, Task::StatusFlags flags);
 
   /* Enqueue more than one task */
-  void enqueue_tasks(TaskStateList &tasks);
+  void enqueue_tasks(TaskStateList& tasks);
 
   /* Add worker */
-  void add_worker(InnerWorker *worker);
+  void add_worker(InnerWorker* worker);
 
   /* Enqueue worker. */
-  void enqueue_worker(InnerWorker *worker);
+  void enqueue_worker(InnerWorker* worker);
 
   /* Complete all task finalization. Notify Dependents / Release Resources /
    * Worker Enqueue */
-  void task_cleanup(InnerWorker *worker, InnerTask *task, int state);
+  void task_cleanup(InnerWorker* worker, InnerTask* task, int state);
 
   /* Get number of active tasks. A task is active if it is spawned but not
    * complete */
@@ -735,7 +738,7 @@ public:
   void spawn_wait();
 
 protected:
-  DeviceManager *device_manager_;
+  DeviceManager* device_manager_;
 };
 
 #endif // PARLA_BACKEND_HPP

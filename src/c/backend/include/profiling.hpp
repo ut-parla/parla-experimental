@@ -12,7 +12,7 @@
 #include <nvtx3/nvtx3.hpp>
 
 struct my_domain {
-  static constexpr char const *name{"Parla Runtime"};
+  static constexpr char const* name{"Parla Runtime"};
 };
 
 using my_scoped_range = nvtx3::scoped_range_in<my_domain>;
@@ -69,7 +69,7 @@ namespace binlog {
 
 extern int global_reset_count;
 
-inline Session &parla_session() {
+inline Session& parla_session() {
   static Session parla_session;
   static unsigned int reset_count;
   // if (reset_count != global_reset_count) {
@@ -79,7 +79,7 @@ inline Session &parla_session() {
   return parla_session;
 }
 
-inline SessionWriter &parla_writer() {
+inline SessionWriter& parla_writer() {
   static thread_local SessionWriter s_writer(parla_session(), 1 << 20, 0,
                                              detail::this_thread_id_string());
 
@@ -233,7 +233,7 @@ inline void log_scheduler_msg(const int type, std::string msg) {
 }
 
 template <typename T>
-inline void log_task_1(const int type, std::string msg, T *class_ptr) {
+inline void log_task_1(const int type, std::string msg, T* class_ptr) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:
@@ -258,7 +258,7 @@ inline void log_task_1(const int type, std::string msg, T *class_ptr) {
 }
 
 template <typename T>
-inline void log_worker_1(const int type, std::string msg, T *class_ptr) {
+inline void log_worker_1(const int type, std::string msg, T* class_ptr) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:
@@ -283,7 +283,7 @@ inline void log_worker_1(const int type, std::string msg, T *class_ptr) {
 }
 
 template <typename T>
-inline void log_scheduler_1(const int type, std::string msg, T *class_ptr) {
+inline void log_scheduler_1(const int type, std::string msg, T* class_ptr) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:
@@ -308,8 +308,8 @@ inline void log_scheduler_1(const int type, std::string msg, T *class_ptr) {
 }
 
 template <typename T, typename G>
-inline void log_task_2(const int type, std::string msg1, T *class_ptr1,
-                       std::string msg2, G *class_ptr2) {
+inline void log_task_2(const int type, std::string msg1, T* class_ptr1,
+                       std::string msg2, G* class_ptr2) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:
@@ -334,8 +334,8 @@ inline void log_task_2(const int type, std::string msg1, T *class_ptr1,
 }
 
 template <typename T, typename G>
-inline void log_worker_2(const int type, std::string msg1, T *class_ptr1,
-                         std::string msg2, G *class_ptr2) {
+inline void log_worker_2(const int type, std::string msg1, T* class_ptr1,
+                         std::string msg2, G* class_ptr2) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:
@@ -360,8 +360,8 @@ inline void log_worker_2(const int type, std::string msg1, T *class_ptr1,
 }
 
 template <typename T, typename G>
-inline void log_scheduler_2(const int type, std::string msg1, T *class_ptr1,
-                            std::string msg2, G *class_ptr2) {
+inline void log_scheduler_2(const int type, std::string msg1, T* class_ptr1,
+                            std::string msg2, G* class_ptr2) {
   // const char* _msg = msg.c_str();
   switch (type) {
   case 0:

@@ -21,7 +21,7 @@ void InnerWorker::wait() {
   this->scheduler->increase_num_notified_workers();
 }
 
-void InnerWorker::assign_task(InnerTask *task) {
+void InnerWorker::assign_task(InnerTask* task) {
   NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
   // std::cout << "Assigning task (C++) " << this->thread_idx << " "
   //           << this->ready << std::endl;
@@ -33,7 +33,7 @@ void InnerWorker::assign_task(InnerTask *task) {
   cv.notify_one();
 }
 
-InnerTask *InnerWorker::get_task() {
+InnerTask* InnerWorker::get_task() {
   this->scheduler->decrease_num_notified_workers();
   return this->task;
 }
@@ -58,7 +58,7 @@ void InnerWorker::stop() {
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::enqueue_worker(
-    InnerWorker *worker) {
+    InnerWorker* worker) {
   this->active_workers.push_back(worker);
   // std::cout << "Enqueued Worker ID: " << worker->thread_idx << std::endl;
   // std::cout << "Active workers: " << this->active_workers.atomic_size()
@@ -66,15 +66,15 @@ void WorkerPool<AllWorkers_t, ActiveWorkers_t>::enqueue_worker(
 }
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
-InnerWorker *WorkerPool<AllWorkers_t, ActiveWorkers_t>::dequeue_worker() {
-  InnerWorker *worker = this->active_workers.back_and_pop();
+InnerWorker* WorkerPool<AllWorkers_t, ActiveWorkers_t>::dequeue_worker() {
+  InnerWorker* worker = this->active_workers.back_and_pop();
   // std::cout << "Dequeued Worker ID: " << worker->thread_idx << std::endl;
   return worker;
 }
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
 void WorkerPool<AllWorkers_t, ActiveWorkers_t>::add_worker(
-    InnerWorker *worker) {
+    InnerWorker* worker) {
   // std::cout << "Adding worker: " << worker->thread_idx << std::endl;
   this->all_workers.push_back(worker);
   assert(this->all_workers.size() <= this->max_workers);
@@ -119,7 +119,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(DeviceManager *device_manager)
+InnerScheduler::InnerScheduler(DeviceManager* device_manager)
     : device_manager_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
@@ -147,7 +147,7 @@ void InnerScheduler::set_resources(std::string resource_name,
   this->resources->set(resource_name, resource_value);
 }
 
-void InnerScheduler::set_py_scheduler(void *py_scheduler) {
+void InnerScheduler::set_py_scheduler(void* py_scheduler) {
   this->py_scheduler = py_scheduler;
 }
 
@@ -188,7 +188,7 @@ Scheduler::Status InnerScheduler::activate() {
 
 void InnerScheduler::activate_wrapper() { this->activate(); }
 
-void InnerScheduler::spawn_task(InnerTask *task) {
+void InnerScheduler::spawn_task(InnerTask* task) {
   LOG_INFO(SCHEDULER, "Spawning task: {}", task);
   NVTX_RANGE("Scheduler::spawn_task", NVTX_COLOR_RED)
 
@@ -199,7 +199,7 @@ void InnerScheduler::spawn_task(InnerTask *task) {
   this->enqueue_task(task, status);
 }
 
-void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
+void InnerScheduler::enqueue_task(InnerTask* task, Task::StatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
   if (status.mappable && (task->get_state() < Task::MAPPED)) {
@@ -217,24 +217,24 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
   }
 }
 
-void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
+void InnerScheduler::enqueue_tasks(TaskStateList& tasks) {
   // LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
   for (auto task_status : tasks) {
     this->enqueue_task(task_status.first, task_status.second);
   }
 }
 
-void InnerScheduler::add_worker(InnerWorker *worker) {
+void InnerScheduler::add_worker(InnerWorker* worker) {
   LOG_INFO(SCHEDULER, "Adding worker {} to pool", worker);
   this->workers.add_worker(worker);
 }
 
-void InnerScheduler::enqueue_worker(InnerWorker *worker) {
+void InnerScheduler::enqueue_worker(InnerWorker* worker) {
   LOG_INFO(SCHEDULER, "Enqueuing worker: {} is ready.", worker);
   this->workers.enqueue_worker(worker);
 }
 
-void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
+void InnerScheduler::task_cleanup(InnerWorker* worker, InnerTask* task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
@@ -279,7 +279,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // std::cout << "Task Complete: " << task->name << std::endl;
 
     // Reset all runtime counters and state of the continuation task.
-    auto &enqueue_buffer = worker->enqueue_buffer;
+    auto& enqueue_buffer = worker->enqueue_buffer;
     task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {
       this->enqueue_tasks(enqueue_buffer);

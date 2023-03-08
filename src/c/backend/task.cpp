@@ -7,29 +7,30 @@
 // Task Implementation
 
 // TODO(hc) member initialization list is preferable as it can reduce
-//          instructions (e.g., https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
+//          instructions (e.g.,
+//          https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
 InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
 }
 
-InnerTask::InnerTask(long long int id, void *py_task) :
-    req_addition_mode_(SingleDevAdd) {
+InnerTask::InnerTask(long long int id, void* py_task)
+    : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = id;
   this->py_task = py_task;
 }
 
-InnerTask::InnerTask(std::string name, long long int id, void *py_task) :
-    req_addition_mode_(SingleDevAdd) {
+InnerTask::InnerTask(std::string name, long long int id, void* py_task)
+    : req_addition_mode_(SingleDevAdd) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->name = name;
   this->id = id;
   this->py_task = py_task;
 }
 
-void InnerTask::set_scheduler(InnerScheduler *scheduler) {
+void InnerTask::set_scheduler(InnerScheduler* scheduler) {
   this->scheduler = scheduler;
 }
 
@@ -40,7 +41,7 @@ void InnerTask::set_name(std::string name) {
 
 void InnerTask::set_id(long long int id) { this->id = id; }
 
-void InnerTask::set_py_task(void *py_task) { this->py_task = py_task; }
+void InnerTask::set_py_task(void* py_task) { this->py_task = py_task; }
 
 void InnerTask::set_priority(int priority) { this->priority = priority; }
 
@@ -48,7 +49,7 @@ void InnerTask::set_resources(std::string resource_name, float resource_value) {
   this->resources.set(resource_name, resource_value);
 }
 
-void InnerTask::queue_dependency(InnerTask *task) {
+void InnerTask::queue_dependency(InnerTask* task) {
   this->dependency_buffer.push_back(task);
 }
 
@@ -64,7 +65,7 @@ void InnerTask::clear_dependencies() {
   this->dependencies.clear();
 }
 
-Task::State InnerTask::add_dependency(InnerTask *task) {
+Task::State InnerTask::add_dependency(InnerTask* task) {
 
   // Store all added dependencies for bookkeeping
   // I cannot think of a scenario when multiple writers would be adding
@@ -114,7 +115,7 @@ Task::Status InnerTask::determine_status(bool new_spawnable, bool new_mappable,
   }
 }
 
-Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
+Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask*>& tasks) {
 
   bool data_tasks = false;
 
@@ -185,7 +186,7 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
  *    I am sure there is a better implementation of this.
  */
 
-Task::State InnerTask::add_dependent(InnerTask *task) {
+Task::State InnerTask::add_dependent(InnerTask* task) {
 
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
@@ -208,7 +209,7 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::notify_dependents(TaskStateList &buffer,
+void InnerTask::notify_dependents(TaskStateList& buffer,
                                   Task::State new_state) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
   NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
@@ -302,8 +303,8 @@ int InnerTask::get_num_unmapped_dependencies() const {
   return this->num_unmapped_dependencies.load();
 }
 
-std::vector<void *> InnerTask::get_dependencies() {
-  std::vector<void *> dependency_list;
+std::vector<void*> InnerTask::get_dependencies() {
+  std::vector<void*> dependency_list;
   this->dependencies.lock();
   for (size_t i = 0; i < this->dependencies.size_unsafe(); i++) {
     dependency_list.push_back(this->dependencies.get_unsafe(i));
@@ -313,8 +314,8 @@ std::vector<void *> InnerTask::get_dependencies() {
   return dependency_list;
 }
 
-std::vector<void *> InnerTask::get_dependents() {
-  std::vector<void *> dependent_list;
+std::vector<void*> InnerTask::get_dependents() {
+  std::vector<void*> dependent_list;
   this->dependents.lock();
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
     dependent_list.push_back(this->dependents.get_unsafe(i));
@@ -323,7 +324,7 @@ std::vector<void *> InnerTask::get_dependents() {
   return dependent_list;
 }
 
-void *InnerTask::get_py_task() { return this->py_task; }
+void* InnerTask::get_py_task() { return this->py_task; }
 
 int InnerTask::set_state(int state) {
   Task::State new_state = static_cast<Task::State>(state);
@@ -359,11 +360,11 @@ void InnerTask::set_complete() { this->set_state(Task::COMPLETED); }
 
 bool InnerTask::get_complete() { return this->get_state(); }
 
-
 // TODO(hc): The current Parla exploits two types of resources,
 //           memory and vcus. Later, this can be extended with
 //           a map.
-void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcus) {
+void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz,
+                               VCUTy num_vcus) {
   DeviceResources res_req = {mem_sz, num_vcus};
   DeviceRequirement* dev_req = new DeviceRequirement(dev_ptr, res_req);
   if (req_addition_mode_ == SingleDevAdd) {
@@ -376,7 +377,7 @@ void InnerTask::add_device_req(Device* dev_ptr, MemorySzTy mem_sz, VCUTy num_vcu
 }
 
 void InnerTask::begin_arch_req_addition() {
-  // Setting architecture resource requirement 
+  // Setting architecture resource requirement
   // could be called within multi-device requirement
   // setup.
   ++req_addition_mode_;

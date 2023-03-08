@@ -5,9 +5,9 @@
 /**************************/
 // Mapper Implementation
 
-void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }
+void Mapper::enqueue(InnerTask* task) { this->mappable_tasks.push_back(task); }
 
-void Mapper::enqueue(std::vector<InnerTask *> &tasks) {
+void Mapper::enqueue(std::vector<InnerTask*>& tasks) {
   this->mappable_tasks.push_back(tasks);
 }
 
@@ -16,7 +16,7 @@ size_t Mapper::get_count() {
   return count;
 }
 
-void Mapper::run(SchedulerPhase *memory_reserver) {
+void Mapper::run(SchedulerPhase* memory_reserver) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
@@ -37,24 +37,24 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask *task = this->mappable_tasks.front_and_pop();
-    ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
-    std::vector<DeviceRequirementBase *> dev_res_reqs =
+    InnerTask* task = this->mappable_tasks.front_and_pop();
+    ResourceRequirementCollections& res_reqs = task->GetResourceRequirements();
+    std::vector<DeviceRequirementBase*> dev_res_reqs =
         res_reqs.GetDeviceRequirementOptions();
-    for (DeviceRequirementBase *r : dev_res_reqs) {
+    for (DeviceRequirementBase* r : dev_res_reqs) {
       if (r->is_multidev_req()) {
         // TODO(hc): It can be refactored later and its length
         //           can be reduced.
         //           Refactor it when we implement a policy.
         std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements *mdev_res_reqs =
-            dynamic_cast<MultiDeviceRequirements *>(r);
-        const std::vector<SingleDeviceRequirementBase *> mdev_res_reqs_vec =
+        MultiDeviceRequirements* mdev_res_reqs =
+            dynamic_cast<MultiDeviceRequirements*>(r);
+        const std::vector<SingleDeviceRequirementBase*> mdev_res_reqs_vec =
             mdev_res_reqs->GetDeviceRequirements();
-        for (DeviceRequirementBase *m_r : mdev_res_reqs_vec) {
+        for (DeviceRequirementBase* m_r : mdev_res_reqs_vec) {
           if (m_r->is_dev_req()) {
-            DeviceRequirement *dev_res_req =
-                dynamic_cast<DeviceRequirement *>(m_r);
+            DeviceRequirement* dev_res_req =
+                dynamic_cast<DeviceRequirement*>(m_r);
             std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
             std::cout << "\t" << dev_res_req->device().GetName() << " -> "
                       << dev_res_req->res_req().mem_sz << "B, VCU "
@@ -62,10 +62,10 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
           } else if (m_r->is_arch_req()) {
             std::cout
                 << "\t[Architecture Requirement in Multi-device Requirement]\n";
-            ArchitectureRequirement *arch_res_req =
-                dynamic_cast<ArchitectureRequirement *>(m_r);
+            ArchitectureRequirement* arch_res_req =
+                dynamic_cast<ArchitectureRequirement*>(m_r);
             uint32_t i = 0;
-            for (DeviceRequirement *dev_res_req :
+            for (DeviceRequirement* dev_res_req :
                  arch_res_req->GetDeviceRequirementOptions()) {
               std::cout << "\t\t[" << i << "]"
                         << dev_res_req->device().GetName() << " -> "
@@ -76,17 +76,17 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
           }
         }
       } else if (r->is_dev_req()) {
-        DeviceRequirement *dev_res_req = dynamic_cast<DeviceRequirement *>(r);
+        DeviceRequirement* dev_res_req = dynamic_cast<DeviceRequirement*>(r);
         std::cout << "[Device Requirement]\n";
         std::cout << dev_res_req->device().GetName() << " -> "
                   << dev_res_req->res_req().mem_sz << "B, VCU "
                   << dev_res_req->res_req().num_vcus << "\n";
       } else if (r->is_arch_req()) {
         std::cout << "[Architecture Requirement]\n";
-        ArchitectureRequirement *arch_res_req =
-            dynamic_cast<ArchitectureRequirement *>(r);
+        ArchitectureRequirement* arch_res_req =
+            dynamic_cast<ArchitectureRequirement*>(r);
         uint32_t i = 0;
-        for (DeviceRequirement *dev_res_req :
+        for (DeviceRequirement* dev_res_req :
              arch_res_req->GetDeviceRequirementOptions()) {
           std::cout << "\t[" << i << "]" << dev_res_req->device().GetName()
                     << " -> " << dev_res_req->res_req().mem_sz << "B, VCU "
@@ -100,7 +100,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 
-  for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
+  for (InnerTask* mapped_task : this->mapped_tasks_buffer) {
 
     mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
@@ -121,11 +121,11 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 /**************************/
 // Reserved Phase implementation
 
-void MemoryReserver::enqueue(InnerTask *task) {
+void MemoryReserver::enqueue(InnerTask* task) {
   this->reservable_tasks.push_back(task);
 }
 
-void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
+void MemoryReserver::enqueue(std::vector<InnerTask*>& tasks) {
   this->reservable_tasks.push_back(tasks);
 }
 
@@ -134,7 +134,7 @@ size_t MemoryReserver::get_count() {
   return count;
 }
 
-void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
+void MemoryReserver::run(SchedulerPhase* runtime_reserver) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
   // Loop through all the tasks in the reservable_tasks queue, reserve memory on
   // device if possible;
@@ -142,12 +142,12 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   // TODO:: Dummy implementation that just passes tasks through
   bool has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask *task = this->reservable_tasks.front_and_pop();
+    InnerTask* task = this->reservable_tasks.front_and_pop();
     this->reserved_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
   }
 
-  for (InnerTask *reserved_task : this->reserved_tasks_buffer) {
+  for (InnerTask* reserved_task : this->reserved_tasks_buffer) {
     reserved_task->notify_dependents(this->enqueue_buffer, Task::RESERVED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
@@ -170,7 +170,7 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
 /**************************/
 // Ready Phase implementation
 
-void RuntimeReserver::enqueue(InnerTask *task) {
+void RuntimeReserver::enqueue(InnerTask* task) {
   // std::cout << "Enqueuing task " << task->name << std::endl;
   this->runnable_tasks.push_back(task);
   // std::cout << "Ready tasks after enqueue: " <<
@@ -178,7 +178,7 @@ void RuntimeReserver::enqueue(InnerTask *task) {
   //          << std::endl;
 }
 
-void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
+void RuntimeReserver::enqueue(std::vector<InnerTask*>& tasks) {
   // std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
   // for (auto task : tasks) {
   //  this->enqueue(task);
@@ -196,11 +196,11 @@ size_t RuntimeReserver::get_count() {
   return count;
 }
 
-void RuntimeReserver::run(SchedulerPhase *next_phase) {
+void RuntimeReserver::run(SchedulerPhase* next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO(wlr): Is this really the right way to handle this inheritance?
-  Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
+  Launcher* launcher = dynamic_cast<Launcher*>(next_phase);
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -244,8 +244,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
         if (has_thread) {
 
-          InnerTask *task = this->runnable_tasks.front_and_pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
+          InnerTask* task = this->runnable_tasks.front_and_pop();
+          InnerWorker* worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
           scheduler->resources->decrease(task->resources);
@@ -273,7 +273,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 /**************************/
 // Launcher Phase implementation
 
-void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
+void Launcher::enqueue(InnerTask* task, InnerWorker* worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
   // Immediately launch task

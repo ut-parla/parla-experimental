@@ -38,20 +38,16 @@ private:
 
 class DeviceRequirement : public SingleDeviceRequirementBase {
 public:
-  DeviceRequirement(Device* dev, DeviceResources res_reqs) :
-      dev_(dev), res_reqs_(res_reqs) {}
+  DeviceRequirement(Device* dev, DeviceResources res_reqs)
+      : dev_(dev), res_reqs_(res_reqs) {}
 
   bool is_multidev_req() override { return false; }
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return true; }
 
-  const Device& device() {
-    return (*dev_);
-  }
+  const Device& device() { return (*dev_); }
 
-  const DeviceResources& res_req() {
-    return res_reqs_;
-  }
+  const DeviceResources& res_req() { return res_reqs_; }
 
 private:
   Device* dev_;

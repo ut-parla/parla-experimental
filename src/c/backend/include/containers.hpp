@@ -73,7 +73,7 @@ public:
     this->length++;
   }
 
-  void push_back(std::vector<T> &a) {
+  void push_back(std::vector<T>& a) {
     this->mtx.lock();
     this->vec.insert(this->vec.end(), a.begin(), a.end());
     this->mtx.unlock();
@@ -85,7 +85,7 @@ public:
     this->length++;
   }
 
-  void push_back_unsafe(std::vector<T> &a) {
+  void push_back_unsafe(std::vector<T>& a) {
     this->vec.insert(this->vec.end(), a.begin(), a.end());
     this->length += a.size();
   }
@@ -233,16 +233,16 @@ public:
     return vec;
   }
 
-  std::vector<T> &get_vector() {
+  std::vector<T>& get_vector() {
     this->mtx.lock();
-    std::vector<T> &vec = this->vec;
+    std::vector<T>& vec = this->vec;
     this->mtx.unlock();
     return vec;
   }
 
-  std::vector<T> &get_vector_unsafe() {
+  std::vector<T>& get_vector_unsafe() {
     this->mtx.lock();
-    std::vector<T> &vec = this->vec;
+    std::vector<T>& vec = this->vec;
     this->mtx.unlock();
     return vec;
   }
@@ -295,7 +295,7 @@ public:
     this->length++;
   }
 
-  void push_back(std::vector<T> &a) {
+  void push_back(std::vector<T>& a) {
     this->mtx.lock();
     for (auto val : a) {
       this->push_back_unsafe(val);
@@ -303,7 +303,7 @@ public:
     this->mtx.unlock();
   }
 
-  void push_back_unsafe(std::vector<T> &a) {
+  void push_back_unsafe(std::vector<T>& a) {
     for (auto val : a) {
       this->push_back_unsafe(val);
     }
@@ -321,7 +321,7 @@ public:
     this->length++;
   }
 
-  void push_front(std::vector<T> &a) {
+  void push_front(std::vector<T>& a) {
     this->mtx.lock();
     for (auto val : a) {
       this->push_back_unsafe(val);
@@ -329,7 +329,7 @@ public:
     this->mtx.unlock();
   }
 
-  void push_front_unsafe(std::vector<T> &a) {
+  void push_front_unsafe(std::vector<T>& a) {
     for (auto val : a) {
       this->push_back_unsafe(val);
     }
