@@ -8,7 +8,6 @@
 #include "device_manager.hpp"
 #include "policy.hpp"
 #include "runtime.hpp"
-
 #include <memory>
 #include <string>
 
@@ -25,118 +24,157 @@ public:
     num_tasks++;
   };
 
-  InnerTask *next() {
-    // TODO(wlr): Is there a way to do this much more efficiently?
-    // This is not good code, but I'm not sure how to fix it.
+  /*
+  Returns the next task that is ready to dequeue on this device.
+  If there are no tasks that can dequeued, returns nullptr.
 
+  A task is ready to dequeue if:
+  1. It is a single-device task
+  2. It is a multi-device task that is no longer waiting for its other
+  instances
+
+  We do not block on multi-device tasks that are still waiting for their other
+  instances.
+
+  This does not check resources, it only checks if the task is ready to
+  dequeue. It does not remove the returned task from the queue.
+  */
+  InnerTask *front() {
     // First, check any waiting multi-device tasks
-    if (!md_queue.empty()) {
-      InnerTask *md_head = md_queue.front();
-      int waiting_count = md_head->get_num_instances<category>();
+    if (!waiting_queue.empty()) {
+      InnerTask *head = waiting_queue.front();
+      int waiting_count = head->get_num_instances<category>();
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {
-        if (md_head->get_removed<category>()) {
-          // if the task has already been launched by another device, remove it
-          md_queue.front_and_pop();
-          num_tasks--;
+        // Remove from waiting queue if dequeued by last instance
+        if (head->get_removed<category>()) {
+          // TODO(wlr): Should I remove this here?
+          waiting_queue.pop_front();
+
+          // TODO(wlr): Should num_tasks include waiting tasks?
+          // this->num_tasks--;
         }
         return nullptr;
       }
     }
 
     if (!mixed_queue.empty()) {
-      InnerTask *mixed_head = mixed_queue.front();
-      // Decrease the waiting count
-      int prev_waiting_count = mixed_head->decrement_num_instances<category>();
+      InnerTask *head = mixed_queue.front();
+      int prev_waiting_count = head->decrement_num_instances<category>();
 
-      // Check if the task is waiting
+      // Check if the task is waiting for other instances
       if (prev_waiting_count == 1) {
-        // If the task is no longer waiting, check if it is launchable
-        bool launchable = check_launchable(mixed_head);
-        if (launchable) {
-          mixed_queue.pop_front();
-          mixed_head->set_removed<category>(true);
-          num_tasks--;
-          return mixed_head;
-        }
+        return head;
       } else {
-        // If the task is still waiting for its other instances,
-        // add to the md_queue
-        md_queue.push_back(mixed_head);
+        // If the task is still waiting, move it to the waiting queue
+        waiting_queue.push_back(head);
         mixed_queue.pop_front();
+
+        // TODO(wlr): Should num_tasks include waiting tasks?
+        this->num_tasks--;
       }
     }
 
     return nullptr;
   }
-  inline size_t size() { return mixed_queue.size() + md_queue.size(); }
-  inline bool empty() { return mixed_queue.empty() && md_queue.empty(); }
+
+  InnerTask *pop() {
+    InnerTask *task = front();
+    if (task != nullptr) {
+      mixed_queue.pop_front();
+      task->set_removed<category>(true);
+      num_tasks--;
+    }
+    return task;
+  }
+
+  inline size_t size() { return num_tasks.load(); }
+  inline bool empty() { return mixed_queue.empty() && waiting_queue.empty(); }
 
 protected:
   Device *device;
   MixedQueue_t mixed_queue;
-  MDQueue_t md_queue;
+  MDQueue_t waiting_queue;
   std::atomic<int> num_tasks = 0;
-
-  bool check_launchable(InnerTask *task) {
-    bool launchable = true;
-    ResourcePool_t device_pool = device->get_reserved_pool();
-
-    for (auto &device : task->device_constraints) {
-      ResourcePool_t task_pool = device.second;
-      launchable &= device_pool.check_greater<category>(task_pool);
-    }
-
-    return launchable;
-  }
 };
 
+// TODO(wlr): I don't know what to name this.
 template <ResourceCategory category> class PhaseManager {
-
-protected:
-  // std::array<std::vector<DeviceQueue<category>>, NUM_DEVICE_TYPES>
-  //     device_queues;
-  std::vector<DeviceQueue<category>> device_queues;
-  int last_device_idx = 0;
-  int ndevices = 0;
-  std::atomic<int> size = 0;
-
 public:
   PhaseManager() = default;
+
   PhaseManager(DeviceManager *devices) {
-    for (auto device : devices->get_devices<DeviceType::ANY>()) {
-      this->device_queues[device->get_global_id()] =
-          DeviceQueue<category>(device);
+    for (const DeviceType dev_type : architecture_types) {
+      int num_devices = devices->get_num_devices(dev_type);
+      this->ndevices += num_devices;
+
+      for (Device *device : devices->get_devices(dev_type)) {
+        this->device_queues.push_back(DeviceQueue<category>(device));
+      }
     }
-    this->ndevices = device_queues.size();
   }
 
   void enqueue(InnerTask *task) {
     for (auto device : task->assigned_devices) {
       device_queues[device->get_global_id()].enqueue(task);
     }
-    this->size++;
+    this->num_tasks++;
   }
 
-  InnerTask *next(Device *device) {
-    // TODO(wlr): I have no idea how this should iterate over the queues
-    // I'm just going to do a round-robin over the devices once for now.
-    int start_idx = last_device_idx;
-    int end_idx = last_device_idx + size;
+  InnerTask *front() {
+    // TODO(wlr): Hochan, can you check this?
+    // I'm not sure if this is the right way to loop over dequeable tasks
+    // Should we drain each device first, or try each device in
+    // turn?
 
-    for (int i = start_idx; i < end_idx; ++i) {
-      int idx = i % ndevices;
-      InnerTask *task = device_queues[idx].next();
-      if (task != nullptr) {
-        last_device_idx = idx;
-        this->size--;
-        return task;
+    int start_idx = last_device_idx;
+    int end_idx = start_idx + ndevices;
+    int current_idx = start_idx;
+
+    bool has_task = this->size() > 0;
+    while (has_task) {
+
+      // Loop over all devices starting from after last success location
+      for (int i = start_idx; i < end_idx; ++i) {
+        current_idx = i % ndevices;
+
+        // Try to get a non-waiting task
+        InnerTask *task = device_queues[current_idx].front();
+        if (task != nullptr) {
+          last_device_idx = ++current_idx;
+          return task;
+        }
       }
+
+      has_task = this->size() > 0;
     }
 
+    // If we get here, there are no tasks that can be dequeued
+    // This should only happen if called on an empty phase
     return nullptr;
   }
+
+  InnerTask *pop() {
+    InnerTask *task = device_queues[last_device_idx].pop();
+    this->num_tasks--;
+    return task;
+  }
+
+  inline size_t size() { return this->num_tasks.load(); }
+
+protected:
+  // TODO(wlr): I keep changing this back and forth.
+  //  For now I think global indexing is easier to work with.
+  // std::array<std::vector<DeviceQueue<category>>, NUM_DEVICE_TYPES>
+  //     device_queues;
+  std::vector<DeviceQueue<category>> device_queues;
+
+  int last_device_idx = 0;
+  DeviceType last_device_type = CPU;
+
+  int ndevices = 0;
+  std::atomic<int> num_tasks = 0;
 };
 
 class PhaseStatus {
@@ -249,6 +287,9 @@ protected:
   std::string name = "Memory Reserver";
   PhaseManager<ResourceCategory::PERSISTENT> reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
+
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
 };
 
 namespace Ready {
@@ -267,7 +308,6 @@ LOG_ADAPT_STRUCT(Ready::Status, status)
 #endif
 
 class RuntimeReserver : virtual public SchedulerPhase {
-
 public:
   Ready::Status status;
 
@@ -283,6 +323,9 @@ protected:
   std::string name = "Runtime Reserver";
   PhaseManager<ResourceCategory::NON_PERSISTENT> runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
+
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
 };
 
 #ifdef PARLA_ENABLE_LOGGING

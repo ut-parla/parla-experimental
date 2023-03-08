@@ -16,7 +16,8 @@ using ResourcePool_t = ResourcePool<std::atomic<Resource_t>>;
 
 enum DeviceType { ANY = -1, CPU = 0, CUDA = 1 };
 
-inline const constexpr int NUM_DEVICE_TYPES = 2;
+inline const constexpr std::array architecture_types{CPU, CUDA};
+inline const constexpr int NUM_DEVICE_TYPES = architecture_types.size();
 inline const std::array<std::string, NUM_DEVICE_TYPES> architecture_names{
     "CPU", "CUDA"};
 
@@ -62,9 +63,10 @@ public:
 
   const DeviceType get_type() const { return dev_type_; }
 
-  const ResourcePool_t &get_resource_pool() const { return res_; }
-  const ResourcePool_t &get_mapped_pool() const { return mapped_res_; }
-  const ResourcePool_t &get_reserved_pool() const { return reserved_res_; }
+  // Comment(wlr): Maybe max resource pool should be const?
+  ResourcePool_t &get_resource_pool() { return res_; }
+  ResourcePool_t &get_mapped_pool() { return mapped_res_; }
+  ResourcePool_t &get_reserved_pool() { return reserved_res_; }
 
   void *get_py_device() { return py_dev_; }
 

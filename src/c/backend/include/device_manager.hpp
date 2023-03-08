@@ -19,6 +19,7 @@ public:
   void register_device(Device *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
     registered_devices_[new_dev->get_type()].emplace_back(new_dev);
+    all_devices_.emplace_back(new_dev);
   }
 
   void print_registered_devices() {
@@ -35,29 +36,56 @@ public:
     }
   }
 
-  template <DeviceType T> std::vector<Device *> get_devices() {
-    std::vector<Device *> returned_devices;
-
+  // TODO(wlr): err Sorry! I was playing around with these. Feel free to revert.
+  //  I had thought a compile time dispatch would be nice, but forgot it would
+  //  need a specialized handler class to do runtime inference for each enum
+  //  type..
+  template <DeviceType T> int get_num_devices() {
     if constexpr (T == ANY) {
-      std::vector<Device *> all_devices;
-      for (auto i = 0; i < NUM_DEVICE_TYPES; ++i) {
-        returned_devices.insert(returned_devices.end(),
-                                registered_devices_[i].begin(),
-                                registered_devices_[i].end());
-      }
+      return all_devices_.size();
     } else if constexpr (T == CPU) {
-      returned_devices = registered_devices_[CPU];
+      return registered_devices_[CPU].size();
     } else if constexpr (T == CUDA) {
-      returned_devices = registered_devices_[CUDA];
+      return registered_devices_[CUDA].size();
     }
+  }
 
-    return returned_devices;
+  int get_num_devices(DeviceType dev_type) {
+    switch (dev_type) {
+    case CPU:
+      return get_num_devices<CPU>();
+    case CUDA:
+      return get_num_devices<CUDA>();
+    default:
+      return get_num_devices<ANY>();
+    }
+  }
+
+  template <DeviceType T> std::vector<Device *> &get_devices() {
+    if constexpr (T == CPU) {
+      return registered_devices_[CPU];
+    } else if constexpr (T == CUDA) {
+      return registered_devices_[CUDA];
+    } else if constexpr (T == ANY) {
+      return all_devices_;
+    }
+  }
+
+  std::vector<Device *> &get_devices(DeviceType dev_type) {
+    switch (dev_type) {
+    case CPU:
+      return get_devices<CPU>();
+    case CUDA:
+      return get_devices<CUDA>();
+    default:
+      return get_devices<ANY>();
+    }
   }
 
 protected:
   DevID_t last_dev_id_ = 0;
   std::array<std::vector<Device *>, NUM_DEVICE_TYPES> registered_devices_;
-  // TODO(wlr): Add array of devices by global id.
+  std::vector<Device *> all_devices_;
 };
 
 #endif

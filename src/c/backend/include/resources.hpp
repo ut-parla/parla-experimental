@@ -11,7 +11,7 @@
 #include <string_view>
 using namespace std::literals::string_view_literals; // Enables sv suffix only
 
-using Resource_t = uint64_t;
+using Resource_t = int64_t;
 
 enum Resource { MEMORY = 0, VCU = 1 };
 enum ResourceCategory { ALL = 0, PERSISTENT = 1, NON_PERSISTENT = 2 };

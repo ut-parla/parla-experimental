@@ -1,7 +1,10 @@
 #include "include/phases.hpp"
+#include "include/device.hpp"
 #include "include/policy.hpp"
 #include "include/profiling.hpp"
+#include "include/resources.hpp"
 #include "include/runtime.hpp"
+#include <algorithm>
 
 /**************************/
 // Mapper Implementation
@@ -18,7 +21,6 @@ size_t Mapper::get_count() {
 }
 
 void Mapper::run(SchedulerPhase *memory_reserver) {
-
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -36,9 +38,16 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   bool has_task = true;
 
+  // TODO(wlr): This is just used for random testing policy
+  //            Remove this when we implement a policy.
+  std::vector<Device *> devices(
+      this->device_manager->get_devices(DeviceType::ANY));
+
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
+
+    /*
     ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
     std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
         res_reqs.GetDeviceRequirementOptions();
@@ -57,13 +66,14 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
             DeviceRequirement *dev_res_req =
                 dynamic_cast<DeviceRequirement *>(m_r.get());
             policy_->MapTask(task, *(dev_res_req->device()));
-            std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
+            std::cout << "\t[Device Requirement in Multi-device "
+                         "Requirement]\n";
             std::cout << "\t" << dev_res_req->device()->get_name() << " -> "
                       << dev_res_req->res_req().get(MEMORY) << "B, VCU "
                       << dev_res_req->res_req().get(VCU) << "\n";
           } else if (m_r->is_arch_req()) {
-            std::cout
-                << "\t[Architecture Requirement in Multi-device Requirement]\n";
+            std::cout << "\t[Architecture Requirement in "
+                         "Multi-device Requirement]\n";
             ArchitectureRequirement *arch_res_req =
                 dynamic_cast<ArchitectureRequirement *>(m_r.get());
             uint32_t i = 0;
@@ -100,14 +110,29 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
           ++i;
         }
       }
-    }
+    }*/
+
+    // TODO(wlr): Testing
+    // Assign two random devices to each task
+
+    std::random_shuffle(devices.begin(), devices.end());
+    ResourcePool_t sample;
+    sample.set(MEMORY, 0);
+    sample.set(VCU, 500);
+
+    task->assigned_devices.push_back(devices[0]);
+    task->assigned_devices.push_back(devices[1]);
+
+    // TODO(wlr): Maybe use shared_ptr<ResourcePool_t> to pass from existing
+    // res_req? Cannot be shared pools between devices. These are copies here.
+    task->device_constraints.insert({devices[0]->get_global_id(), sample});
+    task->device_constraints.insert({devices[1]->get_global_id(), sample});
 
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
-
     mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
@@ -128,28 +153,80 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 // Reserved Phase implementation
 
 void MemoryReserver::enqueue(InnerTask *task) {
-  this->reservable_tasks.push_back(task);
+  this->reservable_tasks.enqueue(task);
 }
 
 void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
-  this->reservable_tasks.push_back(tasks);
+  for (InnerTask *task : tasks) {
+    this->enqueue(task);
+  }
 }
 
 size_t MemoryReserver::get_count() {
-  size_t count = this->reservable_tasks.atomic_size();
+  size_t count = this->reservable_tasks.size();
   return count;
+}
+
+bool MemoryReserver::check_resources(InnerTask *task) {
+  bool status = true;
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+
+    status = device_pool.check_greater<ResourceCategory::PERSISTENT>(task_pool);
+
+    if (!status) {
+      break;
+    }
+  }
+  return status;
+}
+
+void MemoryReserver::reserve_resources(InnerTask *task) {
+  // TODO(wlr): Add runtime error check if resource failure
+
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+
+    device_pool.decrease<ResourceCategory::PERSISTENT>(task_pool);
+  }
 }
 
 void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
-  // Loop through all the tasks in the reservable_tasks queue, reserve memory on
-  // device if possible;
+
+  this->status.reset();
+
+  // Only one thread can reserve memory at a time.
+  // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
+  std::unique_lock<std::mutex> lock(this->mtx);
 
   // TODO:: Dummy implementation that just passes tasks through
   bool has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask *task = this->reservable_tasks.front_and_pop();
-    this->reserved_tasks_buffer.push_back(task);
+    InnerTask *task = this->reservable_tasks.front();
+
+    if (task == nullptr) {
+      throw std::runtime_error("MemoryReserver::run: task is nullptr");
+    }
+
+    // Is there enough memory on the devices to schedule this task?
+    bool can_reserve = this->check_resources(task);
+    if (can_reserve) {
+      this->reserve_resources(task);
+      this->reservable_tasks.pop();
+      this->reserved_tasks_buffer.push_back(task);
+    } else {
+      // TODO:(wlr) we need some break condition to allow the scheduler to
+      // continue if not enough resources are available Hochan, do you
+      // have any ideas? One failure per scheduler loop (written here) is
+      // bad. Is one failure per device per scheduler loop better?
+      break;
+    }
+
     has_task = this->get_count() > 0;
   }
 
@@ -178,84 +255,85 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
 
 void RuntimeReserver::enqueue(InnerTask *task) {
   // std::cout << "Enqueuing task " << task->name << std::endl;
-  this->runnable_tasks.push_back(task);
+  this->runnable_tasks.enqueue(task);
   // std::cout << "Ready tasks after enqueue: " <<
   // this->ready_tasks.atomic_size()
   //          << std::endl;
 }
 
 void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
-  // std::cout << "Enqueuing tasks " << tasks.size() << std::endl;
-  // for (auto task : tasks) {
-  //  this->enqueue(task);
-  //}
-  this->runnable_tasks.push_back(tasks);
-  // std::cout << "Ready tasks after: " << this->ready_tasks.atomic_size()
-  //          << std::endl;
+  for (auto task : tasks) {
+    this->enqueue(task);
+  }
 }
 
 size_t RuntimeReserver::get_count() {
-  // std::cout << "Ready tasks: " << this->ready_tasks.atomic_size() <<
-  // std::endl;
-  size_t count = this->runnable_tasks.atomic_size();
-  // std::cout << "Ready tasks: " << count << std::endl;
+  size_t count = this->runnable_tasks.size();
   return count;
+}
+
+bool RuntimeReserver::check_resources(InnerTask *task) {
+  bool status = true;
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+
+    status =
+        device_pool.check_greater<ResourceCategory::NON_PERSISTENT>(task_pool);
+
+    if (!status) {
+      break;
+    }
+  }
+  return status;
+}
+
+void RuntimeReserver::reserve_resources(InnerTask *task) {
+  // TODO(wlr): Add runtime error check if resource failure
+
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+
+    device_pool.decrease<ResourceCategory::NON_PERSISTENT>(task_pool);
+  }
 }
 
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // TODO(wlr): Is this really the right way to handle this inheritance?
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
-
-  // TODO: Refactor this so its readable without as many nested conditionals
-
-  // This is a critical region
-  // Mutex needed only if it is called from multiple threads (not just scheduler
-  // thread)
-
-  // Assumptions:
-  // Scheduler resources are ONLY decreased here
-  // Available workers are ONLY decreased here
-
-  // Assumptions to revisit:
-  // Ready tasks must be launched in order
-  // If the task at the head cannot be launched (eg. not enough resources, no
-  // available workers) , then no other tasks can be launched
-  // TODO: Revisit this design decision
-
-  // TODO: Currently this drains the whole queue. Use Ready::condition() to set
-  // a better policy?
-  // TODO: This stops at a single failure.
-  // TODO: Maybe failure of a phase means it should wait on events to try again.
-  // Instead of just spinning?
-
   this->status.reset();
 
-  this->mtx.lock();
+  // Only one thread can reserve runtime resources at a time.
+  // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
+  std::unique_lock<std::mutex> lock(this->mtx);
 
   bool has_task = true;
 
   while (has_task) {
-
     has_task = this->get_count() > 0;
 
     if (has_task) {
-      auto task = this->runnable_tasks.front();
-      // bool has_resources =
-      // scheduler->resources->check_greater(task->resources);
-      bool has_resources = true;
-      if (has_resources) {
+      InnerTask *task = this->runnable_tasks.front();
 
+      if (task == nullptr) {
+        throw std::runtime_error("RuntimeReserver::run: task is nullptr");
+      }
+
+      bool has_resources = check_resources(task);
+
+      if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
 
         if (has_thread) {
-
-          InnerTask *task = this->runnable_tasks.front_and_pop();
+          InnerTask *task = this->runnable_tasks.pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
-          // scheduler->resources->decrease(task->resources);
+          reserve_resources(task);
 
           launcher->enqueue(task, worker);
 

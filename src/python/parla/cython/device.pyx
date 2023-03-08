@@ -2,7 +2,8 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-from parla.common.global_enums import PyDeviceType 
+#TODO(wlr): Is there a better way to sync C++ and Python enums?
+from parla.common.global_enums import DeviceType as PyDeviceType
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
