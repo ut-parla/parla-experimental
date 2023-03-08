@@ -134,7 +134,7 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
 
   // Mapping policy
   std::shared_ptr<LocalityLoadBalancingMappingPolicy> mapping_policy =
-      std::make_shared<LocalityLoadBalancingMappingPolicy>();
+      std::make_shared<LocalityLoadBalancingMappingPolicy>(device_manager);
 
   // Initialize the phases
   this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));

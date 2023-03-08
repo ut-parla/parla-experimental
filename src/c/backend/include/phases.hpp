@@ -114,8 +114,8 @@ public:
   ///                     This is a base type of resource requirement class
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
-  /// @return Score of the chosen device.
-  ScoreTy CalcScoreOfArchPlacement(InnerTask* task,
+  /// @return Pair of the chosen device and its score.
+  std::pair<ScoreTy, Device*> CalcScoreOfArchPlacement(InnerTask* task,
       std::shared_ptr<DeviceRequirementBase> base_res_req);
 
   /// Calculate a score of device placement.
@@ -128,8 +128,8 @@ public:
   ///                     This is a base type of resource requirement class
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
-  /// @return Score of the chosen device.
-  ScoreTy CalcScoreOfDevPlacement(InnerTask* task,
+  /// @return Pair of the chosen device and its score.
+  std::pair<ScoreTy, Device*> CalcScoreOfDevPlacement(InnerTask* task,
       std::shared_ptr<DeviceRequirementBase> base_res_req);
 
 protected:

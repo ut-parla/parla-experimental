@@ -13,8 +13,15 @@ using DevID_t = uint32_t;
 /// information on the current system to the Parla runtime.
 class DeviceManager {
 public:
-  DeviceManager() {}
-  DeviceManager(const DeviceManager &) = delete;
+  DeviceManager() : total_num_mapped_tasks_{0} {}
+  DeviceManager(const DeviceManager&) = delete;
+  ~DeviceManager() {
+    for (Device* d : all_devices_) {
+      if (d != nullptr) {
+        delete d;
+      }
+    }
+  }
 
   void register_device(Device *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
@@ -80,6 +87,18 @@ public:
     }
   }
 
+  size_t IncrAtomicTotalNumMappedTasks() {
+    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  size_t DecrAtomicTotalNumMappedTasks() {
+    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  size_t TotalNumMappedTasks() const {
+    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
+  }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds
@@ -90,6 +109,9 @@ protected:
   std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
   std::vector<Device *> all_devices_;
+
+  /// The total number of tasks mapped to and running on the whole devices. 
+  std::atomic<size_t> total_num_mapped_tasks_;
 };
 
 #endif

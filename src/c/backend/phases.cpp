@@ -22,27 +22,32 @@ size_t Mapper::get_count() {
   return count;
 }
 
-ScoreTy Mapper::CalcScoreOfArchPlacement(InnerTask* task,
-    std::shared_ptr<DeviceRequirementBase> base_res_req) {
+std::pair<ScoreTy, Device*> Mapper::CalcScoreOfArchPlacement(
+    InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req) {
   std::cout
       << "\t[Architecture Requirement in Multi-device Requirement]\n";
   ArchitectureRequirement* arch_res_req =
       dynamic_cast<ArchitectureRequirement *>(base_res_req.get());
-  ScoreTy best_score = 0;
+  ScoreTy best_score{0};
+  Device* best_device{nullptr};
   uint32_t i = 0;
-  for (std::shared_ptr<DeviceRequirement> dev_res_req : arch_res_req->GetDeviceRequirementOptions()) {
+  for (std::shared_ptr<DeviceRequirement> dev_res_req :
+      arch_res_req->GetDeviceRequirementOptions()) {
     ScoreTy score = policy_->CalculateScore(task, dev_res_req.get());
-    best_score = (best_score < score)? score : best_score;
+    if (best_score < score) {
+      best_score = score;
+      best_device = dev_res_req->device();
+    }
     std::cout << "\t\t[" << i << "]"
               << dev_res_req->device()->GetName() << " -> "
               << dev_res_req->res_req().get(MEMORY) << "B, VCU "
               << dev_res_req->res_req().get(VCU) << "\n";
     ++i;
   }
-  return best_score;
+  return std::make_pair(best_score, best_device);
 }
 
-ScoreTy Mapper::CalcScoreOfDevPlacement(InnerTask* task,
+std::pair<ScoreTy, Device*> Mapper::CalcScoreOfDevPlacement(InnerTask* task,
     std::shared_ptr<DeviceRequirementBase> base_res_req) {
   DeviceRequirement *dev_res_req =
       dynamic_cast<DeviceRequirement *>(base_res_req.get());
@@ -51,7 +56,7 @@ ScoreTy Mapper::CalcScoreOfDevPlacement(InnerTask* task,
             << dev_res_req->device()->GetName() << " -> "
             << dev_res_req->res_req().get(MEMORY) << "B, VCU "
             << dev_res_req->res_req().get(VCU) << "\n";
-  return score;
+  return std::make_pair(score, dev_res_req->device());
 }
 
 void Mapper::run(SchedulerPhase *next_phase) {
@@ -134,21 +139,33 @@ void Mapper::run(SchedulerPhase *next_phase) {
         const std::vector<
           std::shared_ptr<SingleDeviceRequirementBase>>
             unpacked_mdev_res_reqs = mdev_res_req->GetDeviceRequirements();
-        for (std::shared_ptr<DeviceRequirementBase> base_mdev_res_req : unpacked_mdev_res_reqs) {
+        std::vector<Device*> chosen_devices(unpacked_mdev_res_reqs.size());
+        ScoreTy accumulated_device_score{0};
+        size_t mdev_idx{0};
+        for (std::shared_ptr<DeviceRequirementBase> base_mdev_res_req :
+              unpacked_mdev_res_reqs) {
           if (base_mdev_res_req->is_dev_req()) {
-            CalcScoreOfDevPlacement(task, base_mdev_res_req);
+            auto calc_result = CalcScoreOfDevPlacement(task, base_mdev_res_req);
+            chosen_devices[mdev_idx] = calc_result.second;
+            accumulated_device_score += calc_result.first;
           } else if (base_mdev_res_req->is_arch_req()) {
-            CalcScoreOfArchPlacement(task, base_mdev_res_req);
+            auto calc_result =
+                CalcScoreOfArchPlacement(task, base_mdev_res_req);
+            chosen_devices[mdev_idx] = calc_result.second;
+            accumulated_device_score += calc_result.first;
           }
+          ++mdev_idx;
         }
       } else if (base_res_req->is_dev_req()) {
         CalcScoreOfDevPlacement(task, base_res_req);
       } else if (base_res_req->is_arch_req()) {
-        CalcScoreOfArchPlacement(task, base_res_req);
+        std::pair<ScoreTy, Device*> chosen_dev_score =
+          CalcScoreOfArchPlacement(task, base_res_req);
       }
     }
 
     this->mapped_tasks_buffer.push_back(task);
+    this->device_manager->IncrAtomicTotalNumMappedTasks();
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 
