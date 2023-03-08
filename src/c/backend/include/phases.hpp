@@ -115,7 +115,7 @@ public:
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
   /// @return Score of the chosen device.
-  double CalcScoreOfArchPlacement(InnerTask* task,
+  ScoreTy CalcScoreOfArchPlacement(InnerTask* task,
       std::shared_ptr<DeviceRequirementBase> base_res_req);
 
   /// Calculate a score of device placement.
@@ -129,7 +129,7 @@ public:
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
   /// @return Score of the chosen device.
-  double CalcScoreOfDevPlacement(InnerTask* task,
+  ScoreTy CalcScoreOfDevPlacement(InnerTask* task,
       std::shared_ptr<DeviceRequirementBase> base_res_req);
 
 protected:

@@ -6,14 +6,16 @@
 
 #include <memory>
 
+using ScoreTy = double;
+
 class MappingPolicy {
 public:
-  virtual void MapTask(InnerTask*, const Device&) = 0;
+  virtual ScoreTy CalculateScore(InnerTask*, DeviceRequirement*) = 0;
 };
 
 class LocalityLoadBalancingMappingPolicy : public MappingPolicy {
 public:
-  void MapTask(InnerTask*, const Device&) override;
+  ScoreTy CalculateScore(InnerTask*, DeviceRequirement*) override;
 };
 
 #endif
