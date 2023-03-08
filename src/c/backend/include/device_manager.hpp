@@ -14,32 +14,50 @@ using DevID_t = uint32_t;
 class DeviceManager {
 public:
   DeviceManager() {}
-  DeviceManager(const DeviceManager&) = delete;
-  void RegisterDevice(Device* new_dev);
+  DeviceManager(const DeviceManager &) = delete;
 
-  void PrintRegisteredDevices() {
-    std::cout << "C++ device list:\n";
-    for (size_t d = 0; d < this->registered_devices_.size(); ++d) {
-      Device &dev = *(this->registered_devices_[d]);
-      std::cout << "[" << dev.GetName() << "] mem. sz:" <<
-        dev.GetMemorySize() << ", num. vcus:" << dev.GetNumVCUs() << "\n";
-    }
+  void register_device(Device *new_dev) {
+    new_dev->set_global_id(this->last_dev_id_++);
+    registered_devices_[new_dev->get_type()].emplace_back(new_dev);
   }
 
-  std::vector<Device*>& GetAllDevices() { return registered_devices_; }
+  void print_registered_devices() {
+    std::cout << "C++ device list:\n";
 
-  ~DeviceManager() {
-    for (Device* d : registered_devices_) {
-      if (d != nullptr) {
-        delete d;
+    for (auto i = 0; i < NUM_DEVICE_TYPES; ++i) {
+      std::cout << "Device type: " << i << "\n";
+      auto device_list = registered_devices_[i];
+
+      for (auto j = 0; j < device_list.size(); ++j) {
+        auto device = device_list[j];
+        std::cout << "Device " << j << ": " << device->get_name() << "\n";
       }
     }
   }
 
-private:
-  // TODO(hc): This should use a vector of vector and
-  //           the outer vector should be architecture type.
-  std::vector<Device*> registered_devices_;
+  template <DeviceType T> std::vector<Device *> get_devices() {
+    std::vector<Device *> returned_devices;
+
+    if constexpr (T == ANY) {
+      std::vector<Device *> all_devices;
+      for (auto i = 0; i < NUM_DEVICE_TYPES; ++i) {
+        returned_devices.insert(returned_devices.end(),
+                                registered_devices_[i].begin(),
+                                registered_devices_[i].end());
+      }
+    } else if constexpr (T == CPU) {
+      returned_devices = registered_devices_[CPU];
+    } else if constexpr (T == CUDA) {
+      returned_devices = registered_devices_[CUDA];
+    }
+
+    return returned_devices;
+  }
+
+protected:
+  DevID_t last_dev_id_ = 0;
+  std::array<std::vector<Device *>, NUM_DEVICE_TYPES> registered_devices_;
+  // TODO(wlr): Add array of devices by global id.
 };
 
 #endif

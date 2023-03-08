@@ -10,8 +10,9 @@
 // TODO(hc) member initialization list is preferable as it can reduce
 //          instructions (e.g.,
 //          https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
-InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd),
-    tmp_arch_req_(nullptr), tmp_multdev_reqs_(nullptr) {
+InnerTask::InnerTask()
+    : req_addition_mode_(SingleDevAdd), tmp_arch_req_(nullptr),
+      tmp_multdev_reqs_(nullptr) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
@@ -297,14 +298,6 @@ int InnerTask::get_num_dependencies() {
 
 int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
 
-int InnerTask::get_num_blocking_dependencies() const {
-  return this->num_blocking_dependencies.load();
-}
-
-int InnerTask::get_num_unmapped_dependencies() const {
-  return this->num_unmapped_dependencies.load();
-}
-
 std::vector<void *> InnerTask::get_dependencies() {
   std::vector<void *> dependency_list;
   this->dependencies.lock();
@@ -410,7 +403,6 @@ void InnerTask::begin_multidev_req_addition() {
 
 void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
-  dev_res_reqs_.AppendDeviceRequirementOption(
-      std::move(tmp_multdev_reqs_));
+  dev_res_reqs_.AppendDeviceRequirementOption(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }

@@ -46,10 +46,10 @@ cdef class CyDeviceManager:
     cpdef register_device(self, CyDevice cy_device):
         """ Register devices to the c++ runtime. """
         cdef Device* cpp_device = cy_device.get_cpp_device()
-        self.cpp_device_manager_.RegisterDevice(cpp_device)
+        self.cpp_device_manager_.register_device(cpp_device)
 
     cpdef print_registered_devices(self):
-        self.cpp_device_manager_.PrintRegisteredDevices()
+        self.cpp_device_manager_.print_registered_devices()
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_

@@ -246,6 +246,15 @@ public:
     this->mtx.unlock();
     return vec;
   }
+
+  bool empty() {
+    this->mtx.lock();
+    bool empty = this->vec.empty();
+    this->mtx.unlock();
+    return empty;
+  }
+
+  bool empty_unsafe() { return this->vec.empty(); }
 };
 
 template <typename T> class ProtectedQueue {
@@ -443,6 +452,15 @@ public:
     this->q.clear();
     this->length = 0;
   }
+
+  bool empty() {
+    this->mtx.lock();
+    bool empty = this->q.empty();
+    this->mtx.unlock();
+    return empty;
+  }
+
+  bool empty_unsafe() { return this->q.empty(); }
 };
 
 #endif // PARLA_CONTAINERS_HPP

@@ -19,8 +19,10 @@ class SingleDeviceRequirementBase : public DeviceRequirementBase {};
 /// memory and virtual computation units.
 class ResourceRequirementCollections {
 public:
-  void AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirementBase> dev_req);
-  const std::vector<std::shared_ptr<DeviceRequirementBase>>& GetDeviceRequirementOptions();
+  void
+  AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirementBase> dev_req);
+  const std::vector<std::shared_ptr<DeviceRequirementBase>> &
+  GetDeviceRequirementOptions();
 
 private:
   std::vector<std::shared_ptr<DeviceRequirementBase>> dev_reqs_;
@@ -28,12 +30,14 @@ private:
 
 class MultiDeviceRequirements : public DeviceRequirementBase {
 public:
-  void AppendDeviceRequirement(std::shared_ptr<SingleDeviceRequirementBase> req);
+  void
+  AppendDeviceRequirement(std::shared_ptr<SingleDeviceRequirementBase> req);
   bool is_multidev_req() override { return true; }
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return false; }
 
-  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>& GetDeviceRequirements();
+  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> &
+  GetDeviceRequirements();
 
 private:
   std::vector<std::shared_ptr<SingleDeviceRequirementBase>> dev_reqs_;
@@ -48,19 +52,20 @@ public:
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return true; }
 
-  Device* device() { return dev_; }
+  Device *device() { return dev_; }
 
-  const ResourcePool_t& res_req() { return res_reqs_; }
+  const ResourcePool_t &res_req() { return res_reqs_; }
 
 private:
-  Device* dev_;
+  Device *dev_;
   ResourcePool_t res_reqs_;
 };
 
 class ArchitectureRequirement : public SingleDeviceRequirementBase {
 public:
   void AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirement> req);
-  const std::vector<std::shared_ptr<DeviceRequirement>>& GetDeviceRequirementOptions();
+  const std::vector<std::shared_ptr<DeviceRequirement>> &
+  GetDeviceRequirementOptions();
   bool is_multidev_req() override { return false; }
   bool is_arch_req() override { return true; }
   bool is_dev_req() override { return false; }

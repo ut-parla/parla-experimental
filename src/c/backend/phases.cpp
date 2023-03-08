@@ -50,15 +50,15 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         std::cout << "[Multi-device requirement]\n";
         MultiDeviceRequirements *mdev_res_reqs =
             dynamic_cast<MultiDeviceRequirements *>(r.get());
-        const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> mdev_res_reqs_vec =
-            mdev_res_reqs->GetDeviceRequirements();
+        const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>
+            mdev_res_reqs_vec = mdev_res_reqs->GetDeviceRequirements();
         for (std::shared_ptr<DeviceRequirementBase> m_r : mdev_res_reqs_vec) {
           if (m_r->is_dev_req()) {
             DeviceRequirement *dev_res_req =
                 dynamic_cast<DeviceRequirement *>(m_r.get());
             policy_->MapTask(task, *(dev_res_req->device()));
             std::cout << "\t[Device Requirement in Multi-device Requirement]\n";
-            std::cout << "\t" << dev_res_req->device()->GetName() << " -> "
+            std::cout << "\t" << dev_res_req->device()->get_name() << " -> "
                       << dev_res_req->res_req().get(MEMORY) << "B, VCU "
                       << dev_res_req->res_req().get(VCU) << "\n";
           } else if (m_r->is_arch_req()) {
@@ -71,7 +71,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
                  arch_res_req->GetDeviceRequirementOptions()) {
               policy_->MapTask(task, *(dev_res_req->device()));
               std::cout << "\t\t[" << i << "]"
-                        << dev_res_req->device()->GetName() << " -> "
+                        << dev_res_req->device()->get_name() << " -> "
                         << dev_res_req->res_req().get(MEMORY) << "B, VCU "
                         << dev_res_req->res_req().get(VCU) << "\n";
               ++i;
@@ -79,10 +79,11 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
           }
         }
       } else if (r->is_dev_req()) {
-        DeviceRequirement *dev_res_req = dynamic_cast<DeviceRequirement *>(r.get());
+        DeviceRequirement *dev_res_req =
+            dynamic_cast<DeviceRequirement *>(r.get());
         policy_->MapTask(task, *(dev_res_req->device()));
         std::cout << "[Device Requirement]\n";
-        std::cout << dev_res_req->device()->GetName() << " -> "
+        std::cout << dev_res_req->device()->get_name() << " -> "
                   << dev_res_req->res_req().get(MEMORY) << "B, VCU "
                   << dev_res_req->res_req().get(VCU) << "\n";
       } else if (r->is_arch_req()) {
@@ -93,7 +94,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         for (std::shared_ptr<DeviceRequirement> dev_res_req :
              arch_res_req->GetDeviceRequirementOptions()) {
           policy_->MapTask(task, *(dev_res_req->device()));
-          std::cout << "\t[" << i << "]" << dev_res_req->device()->GetName()
+          std::cout << "\t[" << i << "]" << dev_res_req->device()->get_name()
                     << " -> " << dev_res_req->res_req().get(MEMORY) << "B, VCU "
                     << dev_res_req->res_req().get(VCU) << "\n";
           ++i;

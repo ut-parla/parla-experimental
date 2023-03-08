@@ -2,7 +2,7 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-from parla.common.global_enums import DeviceType 
+from parla.common.global_enums import PyDeviceType 
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass

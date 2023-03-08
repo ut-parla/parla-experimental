@@ -406,7 +406,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies, constraints, priority)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
 
     def _execute_task(self):
         return self.func(self, *self.args)
