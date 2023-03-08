@@ -20,7 +20,10 @@ public:
   DeviceQueue() = default;
   DeviceQueue(Device *device) : device(device) {}
 
-  void enqueue(InnerTask *task) { this->mixed_queue.push_back(task); };
+  void enqueue(InnerTask *task) {
+    this->mixed_queue.push_back(task);
+    num_tasks++;
+  };
 
   InnerTask *next() {
     // TODO(wlr): Is there a way to do this much more efficiently?
@@ -36,6 +39,7 @@ public:
         if (md_head->get_removed<category>()) {
           // if the task has already been launched by another device, remove it
           md_queue.front_and_pop();
+          num_tasks--;
         }
         return nullptr;
       }
@@ -53,6 +57,7 @@ public:
         if (launchable) {
           mixed_queue.pop_front();
           mixed_head->set_removed<category>(true);
+          num_tasks--;
           return mixed_head;
         }
       } else {
@@ -72,6 +77,7 @@ protected:
   Device *device;
   MixedQueue_t mixed_queue;
   MDQueue_t md_queue;
+  std::atomic<int> num_tasks = 0;
 
   bool check_launchable(InnerTask *task) {
     bool launchable = true;
