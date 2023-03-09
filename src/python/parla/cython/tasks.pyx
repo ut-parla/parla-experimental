@@ -472,8 +472,13 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
     cdef int istop = 0
     cdef int istep = 1
 
+    #TODO(wlr): Iterable check should be more robust (try/catch)
+
     if len(index) > 0:
         i, *remainder = index
+
+        if isinstance(i, TaskCollection):
+            i = i.tasks
 
         if isinstance(i, slice):
             istart = max(i.start, lower_boundary) if i.start is not None else lower_boundary
@@ -496,7 +501,7 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
                 for k in range(0, len(keys)):
                     cy_parse_index(step(prefix, i[keys[k]]), remainder, index_list, depth+1, shape, start)
             else:
-                #NOTE: This is not threadsafe if multiple threads are iterating over the same iterable
+                #NOTE: This is not threadsafe if the iterator is shared
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
@@ -517,6 +522,10 @@ def parse_index(prefix, index,  step,  stop):
     """
     if len(index) > 0:
         i, *rest = index
+
+        if isinstance(i, TaskCollection):
+            i = i.tasks 
+
         if isinstance(i, slice):
             for v in range(i.start or 0, i.stop, i.step or 1):
                 parse_index(step(prefix, v), rest, step, stop)
@@ -569,11 +578,8 @@ class TaskCollection:
         return iter(self.tasks)
 
     def __contains__(self, task):
-        return task in self.tasks
-
-    def __iter__(self):
-        return iter(self.tasks)
-
+        return task in self._tasks
+        
     def __repr__(self):
         return "TaskCollection: {}".format(self.tasks)
 
@@ -590,15 +596,11 @@ class TaskCollection:
         return not self.__eq__(other)
 
     def __add__(self, other):
-        return TaskCollection(self.tasks + other.tasks)
+        return TaskCollection(self._tasks + other._tasks)
 
     def __iadd__(self, other):
-        self._tasks += other.tasks
+        self._tasks += other._tasks
         return self
-
-
-
-    
 
 
 class TaskList(TaskCollection):
@@ -616,10 +618,10 @@ class TaskList(TaskCollection):
         return "TaskList: {}".format(self.tasks)
 
     def __add__(self, other):
-        return TaskList(self.tasks + other.tasks)
+        return TaskList(self._tasks + other._tasks)
 
     def __iadd__(self, other):
-        self._tasks += other.tasks
+        self._tasks += other._tasks
         return self
 
 
