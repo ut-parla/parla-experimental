@@ -571,8 +571,34 @@ class TaskCollection:
     def __contains__(self, task):
         return task in self.tasks
 
+    def __iter__(self):
+        return iter(self.tasks)
+
     def __repr__(self):
         return "TaskCollection: {}".format(self.tasks)
+
+    def __str__(self):
+        return repr(self)
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        return id(self._tasks) == id(self._tasks)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __add__(self, other):
+        return TaskCollection(self.tasks + other.tasks)
+
+    def __iadd__(self, other):
+        self._tasks += other.tasks
+        return self
+
+
+
+    
 
 
 class TaskList(TaskCollection):
@@ -585,6 +611,16 @@ class TaskList(TaskCollection):
         else:
             #Return a single task
             return task_list
+
+    def __repr__(self):
+        return "TaskList: {}".format(self.tasks)
+
+    def __add__(self, other):
+        return TaskList(self.tasks + other.tasks)
+
+    def __iadd__(self, other):
+        self._tasks += other.tasks
+        return self
 
 
 _task_space_globals = {}
@@ -664,3 +700,15 @@ class TaskSpace(TaskCollection):
 
     def __repr__(self):
         return f"TaskSpace({self._name}, ntasks={len(self)})"
+
+    def __add__(self, other):
+        merged_dict = {**self._tasks, **other._tasks}
+        merged_name = f"{self._name} + {other._name}"
+        new_space = TaskSpace(name=merged_name, create=False, shape=self.shape, start=self.start)
+        new_space._tasks = merged_dict
+        return new_space
+
+    def __iadd__(self, other):
+        self._tasks.update(other._tasks)
+        return self
+    
