@@ -181,7 +181,8 @@ cdef class PyInnerTask:
         cdef bool status = False 
         cdef _StatusFlags status_flags
 
-        for d in dependency_list:
+        for i in range(0, len(dependency_list)):
+            d = dependency_list[i]
             dependency = d.inner_task
             c_dependency = dependency.c_task
             c_self.queue_dependency(c_dependency)
