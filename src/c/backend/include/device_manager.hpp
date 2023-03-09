@@ -25,7 +25,7 @@ public:
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
 
-    for (auto i = 0; i < NUM_DEVICE_TYPES; ++i) {
+    for (DeviceType i : architecture_types) {
       std::cout << "Device type: " << i << "\n";
       auto device_list = registered_devices_[i];
 

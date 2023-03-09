@@ -38,11 +38,6 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
   bool has_task = true;
 
-  // TODO(wlr): This is just used for random testing policy
-  //            Remove this when we implement a policy.
-  std::vector<Device *> devices(
-      this->device_manager->get_devices(DeviceType::ANY));
-
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
@@ -114,7 +109,12 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 
     // TODO(wlr): Testing
     // Assign two random devices to each task
-
+    // TODO(wlr): This is just used for random testing policy
+    //            Remove this when we implement a policy.
+    std::vector<Device *> devices;
+    devices.insert(devices.end(),
+                   this->device_manager->get_devices(DeviceType::ANY).begin(),
+                   this->device_manager->get_devices(DeviceType::ANY).end());
     std::random_shuffle(devices.begin(), devices.end());
     ResourcePool_t sample;
     sample.set(MEMORY, 0);
