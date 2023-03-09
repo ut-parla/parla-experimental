@@ -11,6 +11,14 @@
 #include <memory>
 #include <string>
 
+/**
+ * Per-device container for tasks that are waiting to be dequeued.
+ * Supports both single and multi-device tasks.
+ * Multi-device tasks are shared between DeviceQueues.
+ *
+ * @tparam category the resource category (persistent/non-persistent) that this
+ * queue supervises the phase of.
+ */
 template <ResourceCategory category> class DeviceQueue {
   using MixedQueue_t = TaskQueue;
   using MDQueue_t = TaskQueue;
@@ -24,20 +32,21 @@ public:
     num_tasks++;
   };
 
-  /*
-  Returns the next task that is ready to dequeue on this device.
-  If there are no tasks that can dequeued, returns nullptr.
+  /**
+  * @return the next task that can be dequeued on this device.
+  * If there are no tasks that can dequeued, returns nullptr.
+  *
+  * A task is can be dequeued if:
+  * 1. It is a single-device task
+  * 2. It is a multi-device task that is no longer waiting for its other
+  * instances
 
-  A task is ready to dequeue if:
-  1. It is a single-device task
-  2. It is a multi-device task that is no longer waiting for its other
-  instances
+  * We do not block on multi-device tasks that are still waiting for their other
+  * instances. This allows progress on single-device tasks and avoids
+  * deadlock if multi-device tasks are enqueued out of order.
 
-  We do not block on multi-device tasks that are still waiting for their other
-  instances.
-
-  This does not check resources, it only checks if the task is ready to
-  dequeue. It does not remove the returned task from the queue.
+  * This does not check resources, it only checks if the task is ready to
+  * dequeue. It does not remove the returned task from the queue.
   */
   InnerTask *front() {
     // First, check any waiting multi-device tasks
@@ -53,6 +62,7 @@ public:
           waiting_queue.pop_front();
 
           // TODO(wlr): Should num_tasks include waiting tasks?
+          // (1)
           // this->num_tasks--;
         }
         return nullptr;
@@ -72,6 +82,7 @@ public:
         mixed_queue.pop_front();
 
         // TODO(wlr): Should num_tasks include waiting tasks?
+        // (2)
         this->num_tasks--;
       }
     }
@@ -79,10 +90,22 @@ public:
     return nullptr;
   }
 
+  /**
+   * Grabs the next task that can be dequeued on this device.
+   * If there are no tasks that can dequeued, returns nullptr.
+   * Removes the returned task from the queue.
+   *
+   * Should be called only after front() returns a non-null task.
+   * Otherwise, the internal state may be modified (may push multi-device to
+   * waiting queue).
+   *
+   * @return the previous task at HEAD of the queue.
+   */
   InnerTask *pop() {
     InnerTask *task = front();
     if (task != nullptr) {
       mixed_queue.pop_front();
+      // Set removed status so task can be pruned from other queues
       task->set_removed<category>(true);
       num_tasks--;
     }
@@ -96,25 +119,40 @@ protected:
   Device *device;
   MixedQueue_t mixed_queue;
   MDQueue_t waiting_queue;
-  std::atomic<int> num_tasks = 0;
+  std::atomic<int> num_tasks{0};
 };
 
 // TODO(wlr): I don't know what to name this.
+/**
+ * Manages a group of DeviceQueues.
+ * Supports both single and multi-device tasks.
+ * Multi-device tasks are shared between DeviceQueues.
+ *
+ * @tparam category the resource category (persistent/non-persistent) that this
+ * manager supervises
+ */
 template <ResourceCategory category> class PhaseManager {
 public:
   PhaseManager() = default;
 
-  PhaseManager(DeviceManager *devices) {
+  /**
+   * Initializes a DeviceQueue for each device in the DeviceManager.
+   * @param device_manager the DeviceManager to initialize from
+   **/
+  PhaseManager(DeviceManager *device_manager) {
     for (const DeviceType dev_type : architecture_types) {
-      int num_devices = devices->get_num_devices(dev_type);
-      this->ndevices += num_devices;
+      this->ndevices += device_manager->get_num_devices(dev_type);
 
-      for (Device *device : devices->get_devices(dev_type)) {
+      for (Device *device : device_manager->get_devices(dev_type)) {
         this->device_queues.push_back(DeviceQueue<category>(device));
       }
     }
   }
 
+  /**
+   * Enqueues a task to the appropriate DeviceQueue(s).
+   * @param task the task to enqueue. May be single or multi-device.
+   **/
   void enqueue(InnerTask *task) {
     for (auto device : task->assigned_devices) {
       device_queues[device->get_global_id()].enqueue(task);
@@ -122,6 +160,22 @@ public:
     this->num_tasks++;
   }
 
+  /**
+   * @return the next task that can be dequeued on any device.
+   * @see DeviceQueue::front
+   *
+   * Loops over all DeviceQueues in round-robin order to find the next dequeable
+   * task. The search is restarted from the next DeviceQueue after the last
+   * successful dequeue. A success increases the last_device_idx by 1.
+   *
+   * If there are no tasks remaining, returns nullptr.
+   * Will infinitely loop if there are tasks remaining but none can be dequeued
+   * on any device. (invalid state).
+   *
+   * Note that each call to DeviceQueue::front pushes the HEAD task to a waiting
+   * queue if it is a multi-device task that hasn't reached HEAD on all
+   * instances. This modifies the internal state of the DeviceQueue.
+   */
   InnerTask *front() {
     // TODO(wlr): Hochan, can you check this?
     // I'm not sure if this is the right way to loop over dequeable tasks
@@ -155,8 +209,14 @@ public:
     return nullptr;
   }
 
+  /**
+   * Removed the previous head task from the queue.
+   * @return the removed task
+   * @see DeviceQueue::pop
+   **/
   InnerTask *pop() {
-    InnerTask *task = device_queues[last_device_idx].pop();
+    int idx = (this->last_device_idx - 1) % this->ndevices;
+    InnerTask *task = device_queues[idx].pop();
     this->num_tasks--;
     return task;
   }
@@ -170,17 +230,17 @@ protected:
   //     device_queues;
   std::vector<DeviceQueue<category>> device_queues;
 
-  int last_device_idx = 0;
-  DeviceType last_device_type = CPU;
+  int last_device_idx{0};
+  // DeviceType last_device_type{CPU};
 
-  int ndevices = 0;
-  std::atomic<int> num_tasks = 0;
+  int ndevices{0};
+  std::atomic<int> num_tasks{0};
 };
 
 class PhaseStatus {
 protected:
-  const static int size = 3;
-  std::string name = "Status";
+  const static int size{3};
+  std::string name{"Status"};
 
 public:
   int status[size];
@@ -218,7 +278,7 @@ public:
   PhaseStatus status;
 
 protected:
-  std::string name = "Phase";
+  std::string name{"Phase"};
   std::mutex mtx;
   InnerScheduler *scheduler;
   DeviceManager *device_manager;
@@ -230,8 +290,8 @@ namespace Map {
 enum State { failure, success };
 class Status : public PhaseStatus {
 protected:
-  const static int size = 2;
-  std::string name = "Mapper";
+  const static int size{2};
+  std::string name{"Mapper"};
 };
 
 } // namespace Map
@@ -252,7 +312,7 @@ public:
   size_t get_count();
 
 protected:
-  std::string name = "Mapper";
+  std::string name{"Mapper"};
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
@@ -266,7 +326,7 @@ enum State { failure, success };
 
 class Status : public PhaseStatus {
 protected:
-  const static int size = 2;
+  const static int size{2};
   std::string name = "MemoryReserver";
 };
 } // namespace Reserved
@@ -298,7 +358,7 @@ enum State { entered, task_miss, resource_miss, worker_miss, success };
 
 class Status : virtual public PhaseStatus {
 protected:
-  const static int size = 5;
+  const static int size{5};
   std::string name = "RuntimeReserver";
 };
 } // namespace Ready
@@ -338,7 +398,7 @@ enum State { failure, success };
 
 class Status : public PhaseStatus {
 protected:
-  const static int size = 2;
+  const static int size{2};
   std::string name = "Launcher";
 };
 } // namespace Launch
@@ -370,7 +430,7 @@ public:
   size_t get_count() { return this->num_running_tasks.load(); }
 
 protected:
-  std::string name = "Launcher";
+  std::string name{"Launcher"};
   /*Buffer to store not yet launched tasks. Currently unused. Placeholder in
    * case it becomes useful.*/
   TaskList task_buffer;
