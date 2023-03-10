@@ -184,10 +184,10 @@ Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
   // TODO(hc): the param should be mapped phase but use ready phase
   // for debugging.
-  std::cout << "Mapper pointer: " << reinterpret_cast<void *>(this->mapper)
-            << std::endl;
-  std::cout << "memory_reserver pointer: "
-            << reinterpret_cast<void *>(this->memory_reserver) << std::endl;
+  // std::cout << "Mapper pointer: " << reinterpret_cast<void *>(this->mapper)
+  //          << std::endl;
+  // std::cout << "memory_reserver pointer: "
+  //          << reinterpret_cast<void *>(this->memory_reserver) << std::endl;
   std::cout << "runtime_reserver pointer: "
             << reinterpret_cast<void *>(
                    this->runtime_reserver->get_runnable_tasks())
@@ -227,7 +227,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
     task->set_status(Task::RUNNABLE);
-    std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
+    // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }

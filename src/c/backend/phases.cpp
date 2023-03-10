@@ -309,11 +309,20 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
-          reserve_resources(task);
+          this->reserve_resources(task);
+          std::cout << "areserve runtime_reserver pointer: "
+                    << reinterpret_cast<void *>(this->get_runnable_tasks())
+                    << std::endl;
 
           launcher->enqueue(task, worker);
+          std::cout << "alaunch runtime_reserver pointer: "
+                    << reinterpret_cast<void *>(this->get_runnable_tasks())
+                    << std::endl;
 
           this->status.increase(Ready::success);
+          std::cout << "HERE: astatus runtime_reserver pointer: "
+                    << reinterpret_cast<void *>(this->get_runnable_tasks())
+                    << std::endl;
         } else {
           this->status.increase(Ready::worker_miss);
           break; // No more workers available
