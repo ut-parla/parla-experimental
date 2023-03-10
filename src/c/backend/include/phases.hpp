@@ -285,33 +285,6 @@ protected:
   std::atomic<int> num_tasks{0};
 };
 
-class PhaseStatus {
-protected:
-  const static int size{3};
-  std::string name{"Status"};
-
-public:
-  int status[size];
-
-  void reset() {
-    for (int i = 0; i < size; ++i) {
-      this->status[i] = 0;
-    }
-  }
-
-  void set(int index, int value) { this->status[index] = value; }
-  int get(int index) { return this->status[index]; }
-  void increase(int state) { this->status[state]++; }
-
-  void print() {
-    std::cout << this->name + "(";
-    for (int i = 0; i < size; ++i) {
-      std::cout << this->status[i];
-    }
-    std::cout << ")\n";
-  }
-};
-
 class SchedulerPhase {
 public:
   SchedulerPhase() = default;
@@ -323,8 +296,6 @@ public:
   virtual void run(SchedulerPhase *next_phase) = 0;
   virtual size_t get_count() = 0;
 
-  PhaseStatus status;
-
 protected:
   // std::string name{"Phase"};
   std::mutex mtx;
@@ -333,20 +304,8 @@ protected:
   TaskStateList enqueue_buffer;
 };
 
-namespace Map {
-
-enum State { failure, success };
-class Status : public PhaseStatus {
-protected:
-  const static int size{2};
-  std::string name{"Mapper"};
-};
-
-} // namespace Map
-
 class Mapper : virtual public SchedulerPhase {
 public:
-  Map::Status status;
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
 
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
@@ -368,21 +327,8 @@ protected:
   std::shared_ptr<MappingPolicy> policy_;
 };
 
-namespace Reserved {
-
-enum State { failure, success };
-
-class Status : public PhaseStatus {
-protected:
-  const static int size{2};
-  std::string name{"MemoryReserver"};
-};
-} // namespace Reserved
-
 class MemoryReserver : virtual public SchedulerPhase {
 public:
-  Reserved::Status status;
-
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     std::cout << "MemoryReserver created\n";
@@ -404,25 +350,8 @@ protected:
   void reserve_resources(InnerTask *task);
 };
 
-namespace Ready {
-
-enum State { entered, task_miss, resource_miss, worker_miss, success };
-
-class Status : virtual public PhaseStatus {
-protected:
-  const static int size{5};
-  std::string name{"RuntimeReserver"};
-};
-} // namespace Ready
-
-#ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(Ready::Status, status)
-#endif
-
 class RuntimeReserver : virtual public SchedulerPhase {
 public:
-  Ready::Status status;
-
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     std::cout << "RuntimeReserver created" << std::endl;
@@ -447,25 +376,8 @@ protected:
   void reserve_resources(InnerTask *task);
 };
 
-#ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(RuntimeReserver, status)
-#endif
-
-namespace Launch {
-
-enum State { failure, success };
-
-class Status : public PhaseStatus {
-protected:
-  const static int size{2};
-  std::string name{"Launcher"};
-};
-} // namespace Launch
-
 class Launcher : virtual public SchedulerPhase {
 public:
-  Launch::Status status;
-
   /*Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete*/
   std::atomic<size_t> num_running_tasks;

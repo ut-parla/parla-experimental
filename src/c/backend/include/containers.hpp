@@ -25,11 +25,11 @@
  * needs and bottlenecks change.*/
 
 // By default, types are not atomic,
-template <typename T> auto constexpr is_atomic = false;
+//template <typename T> auto constexpr is_atomic = false;
 // but std::atomic<T> types are,
-template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
+//template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
 // as well as std::atomic_flag.
-template <> auto constexpr is_atomic<std::atomic_flag> = true;
+//template <> auto constexpr is_atomic<std::atomic_flag> = true;
 
 template <typename T> class ProtectedVector {
 

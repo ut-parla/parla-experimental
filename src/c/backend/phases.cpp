@@ -5,6 +5,7 @@
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 #include <algorithm>
+#include <random>
 
 /**************************/
 // Mapper Implementation
@@ -37,8 +38,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   // TODO(hc): for now, I'm planning task mapping without policy.
 
-  this->status.reset();
-
   bool has_task = true;
 
   has_task = this->get_count() > 0;
@@ -54,7 +53,10 @@ void Mapper::run(SchedulerPhase *next_phase) {
     devices.insert(devices.end(),
                    this->device_manager->get_devices(DeviceType::ANY).begin(),
                    this->device_manager->get_devices(DeviceType::ANY).end());
-    std::random_shuffle(devices.begin(), devices.end());
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(devices.begin(), devices.end(), g);
 
     std::cout << "Mapping task " << task->get_name() << " to devices "
               << devices[0]->get_name() << " and " << devices[1]->get_name()
@@ -150,7 +152,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
   std::cout << "runtime_reserver pointer: "
             << reinterpret_cast<void *>(runtime_reserver->get_runnable_tasks())
             << std::endl;
-  this->status.reset();
 
   // Only one thread can reserve memory at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
@@ -264,7 +265,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
             << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
-  this->status.reset();
 
   // Only one thread can reserve runtime resources at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
@@ -319,20 +319,16 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
                     << reinterpret_cast<void *>(this->get_runnable_tasks())
                     << std::endl;
 
-          this->status.increase(Ready::success);
           std::cout << "HERE: astatus runtime_reserver pointer: "
                     << reinterpret_cast<void *>(this->get_runnable_tasks())
                     << std::endl;
         } else {
-          this->status.increase(Ready::worker_miss);
           break; // No more workers available
         }
       } else {
-        this->status.increase(Ready::resource_miss);
         break; // No more resources available
       }
     } else {
-      this->status.increase(Ready::task_miss);
       break; // No more tasks available
     }
   }

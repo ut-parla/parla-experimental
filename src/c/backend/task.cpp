@@ -268,7 +268,7 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
     }
   } else {
     if (dependency_state >= Task::RUNAHEAD) {
-      compute_runnable ==
+      compute_runnable =
           (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
     } else if (dependency_state >= Task::RESERVED) {

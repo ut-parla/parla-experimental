@@ -2,6 +2,8 @@
 set(CYTHON_FLAGS "${CYTHON_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
+#add_compile_options("-fsanitize=address")
+
 add_cython_target(core core.pyx CXX PY3)
 add_cython_target(tasks tasks.pyx CXX PY3)
 add_cython_target(scheduler scheduler.pyx CXX PY3)
@@ -13,6 +15,7 @@ add_library(tasks MODULE ${tasks})
 add_library(scheduler MODULE ${scheduler})
 add_library(device MODULE ${device})
 add_library(device_manager MODULE ${device_manager})
+
 
 
 message(STATUS "PYTHON_RELATIVE_SITE_PACKAGES_DIR: ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}")
