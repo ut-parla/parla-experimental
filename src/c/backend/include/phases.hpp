@@ -170,8 +170,7 @@ public:
       this->ndevices += device_manager->get_num_devices(dev_type);
 
       for (Device *device : device_manager->get_devices(dev_type)) {
-        this->device_queues.push_back(
-            std::move(std::make_unique<DeviceQueue<category>>(device)));
+        this->device_queues.emplace_back(new DeviceQueue<category>(device));
         std::cout << "Initialized DeviceQueue for Device: "
                   << device->get_name() << std::endl;
       }
@@ -188,6 +187,7 @@ public:
    * @param task the task to enqueue. May be single or multi-device.
    **/
   void enqueue(InnerTask *task) {
+    std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     std::cout << "ndevices: " << this->ndevices << std::endl;
     std::cout << "nqueues: " << this->device_queues.size() << std::endl;
     task->set_num_instances<category>();
@@ -276,7 +276,7 @@ protected:
   //  For now I think global indexing is easier to work with.
   // std::array<std::vector<DeviceQueue<category>>, NUM_DEVICE_TYPES>
   //     device_queues;
-  std::vector<std::unique_ptr<DeviceQueue<category>>> device_queues;
+  std::vector<DeviceQueue<category> *> device_queues;
 
   int last_device_idx{0};
   // DeviceType last_device_type{CPU};
@@ -387,7 +387,7 @@ public:
       : SchedulerPhase(scheduler, devices) {
     std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
-        std::make_shared<PhaseManager<ResourceCategory::PERSISTENT>>(devices);
+        new PhaseManager<ResourceCategory::PERSISTENT>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -397,7 +397,7 @@ public:
 
 protected:
   // std::string name{"Memory Reserver"};
-  std::shared_ptr<PhaseManager<ResourceCategory::PERSISTENT>> reservable_tasks;
+  PhaseManager<ResourceCategory::PERSISTENT> *reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
 
   bool check_resources(InnerTask *task);
@@ -427,8 +427,7 @@ public:
       : SchedulerPhase(scheduler, devices) {
     std::cout << "RuntimeReserver created" << std::endl;
     this->runnable_tasks =
-        std::make_shared<PhaseManager<ResourceCategory::NON_PERSISTENT>>(
-            devices);
+        new PhaseManager<ResourceCategory::NON_PERSISTENT>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -438,8 +437,7 @@ public:
 
 protected:
   // std::string name{"Runtime Reserver"};
-  std::shared_ptr<PhaseManager<ResourceCategory::NON_PERSISTENT>>
-      runnable_tasks;
+  PhaseManager<ResourceCategory::NON_PERSISTENT> *runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
 
   bool check_resources(InnerTask *task);

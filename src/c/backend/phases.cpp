@@ -142,7 +142,8 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
   std::cout << "MemoryReserver::run" << std::endl;
-
+  std::cout << "runtime_reserver pointer: "
+            << reinterpret_cast<void *>(runtime_reserver) << std::endl;
   this->status.reset();
 
   // Only one thread can reserve memory at a time.
@@ -188,6 +189,7 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
 
     if (enqueue_flag) {
       reserved_task->set_status(Task::RUNNABLE);
+      std::cout << "ENQUEUE FROM PHASE: " << std::endl;
       runtime_reserver->enqueue(reserved_task);
     }
   }
