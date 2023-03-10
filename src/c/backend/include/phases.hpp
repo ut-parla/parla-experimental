@@ -15,6 +15,7 @@
  * Per-device container for tasks that are waiting to be dequeued.
  * Supports both single and multi-device tasks.
  * Multi-device tasks are shared between DeviceQueues.
+ * Should ONLY be used through PhaseManager.
  *
  * @tparam category the resource category (persistent/non-persistent) that this
  * queue supervises the phase of.
@@ -27,6 +28,15 @@ public:
   DeviceQueue() = default;
   DeviceQueue(Device *device) : device(device) {}
 
+  /**
+   * @return the device that this queue is associated with
+   */
+  Device *get_device() { return device; }
+
+  /**
+   * Enqueues a task on this device.
+   * @param task the task to enqueue
+   */
   void enqueue(InnerTask *task) {
     this->mixed_queue.push_back(task);
     num_tasks++;
@@ -49,10 +59,17 @@ public:
   * dequeue. It does not remove the returned task from the queue.
   */
   InnerTask *front() {
+
+    std::cout << "DeviceQueue::front()" << std::endl;
+
     // First, check any waiting multi-device tasks
     if (!waiting_queue.empty()) {
       InnerTask *head = waiting_queue.front();
       int waiting_count = head->get_num_instances<category>();
+
+      std::cout << "MD Head: " << head->get_name()
+                << " Instances: " << waiting_count
+                << " Removed: " << head->get_removed<category>() << std::endl;
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {
@@ -73,11 +90,17 @@ public:
       InnerTask *head = mixed_queue.front();
       int prev_waiting_count = head->decrement_num_instances<category>();
 
+      std::cout << "Mixed Head: " << head->get_name()
+                << " Instances: " << prev_waiting_count
+                << " Removed: " << head->get_removed<category>() << std::endl;
+
       // Check if the task is waiting for other instances
-      if (prev_waiting_count == 1) {
+      if (prev_waiting_count <= 1) {
+        std::cout << "Return task: " << head->get_name() << std::endl;
         return head;
       } else {
         // If the task is still waiting, move it to the waiting queue
+        std::cout << "Moving to waiting queue" << std::endl;
         waiting_queue.push_back(head);
         mixed_queue.pop_front();
 
@@ -102,8 +125,10 @@ public:
    * @return the previous task at HEAD of the queue.
    */
   InnerTask *pop() {
+    std::cout << "DeviceQueue::pop()" << std::endl;
     InnerTask *task = front();
     if (task != nullptr) {
+      std::cout << "Popping task: " << task->get_name() << std::endl;
       mixed_queue.pop_front();
       // Set removed status so task can be pruned from other queues
       task->set_removed<category>(true);
@@ -133,20 +158,26 @@ protected:
  */
 template <ResourceCategory category> class PhaseManager {
 public:
-  PhaseManager() = default;
-
   /**
    * Initializes a DeviceQueue for each device in the DeviceManager.
    * @param device_manager the DeviceManager to initialize from
    **/
   PhaseManager(DeviceManager *device_manager) {
+    std::cout << "Initializing PhaseManager" << std::endl;
+
     for (const DeviceType dev_type : architecture_types) {
       this->ndevices += device_manager->get_num_devices(dev_type);
 
       for (Device *device : device_manager->get_devices(dev_type)) {
-        this->device_queues.push_back(DeviceQueue<category>(device));
+        this->device_queues.emplace_back(
+            std::make_unique<DeviceQueue<category>>(device));
+        std::cout << "Initialized DeviceQueue for Device: "
+                  << device->get_name() << std::endl;
       }
     }
+
+    std::cout << "Initialized PhaseManager with " << this->ndevices
+              << " devices" << std::endl;
   }
 
   /**
@@ -154,8 +185,9 @@ public:
    * @param task the task to enqueue. May be single or multi-device.
    **/
   void enqueue(InnerTask *task) {
+    task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
-      device_queues[device->get_global_id()].enqueue(task);
+      device_queues[device->get_global_id()]->enqueue(task);
     }
     this->num_tasks++;
   }
@@ -182,11 +214,14 @@ public:
     // Should we drain each device first, or try each device in
     // turn?
 
+    std::cout << "PhaseManager::front" << std::endl;
+
     int start_idx = last_device_idx;
     int end_idx = start_idx + ndevices;
     int current_idx = start_idx;
 
     bool has_task = this->size() > 0;
+    std::cout << "Size of PhaseManager: " << this->size() << std::endl;
     while (has_task) {
 
       // Loop over all devices starting from after last success location
@@ -194,8 +229,12 @@ public:
         current_idx = i % ndevices;
 
         // Try to get a non-waiting task
-        InnerTask *task = device_queues[current_idx].front();
+        std::cout << "Trying DeviceQueue " << current_idx << " Device: "
+                  << device_queues[current_idx]->get_device()->get_name()
+                  << std::endl;
+        InnerTask *task = device_queues[current_idx]->front();
         if (task != nullptr) {
+          std::cout << "Found task: " << task->get_name() << std::endl;
           last_device_idx = ++current_idx;
           return task;
         }
@@ -215,20 +254,24 @@ public:
    * @see DeviceQueue::pop
    **/
   InnerTask *pop() {
+    std::cout << "PhaseManager::pop" << std::endl;
     int idx = (this->last_device_idx - 1) % this->ndevices;
-    InnerTask *task = device_queues[idx].pop();
+    InnerTask *task = device_queues[idx]->pop();
+    std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
   }
 
   inline size_t size() { return this->num_tasks.load(); }
+  inline size_t get_num_devices() { return this->ndevices; }
+  inline size_t get_num_device_queues() { return this->device_queues.size(); }
 
 protected:
   // TODO(wlr): I keep changing this back and forth.
   //  For now I think global indexing is easier to work with.
   // std::array<std::vector<DeviceQueue<category>>, NUM_DEVICE_TYPES>
   //     device_queues;
-  std::vector<DeviceQueue<category>> device_queues;
+  std::vector<std::unique_ptr<DeviceQueue<category>>> device_queues;
 
   int last_device_idx{0};
   // DeviceType last_device_type{CPU};
@@ -272,13 +315,13 @@ public:
 
   virtual void enqueue(InnerTask *task) = 0;
   virtual void enqueue(std::vector<InnerTask *> &tasks) = 0;
-  virtual void run(SchedulerPhase *next_phase) = 0;
+  virtual void run(std::shared_ptr<SchedulerPhase> next_phase) = 0;
   virtual size_t get_count() = 0;
 
   PhaseStatus status;
 
 protected:
-  std::string name{"Phase"};
+  // std::string name{"Phase"};
   std::mutex mtx;
   InnerScheduler *scheduler;
   DeviceManager *device_manager;
@@ -308,11 +351,11 @@ public:
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void run(std::shared_ptr<SchedulerPhase> next_phase);
   size_t get_count();
 
 protected:
-  std::string name{"Mapper"};
+  // std::string name{"Mapper"};
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
@@ -327,7 +370,7 @@ enum State { failure, success };
 class Status : public PhaseStatus {
 protected:
   const static int size{2};
-  std::string name = "MemoryReserver";
+  std::string name{"MemoryReserver"};
 };
 } // namespace Reserved
 
@@ -336,16 +379,20 @@ public:
   Reserved::Status status;
 
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    std::cout << "MemoryReserver created\n";
+    this->reservable_tasks =
+        std::make_shared<PhaseManager<ResourceCategory::PERSISTENT>>(devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void run(std::shared_ptr<SchedulerPhase> next_phase);
   size_t get_count();
 
 protected:
-  std::string name = "Memory Reserver";
-  PhaseManager<ResourceCategory::PERSISTENT> reservable_tasks;
+  // std::string name{"Memory Reserver"};
+  std::shared_ptr<PhaseManager<ResourceCategory::PERSISTENT>> reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
 
   bool check_resources(InnerTask *task);
@@ -359,7 +406,7 @@ enum State { entered, task_miss, resource_miss, worker_miss, success };
 class Status : virtual public PhaseStatus {
 protected:
   const static int size{5};
-  std::string name = "RuntimeReserver";
+  std::string name{"RuntimeReserver"};
 };
 } // namespace Ready
 
@@ -372,16 +419,21 @@ public:
   Ready::Status status;
 
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    this->runnable_tasks =
+        std::make_shared<PhaseManager<ResourceCategory::NON_PERSISTENT>>(
+            devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(SchedulerPhase *next_phase);
+  void run(std::shared_ptr<SchedulerPhase> next_phase);
   size_t get_count();
 
 protected:
-  std::string name = "Runtime Reserver";
-  PhaseManager<ResourceCategory::NON_PERSISTENT> runnable_tasks;
+  // std::string name{"Runtime Reserver"};
+  std::shared_ptr<PhaseManager<ResourceCategory::NON_PERSISTENT>>
+      runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
 
   bool check_resources(InnerTask *task);
@@ -399,7 +451,7 @@ enum State { failure, success };
 class Status : public PhaseStatus {
 protected:
   const static int size{2};
-  std::string name = "Launcher";
+  std::string name{"Launcher"};
 };
 } // namespace Launch
 
@@ -423,14 +475,14 @@ public:
   /* A placeholder function in case work needs to be done at this stage. For
    * example, dispatching a whole buffer of tasks*/
   void run();
-  void run(SchedulerPhase *next_phase) { this->run(); };
+  void run(std::shared_ptr<SchedulerPhase> next_phase) { this->run(); };
 
   /* Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete */
   size_t get_count() { return this->num_running_tasks.load(); }
 
 protected:
-  std::string name{"Launcher"};
+  // std::string name{"Launcher"};
   /*Buffer to store not yet launched tasks. Currently unused. Placeholder in
    * case it becomes useful.*/
   TaskList task_buffer;

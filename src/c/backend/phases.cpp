@@ -20,8 +20,9 @@ size_t Mapper::get_count() {
   return count;
 }
 
-void Mapper::run(SchedulerPhase *memory_reserver) {
+void Mapper::run(std::shared_ptr<SchedulerPhase> memory_reserver) {
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
+  std::cout << "Mapper::run" << std::endl;
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -42,80 +43,21 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
 
-    /*
-    ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
-    std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
-        res_reqs.GetDeviceRequirementOptions();
-    for (std::shared_ptr<DeviceRequirementBase> r : dev_res_reqs) {
-      if (r->is_multidev_req()) {
-        // TODO(hc): It can be refactored later and its length
-        //           can be reduced.
-        //           Refactor it when we implement a policy.
-        std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements *mdev_res_reqs =
-            dynamic_cast<MultiDeviceRequirements *>(r.get());
-        const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>
-            mdev_res_reqs_vec = mdev_res_reqs->GetDeviceRequirements();
-        for (std::shared_ptr<DeviceRequirementBase> m_r : mdev_res_reqs_vec) {
-          if (m_r->is_dev_req()) {
-            DeviceRequirement *dev_res_req =
-                dynamic_cast<DeviceRequirement *>(m_r.get());
-            policy_->MapTask(task, *(dev_res_req->device()));
-            std::cout << "\t[Device Requirement in Multi-device "
-                         "Requirement]\n";
-            std::cout << "\t" << dev_res_req->device()->get_name() << " -> "
-                      << dev_res_req->res_req().get(MEMORY) << "B, VCU "
-                      << dev_res_req->res_req().get(VCU) << "\n";
-          } else if (m_r->is_arch_req()) {
-            std::cout << "\t[Architecture Requirement in "
-                         "Multi-device Requirement]\n";
-            ArchitectureRequirement *arch_res_req =
-                dynamic_cast<ArchitectureRequirement *>(m_r.get());
-            uint32_t i = 0;
-            for (std::shared_ptr<DeviceRequirement> dev_res_req :
-                 arch_res_req->GetDeviceRequirementOptions()) {
-              policy_->MapTask(task, *(dev_res_req->device()));
-              std::cout << "\t\t[" << i << "]"
-                        << dev_res_req->device()->get_name() << " -> "
-                        << dev_res_req->res_req().get(MEMORY) << "B, VCU "
-                        << dev_res_req->res_req().get(VCU) << "\n";
-              ++i;
-            }
-          }
-        }
-      } else if (r->is_dev_req()) {
-        DeviceRequirement *dev_res_req =
-            dynamic_cast<DeviceRequirement *>(r.get());
-        policy_->MapTask(task, *(dev_res_req->device()));
-        std::cout << "[Device Requirement]\n";
-        std::cout << dev_res_req->device()->get_name() << " -> "
-                  << dev_res_req->res_req().get(MEMORY) << "B, VCU "
-                  << dev_res_req->res_req().get(VCU) << "\n";
-      } else if (r->is_arch_req()) {
-        std::cout << "[Architecture Requirement]\n";
-        ArchitectureRequirement *arch_res_req =
-            dynamic_cast<ArchitectureRequirement *>(r.get());
-        uint32_t i = 0;
-        for (std::shared_ptr<DeviceRequirement> dev_res_req :
-             arch_res_req->GetDeviceRequirementOptions()) {
-          policy_->MapTask(task, *(dev_res_req->device()));
-          std::cout << "\t[" << i << "]" << dev_res_req->device()->get_name()
-                    << " -> " << dev_res_req->res_req().get(MEMORY) << "B, VCU "
-                    << dev_res_req->res_req().get(VCU) << "\n";
-          ++i;
-        }
-      }
-    }*/
-
     // TODO(wlr): Testing
     // Assign two random devices to each task
     // TODO(wlr): This is just used for random testing policy
     //            Remove this when we implement a policy.
+
     std::vector<Device *> devices;
     devices.insert(devices.end(),
                    this->device_manager->get_devices(DeviceType::ANY).begin(),
                    this->device_manager->get_devices(DeviceType::ANY).end());
     std::random_shuffle(devices.begin(), devices.end());
+
+    std::cout << "Mapping task " << task->get_name() << " to devices "
+              << devices[0]->get_name() << " and " << devices[1]->get_name()
+              << std::endl;
+
     ResourcePool_t sample;
     sample.set(MEMORY, 0);
     sample.set(VCU, 500);
@@ -147,13 +89,15 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
   }
 
   this->mapped_tasks_buffer.clear();
+  std::cout << "Mapper::run done" << std::endl;
 }
 
 /**************************/
 // Reserved Phase implementation
 
 void MemoryReserver::enqueue(InnerTask *task) {
-  this->reservable_tasks.enqueue(task);
+  std::cout << "MemoryReserver::enqueue: " << task->get_name() << std::endl;
+  this->reservable_tasks->enqueue(task);
 }
 
 void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
@@ -163,7 +107,7 @@ void MemoryReserver::enqueue(std::vector<InnerTask *> &tasks) {
 }
 
 size_t MemoryReserver::get_count() {
-  size_t count = this->reservable_tasks.size();
+  size_t count = this->reservable_tasks->size();
   return count;
 }
 
@@ -195,19 +139,20 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
   }
 }
 
-void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
+void MemoryReserver::run(std::shared_ptr<SchedulerPhase> runtime_reserver) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
+  std::cout << "MemoryReserver::run" << std::endl;
 
   this->status.reset();
 
   // Only one thread can reserve memory at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
-  std::unique_lock<std::mutex> lock(this->mtx);
+  // std::unique_lock<std::mutex> lock(this->mtx);
 
   // TODO:: Dummy implementation that just passes tasks through
   bool has_task = this->get_count() > 0;
   while (has_task) {
-    InnerTask *task = this->reservable_tasks.front();
+    InnerTask *task = this->reservable_tasks->front();
 
     if (task == nullptr) {
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
@@ -217,7 +162,7 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
     bool can_reserve = this->check_resources(task);
     if (can_reserve) {
       this->reserve_resources(task);
-      this->reservable_tasks.pop();
+      this->reservable_tasks->pop();
       this->reserved_tasks_buffer.push_back(task);
     } else {
       // TODO:(wlr) we need some break condition to allow the scheduler to
@@ -248,27 +193,25 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   }
 
   this->reserved_tasks_buffer.clear();
+  std::cout << "MemoryReserver::run done" << std::endl;
 }
 
 /**************************/
 // Ready Phase implementation
 
 void RuntimeReserver::enqueue(InnerTask *task) {
-  // std::cout << "Enqueuing task " << task->name << std::endl;
-  this->runnable_tasks.enqueue(task);
-  // std::cout << "Ready tasks after enqueue: " <<
-  // this->ready_tasks.atomic_size()
-  //          << std::endl;
+  std::cout << "RuntimeReserver::enqueue: " << task->get_name() << std::endl;
+  this->runnable_tasks->enqueue(task);
 }
 
 void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
-  for (auto task : tasks) {
+  for (InnerTask *task : tasks) {
     this->enqueue(task);
   }
 }
 
 size_t RuntimeReserver::get_count() {
-  size_t count = this->runnable_tasks.size();
+  size_t count = this->runnable_tasks->size();
   return count;
 }
 
@@ -301,15 +244,23 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
   }
 }
 
-void RuntimeReserver::run(SchedulerPhase *next_phase) {
+void RuntimeReserver::run(std::shared_ptr<SchedulerPhase> next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
+  std::cout << "RuntimeReserver::run" << std::endl;
+
+  std::shared_ptr<Launcher> launcher =
+      std::dynamic_pointer_cast<Launcher>(next_phase);
   this->status.reset();
 
   // Only one thread can reserve runtime resources at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
-  std::unique_lock<std::mutex> lock(this->mtx);
+  // std::unique_lock<std::mutex> lock(this->mtx);
+
+  std::cout << "NDevices: " << this->runnable_tasks->get_num_devices()
+            << std::endl;
+  std::cout << "NQueues: " << this->runnable_tasks->get_num_device_queues()
+            << std::endl;
 
   bool has_task = true;
 
@@ -317,7 +268,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     has_task = this->get_count() > 0;
 
     if (has_task) {
-      InnerTask *task = this->runnable_tasks.front();
+      InnerTask *task = this->runnable_tasks->front();
 
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
@@ -329,7 +280,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
 
         if (has_thread) {
-          InnerTask *task = this->runnable_tasks.pop();
+          InnerTask *task = this->runnable_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
@@ -352,7 +303,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     }
   }
 
-  this->mtx.unlock();
+  std::cout << "RuntimeReserver::run done" << std::endl;
 }
 
 /**************************/

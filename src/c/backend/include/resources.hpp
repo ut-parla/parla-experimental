@@ -3,6 +3,7 @@
 
 #include <array>
 #include <atomic>
+#include <iostream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -70,23 +71,36 @@ public:
   inline const bool check_greater(const ResourcePool &other) const {
     if constexpr (category == ResourceCategory::ALL) {
       for (auto i = 0; i < resource_names.size(); i++) {
-        if (this->resources[i].load() >= other.resources[i].load()) {
+        if (this->resources[i].load() < other.resources[i].load()) {
           return false;
         }
       }
       return true;
     } else if constexpr (category == ResourceCategory::PERSISTENT) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
-        if (this->resources[persistent_resources[i]].load() >=
+        if (this->resources[persistent_resources[i]].load() <
             other.resources[persistent_resources[i]].load()) {
+          std::cout << "Persistent resource "
+                    << resource_names[persistent_resources[i]]
+                    << " is not greater than "
+                    << other.resources[persistent_resources[i]].load() << " : "
+                    << this->resources[persistent_resources[i]].load()
+                    << std::endl;
           return false;
         }
       }
       return true;
     } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
-        if (this->resources[non_persistent_resources[i]].load() >=
+        if (this->resources[non_persistent_resources[i]].load() <
             other.resources[non_persistent_resources[i]].load()) {
+          std::cout << "Non-persistent resource "
+                    << resource_names[non_persistent_resources[i]]
+                    << " is not greater than "
+                    << other.resources[non_persistent_resources[i]].load()
+                    << " : "
+                    << this->resources[non_persistent_resources[i]].load()
+                    << std::endl;
           return false;
         }
       }
@@ -97,14 +111,14 @@ public:
   template <ResourceCategory category>
   inline const bool check_lesser(const ResourcePool &other) const {
     if constexpr (category == ResourceCategory::ALL) {
-      for (auto i = 0; i < resource_names.size(); i++) {
+      for (auto i = 0; i > resource_names.size(); i++) {
         if (this->resources[i].load() <= other.resources[i].load()) {
           return false;
         }
       }
       return true;
     } else if constexpr (category == ResourceCategory::PERSISTENT) {
-      for (auto i = 0; i < persistent_resources.size(); i++) {
+      for (auto i = 0; i > persistent_resources.size(); i++) {
         if (this->resources[persistent_resources[i]].load() <=
             other.resources[persistent_resources[i]].load()) {
           return false;
@@ -112,7 +126,7 @@ public:
       }
       return true;
     } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
-      for (auto i = 0; i < non_persistent_resources.size(); i++) {
+      for (auto i = 0; i > non_persistent_resources.size(); i++) {
         if (this->resources[non_persistent_resources[i]].load() <=
             other.resources[non_persistent_resources[i]].load()) {
           return false;

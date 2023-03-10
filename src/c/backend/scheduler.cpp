@@ -137,12 +137,15 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
       std::make_shared<LocalityLoadBalancingMappingPolicy>();
 
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
-  this->memory_reserver = new MemoryReserver(this, device_manager);
-  this->runtime_reserver = new RuntimeReserver(this, device_manager);
-  this->launcher = new Launcher(this, device_manager);
-  this->resources = new ResourcePool<std::atomic<int64_t>>();
-  // TODO: Clean these up
+  this->mapper =
+      std::make_shared<Mapper>(this, device_manager, std::move(mapping_policy));
+  this->memory_reserver =
+      std::make_shared<MemoryReserver>(this, device_manager);
+  this->runtime_reserver =
+      std::make_shared<RuntimeReserver>(this, device_manager);
+  this->launcher = std::make_shared<Launcher>(this, device_manager);
+  // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
+  //  TODO: Clean these up
 }
 
 void InnerScheduler::set_num_workers(int nworkers) {
@@ -151,7 +154,7 @@ void InnerScheduler::set_num_workers(int nworkers) {
 
 void InnerScheduler::set_resources(std::string resource_name,
                                    float resource_value) {
-  this->resources->set(Resource::VCU, resource_value);
+  this->resources.set(Resource::VCU, resource_value);
 }
 
 void InnerScheduler::set_py_scheduler(void *py_scheduler) {

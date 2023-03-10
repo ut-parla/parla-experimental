@@ -210,11 +210,11 @@ public:
 
   /*Number of unreserved instances (for multidevice) */
   std::atomic<int> num_persistant_instances{1};
-  bool removed_reserved{true};
+  bool removed_reserved{false};
 
   /* Number of waiting instances (for multidevice) */
   std::atomic<int> num_runtime_instances{1};
-  bool removed_runtime{true};
+  bool removed_runtime{false};
 
   /* Tasks Internal Resource Pool. */
   ResourcePool<std::atomic<int64_t>> resources;
@@ -241,6 +241,9 @@ public:
 
   /* Set the name of the task */
   void set_name(std::string name);
+
+  /* Get the name of the task */
+  const std::string &get_name() const { return this->name; };
 
   /* Set the id of the task */
   void set_id(long long int name);
@@ -650,8 +653,9 @@ public:
   WorkerPool_t workers;
 
   /* Resource Pool */
+  // TODO(wlr): Remove this (deprecated from testing)
   ResourcePool<std::atomic<int64_t>>
-      *resources; // TODO: Dummy class, needs complete rework with devices
+      resources; // TODO: Dummy class, needs complete rework with devices
 
   /* Active task counter (thread-safe) */
   std::atomic<int> num_active_tasks{1};
@@ -660,14 +664,14 @@ public:
   std::atomic<bool> should_run = true;
 
   /* Phase: maps tasks to devices */
-  Mapper *mapper;
+  std::shared_ptr<Mapper> mapper;
 
   /* Phase reserves resources to limit/plan task execution*/
-  MemoryReserver *memory_reserver;
-  RuntimeReserver *runtime_reserver;
+  std::shared_ptr<MemoryReserver> memory_reserver;
+  std::shared_ptr<RuntimeReserver> runtime_reserver;
 
   /*Responsible for launching a task. Signals worker thread*/
-  Launcher *launcher;
+  std::shared_ptr<Launcher> launcher;
 
   InnerScheduler(DeviceManager *device_manager);
   // InnerScheduler(int nworkers);
