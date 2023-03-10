@@ -192,7 +192,7 @@ public:
     std::cout << "nqueues: " << this->device_queues.size() << std::endl;
     task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
-      device_queues[device->get_global_id()]->enqueue(task);
+      this->device_queues[device->get_global_id()]->enqueue(task);
     }
     this->num_tasks++;
   }
@@ -235,12 +235,12 @@ public:
 
         // Try to get a non-waiting task
         std::cout << "Trying DeviceQueue " << current_idx << " Device: "
-                  << device_queues[current_idx]->get_device()->get_name()
+                  << this->device_queues[current_idx]->get_device()->get_name()
                   << std::endl;
-        InnerTask *task = device_queues[current_idx]->front();
+        InnerTask *task = this->device_queues[current_idx]->front();
         if (task != nullptr) {
           std::cout << "Found task: " << task->get_name() << std::endl;
-          last_device_idx = ++current_idx;
+          this->last_device_idx = ++current_idx;
           return task;
         }
       }
@@ -261,7 +261,7 @@ public:
   InnerTask *pop() {
     std::cout << "PhaseManager::pop" << std::endl;
     int idx = (this->last_device_idx - 1) % this->ndevices;
-    InnerTask *task = device_queues[idx]->pop();
+    InnerTask *task = this->device_queues[idx]->pop();
     std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
@@ -434,6 +434,9 @@ public:
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
+  PhaseManager<ResourceCategory::NON_PERSISTENT> *get_runnable_tasks() {
+    return this->runnable_tasks;
+  }
 
 protected:
   // std::string name{"Runtime Reserver"};

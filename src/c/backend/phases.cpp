@@ -20,8 +20,10 @@ size_t Mapper::get_count() {
   return count;
 }
 
-void Mapper::run(SchedulerPhase *memory_reserver) {
+void Mapper::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
+
+  MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
   std::cout << "Mapper::run" << std::endl;
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -139,11 +141,15 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
   }
 }
 
-void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
+void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
+
+  RuntimeReserver *runtime_reserver =
+      dynamic_cast<RuntimeReserver *>(next_phase);
   std::cout << "MemoryReserver::run" << std::endl;
   std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(runtime_reserver) << std::endl;
+            << reinterpret_cast<void *>(runtime_reserver->get_runnable_tasks())
+            << std::endl;
   this->status.reset();
 
   // Only one thread can reserve memory at a time.
@@ -196,6 +202,9 @@ void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
 
   this->reserved_tasks_buffer.clear();
   std::cout << "MemoryReserver::run done" << std::endl;
+  std::cout << "runtime_reserver pointer: "
+            << reinterpret_cast<void *>(runtime_reserver->get_runnable_tasks())
+            << std::endl;
 }
 
 /**************************/
@@ -250,6 +259,9 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
   std::cout << "RuntimeReserver::run" << std::endl;
+  std::cout << "runtime_reserver pointer: "
+            << reinterpret_cast<void *>(this->get_runnable_tasks())
+            << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
   this->status.reset();
@@ -269,7 +281,13 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     has_task = this->get_count() > 0;
 
     if (has_task) {
+      std::cout << "bfront runtime_reserver pointer: "
+                << reinterpret_cast<void *>(this->get_runnable_tasks())
+                << std::endl;
       InnerTask *task = this->runnable_tasks->front();
+      std::cout << "afront runtime_reserver pointer: "
+                << reinterpret_cast<void *>(this->get_runnable_tasks())
+                << std::endl;
 
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
@@ -281,7 +299,13 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
 
         if (has_thread) {
+          std::cout << "bpop runtime_reserver pointer: "
+                    << reinterpret_cast<void *>(this->get_runnable_tasks())
+                    << std::endl;
           InnerTask *task = this->runnable_tasks->pop();
+          std::cout << "apop runtime_reserver pointer: "
+                    << reinterpret_cast<void *>(this->get_runnable_tasks())
+                    << std::endl;
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
@@ -305,6 +329,9 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   }
 
   std::cout << "RuntimeReserver::run done" << std::endl;
+  std::cout << "runtime_reserver pointer: "
+            << reinterpret_cast<void *>(this->get_runnable_tasks())
+            << std::endl;
 }
 
 /**************************/

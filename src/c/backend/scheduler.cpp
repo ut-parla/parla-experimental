@@ -189,7 +189,9 @@ Scheduler::Status InnerScheduler::activate() {
   std::cout << "memory_reserver pointer: "
             << reinterpret_cast<void *>(this->memory_reserver) << std::endl;
   std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(this->runtime_reserver) << std::endl;
+            << reinterpret_cast<void *>(
+                   this->runtime_reserver->get_runnable_tasks())
+            << std::endl;
 
   this->mapper->run(this->memory_reserver);
   this->memory_reserver->run(this->runtime_reserver);
