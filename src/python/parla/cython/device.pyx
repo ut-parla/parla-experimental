@@ -127,6 +127,13 @@ class PyCPUDevice(PyDevice):
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
+class PyInvalidDevice(PyDevice):
+    """
+    """
+    def __init__(self):
+        super().__init__(DeviceType.INVALID, "Invalid", -1)
+
+
 class PyArchitecture(metaclass=ABCMeta):
     """
     This class is to abstract a single architecture and is utilized for
@@ -161,7 +168,7 @@ class PyArchitecture(metaclass=ABCMeta):
             # ignore that placement.
             print(f"{self._name} does not have device({index}).", flush=True)
             print(f"Ignore this placement.", flush=True)
-            return None
+            return PyInvalidDevice()
 
     def __getitem__(self, param):
         if isinstance(param, Dict):

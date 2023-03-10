@@ -18,6 +18,7 @@ VCU_BASELINE=1000
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
+PyInvalidDevice = device.PyInvalidDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
@@ -196,12 +197,9 @@ class PyDeviceManager:
                 # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
-                if placement is None:
-                    # If a device specified by users does not exit 
-                    # and was not registered to the Parla runtime,
-                    # its instance is set to None and should be
-                    # ignored.
-                    return None
+                # If a device specified by users does not exit 
+                # and was not registered to the Parla runtime,
+                # use CPU instead.
                 if isinstance(placement, PyArchitecture):
                     # Architecture placement means that the task mapper
                     # could choose one of the devices in the specified
@@ -220,11 +218,19 @@ class PyDeviceManager:
             return self.construct_single_architecture_requirements(
                 placement_component)
         elif isinstance(placement_component, PyDevice):
+            if isinstance(placement_component, PyInvalidDevice):
+                # If the specified device does not exist
+                # in the current system, replace it with CPU.
+                placement_component = cpu(0)
             return self.construct_single_device_requirements(
                 placement_component)
+        elif isinstance(placement_component, PyInvalidDevice):
+            # This is allowable since user-provided placements are all invalid
+            # in the current system. In this case, replace the placement with
+            # CPU.
+            return self.construct_single_device_requirements(cpu(0))
         else:
             raise TypeError("Incorrect placement")
-
 
 
     def unpack_placements(self, placement_components):
