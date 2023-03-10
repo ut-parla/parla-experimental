@@ -93,6 +93,11 @@ class PyDeviceManager:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
 
+    def __dealloc__(self):
+        for arch in self.py_registered_archs:
+            for dev in arch.devices:
+                del dev
+
     def register_cuda_devices_cupy(self):
         if cupy is not None:
             try:

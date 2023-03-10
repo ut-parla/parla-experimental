@@ -16,6 +16,9 @@ cdef class CyDevice:
     cdef Device* get_cpp_device(self):
         return self._cpp_device
 
+    def __dealloc__(self):
+        del self._cpp_device
+
 
 cdef class CyCUDADevice(CyDevice):
     """
@@ -73,6 +76,9 @@ class PyDevice:
     def __init__(self, dev_type, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
+
+    def __dealloc__(self):
+        del self._cy_device
 
     def __enter__(self):
         pass

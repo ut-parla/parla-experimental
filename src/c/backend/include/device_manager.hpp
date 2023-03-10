@@ -15,13 +15,6 @@ class DeviceManager {
 public:
   DeviceManager() : total_num_mapped_tasks_{0} {}
   DeviceManager(const DeviceManager&) = delete;
-  ~DeviceManager() {
-    for (Device* d : all_devices_) {
-      if (d != nullptr) {
-        delete d;
-      }
-    }
-  }
 
   void register_device(Device *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
