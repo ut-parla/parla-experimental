@@ -216,7 +216,7 @@ class PyCUDAArchitecture(PyArchitecture):
         super().__init__("CUDAArch", id)
 
     def add_device(self, device):
-        assert isinstance(device, PyCUDADevice)
+        assert isinstance(device, PyDevice)
         self._devices.append(device)
 
  

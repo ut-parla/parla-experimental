@@ -107,25 +107,31 @@ class PyDeviceManager:
         else:
             num_of_gpus = 0
 
+        py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
         if num_of_gpus > 0:
-            self.py_registered_archs[cuda] = cuda
-        
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
                                             # in bytes.
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
-                cuda.add_device(py_cuda_device)
+                py_cuda_arch.add_device(py_cuda_device)
+        else:
+            # It is possible that the current system does not have CUDA devices.
+            # But users can still specify `cuda` to task placement.
+            # To handle this case, we add a CPU device as the CUDA architecture
+            # type (So, Parla assumes that the target system must be equipped
+            # with at least one CPU core).
+            self.register_cpu_devices(DeviceType.CUDA)
 
-    def register_cpu_devices(self):
+    def register_cpu_devices(self, arch_type = DeviceType.CPU):
         # Get the number of usable CPUs from this process.
         # This might not be equal to the number of CPUs in the system.
         num_cores = len(os.sched_getaffinity(0))
         mem_sz = long(psutil.virtual_memory().total)
-        py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
-        self.py_registered_archs[cpu] = cpu
-        cpu.add_device(py_cpu_device)
+        py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
+        py_arch = self.py_registered_archs[arch_type]
+        py_arch.add_device(py_cpu_device)
 
     def register_devices_to_cpp(self):
         """
@@ -185,6 +191,10 @@ class PyDeviceManager:
 
     def construct_single_device_requirements(self, dev, res_req = None):
         res_req_ = res_req if res_req is not None else DeviceResource()
+        if isinstance(dev, PyInvalidDevice):
+            # If the specified device does not exist
+            # in the current system, replace it with CPU.
+            dev = cpu(0)
         return DeviceResourceRequirement(dev, res_req_)
 
     def construct_single_architecture_requirements(self, arch, res_req = None):
@@ -223,17 +233,8 @@ class PyDeviceManager:
             return self.construct_single_architecture_requirements(
                 placement_component)
         elif isinstance(placement_component, PyDevice):
-            if isinstance(placement_component, PyInvalidDevice):
-                # If the specified device does not exist
-                # in the current system, replace it with CPU.
-                placement_component = cpu(0)
             return self.construct_single_device_requirements(
                 placement_component)
-        elif isinstance(placement_component, PyInvalidDevice):
-            # This is allowable since user-provided placements are all invalid
-            # in the current system. In this case, replace the placement with
-            # CPU.
-            return self.construct_single_device_requirements(cpu(0))
         else:
             raise TypeError("Incorrect placement")
 
