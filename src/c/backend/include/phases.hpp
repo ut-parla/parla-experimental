@@ -102,36 +102,6 @@ public:
   void run(SchedulerPhase *next_phase);
   size_t get_count();
 
-  /// Calculate a score of architecture placement.
-  /// This function calculate scores for each device of the specified
-  /// architecture type, and chooses a device giving the highest score.
-  /// Note that it does not choose a device for a task.
-  /// The caller, the task mapper, will choose one of the placement
-  /// options.
-  ///
-  /// @param task Target task for task mapping.
-  /// @param base_res_req Resource requirement of the architecture.
-  ///                     This is a base type of resource requirement class
-  ///                     and, so it will be casted to the proper inherited
-  ///                     class within this function.
-  /// @return Pair of the chosen device and its score.
-  std::pair<Score_t, Device*> CalcScoreOfArchPlacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req);
-
-  /// Calculate a score of device placement.
-  /// Note that it does not choose a device for a task.
-  /// The caller, the task mapper, will choose one of the placement
-  /// options.
-  ///
-  /// @param task Target task for task mapping.
-  /// @param base_res_req Resource requirement of the architecture.
-  ///                     This is a base type of resource requirement class
-  ///                     and, so it will be casted to the proper inherited
-  ///                     class within this function.
-  /// @return Pair of the chosen device and its score.
-  std::pair<Score_t, Device*> CalcScoreOfDevPlacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req);
-
 protected:
   inline static const std::string name{"Mapper"};
   MapperStatus status{name};
