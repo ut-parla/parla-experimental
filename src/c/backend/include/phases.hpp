@@ -38,6 +38,7 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
+    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
     num_tasks++;
   };
@@ -169,8 +170,8 @@ public:
       this->ndevices += device_manager->get_num_devices(dev_type);
 
       for (Device *device : device_manager->get_devices(dev_type)) {
-        this->device_queues.emplace_back(
-            std::make_unique<DeviceQueue<category>>(device));
+        this->device_queues.push_back(
+            std::move(std::make_unique<DeviceQueue<category>>(device)));
         std::cout << "Initialized DeviceQueue for Device: "
                   << device->get_name() << std::endl;
       }
@@ -178,6 +179,8 @@ public:
 
     std::cout << "Initialized PhaseManager with " << this->ndevices
               << " devices" << std::endl;
+    std::cout << "Initialized PhaseManager with " << this->device_queues.size()
+              << " queues" << std::endl;
   }
 
   /**
@@ -185,6 +188,8 @@ public:
    * @param task the task to enqueue. May be single or multi-device.
    **/
   void enqueue(InnerTask *task) {
+    std::cout << "ndevices: " << this->ndevices << std::endl;
+    std::cout << "nqueues: " << this->device_queues.size() << std::endl;
     task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
       device_queues[device->get_global_id()]->enqueue(task);
@@ -315,7 +320,7 @@ public:
 
   virtual void enqueue(InnerTask *task) = 0;
   virtual void enqueue(std::vector<InnerTask *> &tasks) = 0;
-  virtual void run(std::shared_ptr<SchedulerPhase> next_phase) = 0;
+  virtual void run(SchedulerPhase *next_phase) = 0;
   virtual size_t get_count() = 0;
 
   PhaseStatus status;
@@ -351,7 +356,7 @@ public:
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(std::shared_ptr<SchedulerPhase> next_phase);
+  void run(SchedulerPhase *next_phase);
   size_t get_count();
 
 protected:
@@ -387,7 +392,7 @@ public:
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(std::shared_ptr<SchedulerPhase> next_phase);
+  void run(SchedulerPhase *next_phase);
   size_t get_count();
 
 protected:
@@ -420,6 +425,7 @@ public:
 
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
+    std::cout << "RuntimeReserver created" << std::endl;
     this->runnable_tasks =
         std::make_shared<PhaseManager<ResourceCategory::NON_PERSISTENT>>(
             devices);
@@ -427,7 +433,7 @@ public:
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
-  void run(std::shared_ptr<SchedulerPhase> next_phase);
+  void run(SchedulerPhase *next_phase);
   size_t get_count();
 
 protected:
@@ -475,7 +481,7 @@ public:
   /* A placeholder function in case work needs to be done at this stage. For
    * example, dispatching a whole buffer of tasks*/
   void run();
-  void run(std::shared_ptr<SchedulerPhase> next_phase) { this->run(); };
+  void run(SchedulerPhase *next_phase) { this->run(); };
 
   /* Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete */

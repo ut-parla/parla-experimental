@@ -664,14 +664,14 @@ public:
   std::atomic<bool> should_run = true;
 
   /* Phase: maps tasks to devices */
-  std::shared_ptr<Mapper> mapper;
+  Mapper *mapper;
 
   /* Phase reserves resources to limit/plan task execution*/
-  std::shared_ptr<MemoryReserver> memory_reserver;
-  std::shared_ptr<RuntimeReserver> runtime_reserver;
+  MemoryReserver *memory_reserver;
+  RuntimeReserver *runtime_reserver;
 
   /*Responsible for launching a task. Signals worker thread*/
-  std::shared_ptr<Launcher> launcher;
+  Launcher *launcher;
 
   InnerScheduler(DeviceManager *device_manager);
   // InnerScheduler(int nworkers);

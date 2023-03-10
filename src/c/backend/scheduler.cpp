@@ -137,13 +137,10 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
       std::make_shared<LocalityLoadBalancingMappingPolicy>();
 
   // Initialize the phases
-  this->mapper =
-      std::make_shared<Mapper>(this, device_manager, std::move(mapping_policy));
-  this->memory_reserver =
-      std::make_shared<MemoryReserver>(this, device_manager);
-  this->runtime_reserver =
-      std::make_shared<RuntimeReserver>(this, device_manager);
-  this->launcher = std::make_shared<Launcher>(this, device_manager);
+  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
+  this->memory_reserver = new MemoryReserver(this, device_manager);
+  this->runtime_reserver = new RuntimeReserver(this, device_manager);
+  this->launcher = new Launcher(this, device_manager);
   // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
   //  TODO: Clean these up
 }

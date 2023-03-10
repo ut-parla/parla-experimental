@@ -20,7 +20,7 @@ size_t Mapper::get_count() {
   return count;
 }
 
-void Mapper::run(std::shared_ptr<SchedulerPhase> memory_reserver) {
+void Mapper::run(SchedulerPhase *memory_reserver) {
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
   std::cout << "Mapper::run" << std::endl;
 
@@ -139,7 +139,7 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
   }
 }
 
-void MemoryReserver::run(std::shared_ptr<SchedulerPhase> runtime_reserver) {
+void MemoryReserver::run(SchedulerPhase *runtime_reserver) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
   std::cout << "MemoryReserver::run" << std::endl;
 
@@ -244,13 +244,12 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
   }
 }
 
-void RuntimeReserver::run(std::shared_ptr<SchedulerPhase> next_phase) {
+void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
   std::cout << "RuntimeReserver::run" << std::endl;
 
-  std::shared_ptr<Launcher> launcher =
-      std::dynamic_pointer_cast<Launcher>(next_phase);
+  Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
   this->status.reset();
 
   // Only one thread can reserve runtime resources at a time.
