@@ -92,7 +92,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     //           << devices[0]->get_name() << " and " << devices[1]->get_name()
     //           << std::endl;
 #endif
-    ResourceRequirementCollections &res_reqs = task->GetResourceRequirements();
+    ResourceRequirementCollections &res_reqs = task->get_placement_req_options();
     std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
         res_reqs.GetDeviceRequirementOptions();
     for (std::shared_ptr<DeviceRequirementBase> base_res_req : dev_res_reqs) {

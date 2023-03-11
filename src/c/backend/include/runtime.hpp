@@ -426,8 +426,12 @@ public:
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
 
-  ResourceRequirementCollections &GetResourceRequirements() {
-    return dev_res_reqs_;
+  ResourceRequirementCollections &get_placement_req_options() {
+    return placement_req_options_;
+  }
+
+  const std::vector<std::shared_ptr<DeviceRequirement>>& get_placement_reqs() {
+    return placement_reqs_;
   }
 
 protected:
@@ -443,7 +447,11 @@ protected:
   uint32_t req_addition_mode_;
   std::shared_ptr<ArchitectureRequirement> tmp_arch_req_;
   std::shared_ptr<MultiDeviceRequirements> tmp_multdev_reqs_;
-  ResourceRequirementCollections dev_res_reqs_;
+  // TODO(hc): rename these..
+  ResourceRequirementCollections placement_req_options_;
+  /// This requirement is used to hold chosen devices and
+  /// their requirements during task mapping.
+  std::vector<std::shared_ptr<DeviceRequirement>> placement_reqs_;
 };
 
 class InnerDataTask : public InnerTask {

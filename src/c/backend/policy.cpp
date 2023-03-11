@@ -45,6 +45,21 @@ std::pair<Score_t, Device*>
   // Check device resource availability.
 
   // Check device dependencies.
+  TaskList& dependencies = task->dependencies;
+  // TODO(hc): I am not sure if this is safe since dependencies
+  //           can be popped during iteartion?
+  //           or maybe we can expose locks to make this
+  //           as transaction?
+  //           Also, do we consider only alive dependencies?
+  //           or do we allow popping dependencies?
+  for (size_t i = 0; i < dependencies.size(); ++i) {
+    InnerTask* dependency = dependencies.at(i);
+    auto dep_placement_reqs = dependency->get_placement_reqs();
+    assert(dep_placement_reqs.size() > 0);
+    for (std::shared_ptr<DeviceRequirement> req : dep_placement_reqs) {
+      std::cout << "Device:" << req->device()->GetName() << "\n";
+    }
+  }
 
   Score_t score = 0;
   std::cout << "\t[Device Requirement in Multi-device Requirement]\n"
