@@ -424,14 +424,28 @@ class ComputeTask(Task):
 
 
 cpdef flatten_tasks(tasks, list output=[]):
-    if isinstance(tasks, Iterable):
+
+    #Unpack any TaskCollections
+    if isinstance(tasks, TaskCollection):
+        tasks = tasks.tasks
+
+    if isinstance(tasks, list) or isinstance(tasks, tuple):
+        for i in range(0, len(tasks)):
+            task = tasks[i]
+            flatten_tasks(task, output)
+    elif isinstance(tasks, Task):
+        output.append(tasks)
+    elif isinstance(tasks, dict):
+        keys = tasks.keys()
+        for i in range(0, len(keys)):
+            task = tasks[keys[i]]
+            flatten_tasks(task, output)
+    elif isinstance(tasks, Iterable):
+        #NOTE: This is not threadsafe if iterated concurrently
         for task in tasks:
             flatten_tasks(task, output)
     else:
-        if isinstance(tasks, Task):
-            output.append(tasks)
-        else:
-            raise TypeError("TaskCollection can only contain Tasks")
+        raise TypeError("TaskCollections can only contain Tasks or Iterable Containers of Tasks")
 
 cdef step(tuple prefix, v):
     return prefix + (v,)
@@ -458,8 +472,13 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
     cdef int istop = 0
     cdef int istep = 1
 
+    #TODO(wlr): Iterable check should be more robust (try/catch)
+
     if len(index) > 0:
         i, *remainder = index
+
+        if isinstance(i, TaskCollection):
+            i = i.tasks
 
         if isinstance(i, slice):
             istart = max(i.start, lower_boundary) if i.start is not None else lower_boundary
@@ -474,7 +493,15 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
         elif isinstance(i, Iterable):
             if isinstance(i, str):
                 cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
+            elif isinstance(i, tuple) or isinstance(i, list):
+                for k in range(0, len(i)):
+                    cy_parse_index(step(prefix, i[k]), remainder, index_list, depth+1, shape, start)
+            elif isinstance(i, dict):
+                keys = i.keys()
+                for k in range(0, len(keys)):
+                    cy_parse_index(step(prefix, i[keys[k]]), remainder, index_list, depth+1, shape, start)
             else:
+                #NOTE: This is not threadsafe if the iterator is shared
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
@@ -495,6 +522,10 @@ def parse_index(prefix, index,  step,  stop):
     """
     if len(index) > 0:
         i, *rest = index
+
+        if isinstance(i, TaskCollection):
+            i = i.tasks 
+
         if isinstance(i, slice):
             for v in range(i.start or 0, i.stop, i.step or 1):
                 parse_index(step(prefix, v), rest, step, stop)
@@ -511,7 +542,9 @@ cpdef get_or_create_tasks(taskspace, list index_list, create=True):
     cdef list task_list = []
     tasks = taskspace._tasks
 
-    for index in index_list:
+    for i in range(0, len(index_list)):
+        index = index_list[i]
+
         if index in tasks:
             task = tasks[index]
             task_list.append(task)
@@ -545,10 +578,52 @@ class TaskCollection:
         return iter(self.tasks)
 
     def __contains__(self, task):
-        return task in self.tasks
-
+        return task in self._tasks
+        
     def __repr__(self):
         return "TaskCollection: {}".format(self.tasks)
+
+    def __str__(self):
+        return repr(self)
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        return id(self._tasks) == id(self._tasks)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __add__(self, other):
+        return TaskCollection(self._tasks + other._tasks)
+
+    def __iadd__(self, other):
+        self._tasks += other._tasks
+        return self
+
+
+class TaskList(TaskCollection):
+
+    def __getitem__(self, index):
+        task_list = self.tasks[index]
+
+        if isinstance(task_list, list):
+            return TaskList(task_list, flatten=False)
+        else:
+            #Return a single task
+            return task_list
+
+    def __repr__(self):
+        return "TaskList: {}".format(self.tasks)
+
+    def __add__(self, other):
+        return TaskList(self._tasks + other._tasks)
+
+    def __iadd__(self, other):
+        self._tasks += other._tasks
+        return self
+
 
 _task_space_globals = {}
 
@@ -589,13 +664,13 @@ class TaskSpace(TaskCollection):
 
             if len(task_list) == 1:
                 return task_list[0]
-            return task_list
+            return TaskList(task_list)
 
         if isinstance(index, str):
             task_list = get_or_create_tasks(self, [(index,)], create=create)
             if len(task_list) == 1:
                 return task_list[0]
-            return task_list
+            return TaskList(task_list)
 
 
         if not isinstance(index, tuple):
@@ -608,7 +683,7 @@ class TaskSpace(TaskCollection):
         if len(task_list) == 1:
             return task_list[0]
         else:
-            return task_list
+            return TaskList(task_list)
 
     @property
     def tasks(self):
@@ -627,3 +702,15 @@ class TaskSpace(TaskCollection):
 
     def __repr__(self):
         return f"TaskSpace({self._name}, ntasks={len(self)})"
+
+    def __add__(self, other):
+        merged_dict = {**self._tasks, **other._tasks}
+        merged_name = f"{self._name} + {other._name}"
+        new_space = TaskSpace(name=merged_name, create=False, shape=self.shape, start=self.start)
+        new_space._tasks = merged_dict
+        return new_space
+
+    def __iadd__(self, other):
+        self._tasks.update(other._tasks)
+        return self
+    

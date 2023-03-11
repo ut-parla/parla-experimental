@@ -48,7 +48,8 @@ def spawn(task=None,
           # This collection does not contain Union anymore, which was used by the
           # old Parla, since we now allow support {arch, arch, arch} placement
           # to map a task to three devices.
-          placement: Collection[Union[Collection[PlacementSource], Any, None]] = None,
+          placement: Collection[Union[Collection[PlacementSource],
+                                      Any, None]] = None,
           vcus=1):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
