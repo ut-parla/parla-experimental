@@ -50,8 +50,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         std::cout << "[Multi-device requirement]\n";
         MultiDeviceRequirements *mdev_res_reqs =
             dynamic_cast<MultiDeviceRequirements *>(r.get());
-        const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> mdev_res_reqs_vec =
-            mdev_res_reqs->GetDeviceRequirements();
+        const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>
+            mdev_res_reqs_vec = mdev_res_reqs->GetDeviceRequirements();
         for (std::shared_ptr<DeviceRequirementBase> m_r : mdev_res_reqs_vec) {
           if (m_r->is_dev_req()) {
             DeviceRequirement *dev_res_req =
@@ -79,7 +79,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
           }
         }
       } else if (r->is_dev_req()) {
-        DeviceRequirement *dev_res_req = dynamic_cast<DeviceRequirement *>(r.get());
+        DeviceRequirement *dev_res_req =
+            dynamic_cast<DeviceRequirement *>(r.get());
         policy_->MapTask(task, *(dev_res_req->device()));
         std::cout << "[Device Requirement]\n";
         std::cout << dev_res_req->device()->GetName() << " -> "
@@ -258,17 +259,17 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
           launcher->enqueue(task, worker);
 
-          this->status.increase(Ready::success);
+          this->status.increase(RuntimeReserverState::Success);
         } else {
-          this->status.increase(Ready::worker_miss);
+          this->status.increase(RuntimeReserverState::NoWorker);
           break; // No more workers available
         }
       } else {
-        this->status.increase(Ready::resource_miss);
+        this->status.increase(RuntimeReserverState::NoResource);
         break; // No more resources available
       }
     } else {
-      this->status.increase(Ready::task_miss);
+      this->status.increase(RuntimeReserverState::NoTask);
       break; // No more tasks available
     }
   }

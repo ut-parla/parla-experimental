@@ -5,19 +5,34 @@
 #include "containers.hpp"
 #include "device.hpp"
 #include "device_manager.hpp"
-#include "runtime.hpp"
 #include "policy.hpp"
+#include "runtime.hpp"
 
-#include <string>
 #include <memory>
+#include <string>
 
-class PhaseStatus {
+enum class MapperState { Failure = 0, Success = 1, MAX = 2 };
+enum class MemoryReserverState { Failure = 0, Success = 1, MAX = 2 };
+enum class RuntimeReserverState {
+  Failure = 0,
+  NoTask = 1,
+  NoResource = 2,
+  NoWorker = 3,
+  Success = 4,
+  MAX = 5
+};
+enum class LauncherState { Failure = 0, Success = 1, MAX = 2 };
+
+template <typename S> class PhaseStatus {
 protected:
-  const static int size = 3;
-  std::string name = "Status";
+  const int size{static_cast<int>(S::MAX)};
+  std::string name{"Status"};
 
 public:
-  int status[size];
+  int status[static_cast<int>(S::MAX)];
+
+  PhaseStatus() = default;
+  PhaseStatus(std::string name) : name(name) {}
 
   void reset() {
     for (int i = 0; i < size; ++i) {
@@ -25,11 +40,16 @@ public:
     }
   }
 
-  void set(int index, int value) { this->status[index] = value; }
-  int get(int index) { return this->status[index]; }
-  void increase(int state) { this->status[state]++; }
+  inline void set(S state, int value) {
+    this->status[static_cast<int>(state)] = value;
+  }
+  inline const int get(S state) const {
+    return this->status[static_cast<int>(state)];
+  }
+  inline void increase(S state) { this->status[static_cast<int>(state)]++; }
+  inline void decrease(S state) { this->status[static_cast<int>(state)]--; }
 
-  void print() {
+  void print() const {
     std::cout << this->name + "(";
     for (int i = 0; i < size; ++i) {
       std::cout << this->status[i];
@@ -37,6 +57,11 @@ public:
     std::cout << ")\n";
   }
 };
+
+class MapperStatus : public PhaseStatus<MapperState> {};
+class MemoryReserverStatus : public PhaseStatus<MemoryReserverState> {};
+class RuntimeReserverStatus : public PhaseStatus<RuntimeReserverState> {};
+class LauncherStatus : public PhaseStatus<LauncherState> {};
 
 class SchedulerPhase {
 public:
@@ -49,36 +74,22 @@ public:
   virtual void run(SchedulerPhase *next_phase) = 0;
   virtual size_t get_count() = 0;
 
-  PhaseStatus status;
-
 protected:
-  std::string name = "Phase";
+  inline static const std::string name{"Phase"};
   std::mutex mtx;
   InnerScheduler *scheduler;
   DeviceManager *device_manager;
   TaskStateList enqueue_buffer;
 };
 
-namespace Map {
-
-enum State { failure, success };
-class Status : public PhaseStatus {
-protected:
-  const static int size = 2;
-  std::string name = "Mapper";
-};
-
-} // namespace Map
-
 class Mapper : virtual public SchedulerPhase {
 public:
-  Map::Status status;
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
 
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices, 
-         std::shared_ptr<MappingPolicy> policy) :
-          SchedulerPhase(scheduler, devices),
-          dummy_dev_idx_{0}, policy_{policy} {}
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices,
+         std::shared_ptr<MappingPolicy> policy)
+      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -86,7 +97,8 @@ public:
   size_t get_count();
 
 protected:
-  std::string name = "Mapper";
+  inline static const std::string name{"Mapper"};
+  MapperStatus status{name};
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
@@ -94,21 +106,8 @@ protected:
   std::shared_ptr<MappingPolicy> policy_;
 };
 
-namespace Reserved {
-
-enum State { failure, success };
-
-class Status : public PhaseStatus {
-protected:
-  const static int size = 2;
-  std::string name = "MemoryReserver";
-};
-} // namespace Reserved
-
 class MemoryReserver : virtual public SchedulerPhase {
 public:
-  Reserved::Status status;
-
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {}
 
@@ -118,31 +117,15 @@ public:
   size_t get_count();
 
 protected:
-  std::string name = "Memory Reserver";
+  inline static const std::string name{"Memory Reserver"};
+  MemoryReserverStatus status{name};
   TaskQueue reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
 };
 
-namespace Ready {
-
-enum State { entered, task_miss, resource_miss, worker_miss, success };
-
-class Status : virtual public PhaseStatus {
-protected:
-  const static int size = 5;
-  std::string name = "RuntimeReserver";
-};
-} // namespace Ready
-
-#ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(Ready::Status, status)
-#endif
-
 class RuntimeReserver : virtual public SchedulerPhase {
 
 public:
-  Ready::Status status;
-
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {}
 
@@ -151,31 +134,23 @@ public:
   void run(SchedulerPhase *next_phase);
   size_t get_count();
 
+  const std::string &get_name() const { return this->name; }
+  const RuntimeReserverStatus &get_status() const { return this->status; }
+  const void print_status() const { this->status.print(); }
+
 protected:
-  std::string name = "Runtime Reserver";
+  inline static const std::string name{"Runtime Reserver"};
+  RuntimeReserverStatus status{name};
   TaskQueue runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(RuntimeReserver, status)
+LOG_ADAPT_STRUCT(RuntimeReserver, print_status)
 #endif
-
-namespace Launch {
-
-enum State { failure, success };
-
-class Status : public PhaseStatus {
-protected:
-  const static int size = 2;
-  std::string name = "Launcher";
-};
-} // namespace Launch
 
 class Launcher : virtual public SchedulerPhase {
 public:
-  Launch::Status status;
-
   /*Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete*/
   std::atomic<size_t> num_running_tasks;
@@ -199,7 +174,8 @@ public:
   size_t get_count() { return this->num_running_tasks.load(); }
 
 protected:
-  std::string name = "Launcher";
+  inline static const std::string name{"Launcher"};
+  LauncherStatus status{name};
   /*Buffer to store not yet launched tasks. Currently unused. Placeholder in
    * case it becomes useful.*/
   TaskList task_buffer;
