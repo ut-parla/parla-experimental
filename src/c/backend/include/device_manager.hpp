@@ -13,7 +13,7 @@ using DevID_t = uint32_t;
 /// information on the current system to the Parla runtime.
 class DeviceManager {
 public:
-  DeviceManager() : total_num_mapped_tasks_{0} {}
+  DeviceManager() {}
   DeviceManager(const DeviceManager&) = delete;
 
   void register_device(Device *new_dev) {
@@ -80,17 +80,7 @@ public:
     }
   }
 
-  size_t IncrAtomicTotalNumMappedTasks() {
-    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
-  }
-
-  size_t DecrAtomicTotalNumMappedTasks() {
-    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
-  }
-
-  size_t TotalNumMappedTasks() const {
-    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
-  }
+  size_t get_num_registered_devices() { return all_devices_.size(); }
 
 protected:
   // Global device id counter

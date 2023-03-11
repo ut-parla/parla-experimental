@@ -109,27 +109,33 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         for (std::shared_ptr<DeviceRequirementBase> base_mdev_res_req :
               unpacked_mdev_res_reqs) {
           if (base_mdev_res_req->is_dev_req()) {
-            auto calc_result = policy_->calc_score_devplacement(task, base_mdev_res_req);
+            auto calc_result = policy_->calc_score_devplacement(task, base_mdev_res_req,
+                this->atomic_load_total_num_mapped_tasks());
             chosen_devices[mdev_idx] = calc_result.second;
             accumulated_device_score += calc_result.first;
           } else if (base_mdev_res_req->is_arch_req()) {
             auto calc_result =
-                policy_->calc_score_archplacement(task, base_mdev_res_req);
+                policy_->calc_score_archplacement(task, base_mdev_res_req,
+                    this->atomic_load_total_num_mapped_tasks());
             chosen_devices[mdev_idx] = calc_result.second;
             accumulated_device_score += calc_result.first;
           }
           ++mdev_idx;
         }
       } else if (base_res_req->is_dev_req()) {
-        policy_->calc_score_devplacement(task, base_res_req);
+        policy_->calc_score_devplacement(task, base_res_req,
+            this->atomic_load_total_num_mapped_tasks());
       } else if (base_res_req->is_arch_req()) {
         std::pair<Score_t, Device*> chosen_dev_score =
-          policy_->calc_score_archplacement(task, base_res_req);
+          policy_->calc_score_archplacement(task, base_res_req,
+              this->atomic_load_total_num_mapped_tasks());
       }
     }
 
     this->mapped_tasks_buffer.push_back(task);
-    this->device_manager->IncrAtomicTotalNumMappedTasks();
+    // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
+    this->atomic_incr_num_mapped_tasks(0);
+    //this->device_manager->IncrAtomicTotalNumMappedTasks();
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 

@@ -23,9 +23,12 @@ public:
   ///                     This is a base type of resource requirement class
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
+  /// @param num_total_mapped_tasks The total number of tasks mapped to the
+  ///                               whole devices.
   /// @return Pair of the chosen device and its score.
   virtual std::pair<Score_t, Device*> calc_score_archplacement(
-      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req) = 0;
+      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
+      size_t num_total_mapped_tasks) = 0;
 
   /// Calculate a score of architecture placement.
   /// This function calculate scores for each device of the specified
@@ -39,9 +42,12 @@ public:
   ///                     This is a base type of resource requirement class
   ///                     and, so it will be casted to the proper inherited
   ///                     class within this function.
+  /// @param num_total_mapped_tasks The total number of tasks mapped to the
+  ///                               whole devices.
   /// @return Pair of the chosen device and its score.
   virtual std::pair<Score_t, Device*> calc_score_devplacement(
-      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req) = 0;
+      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
+      size_t num_total_mapped_tasks) = 0;
 
   const DeviceManager& GetDeviceManagerRef() {
     return *device_manager_;
@@ -56,10 +62,12 @@ public:
   using MappingPolicy::MappingPolicy;
 
   std::pair<Score_t, Device*> calc_score_archplacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req) override;
+      std::shared_ptr<DeviceRequirementBase> base_res_req,
+      size_t num_total_mapped_tasks) override;
 
   std::pair<Score_t, Device*> calc_score_devplacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req) override;
+      std::shared_ptr<DeviceRequirementBase> base_res_req,
+      size_t num_total_mapped_tasks) override;
 
 };
 

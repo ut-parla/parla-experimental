@@ -1,7 +1,8 @@
 #include "include/policy.hpp"
 
 std::pair<Score_t, Device*> LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
-    InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req) {
+    InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
+    size_t num_total_mapped_tasks) {
   std::cout
       << "\t[Architecture Requirement in Multi-device Requirement]\n";
   ArchitectureRequirement* arch_res_req =
@@ -11,7 +12,8 @@ std::pair<Score_t, Device*> LocalityLoadBalancingMappingPolicy::calc_score_archp
   uint32_t i = 0;
   for (std::shared_ptr<DeviceRequirement> dev_res_req :
       arch_res_req->GetDeviceRequirementOptions()) {
-    auto [score, device] = calc_score_devplacement(task, dev_res_req);
+    auto [score, device] = calc_score_devplacement(task, dev_res_req,
+        num_total_mapped_tasks);
     if (best_score < score) {
       best_score = score;
       best_device = device;
@@ -27,13 +29,12 @@ std::pair<Score_t, Device*> LocalityLoadBalancingMappingPolicy::calc_score_archp
 
 std::pair<Score_t, Device*>
     LocalityLoadBalancingMappingPolicy::calc_score_devplacement(InnerTask* task,
-    std::shared_ptr<DeviceRequirementBase> base_res_req) {
+    std::shared_ptr<DeviceRequirementBase> base_res_req,
+    size_t num_total_mapped_tasks /*, std::vector<> num_mapped_tasks_foreach_device */) {
   DeviceRequirement *dev_res_req =
       dynamic_cast<DeviceRequirement *>(base_res_req.get());
   const Device& device = *(dev_res_req->device());
   std::cout << "Locality-aware- and Load-balancing mapping policy\n";
-
-  size_t num_total_mapped_tasks = GetDeviceManagerRef().TotalNumMappedTasks();
 
   // TODO(hc): Data locality calculation.
   size_t local_data = 0, nonlocal_data = 0;
