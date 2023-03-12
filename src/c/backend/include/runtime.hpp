@@ -430,6 +430,10 @@ public:
     return placement_req_options_;
   }
 
+  void add_placement_req(std::shared_ptr<DeviceRequirement> ps_req) {
+    placement_reqs_.emplace_back(ps_req);
+  }
+
   const std::vector<std::shared_ptr<DeviceRequirement>>& get_placement_reqs() {
     return placement_reqs_;
   }

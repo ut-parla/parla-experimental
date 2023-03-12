@@ -25,7 +25,7 @@ public:
   GetDeviceRequirementOptions();
 
 private:
-  std::vector<std::shared_ptr<DeviceRequirementBase>> dev_reqs_;
+  std::vector<std::shared_ptr<DeviceRequirementBase>> placement_reqs_;
 };
 
 class MultiDeviceRequirements : public DeviceRequirementBase {
@@ -36,11 +36,11 @@ public:
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return false; }
 
-  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> &
-  GetDeviceRequirements();
+  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>&
+      get_placement_requirements();
 
 private:
-  std::vector<std::shared_ptr<SingleDeviceRequirementBase>> dev_reqs_;
+  std::vector<std::shared_ptr<SingleDeviceRequirementBase>> placement_reqs_;
 };
 
 class DeviceRequirement : public SingleDeviceRequirementBase {
@@ -71,7 +71,7 @@ public:
   bool is_dev_req() override { return false; }
 
 private:
-  std::vector<std::shared_ptr<DeviceRequirement>> dev_reqs_;
+  std::vector<std::shared_ptr<DeviceRequirement>> placement_reqs_;
 };
 
 #endif

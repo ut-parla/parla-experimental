@@ -27,7 +27,7 @@ public:
   ///                               whole devices.
   /// @return Pair of the chosen device and its score.
   virtual std::pair<Score_t, Device*> calc_score_archplacement(
-      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
+      InnerTask* task, ArchitectureRequirement *base_res_req,
       size_t num_total_mapped_tasks) = 0;
 
   /// Calculate a score of architecture placement.
@@ -46,8 +46,13 @@ public:
   ///                               whole devices.
   /// @return Pair of the chosen device and its score.
   virtual std::pair<Score_t, Device*> calc_score_devplacement(
-      InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
+      InnerTask* task, DeviceRequirement *base_res_req,
       size_t num_total_mapped_tasks) = 0;
+
+  // TODO(hc): comment
+  virtual std::pair<Score_t, std::vector<Device*>> calc_score_mdevplacement(
+          InnerTask* task, MultiDeviceRequirements *placement_reqs,
+          size_t num_total_mapped_tasks) = 0;
 
   const DeviceManager& GetDeviceManagerRef() {
     return *device_manager_;
@@ -61,14 +66,17 @@ class LocalityLoadBalancingMappingPolicy : public MappingPolicy {
 public:
   using MappingPolicy::MappingPolicy;
 
-  std::pair<Score_t, Device*> calc_score_archplacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req,
+  std::pair<Score_t, Device*> calc_score_archplacement(
+      InnerTask *task, ArchitectureRequirement *base_res_req,
       size_t num_total_mapped_tasks) override;
 
-  std::pair<Score_t, Device*> calc_score_devplacement(InnerTask* task,
-      std::shared_ptr<DeviceRequirementBase> base_res_req,
+  std::pair<Score_t, Device*> calc_score_devplacement(
+      InnerTask *task, DeviceRequirement *base_res_req,
       size_t num_total_mapped_tasks) override;
 
+  std::pair<Score_t, std::vector<Device*>> calc_score_mdevplacement(
+          InnerTask* task, MultiDeviceRequirements *placement_reqs,
+          size_t num_total_mapped_tasks) override;
 };
 
 #endif

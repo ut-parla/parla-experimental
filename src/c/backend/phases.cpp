@@ -95,40 +95,46 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     ResourceRequirementCollections &res_reqs = task->get_placement_req_options();
     std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
         res_reqs.GetDeviceRequirementOptions();
+    // A set of chosen devices to a task.
+    Score_t best_score{0};
+    std::vector<Device*> chosen_devices;
     for (std::shared_ptr<DeviceRequirementBase> base_res_req : dev_res_reqs) {
       if (base_res_req->is_multidev_req()) {
+        // Multi-device placement requirements.
         std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements *mdev_res_req =
+        MultiDeviceRequirements *mdev_reqs =
             dynamic_cast<MultiDeviceRequirements *>(base_res_req.get());
-        const std::vector<
-          std::shared_ptr<SingleDeviceRequirementBase>>
-            unpacked_mdev_res_reqs = mdev_res_req->GetDeviceRequirements();
-        std::vector<Device*> chosen_devices(unpacked_mdev_res_reqs.size());
-        Score_t accumulated_device_score{0};
-        size_t mdev_idx{0};
-        for (std::shared_ptr<DeviceRequirementBase> base_mdev_res_req :
-              unpacked_mdev_res_reqs) {
-          if (base_mdev_res_req->is_dev_req()) {
-            auto calc_result = policy_->calc_score_devplacement(task, base_mdev_res_req,
+        auto [score, dev_vec] =
+            policy_->calc_score_mdevplacement(task, mdev_reqs, 
                 this->atomic_load_total_num_mapped_tasks());
-            chosen_devices[mdev_idx] = calc_result.second;
-            accumulated_device_score += calc_result.first;
-          } else if (base_mdev_res_req->is_arch_req()) {
-            auto calc_result =
-                policy_->calc_score_archplacement(task, base_mdev_res_req,
-                    this->atomic_load_total_num_mapped_tasks());
-            chosen_devices[mdev_idx] = calc_result.second;
-            accumulated_device_score += calc_result.first;
-          }
-          ++mdev_idx;
+        if (best_score < score) {
+          best_score = score;
+          chosen_devices.swap(dev_vec);
         }
       } else if (base_res_req->is_dev_req()) {
-        policy_->calc_score_devplacement(task, base_res_req,
-            this->atomic_load_total_num_mapped_tasks());
-      } else if (base_res_req->is_arch_req()) {
-        std::pair<Score_t, Device*> chosen_dev_score =
-          policy_->calc_score_archplacement(task, base_res_req,
+        // A single device placement requirement.
+        DeviceRequirement *dev_req =
+            dynamic_cast<DeviceRequirement *>(base_res_req.get());
+        auto [score, dev] =
+          policy_->calc_score_devplacement(task, dev_req,
               this->atomic_load_total_num_mapped_tasks());
+        if (best_score < score) {
+          best_score = score;
+          chosen_devices.clear();
+          chosen_devices.emplace_back(dev);
+        }
+      } else if (base_res_req->is_arch_req()) {
+        // A single architecture placement requirement.
+        ArchitectureRequirement* arch_req =
+            dynamic_cast<ArchitectureRequirement *>(base_res_req.get());
+        auto [score, dev] =
+          policy_->calc_score_archplacement(task, arch_req,
+              this->atomic_load_total_num_mapped_tasks());
+        if (best_score < score) {
+          best_score = score;
+          chosen_devices.clear();
+          chosen_devices.emplace_back(dev);
+        }
       }
     }
 

@@ -1,18 +1,17 @@
 #include "include/policy.hpp"
 
-std::pair<Score_t, Device*> LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
-    InnerTask* task, std::shared_ptr<DeviceRequirementBase> base_res_req,
-    size_t num_total_mapped_tasks) {
+std::pair<Score_t, Device*>
+    LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
+        InnerTask* task, ArchitectureRequirement* arch_placement_req,
+        size_t num_total_mapped_tasks) {
   std::cout
       << "\t[Architecture Requirement in Multi-device Requirement]\n";
-  ArchitectureRequirement* arch_res_req =
-      dynamic_cast<ArchitectureRequirement *>(base_res_req.get());
   Score_t best_score{0};
   Device* best_device{nullptr};
   uint32_t i = 0;
   for (std::shared_ptr<DeviceRequirement> dev_res_req :
-      arch_res_req->GetDeviceRequirementOptions()) {
-    auto [score, device] = calc_score_devplacement(task, dev_res_req,
+      arch_placement_req->GetDeviceRequirementOptions()) {
+    auto [score, device] = calc_score_devplacement(task, dev_res_req.get(),
         num_total_mapped_tasks);
     if (best_score < score) {
       best_score = score;
@@ -24,16 +23,16 @@ std::pair<Score_t, Device*> LocalityLoadBalancingMappingPolicy::calc_score_archp
               << dev_res_req->res_req().get(VCU) << "\n";
     ++i;
   }
+  assert(best_device != nullptr);
   return std::make_pair(best_score, best_device);
 }
 
 std::pair<Score_t, Device*>
-    LocalityLoadBalancingMappingPolicy::calc_score_devplacement(InnerTask* task,
-    std::shared_ptr<DeviceRequirementBase> base_res_req,
-    size_t num_total_mapped_tasks /*, std::vector<> num_mapped_tasks_foreach_device */) {
-  DeviceRequirement *dev_res_req =
-      dynamic_cast<DeviceRequirement *>(base_res_req.get());
-  const Device& device = *(dev_res_req->device());
+    LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
+        InnerTask* task, DeviceRequirement* placement_req,
+        size_t num_total_mapped_tasks
+        /*, std::vector<> num_mapped_tasks_foreach_device */) {
+  const Device& device = *(placement_req->device());
   std::cout << "Locality-aware- and Load-balancing mapping policy\n";
 
   // TODO(hc): Data locality calculation.
@@ -63,8 +62,42 @@ std::pair<Score_t, Device*>
 
   Score_t score = 0;
   std::cout << "\t[Device Requirement in Multi-device Requirement]\n"
-            << dev_res_req->device()->GetName() << " -> "
-            << dev_res_req->res_req().get(MEMORY) << "B, VCU "
-            << dev_res_req->res_req().get(VCU) << "\n";
-  return std::make_pair(score, dev_res_req->device());
+            << placement_req->device()->GetName() << " -> "
+            << placement_req->res_req().get(MEMORY) << "B, VCU "
+            << placement_req->res_req().get(VCU) << "\n";
+  return std::make_pair(score, placement_req->device());
 }
+
+std::pair<Score_t, std::vector<Device*>>
+    LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
+        InnerTask* task, MultiDeviceRequirements *placement_reqs,
+        size_t num_total_mapped_tasks) {
+  Score_t average_score{0};
+  std::vector<std::shared_ptr<SingleDeviceRequirementBase>> placement_reqs_vec =
+         placement_reqs->get_placement_requirements();
+  std::vector<Device*> member_devices(placement_reqs_vec.size());
+  for (DevID_t did = 0; did < placement_reqs_vec.size(); ++did) {
+    std::shared_ptr<SingleDeviceRequirementBase> placement_req =
+        placement_reqs_vec[did];
+    Device* dev{nullptr};
+    Score_t score{0};
+    if (placement_req->is_dev_req()) {
+      DeviceRequirement *dev_req =
+          dynamic_cast<DeviceRequirement *>(placement_req.get());
+      std::tie(score, dev) = this->calc_score_devplacement(task, dev_req,
+          num_total_mapped_tasks);
+    } else if (placement_req->is_arch_req()) {
+      ArchitectureRequirement* arch_req =
+          dynamic_cast<ArchitectureRequirement *>(placement_req.get());
+      std::tie(score, dev) =
+          this->calc_score_archplacement(task, arch_req,
+              num_total_mapped_tasks);
+    }
+    assert(dev != nullptr);
+    member_devices[did] = dev;
+    average_score += score;
+  }
+  average_score /= placement_reqs_vec.size();
+  return std::make_pair(average_score, member_devices);
+}
+
