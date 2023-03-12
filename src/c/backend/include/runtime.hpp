@@ -336,7 +336,7 @@ public:
   };
 
   template <ResourceCategory category> inline void set_num_instances() {
-    if constexpr (category == ResourceCategory::PERSISTENT) {
+    if constexpr (category == ResourceCategory::Persistent) {
       this->num_persistant_instances.store(this->assigned_devices.size());
     } else {
       this->num_runtime_instances.store(this->assigned_devices.size());
@@ -344,7 +344,7 @@ public:
   };
 
   template <ResourceCategory category> inline int decrement_num_instances() {
-    if constexpr (category == ResourceCategory::PERSISTENT) {
+    if constexpr (category == ResourceCategory::Persistent) {
       return this->num_persistant_instances.fetch_sub(1);
     } else {
       return this->num_runtime_instances.fetch_sub(1);
@@ -352,7 +352,7 @@ public:
   };
 
   template <ResourceCategory category> inline int get_num_instances() {
-    if constexpr (category == ResourceCategory::PERSISTENT) {
+    if constexpr (category == ResourceCategory::Persistent) {
       return this->num_persistant_instances.load();
     } else {
       return this->num_runtime_instances.load();
@@ -360,7 +360,7 @@ public:
   };
 
   template <ResourceCategory category> inline bool get_removed() {
-    if constexpr (category == ResourceCategory::PERSISTENT) {
+    if constexpr (category == ResourceCategory::Persistent) {
       return this->removed_reserved;
     } else {
       return this->removed_runtime;
@@ -368,7 +368,7 @@ public:
   }
 
   template <ResourceCategory category> inline void set_removed(bool waiting) {
-    if constexpr (category == ResourceCategory::PERSISTENT) {
+    if constexpr (category == ResourceCategory::Persistent) {
       this->removed_reserved = waiting;
     } else {
       this->removed_runtime = waiting;

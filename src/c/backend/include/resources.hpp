@@ -14,8 +14,13 @@ using namespace std::literals::string_view_literals; // Enables sv suffix only
 
 using Resource_t = int64_t;
 
-enum Resource { MEMORY = 0, VCU = 1 };
-enum ResourceCategory { ALL = 0, PERSISTENT = 1, NON_PERSISTENT = 2 };
+enum class Resource { Memory = 0, VCU = 1, MAX = 2 };
+enum class ResourceCategory {
+  All = 0,
+  Persistent = 1,
+  NonPersistent = 2,
+  MAX = 3
+};
 
 // TODO(wlr): ResourcePool should have template specializations on the device
 // type.
@@ -24,16 +29,42 @@ enum ResourceCategory { ALL = 0, PERSISTENT = 1, NON_PERSISTENT = 2 };
 //       devices and compare them. For now assume only memory and vcu exist and
 //       are used for all devices.
 
+/*
+In the current plan there two phases where there are per-device queues:
+
+MemoryReserver, where persistent resources that have a lifetime greater than the
+task execution are reserved. The only one of these that we track is memory.
+Another name for this could be "prefetched resources". RuntimeReserver, where
+'non-persistent' runtime resources that have a lifetime equal to the task
+execution. The only one of these that we track is VCUs. The persistent /
+non-persistent tags refere to these two phases which track and compare different
+resources.
+
+In practice these should be set by the architecture type and not shared
+globally. For now we assume all devices have the same resource sets in all
+phases.
+
+*/
 inline constexpr std::array resource_names = {"memory"sv, "vcu"sv};
 // inline std::unordered_map<std::string, Resource> resource_map = {
 //     {resource_names[Resource::MEMORY], Resource::MEMORY},
 //     {resource_names[Resource::VCU], Resource::VCU}};
 
 inline constexpr std::array<Resource, 1> persistent_resources = {
-    Resource::MEMORY};
+    Resource::Memory};
 inline constexpr std::array<Resource, 1> non_persistent_resources = {
     Resource::VCU};
 
+/**
+ * @brief A pool of resources, allows for comparisons and updates of current
+ *values.
+ * @tparam T The type of the resource pool. Must be an atomic type. (typically
+ * int64_t)
+ *
+ *NOTE: The copy operation is not thread safe. It is only for
+ * initilaization.
+ *
+ */
 template <typename T> class ResourcePool {
 
 public:
@@ -43,13 +74,15 @@ public:
 
   ResourcePool(std::vector<Resource> &resource_list, std::vector<V> &values) {
     for (auto i = 0; i < resource_list.size(); i++) {
-      this->resources[resource_list[i]].exchange(values[i]);
+      const int idx = static_cast<int>(resource_list[i]);
+      this->resources[idx].exchange(values[i]);
     }
   }
 
   ResourcePool(std::vector<std::pair<Resource, V>> &resource_list) {
     for (auto i = 0; i < resource_list.size(); i++) {
-      this->resources[resource_list[i].first].exchange(resource_list[i].second);
+      const int idx = static_cast<int>(resource_list[i].first);
+      this->resources[idx].exchange(resource_list[i].second);
     }
   }
 
@@ -60,47 +93,42 @@ public:
   }
 
   inline const V set(Resource resource, auto value) {
-    return this->resources[resource].exchange(static_cast<T>(value));
+    const int idx = static_cast<int>(resource);
+    return this->resources[idx].exchange(static_cast<T>(value));
   };
 
   inline const V get(Resource resource) const {
-    return this->resources[resource].load();
+    const int idx = static_cast<int>(resource);
+    return this->resources[idx].load();
   };
 
   template <ResourceCategory category>
   inline const bool check_greater(const ResourcePool &other) const {
-    if constexpr (category == ResourceCategory::ALL) {
+    if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
         if (this->resources[i].load() < other.resources[i].load()) {
           return false;
         }
       }
       return true;
-    } else if constexpr (category == ResourceCategory::PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
-        if (this->resources[persistent_resources[i]].load() <
-            other.resources[persistent_resources[i]].load()) {
-          std::cout << "Persistent resource "
-                    << resource_names[persistent_resources[i]]
-                    << " is not greater than "
-                    << other.resources[persistent_resources[i]].load() << " : "
-                    << this->resources[persistent_resources[i]].load()
-                    << std::endl;
+        const int idx = static_cast<int>(persistent_resources[i]);
+        if (this->resources[idx].load() < other.resources[idx].load()) {
+          std::cout << "Persistent resource " << resource_names[idx]
+                    << " is not greater than " << other.resources[idx].load()
+                    << " : " << this->resources[idx].load() << std::endl;
           return false;
         }
       }
       return true;
-    } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
-        if (this->resources[non_persistent_resources[i]].load() <
-            other.resources[non_persistent_resources[i]].load()) {
-          std::cout << "Non-persistent resource "
-                    << resource_names[non_persistent_resources[i]]
-                    << " is not greater than "
-                    << other.resources[non_persistent_resources[i]].load()
-                    << " : "
-                    << this->resources[non_persistent_resources[i]].load()
-                    << std::endl;
+        const int idx = static_cast<int>(non_persistent_resources[i]);
+        if (this->resources[idx].load() < other.resources[idx].load()) {
+          std::cout << "Persistent resource " << resource_names[idx]
+                    << " is not greater than " << other.resources[idx].load()
+                    << " : " << this->resources[idx].load() << std::endl;
           return false;
         }
       }
@@ -110,25 +138,25 @@ public:
 
   template <ResourceCategory category>
   inline const bool check_lesser(const ResourcePool &other) const {
-    if constexpr (category == ResourceCategory::ALL) {
+    if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i > resource_names.size(); i++) {
         if (this->resources[i].load() <= other.resources[i].load()) {
           return false;
         }
       }
       return true;
-    } else if constexpr (category == ResourceCategory::PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i > persistent_resources.size(); i++) {
-        if (this->resources[persistent_resources[i]].load() <=
-            other.resources[persistent_resources[i]].load()) {
+        const int idx = static_cast<int>(persistent_resources[i]);
+        if (this->resources[idx].load() <= other.resources[idx].load()) {
           return false;
         }
       }
       return true;
-    } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i > non_persistent_resources.size(); i++) {
-        if (this->resources[non_persistent_resources[i]].load() <=
-            other.resources[non_persistent_resources[i]].load()) {
+        const int idx = static_cast<int>(non_persistent_resources[i]);
+        if (this->resources[idx].load() <= other.resources[idx].load()) {
           return false;
         }
       }
@@ -138,38 +166,38 @@ public:
 
   template <ResourceCategory category>
   inline void increase(const ResourcePool &other) {
-    if constexpr (category == ResourceCategory::ALL) {
+    if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
         this->resources[i].fetch_add(other.resources[i].load());
       }
-    } else if constexpr (category == ResourceCategory::PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
-        this->resources[persistent_resources[i]].fetch_add(
-            other.resources[persistent_resources[i]].load());
+        const int idx = static_cast<int>(persistent_resources[i]);
+        this->resources[idx].fetch_add(other.resources[idx].load());
       }
-    } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
-        this->resources[non_persistent_resources[i]].fetch_add(
-            other.resources[non_persistent_resources[i]].load());
+        const int idx = static_cast<int>(non_persistent_resources[i]);
+        this->resources[idx].fetch_add(other.resources[idx].load());
       }
     }
   };
 
   template <ResourceCategory category>
   inline void decrease(const ResourcePool &other) {
-    if constexpr (category == ResourceCategory::ALL) {
+    if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
         this->resources[i].fetch_sub(other.resources[i].load());
       }
-    } else if constexpr (category == ResourceCategory::PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
-        this->resources[persistent_resources[i]].fetch_sub(
-            other.resources[persistent_resources[i]].load());
+        const int idx = static_cast<int>(persistent_resources[i]);
+        this->resources[idx].fetch_sub(other.resources[idx].load());
       }
-    } else if constexpr (category == ResourceCategory::NON_PERSISTENT) {
+    } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
-        this->resources[non_persistent_resources[i]].fetch_sub(
-            other.resources[non_persistent_resources[i]].load());
+        const int idx = static_cast<int>(non_persistent_resources[i]);
+        this->resources[idx].fetch_sub(other.resources[idx].load());
       }
     }
   };

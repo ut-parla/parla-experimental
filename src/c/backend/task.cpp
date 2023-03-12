@@ -361,8 +361,8 @@ bool InnerTask::get_complete() { return this->get_state(); }
 void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
-  res_req.set(MEMORY, mem_sz);
-  res_req.set(VCU, num_vcus);
+  res_req.set(Resource::Memory, mem_sz);
+  res_req.set(Resource::VCU, num_vcus);
 
   std::shared_ptr<DeviceRequirement> dev_req =
       std::make_shared<DeviceRequirement>(dev_ptr, res_req);

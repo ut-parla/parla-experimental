@@ -1,16 +1,59 @@
 #pragma once
+#include "resources.hpp"
 #ifndef PARLA_PHASES_HPP
 #define PARLA_PHASES_HPP
 
 #include "containers.hpp"
 #include "device.hpp"
 #include "device_manager.hpp"
+<<<<<<< HEAD
 #include "device_queues.hpp"
+||||||| d49d758
+#include "runtime.hpp"
+=======
+>>>>>>> main
 #include "policy.hpp"
-#include "resources.hpp"
+<<<<<<< HEAD
+#include "runtime.hpp"
+||||||| d49d758
+
+#include <string>
+=======
 #include "runtime.hpp"
 
+>>>>>>> main
 #include <memory>
+<<<<<<< HEAD
+#include <string>
+||||||| d49d758
+
+class PhaseStatus {
+protected:
+  const static int size = 3;
+  std::string name = "Status";
+
+public:
+  int status[size];
+
+  void reset() {
+    for (int i = 0; i < size; ++i) {
+      this->status[i] = 0;
+    }
+  }
+
+  void set(int index, int value) { this->status[index] = value; }
+  int get(int index) { return this->status[index]; }
+  void increase(int state) { this->status[state]++; }
+
+  void print() {
+    std::cout << this->name + "(";
+    for (int i = 0; i < size; ++i) {
+      std::cout << this->status[i];
+    }
+    std::cout << ")\n";
+  }
+};
+=======
 #include <string>
 
 enum class MapperState { Failure = 0, Success = 1, MAX = 2 };
@@ -59,6 +102,7 @@ public:
     std::cout << ")\n";
   }
 };
+>>>>>>> main
 
 class MapperStatus : public PhaseStatus<MapperState> {};
 class MemoryReserverStatus : public PhaseStatus<MemoryReserverState> {};
@@ -77,17 +121,19 @@ public:
   virtual size_t get_count() = 0;
 
 protected:
+<<<<<<< HEAD
+  // std::string name{"Phase"};
+||||||| d49d758
+  std::string name = "Phase";
+=======
   inline static const std::string name{"Phase"};
+>>>>>>> main
   std::mutex mtx;
   InnerScheduler *scheduler;
   DeviceManager *device_manager;
   TaskStateList enqueue_buffer;
 };
 
-/**
- * @brief Mapper phase of the scheduler. Uses constraints to assign tasks to
- * device sets.
- */
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
@@ -103,8 +149,14 @@ public:
   size_t get_count();
 
 protected:
+<<<<<<< HEAD
+  // std::string name{"Mapper"};
+||||||| d49d758
+  std::string name = "Mapper";
+=======
   inline static const std::string name{"Mapper"};
   MapperStatus status{name};
+>>>>>>> main
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
   uint64_t dummy_dev_idx_;
@@ -112,20 +164,13 @@ protected:
   std::shared_ptr<MappingPolicy> policy_;
 };
 
-/**
- * @brief MemoryReserver phase of the scheduler. Reserves all 'persistent
- * resources`. This plans task execution on the device set. Here all 'persistent
- * resources` that have a lifetime greater than the task body are reserved and
- * shared between tasks. At the moment this is only the memory a task uses. The
- * memory is reserved to allow input data to be prefetched onto the devices.
- */
 class MemoryReserver : virtual public SchedulerPhase {
 public:
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
-        new PhaseManager<ResourceCategory::Persistent>(devices);
+        new PhaseManager<ResourceCategory::PERSISTENT>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -134,38 +179,37 @@ public:
   size_t get_count();
 
 protected:
+<<<<<<< HEAD
   // std::string name{"Memory Reserver"};
-  PhaseManager<ResourceCategory::Persistent> *reservable_tasks;
+  PhaseManager<ResourceCategory::PERSISTENT> *reservable_tasks;
+||||||| d49d758
+  std::string name = "Memory Reserver";
+  TaskQueue reservable_tasks;
+=======
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
+  TaskQueue reservable_tasks;
+>>>>>>> main
   std::vector<InnerTask *> reserved_tasks_buffer;
 
   bool check_resources(InnerTask *task);
   void reserve_resources(InnerTask *task);
 };
 
-/**
- * @brief RuntimeReserver phase of the scheduler. Reserves all 'non-persistent
- * resources`. This plans task execution on the device set. Here all
- * 'non-persistent resources` that have a lifetime equal to the task body are
- * reserved and are not directly shared between tasks. At the moment this is
- * only the VCUS/Threads a task uses.
- * This phase submits the task to the launcher.
- */
 class RuntimeReserver : virtual public SchedulerPhase {
 public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     std::cout << "RuntimeReserver created" << std::endl;
     this->runnable_tasks =
-        new PhaseManager<ResourceCategory::NonPersistent>(devices);
+        new PhaseManager<ResourceCategory::NON_PERSISTENT>(devices);
   }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
-  PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
+  PhaseManager<ResourceCategory::NON_PERSISTENT> *get_runnable_tasks() {
     return this->runnable_tasks;
   }
 
@@ -174,19 +218,46 @@ public:
   const void print_status() const { this->status.print(); }
 
 protected:
-  PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
+<<<<<<< HEAD
+  // std::string name{"Runtime Reserver"};
+  PhaseManager<ResourceCategory::NON_PERSISTENT> *runnable_tasks;
+||||||| d49d758
+  std::string name = "Runtime Reserver";
+  TaskQueue runnable_tasks;
+=======
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
+  TaskQueue runnable_tasks;
+>>>>>>> main
   std::vector<InnerTask *> launchable_tasks_buffer;
 
   bool check_resources(InnerTask *task);
   void reserve_resources(InnerTask *task);
 };
 
+<<<<<<< HEAD
+||||||| d49d758
+#ifdef PARLA_ENABLE_LOGGING
+LOG_ADAPT_STRUCT(RuntimeReserver, status)
+#endif
+
+namespace Launch {
+
+enum State { failure, success };
+
+class Status : public PhaseStatus {
+protected:
+  const static int size = 2;
+  std::string name = "Launcher";
+};
+} // namespace Launch
+
+=======
 #ifdef PARLA_ENABLE_LOGGING
 LOG_ADAPT_STRUCT(RuntimeReserver, print_status)
 #endif
 
+>>>>>>> main
 class Launcher : virtual public SchedulerPhase {
 public:
   /*Number of running tasks. A task is running if it has been assigned to a
@@ -212,8 +283,14 @@ public:
   size_t get_count() { return this->num_running_tasks.load(); }
 
 protected:
+<<<<<<< HEAD
+  // std::string name{"Launcher"};
+||||||| d49d758
+  std::string name = "Launcher";
+=======
   inline static const std::string name{"Launcher"};
   LauncherStatus status{name};
+>>>>>>> main
   /*Buffer to store not yet launched tasks. Currently unused. Placeholder in
    * case it becomes useful.*/
   TaskList task_buffer;

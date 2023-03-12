@@ -7,9 +7,10 @@ from libcpp.vector cimport vector
 cdef extern from "include/device.hpp" nogil:
 
     cdef enum DeviceType:
-        ANY
-        CPU
-        CUDA
+        All "DeviceType::All"
+        CPU "DeviceType::CPU"
+        CUDA "DeviceType::CUDA"
+        
     cdef cppclass Device:
         Device(DeviceType, int, long, long, void*) except +
         int get_id() except +

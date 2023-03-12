@@ -18,16 +18,18 @@ public:
 
   void register_device(Device *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
-    registered_devices_[new_dev->get_type()].emplace_back(new_dev);
+    const int idx = static_cast<int>(new_dev->get_type());
+    arch_devices_[idx].emplace_back(new_dev);
     all_devices_.emplace_back(new_dev);
   }
 
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
 
-    for (DeviceType i : architecture_types) {
+    for (DeviceType dev_type : architecture_types) {
+      int i = static_cast<int>(dev_type);
       std::cout << "Device type: " << i << "\n";
-      auto device_list = registered_devices_[i];
+      auto device_list = arch_devices_[i];
 
       for (auto j = 0; j < device_list.size(); ++j) {
         auto device = device_list[j];
@@ -36,55 +38,57 @@ public:
     }
   }
 
-  // TODO(wlr): err Sorry! I was playing around with these. Feel free to revert.
-  //  I had thought a compile time dispatch would be nice, but forgot it would
-  //  need a specialized handler class to do runtime inference for each enum
-  //  type..
   template <DeviceType T> int get_num_devices() {
-    if constexpr (T == ANY) {
+    if constexpr (T == DeviceType::All) {
       return all_devices_.size();
-    } else if constexpr (T == CPU) {
-      return registered_devices_[CPU].size();
-    } else if constexpr (T == CUDA) {
-      return registered_devices_[CUDA].size();
+    } else if constexpr (T == DeviceType::CPU) {
+      return arch_devices_[static_cast<int>(DeviceType::CPU)].size();
+    } else if constexpr (T == DeviceType::CUDA) {
+      return arch_devices_[static_cast<int>(DeviceType::CUDA)].size();
     }
   }
 
   int get_num_devices(DeviceType dev_type) {
     switch (dev_type) {
-    case CPU:
-      return get_num_devices<CPU>();
-    case CUDA:
-      return get_num_devices<CUDA>();
+    case DeviceType::CPU:
+      return get_num_devices<DeviceType::CPU>();
+    case DeviceType::CUDA:
+      return get_num_devices<DeviceType::CUDA>();
     default:
-      return get_num_devices<ANY>();
+      return get_num_devices<DeviceType::All>();
     }
   }
 
   template <DeviceType T> std::vector<Device *> &get_devices() {
-    if constexpr (T == CPU) {
-      return registered_devices_[CPU];
-    } else if constexpr (T == CUDA) {
-      return registered_devices_[CUDA];
-    } else if constexpr (T == ANY) {
+    if constexpr (T == DeviceType::CPU) {
+      return arch_devices_[static_cast<int>(DeviceType::CPU)];
+    } else if constexpr (T == DeviceType::CUDA) {
+      return arch_devices_[static_cast<int>(DeviceType::CUDA)];
+    } else if constexpr (T == DeviceType::All) {
       return all_devices_;
     }
   }
 
   std::vector<Device *> &get_devices(DeviceType dev_type) {
     switch (dev_type) {
-    case CPU:
-      return get_devices<CPU>();
-    case CUDA:
-      return get_devices<CUDA>();
+    case DeviceType::CPU:
+      return get_devices<DeviceType::CPU>();
+    case DeviceType::CUDA:
+      return get_devices<DeviceType::CUDA>();
     default:
-      return get_devices<ANY>();
+      return get_devices<DeviceType::All>();
     }
   }
 
 protected:
+  // Global device id counter
+  // When used in Scheduler, we assume that only a single device manager holds
+  // all devices.
   DevID_t last_dev_id_ = 0;
-  std::array<std::vector<Device *>, NUM_DEVICE_TYPES> registered_devices_;
+
+  // Store devices by architecture type
+  std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
+  // Stores all devices in the system
   std::vector<Device *> all_devices_;
 };
 
