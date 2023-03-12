@@ -70,7 +70,12 @@ template <typename T> class ResourcePool {
 public:
   using V = typename T::value_type;
 
-  ResourcePool() = default;
+  ResourcePool() {
+    std::cout << "Resource Initialized:" << std::endl;
+    for (int i = 0; i < resource_names.size(); i++) {
+      std::cout << this->resources[i].load() << std::endl;
+    }
+  };
 
   ResourcePool(std::vector<Resource> &resource_list, std::vector<V> &values) {
     for (auto i = 0; i < resource_list.size(); i++) {
@@ -205,7 +210,7 @@ public:
 protected:
   // TODO(wlr): Is there any way to make this compile time initilaization depend
   // on resouce_names.size()?
-  std::array<T, resource_names.size()> resources = {0, 0};
+  std::array<T, resource_names.size()> resources = {};
 };
 
 #endif // RESOURCES_HPP

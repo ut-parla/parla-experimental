@@ -317,7 +317,17 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // TODO: for runahead, we need to do this AFTER the task body is complete
   //      Need to add back to the pool after notify_dependents
   worker->remove_task();
-  // this->resources->increase(task->resources);
+
+  // Release all resources for this task on all devices
+  for (Device *device : task->assigned_devices) {
+
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+
+    device_pool.increase<ResourceCategory::All>(task_pool);
+  }
+
   this->enqueue_worker(worker);
 }
 
