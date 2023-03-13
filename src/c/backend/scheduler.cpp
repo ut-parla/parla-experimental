@@ -265,19 +265,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   this->launcher->num_running_tasks--;
 
-  if (state == Task::RUNNING) {
-    // std::cout << "Task Continuation (C++) " << task->name << " " << state
-    //          << std::endl;
-    // Do continuation handling
-    // TODO:
-    //  - make sure state ids match
-    //  - add and process dependencies
-    //  - if true, enqueue task
-    task->reset();
-    auto status = task->process_dependencies();
-    this->enqueue_task(task, status);
-  }
-
   if (state == Task::RUNAHEAD) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
@@ -316,6 +303,19 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
         task->device_constraints[device->get_global_id()];
 
     device_pool.increase<ResourceCategory::All>(task_pool);
+  }
+
+  if (state == Task::RUNNING) {
+    // std::cout << "Task Continuation (C++) " << task->name << " " << state
+    //          << std::endl;
+    // Do continuation handling
+    // TODO:
+    //  - make sure state ids match
+    //  - add and process dependencies
+    //  - if true, enqueue task
+    task->reset();
+    auto status = task->process_dependencies();
+    this->enqueue_task(task, status);
   }
 
   this->enqueue_worker(worker);
