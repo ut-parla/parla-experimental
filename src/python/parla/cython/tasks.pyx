@@ -245,6 +245,9 @@ class Task:
 
         name = name.encode('utf-8')
         self.inner_task.update_name(name)
+
+    def get_name(self):
+        return self.name
         
 
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
@@ -332,6 +335,9 @@ class Task:
         dependent_list = self.inner_task.get_dependents()
         return dependent_list
 
+    def get_assigned_devices(self):
+        return self.inner_task.get_assigned_devices()
+
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
         status = self.inner_task.notify_dependents_wrapper()
@@ -406,7 +412,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies, constraints, priority)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
 
     def _execute_task(self):
         return self.func(self, *self.args)

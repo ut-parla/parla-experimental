@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class DeviceType(IntEnum):
     """
     This class declares device types.
@@ -15,5 +16,6 @@ class DeviceType(IntEnum):
         can be distinguished through these types.
      3) Device registration phase can utilize these types.
     """
+    ANY = -1
     CUDA = 1
     CPU = 0

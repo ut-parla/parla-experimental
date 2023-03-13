@@ -141,8 +141,8 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
-  this->resources = new ResourcePool<std::atomic<int64_t>>();
-  // TODO: Clean these up
+  // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
+  //  TODO: Clean these up
 }
 
 void InnerScheduler::set_num_workers(int nworkers) {
@@ -151,7 +151,7 @@ void InnerScheduler::set_num_workers(int nworkers) {
 
 void InnerScheduler::set_resources(std::string resource_name,
                                    float resource_value) {
-  this->resources->set(Resource::VCU, resource_value);
+  this->resources.set(Resource::VCU, resource_value);
 }
 
 void InnerScheduler::set_py_scheduler(void *py_scheduler) {
@@ -182,8 +182,6 @@ void InnerScheduler::stop() {
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-  // TODO(hc): the param should be mapped phase but use ready phase
-  // for debugging.
 
   this->mapper->run(this->memory_reserver);
   this->memory_reserver->run(this->runtime_reserver);
@@ -219,6 +217,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
     task->set_status(Task::RUNNABLE);
+    // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
@@ -266,19 +265,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   this->launcher->num_running_tasks--;
 
-  if (state == Task::RUNNING) {
-    // std::cout << "Task Continuation (C++) " << task->name << " " << state
-    //          << std::endl;
-    // Do continuation handling
-    // TODO:
-    //  - make sure state ids match
-    //  - add and process dependencies
-    //  - if true, enqueue task
-    task->reset();
-    auto status = task->process_dependencies();
-    this->enqueue_task(task, status);
-  }
-
   if (state == Task::RUNAHEAD) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
@@ -308,7 +294,30 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // TODO: for runahead, we need to do this AFTER the task body is complete
   //      Need to add back to the pool after notify_dependents
   worker->remove_task();
-  // this->resources->increase(task->resources);
+
+  // Release all resources for this task on all devices
+  for (Device *device : task->assigned_devices) {
+
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+
+    device_pool.increase<ResourceCategory::All>(task_pool);
+  }
+
+  if (state == Task::RUNNING) {
+    // std::cout << "Task Continuation (C++) " << task->name << " " << state
+    //          << std::endl;
+    // Do continuation handling
+    // TODO:
+    //  - make sure state ids match
+    //  - add and process dependencies
+    //  - if true, enqueue task
+    task->reset();
+    auto status = task->process_dependencies();
+    this->enqueue_task(task, status);
+  }
+
   this->enqueue_worker(worker);
 }
 

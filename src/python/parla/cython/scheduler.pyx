@@ -154,6 +154,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     if isinstance(self.task, ComputeTask):
                         active_task = self.task 
 
+                        #print("TASK", active_task.get_name(), " has devices: ", active_task.get_assigned_devices(), flush=True)
+
                         core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
@@ -201,7 +203,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
             self.scheduler.stop()
 
             if isinstance(e, TaskBodyException):
-                raise WorkerThreadException("Unhandled Exception in Task") from e
+                raise WorkerThreadException(f"Unhandled Exception in Task: {self.task.get_name()}") from e
             if isinstance(e, KeyboardInterrupt):
                 print("You pressed Ctrl+C! In a worker!", flush=True)
                 raise e

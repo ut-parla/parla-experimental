@@ -5,7 +5,9 @@
 #include "containers.hpp"
 #include "device.hpp"
 #include "device_manager.hpp"
+#include "device_queues.hpp"
 #include "policy.hpp"
+#include "resources.hpp"
 #include "runtime.hpp"
 
 #include <memory>
@@ -82,6 +84,10 @@ protected:
   TaskStateList enqueue_buffer;
 };
 
+/**
+ * @brief Mapper phase of the scheduler. Uses constraints to assign tasks to
+ * device sets.
+ */
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
@@ -106,10 +112,21 @@ protected:
   std::shared_ptr<MappingPolicy> policy_;
 };
 
+/**
+ * @brief MemoryReserver phase of the scheduler. Reserves all 'persistent
+ * resources`. This plans task execution on the device set. Here all 'persistent
+ * resources` that have a lifetime greater than the task body are reserved and
+ * shared between tasks. At the moment this is only the memory a task uses. The
+ * memory is reserved to allow input data to be prefetched onto the devices.
+ */
 class MemoryReserver : virtual public SchedulerPhase {
 public:
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    // std::cout << "MemoryReserver created\n";
+    this->reservable_tasks =
+        new PhaseManager<ResourceCategory::Persistent>(devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -117,32 +134,53 @@ public:
   size_t get_count();
 
 protected:
+  // std::string name{"Memory Reserver"};
+  PhaseManager<ResourceCategory::Persistent> *reservable_tasks;
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
-  TaskQueue reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
+
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
 };
 
+/**
+ * @brief RuntimeReserver phase of the scheduler. Reserves all 'non-persistent
+ * resources`. This plans task execution on the device set. Here all
+ * 'non-persistent resources` that have a lifetime equal to the task body are
+ * reserved and are not directly shared between tasks. At the moment this is
+ * only the VCUS/Threads a task uses.
+ * This phase submits the task to the launcher.
+ */
 class RuntimeReserver : virtual public SchedulerPhase {
-
 public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    // std::cout << "RuntimeReserver created" << std::endl;
+    this->runnable_tasks =
+        new PhaseManager<ResourceCategory::NonPersistent>(devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
+  PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
+    return this->runnable_tasks;
+  }
 
   const std::string &get_name() const { return this->name; }
   const RuntimeReserverStatus &get_status() const { return this->status; }
   const void print_status() const { this->status.print(); }
 
 protected:
+  PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
-  TaskQueue runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
+
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
 };
 
 #ifdef PARLA_ENABLE_LOGGING

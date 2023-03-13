@@ -51,7 +51,7 @@ def spawn(task=None,
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
-          vcus=1,
+          vcus=1000,
           memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
@@ -96,7 +96,6 @@ def spawn(task=None,
         placement = placement if placement is not None else [
             arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
 
-        print("Placement: ", placement, flush=True)
         device_reqs = scheduler.get_device_reqs_from_placement(placement)
         task.set_device_reqs(device_reqs)
 

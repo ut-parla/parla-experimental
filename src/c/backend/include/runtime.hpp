@@ -1,4 +1,5 @@
 #pragma once
+#include "resources.hpp"
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 
@@ -207,8 +208,22 @@ public:
   /* Number of unreserved dependencies */
   std::atomic<int> num_unreserved_dependencies{1};
 
+  /*Number of unreserved instances (for multidevice) */
+  std::atomic<int> num_persistant_instances{1};
+  bool removed_reserved{false};
+
+  /* Number of waiting instances (for multidevice) */
+  std::atomic<int> num_runtime_instances{1};
+  bool removed_runtime{false};
+
   /* Tasks Internal Resource Pool. */
   ResourcePool<std::atomic<int64_t>> resources;
+
+  /* Task Assigned Device Set*/
+  std::vector<Device *> assigned_devices;
+
+  /*Resource Requirements for each assigned device*/
+  std::unordered_map<int, ResourcePool_t> device_constraints;
 
   /* Task has data to be moved */
   std::atomic<bool> has_data{false};
@@ -226,6 +241,9 @@ public:
 
   /* Set the name of the task */
   void set_name(std::string name);
+
+  /* Get the name of the task */
+  const std::string &get_name() const { return this->name; };
 
   /* Set the id of the task */
   void set_id(long long int name);
@@ -297,6 +315,7 @@ public:
     this->num_unspawned_dependencies.store(1);
     this->num_unmapped_dependencies.store(1);
     this->num_unreserved_dependencies.store(1);
+    this->assigned_devices.clear();
   }
 
   /* Return whether the task is ready to run */
@@ -309,8 +328,53 @@ public:
   int get_num_dependents();
 
   /* Get number of blocking dependencies */
-  int get_num_blocking_dependencies() const;
-  int get_num_unmapped_dependencies() const;
+  inline int get_num_blocking_dependencies() const {
+    return this->num_blocking_dependencies.load();
+  };
+
+  inline int get_num_unmapped_dependencies() const {
+    return this->num_unmapped_dependencies.load();
+  };
+
+  template <ResourceCategory category> inline void set_num_instances() {
+    if constexpr (category == ResourceCategory::Persistent) {
+      this->num_persistant_instances.store(this->assigned_devices.size());
+    } else {
+      this->num_runtime_instances.store(this->assigned_devices.size());
+    }
+  };
+
+  template <ResourceCategory category> inline int decrement_num_instances() {
+    if constexpr (category == ResourceCategory::Persistent) {
+      return this->num_persistant_instances.fetch_sub(1);
+    } else {
+      return this->num_runtime_instances.fetch_sub(1);
+    }
+  };
+
+  template <ResourceCategory category> inline int get_num_instances() {
+    if constexpr (category == ResourceCategory::Persistent) {
+      return this->num_persistant_instances.load();
+    } else {
+      return this->num_runtime_instances.load();
+    }
+  };
+
+  template <ResourceCategory category> inline bool get_removed() {
+    if constexpr (category == ResourceCategory::Persistent) {
+      return this->removed_reserved;
+    } else {
+      return this->removed_runtime;
+    }
+  }
+
+  template <ResourceCategory category> inline void set_removed(bool waiting) {
+    if constexpr (category == ResourceCategory::Persistent) {
+      this->removed_reserved = waiting;
+    } else {
+      this->removed_runtime = waiting;
+    }
+  }
 
   /* Get dependency list. Used for testing Python interface. */
   std::vector<void *> get_dependencies();
@@ -320,6 +384,9 @@ public:
 
   /* Get python task */
   void *get_py_task();
+
+  /* Get the python assigned devices */
+  std::vector<Device *> &get_assigned_devices();
 
   /* Set the task status */
   int set_state(int state);
@@ -590,8 +657,9 @@ public:
   WorkerPool_t workers;
 
   /* Resource Pool */
+  // TODO(wlr): Remove this (deprecated from testing)
   ResourcePool<std::atomic<int64_t>>
-      *resources; // TODO: Dummy class, needs complete rework with devices
+      resources; // TODO: Dummy class, needs complete rework with devices
 
   /* Active task counter (thread-safe) */
   std::atomic<int> num_active_tasks{1};
