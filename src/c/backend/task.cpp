@@ -328,6 +328,10 @@ int InnerTask::set_state(int state) {
   return old_state_id;
 }
 
+std::vector<Device *> &InnerTask::get_assigned_devices() {
+  return this->assigned_devices;
+}
+
 Task::State InnerTask::set_state(Task::State state) {
   Task::State new_state = state;
   Task::State old_state;

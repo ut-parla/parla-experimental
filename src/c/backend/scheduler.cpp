@@ -182,16 +182,6 @@ void InnerScheduler::stop() {
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-  // TODO(hc): the param should be mapped phase but use ready phase
-  // for debugging.
-  // std::cout << "Mapper pointer: " << reinterpret_cast<void *>(this->mapper)
-  //          << std::endl;
-  // std::cout << "memory_reserver pointer: "
-  //          << reinterpret_cast<void *>(this->memory_reserver) << std::endl;
-  std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(
-                   this->runtime_reserver->get_runnable_tasks())
-            << std::endl;
 
   this->mapper->run(this->memory_reserver);
   this->memory_reserver->run(this->runtime_reserver);

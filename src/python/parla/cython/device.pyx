@@ -100,6 +100,9 @@ class PyDevice:
     def __repr__(self):
         return self._device_name
 
+    def __str__(self):
+        return repr(self)
+
 
 """
 Device instances in Python manage resource status.
@@ -111,7 +114,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CUDA, "CUDADev", dev_id)
+        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -120,7 +123,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CPU, "CPUDev", dev_id)
+        super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 

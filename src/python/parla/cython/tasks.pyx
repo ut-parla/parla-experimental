@@ -245,6 +245,9 @@ class Task:
 
         name = name.encode('utf-8')
         self.inner_task.update_name(name)
+
+    def get_name(self):
+        return self.name
         
 
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
@@ -331,6 +334,9 @@ class Task:
     def get_dependents(self):
         dependent_list = self.inner_task.get_dependents()
         return dependent_list
+
+    def get_assigned_devices(self):
+        return self.inner_task.get_assigned_devices()
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """

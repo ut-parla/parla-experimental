@@ -384,6 +384,9 @@ public:
   /* Get python task */
   void *get_py_task();
 
+  /* Get the python assigned devices */
+  std::vector<Device *> &get_assigned_devices();
+
   /* Set the task status */
   int set_state(int state);
 

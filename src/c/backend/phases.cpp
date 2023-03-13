@@ -25,7 +25,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
-  std::cout << "Mapper::run" << std::endl;
 
   // TODO: Refactor this so its readable without as many nested conditionals
 
@@ -56,23 +55,23 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
     std::random_device rd;
     std::mt19937 g(rd());
-    std::shuffle(devices.begin(), devices.end(), g);
-
-    std::cout << "Mapping task " << task->get_name() << " to devices "
-              << devices[0]->get_name() << " and " << devices[1]->get_name()
-              << std::endl;
+    // std::shuffle(devices.begin(), devices.end(), g);
 
     ResourcePool_t sample;
     sample.set(Resource::Memory, 0);
     sample.set(Resource::VCU, 500);
 
     task->assigned_devices.push_back(devices[0]);
-    task->assigned_devices.push_back(devices[1]);
+    // task->assigned_devices.push_back(devices[1]);
 
     // TODO(wlr): Maybe use shared_ptr<ResourcePool_t> to pass from existing
     // res_req? Cannot be shared pools between devices. These are copies here.
     task->device_constraints.insert({devices[0]->get_global_id(), sample});
-    task->device_constraints.insert({devices[1]->get_global_id(), sample});
+    // task->device_constraints.insert({devices[1]->get_global_id(), sample});
+
+    // std::cout << "Mapping task " << task->get_name() << " to devices "
+    //           << devices[0]->get_name() << " and " << devices[1]->get_name()
+    //           << std::endl;
 
     this->mapped_tasks_buffer.push_back(task);
     has_task = this->get_count() > 0;
@@ -93,14 +92,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
   }
 
   this->mapped_tasks_buffer.clear();
-  std::cout << "Mapper::run done" << std::endl;
 }
 
 /**************************/
 // Reserved Phase implementation
 
 void MemoryReserver::enqueue(InnerTask *task) {
-  std::cout << "MemoryReserver::enqueue: " << task->get_name() << std::endl;
   this->reservable_tasks->enqueue(task);
 }
 
@@ -148,10 +145,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
-  std::cout << "MemoryReserver::run" << std::endl;
-  std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(runtime_reserver->get_runnable_tasks())
-            << std::endl;
 
   // Only one thread can reserve memory at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
@@ -196,23 +189,17 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 
     if (enqueue_flag) {
       reserved_task->set_status(Task::RUNNABLE);
-      std::cout << "ENQUEUE FROM PHASE: " << std::endl;
       runtime_reserver->enqueue(reserved_task);
     }
   }
 
   this->reserved_tasks_buffer.clear();
-  std::cout << "MemoryReserver::run done" << std::endl;
-  std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(runtime_reserver->get_runnable_tasks())
-            << std::endl;
 }
 
 /**************************/
 // Ready Phase implementation
 
 void RuntimeReserver::enqueue(InnerTask *task) {
-  std::cout << "RuntimeReserver::enqueue: " << task->get_name() << std::endl;
   this->runnable_tasks->enqueue(task);
 }
 
@@ -259,21 +246,11 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "RuntimeReserver::run" << std::endl;
-  std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(this->get_runnable_tasks())
-            << std::endl;
-
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
   // Only one thread can reserve runtime resources at a time.
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
   // std::unique_lock<std::mutex> lock(this->mtx);
-
-  std::cout << "NDevices: " << this->runnable_tasks->get_num_devices()
-            << std::endl;
-  std::cout << "NQueues: " << this->runnable_tasks->get_num_device_queues()
-            << std::endl;
 
   bool has_task = true;
 
@@ -281,13 +258,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     has_task = this->get_count() > 0;
 
     if (has_task) {
-      std::cout << "bfront runtime_reserver pointer: "
-                << reinterpret_cast<void *>(this->get_runnable_tasks())
-                << std::endl;
+
       InnerTask *task = this->runnable_tasks->front();
-      std::cout << "afront runtime_reserver pointer: "
-                << reinterpret_cast<void *>(this->get_runnable_tasks())
-                << std::endl;
 
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
@@ -299,29 +271,15 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
 
         if (has_thread) {
-          std::cout << "bpop runtime_reserver pointer: "
-                    << reinterpret_cast<void *>(this->get_runnable_tasks())
-                    << std::endl;
           InnerTask *task = this->runnable_tasks->pop();
-          std::cout << "apop runtime_reserver pointer: "
-                    << reinterpret_cast<void *>(this->get_runnable_tasks())
-                    << std::endl;
+
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources
           this->reserve_resources(task);
-          std::cout << "areserve runtime_reserver pointer: "
-                    << reinterpret_cast<void *>(this->get_runnable_tasks())
-                    << std::endl;
 
           launcher->enqueue(task, worker);
-          std::cout << "alaunch runtime_reserver pointer: "
-                    << reinterpret_cast<void *>(this->get_runnable_tasks())
-                    << std::endl;
 
-          std::cout << "HERE: astatus runtime_reserver pointer: "
-                    << reinterpret_cast<void *>(this->get_runnable_tasks())
-                    << std::endl;
           this->status.increase(RuntimeReserverState::Success);
         } else {
           this->status.increase(RuntimeReserverState::NoWorker);
@@ -336,11 +294,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
       break; // No more tasks available
     }
   }
-
-  std::cout << "RuntimeReserver::run done" << std::endl;
-  std::cout << "runtime_reserver pointer: "
-            << reinterpret_cast<void *>(this->get_runnable_tasks())
-            << std::endl;
 }
 
 /**************************/

@@ -253,6 +253,22 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         return c_self.get_num_unmapped_dependencies()
 
+    cpdef get_assigned_devices(self):
+        cdef InnerTask* c_self = self.c_task
+
+        cdef vector[Device*] c_devices = c_self.get_assigned_devices()
+        cdef size_t num_devices = c_devices.size()
+
+        cdef Device* c_device
+
+        devices = []
+        for i in range(num_devices):
+            c_device = <Device*> c_devices[i]
+            py_device = <object> c_device.get_py_device()
+            devices.append(py_device)
+
+        return devices
+
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
         cdef bool status = False
