@@ -292,6 +292,10 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
 
 bool InnerTask::blocked() { return this->num_blocking_dependencies.load() > 0; }
 
+std::string InnerTask::get_name() {
+  return this->name;
+}
+
 int InnerTask::get_num_dependencies() {
   return this->dependencies.atomic_size();
 }

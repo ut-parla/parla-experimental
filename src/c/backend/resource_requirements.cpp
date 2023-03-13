@@ -16,7 +16,7 @@ void MultiDeviceRequirements::AppendDeviceRequirement(
 }
 
 const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>&
-    MultiDeviceRequirements::get_placement_requirements() {
+    MultiDeviceRequirements::get_placement_requirements_ref() {
   return placement_reqs_;
 }
 

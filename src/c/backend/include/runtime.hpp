@@ -321,6 +321,9 @@ public:
   /* Return whether the task is ready to run */
   bool blocked();
 
+  /* Get a task name */
+  std::string get_name();
+
   /* Get number of dependencies */
   int get_num_dependencies();
 

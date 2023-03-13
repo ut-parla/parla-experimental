@@ -92,51 +92,80 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     //           << devices[0]->get_name() << " and " << devices[1]->get_name()
     //           << std::endl;
 #endif
-    ResourceRequirementCollections &res_reqs = task->get_placement_req_options();
-    std::vector<std::shared_ptr<DeviceRequirementBase>> dev_res_reqs =
-        res_reqs.GetDeviceRequirementOptions();
+    ResourceRequirementCollections &placement_req_options =
+        task->get_placement_req_options();
+    std::vector<std::shared_ptr<DeviceRequirementBase>> placement_req_options_vec
+        = placement_req_options.GetDeviceRequirementOptions();
     // A set of chosen devices to a task.
     Score_t best_score{0};
-    std::vector<Device*> chosen_devices;
-    for (std::shared_ptr<DeviceRequirementBase> base_res_req : dev_res_reqs) {
-      if (base_res_req->is_multidev_req()) {
+    std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
+
+    // Iterate all placement requirements passed by users and calculate
+    // scores based on a policy.
+    for (std::shared_ptr<DeviceRequirementBase> base_req :
+            placement_req_options_vec) {
+      if (base_req->is_multidev_req()) {
         // Multi-device placement requirements.
         std::cout << "[Multi-device requirement]\n";
         MultiDeviceRequirements *mdev_reqs =
-            dynamic_cast<MultiDeviceRequirements *>(base_res_req.get());
-        auto [score, dev_vec] =
-            policy_->calc_score_mdevplacement(task, mdev_reqs, 
-                this->atomic_load_total_num_mapped_tasks());
-        if (best_score < score) {
-          best_score = score;
-          chosen_devices.swap(dev_vec);
+            dynamic_cast<MultiDeviceRequirements *>(base_req.get());
+        std::vector<std::shared_ptr<DeviceRequirement>>
+            mdev_reqs_vec;
+        Score_t score{0};
+        policy_->calc_score_mdevplacement(task, mdev_reqs, 
+            this->atomic_load_total_num_mapped_tasks(), &mdev_reqs_vec,
+            &score);
+        std::cout << "Chosen device from multi-device requirements\n";
+        std::cout << "Score:" << score << "\n";
+        for (size_t i = 0 ; i < mdev_reqs_vec.size(); ++i) {
+          //std::cout << "\t>>" << mdev_reqs_vec[i] << 
         }
-      } else if (base_res_req->is_dev_req()) {
+
+        if (best_score <= score) {
+          best_score = score;
+          chosen_devices.swap(mdev_reqs_vec);
+        }
+      } else if (base_req->is_dev_req()) {
         // A single device placement requirement.
-        DeviceRequirement *dev_req =
-            dynamic_cast<DeviceRequirement *>(base_res_req.get());
-        auto [score, dev] =
-          policy_->calc_score_devplacement(task, dev_req,
-              this->atomic_load_total_num_mapped_tasks());
-        if (best_score < score) {
+        std::shared_ptr<DeviceRequirement> dev_req =
+            std::dynamic_pointer_cast<DeviceRequirement>(base_req);
+        Score_t score{0};
+        policy_->calc_score_devplacement(task, dev_req,
+            this->atomic_load_total_num_mapped_tasks(), &score);
+        if (best_score <= score) {
+          assert(dev_req != nullptr);
           best_score = score;
           chosen_devices.clear();
-          chosen_devices.emplace_back(dev);
+          chosen_devices.emplace_back(dev_req);
         }
-      } else if (base_res_req->is_arch_req()) {
+      } else if (base_req->is_arch_req()) {
         // A single architecture placement requirement.
         ArchitectureRequirement* arch_req =
-            dynamic_cast<ArchitectureRequirement *>(base_res_req.get());
-        auto [score, dev] =
-          policy_->calc_score_archplacement(task, arch_req,
-              this->atomic_load_total_num_mapped_tasks());
-        if (best_score < score) {
-          best_score = score;
+            dynamic_cast<ArchitectureRequirement *>(base_req.get());
+        std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
+        Score_t chosen_dev_score{0};
+        policy_->calc_score_archplacement(task, arch_req,
+            this->atomic_load_total_num_mapped_tasks(),
+            chosen_dev_req, &chosen_dev_score);
+        if (best_score <= chosen_dev_score) {
+          assert(chosen_dev_req != nullptr);
+          best_score = chosen_dev_score;
           chosen_devices.clear();
-          chosen_devices.emplace_back(dev);
+          chosen_devices.emplace_back(chosen_dev_req);
+        }
+      }
+      std::cout << "Chosen devices:\n";
+      for (size_t i = 0 ; i < chosen_devices.size(); ++i) {
+        std::cout << "\t>>" << i << " ";
+        if (chosen_devices[i] == nullptr) {
+          std::cout << "nullptr\n";
+        } else {
+          std::cout << chosen_devices[i]->device()->GetName() << "\n";
         }
       }
     }
+
+    std::cout << "Task name:" << task->get_name() << "\n";
 
     this->mapped_tasks_buffer.push_back(task);
     // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
