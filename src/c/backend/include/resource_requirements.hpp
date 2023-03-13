@@ -19,7 +19,8 @@ class SinglePlacementRequirementBase : public PlacementRequirementBase {};
 /// memory and virtual computation units.
 class PlacementRequirementCollections {
 public:
-  void append_placement_req_opt(std::shared_ptr<PlacementRequirementBase> dev_req);
+  void
+  append_placement_req_opt(std::shared_ptr<PlacementRequirementBase> dev_req);
   const std::vector<std::shared_ptr<PlacementRequirementBase>> &
   get_placement_req_opts_ref();
 

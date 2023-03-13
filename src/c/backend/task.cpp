@@ -395,8 +395,7 @@ void InnerTask::end_arch_req_addition() {
   if (req_addition_mode_ == 4) {
     tmp_multdev_reqs_->append_placement_req(std::move(tmp_arch_req_));
   } else {
-    placement_req_options_.append_placement_req_opt(
-        std::move(tmp_arch_req_));
+    placement_req_options_.append_placement_req_opt(std::move(tmp_arch_req_));
   }
   --req_addition_mode_;
 }
@@ -410,7 +409,6 @@ void InnerTask::begin_multidev_req_addition() {
 
 void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
-  placement_req_options_.append_placement_req_opt(
-      std::move(tmp_multdev_reqs_));
+  placement_req_options_.append_placement_req_opt(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }

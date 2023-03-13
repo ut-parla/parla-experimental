@@ -32,7 +32,9 @@ public:
 
       for (auto j = 0; j < device_list.size(); ++j) {
         auto device = device_list[j];
-        std::cout << "Device " << j << ": " << device->get_name() << "\n";
+        std::cout << "Device " << j << ": " << device->get_name() <<
+                << "\n\t mem. sz:" << device->get_memory_size()
+                << ", num. vcus:" << device->get_num_vcus() << "\n";
       }
     }
   }
