@@ -186,12 +186,18 @@ cdef class PyInnerTask:
         cdef bool status = False 
         cdef _StatusFlags status_flags
 
-        for i in range(0, len(dependency_list)):
-            d = dependency_list[i]
-            dependency = d.inner_task
-            c_dependency = dependency.c_task
-            c_self.queue_dependency(c_dependency)
-
+        try: 
+            for i in range(0, len(dependency_list)):
+                d = dependency_list[i]
+                dependency = d.inner_task
+                c_dependency = dependency.c_task
+                c_self.queue_dependency(c_dependency)
+        except TypeError:
+            for d in dependency_list:
+                dependency = d.inner_task
+                c_dependency = dependency.c_task
+                c_self.queue_dependency(c_dependency)
+                
         if process:
             with nogil:
                 status_flags = c_self.process_dependencies()
