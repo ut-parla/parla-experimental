@@ -81,9 +81,9 @@ class PyDeviceManager:
     def __init__(self, dev_config = None):
         self.cy_device_manager = CyDeviceManager()
         # TODO(hc): I don't know a better way to register architecture.
-        self.py_registered_archs = [None] * 2
-        self.py_registered_archs[DeviceType.CPU] = cpu
-        self.py_registered_archs[DeviceType.CUDA] = cuda
+        # TODO(wlr): I made this a dict so that device manager doesn't have to have all arch types.
+        self.py_registered_archs = {}
+
         # TODO(hc): pack those config. to a data class.
         if dev_config == None or dev_config == "":
             self.register_cuda_devices_cupy()
@@ -102,14 +102,15 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
-            py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
+            self.py_registered_archs[cuda] = cuda
+        
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
                                             # in bytes.
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
-                py_cuda_arch.add_device(py_cuda_device)
+                cuda.add_device(py_cuda_device)
 
     def register_cpu_devices(self):
         # Get the number of usable CPUs from this process.
@@ -117,8 +118,8 @@ class PyDeviceManager:
         num_cores = len(os.sched_getaffinity(0))
         mem_sz = long(psutil.virtual_memory().total)
         py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
-        py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
-        py_cpu_arch.add_device(py_cpu_device)
+        self.py_registered_archs[cpu] = cpu
+        cpu.add_device(py_cpu_device)
 
     def register_devices_to_cpp(self):
         """
@@ -167,6 +168,9 @@ class PyDeviceManager:
                 devs.append(dev)
         return devs
 
+    def get_all_architectures(self):
+        return self.py_registered_archs.values()
+
     def is_multidevice_placement(self, placement_tuple):
         if len(placement_tuple) == 2 and \
                 isinstance(placement_tuple[1], DeviceResource):
@@ -185,7 +189,7 @@ class PyDeviceManager:
                   d, res_req_))
         return PrintableFrozenSet(arch_reqs)
 
-    def construct_resouce_requirements(self, placement_component):
+    def construct_resource_requirements(self, placement_component):
         if isinstance(placement_component, Tuple) and \
               not self.is_multidevice_placement(placement_component):
                 # In this case, the placement component consists of
@@ -251,7 +255,7 @@ class PyDeviceManager:
                 # resource requirements.
                 unpacked_devices.append(self.unpack_placements(c))
             else:
-                unpacked_devices.append(self.construct_resouce_requirements(c))
+                unpacked_devices.append(self.construct_resource_requirements(c))
         return unpacked_devices
 
     def get_device_reqs_from_placement(self, placement):
