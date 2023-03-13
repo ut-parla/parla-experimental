@@ -36,8 +36,8 @@ public:
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return false; }
 
-  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>>&
-      get_placement_requirements_ref();
+  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> &
+  get_placement_requirements_ref();
 
 private:
   std::vector<std::shared_ptr<SingleDeviceRequirementBase>> placement_reqs_;

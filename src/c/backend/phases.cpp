@@ -94,8 +94,9 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
 #endif
     ResourceRequirementCollections &placement_req_options =
         task->get_placement_req_options();
-    std::vector<std::shared_ptr<DeviceRequirementBase>> placement_req_options_vec
-        = placement_req_options.GetDeviceRequirementOptions();
+    std::vector<std::shared_ptr<DeviceRequirementBase>>
+        placement_req_options_vec =
+            placement_req_options.GetDeviceRequirementOptions();
     // A set of chosen devices to a task.
     Score_t best_score{0};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
@@ -103,22 +104,21 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     // Iterate all placement requirements passed by users and calculate
     // scores based on a policy.
     for (std::shared_ptr<DeviceRequirementBase> base_req :
-            placement_req_options_vec) {
+         placement_req_options_vec) {
       if (base_req->is_multidev_req()) {
         // Multi-device placement requirements.
         std::cout << "[Multi-device requirement]\n";
         MultiDeviceRequirements *mdev_reqs =
             dynamic_cast<MultiDeviceRequirements *>(base_req.get());
-        std::vector<std::shared_ptr<DeviceRequirement>>
-            mdev_reqs_vec;
+        std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
         Score_t score{0};
-        policy_->calc_score_mdevplacement(task, mdev_reqs, 
-            this->atomic_load_total_num_mapped_tasks(), &mdev_reqs_vec,
-            &score);
+        policy_->calc_score_mdevplacement(
+            task, mdev_reqs, this->atomic_load_total_num_mapped_tasks(),
+            &mdev_reqs_vec, &score);
         std::cout << "Chosen device from multi-device requirements\n";
         std::cout << "Score:" << score << "\n";
-        for (size_t i = 0 ; i < mdev_reqs_vec.size(); ++i) {
-          //std::cout << "\t>>" << mdev_reqs_vec[i] << 
+        for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
+          // std::cout << "\t>>" << mdev_reqs_vec[i] <<
         }
 
         if (best_score <= score) {
@@ -130,8 +130,8 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         std::shared_ptr<DeviceRequirement> dev_req =
             std::dynamic_pointer_cast<DeviceRequirement>(base_req);
         Score_t score{0};
-        policy_->calc_score_devplacement(task, dev_req,
-            this->atomic_load_total_num_mapped_tasks(), &score);
+        policy_->calc_score_devplacement(
+            task, dev_req, this->atomic_load_total_num_mapped_tasks(), &score);
         if (best_score <= score) {
           assert(dev_req != nullptr);
           best_score = score;
@@ -140,12 +140,12 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         }
       } else if (base_req->is_arch_req()) {
         // A single architecture placement requirement.
-        ArchitectureRequirement* arch_req =
+        ArchitectureRequirement *arch_req =
             dynamic_cast<ArchitectureRequirement *>(base_req.get());
         std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
         Score_t chosen_dev_score{0};
-        policy_->calc_score_archplacement(task, arch_req,
-            this->atomic_load_total_num_mapped_tasks(),
+        policy_->calc_score_archplacement(
+            task, arch_req, this->atomic_load_total_num_mapped_tasks(),
             chosen_dev_req, &chosen_dev_score);
         if (best_score <= chosen_dev_score) {
           assert(chosen_dev_req != nullptr);
@@ -155,7 +155,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         }
       }
       std::cout << "Chosen devices:\n";
-      for (size_t i = 0 ; i < chosen_devices.size(); ++i) {
+      for (size_t i = 0; i < chosen_devices.size(); ++i) {
         std::cout << "\t>>" << i << " ";
         if (chosen_devices[i] == nullptr) {
           std::cout << "nullptr\n";
@@ -170,7 +170,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     this->mapped_tasks_buffer.push_back(task);
     // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
     this->atomic_incr_num_mapped_tasks(0);
-    //this->device_manager->IncrAtomicTotalNumMappedTasks();
+    // this->device_manager->IncrAtomicTotalNumMappedTasks();
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 

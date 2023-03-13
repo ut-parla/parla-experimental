@@ -94,14 +94,14 @@ public:
   Mapper() = delete;
   /* XXX(hc): is it necessary?
   Mapper(DevID_t num_total_devices) : SchedulerPhase(), dummy_dev_idx_{0} {
-    // TODO(hc) dev_num_mapped_tasks_.resize(num_total_devices);        
-  } */ 
+    // TODO(hc) dev_num_mapped_tasks_.resize(num_total_devices);
+  } */
 
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices, 
-         std::shared_ptr<MappingPolicy> policy) :
-          SchedulerPhase(scheduler, devices),
-          dummy_dev_idx_{0}, policy_{policy} {
-    // TODO(hc) dev_num_mapped_tasks_.resize(devices->get_num_registered_devices());
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices,
+         std::shared_ptr<MappingPolicy> policy)
+      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+    // TODO(hc)
+    // dev_num_mapped_tasks_.resize(devices->get_num_registered_devices());
   }
 
   void enqueue(InnerTask *task);

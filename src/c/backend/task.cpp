@@ -292,9 +292,7 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
 
 bool InnerTask::blocked() { return this->num_blocking_dependencies.load() > 0; }
 
-std::string InnerTask::get_name() {
-  return this->name;
-}
+std::string InnerTask::get_name() { return this->name; }
 
 int InnerTask::get_num_dependencies() {
   return this->dependencies.atomic_size();
@@ -397,7 +395,8 @@ void InnerTask::end_arch_req_addition() {
   if (req_addition_mode_ == 4) {
     tmp_multdev_reqs_->AppendDeviceRequirement(std::move(tmp_arch_req_));
   } else {
-    placement_req_options_.AppendDeviceRequirementOption(std::move(tmp_arch_req_));
+    placement_req_options_.AppendDeviceRequirementOption(
+        std::move(tmp_arch_req_));
   }
   --req_addition_mode_;
 }

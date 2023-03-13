@@ -14,7 +14,7 @@ using DevID_t = uint32_t;
 class DeviceManager {
 public:
   DeviceManager() {}
-  DeviceManager(const DeviceManager&) = delete;
+  DeviceManager(const DeviceManager &) = delete;
 
   void register_device(Device *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
@@ -25,7 +25,6 @@ public:
 
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
-
     for (DeviceType dev_type : architecture_types) {
       int i = static_cast<int>(dev_type);
       std::cout << "Device type: " << i << "\n";
