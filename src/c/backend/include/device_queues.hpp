@@ -231,8 +231,8 @@ public:
 
         // Try to get a non-waiting task
         // std::cout << "Trying DeviceQueue " << current_idx << " Device: "
-        << this->device_queues[current_idx]->get_device()->get_name()
-        << std::endl;
+        //<< this->device_queues[current_idx]->get_device()->get_name()
+        //<< std::endl;
         InnerTask *task = this->device_queues[current_idx]->front();
         if (task != nullptr) {
           // std::cout << "Found task: " << task->get_name() << std::endl;

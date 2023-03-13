@@ -180,6 +180,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.args = active_task.state.args
 
                             active_task.inner_task.clear_dependencies()
+                            print("Contintuation Task dependency type: ", type(active_task.dependencies), flush=True)
                             active_task.add_dependencies(active_task.dependencies, process=False)
                             nvtx.pop_range(domain="Python Runtime")
                         
@@ -203,7 +204,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
             self.scheduler.stop()
 
             if isinstance(e, TaskBodyException):
-                raise WorkerThreadException("Unhandled Exception in Task") from e
+                raise WorkerThreadException(f"Unhandled Exception in Task: {self.task.get_name()}") from e
             if isinstance(e, KeyboardInterrupt):
                 print("You pressed Ctrl+C! In a worker!", flush=True)
                 raise e
