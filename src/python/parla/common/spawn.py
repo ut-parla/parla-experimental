@@ -25,8 +25,9 @@ nvtx.initialize()
 
 Resources = core.Resources
 
-
 # @profile
+
+
 def _make_cell(val):
     """
     Create a new Python closure cell object.
@@ -50,7 +51,8 @@ def spawn(task=None,
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
-          vcus=1):
+          vcus=1,
+          memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -66,6 +68,7 @@ def spawn(task=None,
     # @profile
     def decorator(body):
         nonlocal vcus
+        nonlocal memory
         nonlocal dependencies
         nonlocal task
         nonlocal placement
@@ -86,7 +89,14 @@ def spawn(task=None,
 
         scheduler = get_scheduler_context().scheduler
 
+        device_manager = scheduler.device_manager
+
         # Get a set of candidate devices for a task.
+        # TODO(wlr): Is this too expensive?
+        placement = placement if placement is not None else [
+            arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
+
+        print("Placement: ", placement, flush=True)
         device_reqs = scheduler.get_device_reqs_from_placement(placement)
         task.set_device_reqs(device_reqs)
 
