@@ -63,7 +63,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
     auto specific_device_req = arch_req->GetDeviceRequirementOptions()[0];
     int vcu = specific_device_req->res_req().get(Resource::VCU);
 
-    std::cout << "VCU: " << vcu << std::endl;
+    // std::cout << "VCU: " << vcu << std::endl;
 
     std::vector<Device *> devices;
     devices.insert(devices.end(),
