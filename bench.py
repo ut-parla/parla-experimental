@@ -47,6 +47,7 @@ def main(workers, n, t, accesses, frac):
 
                 if args.verbose:
                     inner_start_t = time.perf_counter()
+                    print("Task", i, " | Start", flush=True)
 
                 for k in range(accesses):
                     free_sleep(free_time)

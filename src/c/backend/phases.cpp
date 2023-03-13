@@ -59,7 +59,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
     ResourcePool_t sample;
     sample.set(Resource::Memory, 0);
-    sample.set(Resource::VCU, 500);
+    sample.set(Resource::VCU, 0);
 
     task->assigned_devices.push_back(devices[0]);
     // task->assigned_devices.push_back(devices[1]);
@@ -253,10 +253,13 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   // std::unique_lock<std::mutex> lock(this->mtx);
 
   bool has_task = true;
-
+  int num_tasks = 0;
   while (has_task) {
-    has_task = this->get_count() > 0;
+    num_tasks = this->get_count();
+    has_task = num_tasks > 0;
 
+    // std::cout << "RuntimeReserver::run: num_tasks = " << num_tasks <<
+    // std::endl;
     if (has_task) {
 
       InnerTask *task = this->runnable_tasks->front();
@@ -272,7 +275,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
         if (has_thread) {
           InnerTask *task = this->runnable_tasks->pop();
-
           InnerWorker *worker = scheduler->workers.dequeue_worker();
 
           // Decrease Resources

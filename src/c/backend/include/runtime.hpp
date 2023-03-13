@@ -315,6 +315,7 @@ public:
     this->num_unspawned_dependencies.store(1);
     this->num_unmapped_dependencies.store(1);
     this->num_unreserved_dependencies.store(1);
+    this->assigned_devices.clear();
   }
 
   /* Return whether the task is ready to run */

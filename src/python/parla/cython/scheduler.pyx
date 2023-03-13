@@ -154,7 +154,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     if isinstance(self.task, ComputeTask):
                         active_task = self.task 
 
-                        print("TASK", active_task.get_name(), " has devices: ", active_task.get_assigned_devices(), flush=True)
+                        #print("TASK", active_task.get_name(), " has devices: ", active_task.get_assigned_devices(), flush=True)
 
                         core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
@@ -180,7 +180,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.args = active_task.state.args
 
                             active_task.inner_task.clear_dependencies()
-                            print("Contintuation Task dependency type: ", type(active_task.dependencies), flush=True)
                             active_task.add_dependencies(active_task.dependencies, process=False)
                             nvtx.pop_range(domain="Python Runtime")
                         

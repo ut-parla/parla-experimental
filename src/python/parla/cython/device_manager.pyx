@@ -116,7 +116,7 @@ class PyDeviceManager:
         # This might not be equal to the number of CPUs in the system.
         num_cores = len(os.sched_getaffinity(0))
         mem_sz = long(psutil.virtual_memory().total)
-        py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
+        py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
         py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
         py_cpu_arch.add_device(py_cpu_device)
 

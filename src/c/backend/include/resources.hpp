@@ -70,11 +70,11 @@ template <typename T> class ResourcePool {
 public:
   using V = typename T::value_type;
 
-  ResourcePool() {
-    std::cout << "Resource Initialized:" << std::endl;
-    for (int i = 0; i < resource_names.size(); i++) {
-      std::cout << this->resources[i].load() << std::endl;
-    }
+  ResourcePool(){
+      // std::cout << "Resource Initialized:" << std::endl;
+      // for (int i = 0; i < resource_names.size(); i++) {
+      //  std::cout << this->resources[i].load() << std::endl;
+      //}
   };
 
   ResourcePool(std::vector<Resource> &resource_list, std::vector<V> &values) {
@@ -119,10 +119,10 @@ public:
     } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
         const int idx = static_cast<int>(persistent_resources[i]);
+        // std::cout << "check_greater_persistent: " <<
+        // this->resources[idx].load()
+        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
-          std::cout << "Persistent resource " << resource_names[idx]
-                    << " is not greater than " << other.resources[idx].load()
-                    << " : " << this->resources[idx].load() << std::endl;
           return false;
         }
       }
@@ -130,10 +130,9 @@ public:
     } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
         const int idx = static_cast<int>(non_persistent_resources[i]);
+        // std::cout << "check_greater_runtime: " << this->resources[idx].load()
+        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
-          std::cout << "Persistent resource " << resource_names[idx]
-                    << " is not greater than " << other.resources[idx].load()
-                    << " : " << this->resources[idx].load() << std::endl;
           return false;
         }
       }
