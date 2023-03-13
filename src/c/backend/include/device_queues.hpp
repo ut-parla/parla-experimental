@@ -31,7 +31,7 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
     num_tasks++;
   };
@@ -54,16 +54,17 @@ public:
   */
   InnerTask *front() {
 
-    std::cout << "DeviceQueue::front()" << std::endl;
+    // std::cout << "DeviceQueue::front()" << std::endl;
 
     // First, check any waiting multi-device tasks
     if (!waiting_queue.empty()) {
       InnerTask *head = waiting_queue.front();
       int waiting_count = head->get_num_instances<category>();
 
-      std::cout << "MD Head: " << head->get_name()
-                << " Instances: " << waiting_count
-                << " Removed: " << head->get_removed<category>() << std::endl;
+      // std::cout << "MD Head: " << head->get_name()
+      //           << " Instances: " << waiting_count
+      //           << " Removed: " << head->get_removed<category>() <<
+      //           std::endl;
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {
@@ -84,17 +85,18 @@ public:
       InnerTask *head = mixed_queue.front();
       int prev_waiting_count = head->decrement_num_instances<category>();
 
-      std::cout << "Mixed Head: " << head->get_name()
-                << " Instances: " << prev_waiting_count
-                << " Removed: " << head->get_removed<category>() << std::endl;
+      // std::cout << "Mixed Head: " << head->get_name()
+      //           << " Instances: " << prev_waiting_count
+      //           << " Removed: " << head->get_removed<category>() <<
+      //           std::endl;
 
       // Check if the task is waiting for other instances
       if (prev_waiting_count <= 1) {
-        std::cout << "Return task: " << head->get_name() << std::endl;
+        // std::cout << "Return task: " << head->get_name() << std::endl;
         return head;
       } else {
         // If the task is still waiting, move it to the waiting queue
-        std::cout << "Moving to waiting queue" << std::endl;
+        // std::cout << "Moving to waiting queue" << std::endl;
         waiting_queue.push_back(head);
         mixed_queue.pop_front();
 
@@ -119,10 +121,10 @@ public:
    * @return the previous task at HEAD of the queue.
    */
   InnerTask *pop() {
-    std::cout << "DeviceQueue::pop()" << std::endl;
+    // std::cout << "DeviceQueue::pop()" << std::endl;
     InnerTask *task = front();
     if (task != nullptr) {
-      std::cout << "Popping task: " << task->get_name() << std::endl;
+      // std::cout << "Popping task: " << task->get_name() << std::endl;
       mixed_queue.pop_front();
       // Set removed status so task can be pruned from other queues
       task->set_removed<category>(true);
@@ -157,7 +159,7 @@ public:
    * @param device_manager the DeviceManager to initialize from
    **/
   PhaseManager(DeviceManager *device_manager) {
-    std::cout << "Initializing PhaseManager" << std::endl;
+    // std::cout << "Initializing PhaseManager" << std::endl;
 
     for (const DeviceType dev_type : architecture_types) {
       this->ndevices += device_manager->get_num_devices(dev_type);
@@ -169,10 +171,11 @@ public:
       }
     }
 
-    std::cout << "Initialized PhaseManager with " << this->ndevices
-              << " devices" << std::endl;
-    std::cout << "Initialized PhaseManager with " << this->device_queues.size()
-              << " queues" << std::endl;
+    // std::cout << "Initialized PhaseManager with " << this->ndevices
+    //           << " devices" << std::endl;
+    // std::cout << "Initialized PhaseManager with " <<
+    // this->device_queues.size()
+    //           << " queues" << std::endl;
   }
 
   /**
@@ -180,9 +183,9 @@ public:
    * @param task the task to enqueue. May be single or multi-device.
    **/
   void enqueue(InnerTask *task) {
-    std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
-    std::cout << "ndevices: " << this->ndevices << std::endl;
-    std::cout << "nqueues: " << this->device_queues.size() << std::endl;
+    // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
+    // std::cout << "ndevices: " << this->ndevices << std::endl;
+    // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
     task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
       this->device_queues[device->get_global_id()]->enqueue(task);
@@ -212,14 +215,14 @@ public:
     // Should we drain each device first, or try each device in
     // turn?
 
-    std::cout << "PhaseManager::front" << std::endl;
+    // std::cout << "PhaseManager::front" << std::endl;
 
     int start_idx = last_device_idx;
     int end_idx = start_idx + ndevices;
     int current_idx = start_idx;
 
     bool has_task = this->size() > 0;
-    std::cout << "Size of PhaseManager: " << this->size() << std::endl;
+    // std::cout << "Size of PhaseManager: " << this->size() << std::endl;
     while (has_task) {
 
       // Loop over all devices starting from after last success location
@@ -227,12 +230,12 @@ public:
         current_idx = i % ndevices;
 
         // Try to get a non-waiting task
-        std::cout << "Trying DeviceQueue " << current_idx << " Device: "
-                  << this->device_queues[current_idx]->get_device()->get_name()
-                  << std::endl;
+        // std::cout << "Trying DeviceQueue " << current_idx << " Device: "
+        << this->device_queues[current_idx]->get_device()->get_name()
+        << std::endl;
         InnerTask *task = this->device_queues[current_idx]->front();
         if (task != nullptr) {
-          std::cout << "Found task: " << task->get_name() << std::endl;
+          // std::cout << "Found task: " << task->get_name() << std::endl;
           this->last_device_idx = ++current_idx;
           return task;
         }
@@ -252,10 +255,10 @@ public:
    * @see DeviceQueue::pop
    **/
   InnerTask *pop() {
-    std::cout << "PhaseManager::pop" << std::endl;
+    // std::cout << "PhaseManager::pop" << std::endl;
     int idx = (this->last_device_idx - 1) % this->ndevices;
     InnerTask *task = this->device_queues[idx]->pop();
-    std::cout << "Popped task: " << task->get_name() << std::endl;
+    // std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
   }

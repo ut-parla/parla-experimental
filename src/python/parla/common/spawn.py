@@ -91,6 +91,8 @@ def spawn(task=None,
         task.set_device_reqs(device_reqs)
 
         task.set_scheduler(scheduler)
+
+        print("FD Type: ", type(flattened_dependencies), flush=True)
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
