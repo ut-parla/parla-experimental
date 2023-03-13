@@ -183,6 +183,7 @@ class PyDeviceManager:
 
     def construct_single_architecture_requirements(self, arch, res_req = None):
         arch_reqs = []
+        print(res_req)
         res_req_ = res_req if res_req is not None else DeviceResource()
         for d in arch.devices:
             arch_reqs.append(self.construct_single_device_requirements(
