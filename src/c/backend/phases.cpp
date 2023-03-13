@@ -2,6 +2,7 @@
 #include "include/device.hpp"
 #include "include/policy.hpp"
 #include "include/profiling.hpp"
+#include "include/resource_requirements.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 #include <algorithm>
@@ -49,6 +50,21 @@ void Mapper::run(SchedulerPhase *next_phase) {
     // testing/benchmarking.
     //            Remove this when we implement a policy.
 
+    // Just grabbing CPU VCUs for now.
+    // Assume it exists and is first.
+
+    auto valid_options = task->GetResourceRequirements();
+    auto dev_res_reqs = valid_options.GetDeviceRequirementOptions();
+    auto cpu_req = dev_res_reqs[0];
+
+    ArchitectureRequirement *arch_req =
+        dynamic_cast<ArchitectureRequirement *>(cpu_req.get());
+
+    auto specific_device_req = arch_req->GetDeviceRequirementOptions()[0];
+    int vcu = specific_device_req->res_req().get(Resource::VCU);
+
+    std::cout << "VCU: " << vcu << std::endl;
+
     std::vector<Device *> devices;
     devices.insert(devices.end(),
                    this->device_manager->get_devices(DeviceType::All).begin(),
@@ -60,7 +76,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
     ResourcePool_t sample;
     sample.set(Resource::Memory, 0);
-    sample.set(Resource::VCU, 499);
+    sample.set(Resource::VCU, vcu);
 
     task->assigned_devices.push_back(devices[0]);
     // task->assigned_devices.push_back(devices[1]);

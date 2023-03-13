@@ -123,7 +123,7 @@ class MemoryReserver : virtual public SchedulerPhase {
 public:
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
-    std::cout << "MemoryReserver created\n";
+    // std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
         new PhaseManager<ResourceCategory::Persistent>(devices);
   }
@@ -156,7 +156,7 @@ class RuntimeReserver : virtual public SchedulerPhase {
 public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
-    std::cout << "RuntimeReserver created" << std::endl;
+    // std::cout << "RuntimeReserver created" << std::endl;
     this->runnable_tasks =
         new PhaseManager<ResourceCategory::NonPersistent>(devices);
   }
