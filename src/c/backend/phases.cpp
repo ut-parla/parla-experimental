@@ -92,18 +92,18 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
     //           << devices[0]->get_name() << " and " << devices[1]->get_name()
     //           << std::endl;
 #endif
-    ResourceRequirementCollections &placement_req_options =
+    PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
-    std::vector<std::shared_ptr<DeviceRequirementBase>>
+    std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
-            placement_req_options.GetDeviceRequirementOptions();
+            placement_req_options.get_placement_req_opts_ref();
     // A set of chosen devices to a task.
     Score_t best_score{0};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
     // Iterate all placement requirements passed by users and calculate
     // scores based on a policy.
-    for (std::shared_ptr<DeviceRequirementBase> base_req :
+    for (std::shared_ptr<PlacementRequirementBase> base_req :
          placement_req_options_vec) {
       if (base_req->is_multidev_req()) {
         // Multi-device placement requirements.
@@ -160,7 +160,7 @@ void Mapper::run(SchedulerPhase *memory_reserver) {
         if (chosen_devices[i] == nullptr) {
           std::cout << "nullptr\n";
         } else {
-          std::cout << chosen_devices[i]->device()->GetName() << "\n";
+          std::cout << chosen_devices[i]->device()->get_name() << "\n";
         }
       }
     }

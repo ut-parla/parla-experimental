@@ -27,7 +27,7 @@ void LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 
   *score = 0;
   std::cout << "\t[Device Requirement in device Requirement]\n"
-            << "\t\t" << dev_placement_req->device()->GetName() << " -> "
+            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
             << dev_placement_req->res_req().get(MEMORY) << "B, VCU "
             << dev_placement_req->res_req().get(VCU) << "\n";
 }
@@ -66,11 +66,11 @@ void LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score) {
   *average_score = 0;
-  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> &
-      placement_reqs_vec = mdev_placement_req->get_placement_requirements_ref();
+  const std::vector<std::shared_ptr<SinglePlacementRequirementBase>> &
+      placement_reqs_vec = mdev_placement_req->get_placement_reqs_ref();
   member_device_reqs->resize(placement_reqs_vec.size());
   for (DevID_t did = 0; did < placement_reqs_vec.size(); ++did) {
-    std::shared_ptr<SingleDeviceRequirementBase> placement_req =
+    std::shared_ptr<SinglePlacementRequirementBase> placement_req =
         placement_reqs_vec[did];
     std::shared_ptr<DeviceRequirement> dev_req{nullptr};
     Score_t score{0};

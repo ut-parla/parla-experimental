@@ -7,43 +7,42 @@
 
 /// Base classes.
 
-class DeviceRequirementBase {
+class PlacementRequirementBase {
 public:
   virtual bool is_multidev_req() = 0;
   virtual bool is_arch_req() = 0;
   virtual bool is_dev_req() = 0;
 };
-class SingleDeviceRequirementBase : public DeviceRequirementBase {};
+class SinglePlacementRequirementBase : public PlacementRequirementBase {};
 
 /// Resource contains device types (architectures), specific devices, their
 /// memory and virtual computation units.
-class ResourceRequirementCollections {
+class PlacementRequirementCollections {
 public:
-  void
-  AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirementBase> dev_req);
-  const std::vector<std::shared_ptr<DeviceRequirementBase>> &
-  GetDeviceRequirementOptions();
+  void append_placement_req_opt(std::shared_ptr<PlacementRequirementBase> dev_req);
+  const std::vector<std::shared_ptr<PlacementRequirementBase>> &
+  get_placement_req_opts_ref();
 
 private:
-  std::vector<std::shared_ptr<DeviceRequirementBase>> placement_reqs_;
+  std::vector<std::shared_ptr<PlacementRequirementBase>> placement_reqs_;
 };
 
-class MultiDeviceRequirements : public DeviceRequirementBase {
+class MultiDeviceRequirements : public PlacementRequirementBase {
 public:
   void
-  AppendDeviceRequirement(std::shared_ptr<SingleDeviceRequirementBase> req);
+  append_placement_req(std::shared_ptr<SinglePlacementRequirementBase> req);
   bool is_multidev_req() override { return true; }
   bool is_arch_req() override { return false; }
   bool is_dev_req() override { return false; }
 
-  const std::vector<std::shared_ptr<SingleDeviceRequirementBase>> &
-  get_placement_requirements_ref();
+  const std::vector<std::shared_ptr<SinglePlacementRequirementBase>> &
+  get_placement_reqs_ref();
 
 private:
-  std::vector<std::shared_ptr<SingleDeviceRequirementBase>> placement_reqs_;
+  std::vector<std::shared_ptr<SinglePlacementRequirementBase>> placement_reqs_;
 };
 
-class DeviceRequirement : public SingleDeviceRequirementBase {
+class DeviceRequirement : public SinglePlacementRequirementBase {
 public:
   DeviceRequirement(Device *dev, ResourcePool_t res_reqs)
       : dev_(dev), res_reqs_(res_reqs) {}
@@ -61,9 +60,9 @@ private:
   ResourcePool_t res_reqs_;
 };
 
-class ArchitectureRequirement : public SingleDeviceRequirementBase {
+class ArchitectureRequirement : public SinglePlacementRequirementBase {
 public:
-  void AppendDeviceRequirementOption(std::shared_ptr<DeviceRequirement> req);
+  void append_placement_req_opt(std::shared_ptr<DeviceRequirement> req);
   const std::vector<std::shared_ptr<DeviceRequirement>> &
   GetDeviceRequirementOptions();
   bool is_multidev_req() override { return false; }

@@ -373,11 +373,11 @@ void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
   std::shared_ptr<DeviceRequirement> dev_req =
       std::make_shared<DeviceRequirement>(dev_ptr, res_req);
   if (req_addition_mode_ == SingleDevAdd) {
-    placement_req_options_.AppendDeviceRequirementOption(std::move(dev_req));
+    placement_req_options_.append_placement_req_opt(std::move(dev_req));
   } else if (req_addition_mode_ % 2 == 0) { /* Architecture requirement */
-    tmp_arch_req_->AppendDeviceRequirementOption(std::move(dev_req));
+    tmp_arch_req_->append_placement_req_opt(std::move(dev_req));
   } else if (req_addition_mode_ == MultiDevAdd) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(dev_req));
+    tmp_multdev_reqs_->append_placement_req(std::move(dev_req));
   }
 }
 
@@ -393,9 +393,9 @@ void InnerTask::begin_arch_req_addition() {
 void InnerTask::end_arch_req_addition() {
   assert(req_addition_mode_ % 2 == 0);
   if (req_addition_mode_ == 4) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(tmp_arch_req_));
+    tmp_multdev_reqs_->append_placement_req(std::move(tmp_arch_req_));
   } else {
-    placement_req_options_.AppendDeviceRequirementOption(
+    placement_req_options_.append_placement_req_opt(
         std::move(tmp_arch_req_));
   }
   --req_addition_mode_;
@@ -410,7 +410,7 @@ void InnerTask::begin_multidev_req_addition() {
 
 void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
-  placement_req_options_.AppendDeviceRequirementOption(
+  placement_req_options_.append_placement_req_opt(
       std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }

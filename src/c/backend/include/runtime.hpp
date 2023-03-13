@@ -429,7 +429,7 @@ public:
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
 
-  ResourceRequirementCollections &get_placement_req_options() {
+  PlacementRequirementCollections &get_placement_req_options() {
     return placement_req_options_;
   }
 
@@ -455,7 +455,7 @@ protected:
   std::shared_ptr<ArchitectureRequirement> tmp_arch_req_;
   std::shared_ptr<MultiDeviceRequirements> tmp_multdev_reqs_;
   // TODO(hc): rename these..
-  ResourceRequirementCollections placement_req_options_;
+  PlacementRequirementCollections placement_req_options_;
   /// This requirement is used to hold chosen devices and
   /// their requirements during task mapping.
   std::vector<std::shared_ptr<DeviceRequirement>> placement_reqs_;

@@ -74,7 +74,7 @@ public:
    * @brief Returns the device details (maximum resources available)
    * This is assumed to be constant after device creation.
    */
-  ResourcePool_t &get_resource_pool() { return res_; }
+  const ResourcePool_t &get_resource_pool() const { return res_; }
 
   /**
    * @brief Returns the currently mapped resources on the device.
@@ -82,7 +82,7 @@ public:
    * Decreased when resources are released at the end of a task.
    * This is not runtime necessary, but useful to mapping policy.
    */
-  ResourcePool_t &get_mapped_pool() { return mapped_res_; }
+  const ResourcePool_t &get_mapped_pool() const { return mapped_res_; }
 
   /**
    * @brief Returns the currently reserved resources on the device.
@@ -91,7 +91,7 @@ public:
    * This is necessary to determine if tasks can be scheduled without
    * oversubscription or OOM errors.
    */
-  ResourcePool_t &get_reserved_pool() { return reserved_res_; }
+  const ResourcePool_t &get_reserved_pool() const { return reserved_res_; }
 
   /**
    * @brief Returns the pointer to the python device object.
@@ -99,6 +99,22 @@ public:
   void *get_py_device() { return py_dev_; }
   void set_global_id(DevID_t global_id) { dev_global_id_ = global_id; }
   const DevID_t get_global_id() const { return dev_global_id_; }
+
+  const MemorySz_t get_memory_size() const { return res_.get(MEMORY); }
+
+  const VCU_t get_num_vcus() const { return res_.get(VCU); }
+
+  const Resource_t get_max_resource(Resource type) const {
+    return this->res_.get(type);
+  }
+
+  const Resource_t get_reserved_resource(Resource type) const {
+    return this->reserved_res_.get(type);
+  }
+
+  const Resource_t get_mapped_resource(Resource type) const {
+    return this->mapped_res_.get(type);
+  }
 
 protected:
   DeviceType dev_type_;

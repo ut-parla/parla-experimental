@@ -9,9 +9,7 @@ from libcpp.vector cimport vector
 cdef extern from "include/device_manager.hpp" nogil:
     cdef cppclass DeviceManager:
         DeviceManager() except +
-        void register_device(Device* device) except +
-        #void register_cuda_device "register_device" (CUDADevice*)  except +
-        #void register_cpu_device "register_device" (CPUDevice*) except +
+        void register_device(Device*) except +
         void print_registered_devices() except +
 
 

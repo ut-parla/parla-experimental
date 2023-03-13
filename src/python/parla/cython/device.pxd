@@ -12,9 +12,11 @@ cdef extern from "include/device.hpp" nogil:
         CUDA "DeviceType::CUDA"
         
     cdef cppclass Device:
-        Device(DeviceType, int, long, long, void*) except +
+        Device(string, int, long, long, void*) except +
         int get_id() except +
         string get_name() except +
+        long get_memory_size() except +
+        long get_num_vcus() except +
         void *get_py_device() except +
 
     cdef cppclass CUDADevice(Device):
