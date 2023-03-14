@@ -2,11 +2,12 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-from parla.common.global_enums import DeviceType 
+from parla.common.globals import DeviceType, cupy
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Union, List, Iterable, Dict, Tuple
+from collections import defaultdict
 
 cdef class CyDevice:
     """
@@ -72,6 +73,7 @@ class PyDevice:
     def __init__(self, dev_type, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
+        self._device = self 
 
     def __enter__(self):
         pass
@@ -86,15 +88,20 @@ class PyDevice:
             memory_sz = 0 if "memory" not in param else param["memory"]
             num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        print("[PyDevice] Parameter should be a dictionary specifying resource",
-              " requirements.", flush=True)
-        assert False
+        raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
+              " requirements.")
 
     def get_name(self):
         return self._device_name
 
     def get_cy_device(self):
         return self._cy_device
+
+    def get_device(self):
+        return self._device
+
+    def get_type(self):
+        return self._dev_type
 
     def __repr__(self):
         return self._device_name
@@ -111,6 +118,8 @@ class PyCUDADevice(PyDevice):
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CUDA, "CUDADev", dev_id)
+        #TODO(wlr): If we ever support VECs, we might need to move this
+        self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -164,9 +173,8 @@ class PyArchitecture(metaclass=ABCMeta):
             memory_sz = 0 if "memory" not in param else param["memory"]
             num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        print("[PyArchitecture] Parameter should be a dictionary specifying resource",
-              " requirements.", flush=True)
-        assert False
+        raise TypeError("[PyArchitecture] Parameter should be a dictionary specifying resource",
+              " requirements.")
 
     @property
     def id(self):
@@ -188,15 +196,15 @@ class PyArchitecture(metaclass=ABCMeta):
                self.id == o.id and self._name == o.name
 
     def __hash__(self):
-        return hash(self._id)
+        return self._id
 
     def __repr__(self):
         return type(self).__name__
 
  
 class PyCUDAArchitecture(PyArchitecture):
-    def __init__(self, id):
-        super().__init__("CUDAArch", id)
+    def __init__(self):
+        super().__init__("CUDAArch", DeviceType.CUDA)
 
     def add_device(self, device):
         assert isinstance(device, PyCUDADevice)
@@ -204,8 +212,8 @@ class PyCUDAArchitecture(PyArchitecture):
 
  
 class PyCPUArchitecture(PyArchitecture):
-    def __init__(self, id):
-        super().__init__("CPUArch", id)
+    def __init__(self):
+        super().__init__("CPUArch", DeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
@@ -224,3 +232,45 @@ class DeviceResourceRequirement:
 
 PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource], \
                         Tuple[PyDevice, DeviceResource]]
+
+def create_device_env(device):
+    if isinstance(device, PyCPUDevice):
+        return TaskEnvironment([device]), DeviceType.CPU
+    elif isinstance(device, PyCUDADevice):
+        return TaskEnvironment([device]), DeviceType.CUDA
+    
+class TaskEnvironment:
+
+    def __init__(self, environment_list):
+
+        self.device_dict = defaultdict(list)
+        self.env_list = []
+
+        for env in environment_list:
+            if isinstance(env, PyDevice):
+                dev = env
+                env, dev_type = create_device_env(env)
+                self.device_dict[dev_type].append(env)
+                self.env_list.append(env) 
+            elif isinstance(env, PyArchitecture):
+                for dev in env.devices:
+                    env, dev_type = create_device_env(dev)
+                    self.device_dict[dev_type].append(env)
+                    self.env_list.append(dev)
+            elif isinstance(env, TaskEnvironment):
+                for dev in env.device_dict:
+                    self.device_dict[dev] += env.device_dict[dev]
+                self.env_list.append(env)
+            else:
+                raise TypeError("[TaskEnvironment] Unsupported environment type.")
+
+
+    def __getitem__(self, index):
+
+        if isinstance(index, int):
+            return self.env_list[index]
+        elif isinstance(index, PyArchitecture):
+            return TaskEnvironment(self.device_dict[index])
+        
+        return TaskEnvironment(self.env_list[index])
+

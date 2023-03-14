@@ -1,11 +1,6 @@
 from parla.cython import device
 from parla.cython.device cimport Device
-from parla.common.global_enums import DeviceType
-
-try:
-    import cupy
-except ImportError:
-    cupy = None
+from parla.common.globals import DeviceType, cupy
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 
@@ -27,8 +22,8 @@ DeviceResourceRequirement = device.DeviceResourceRequirement
 # Architecture declaration.
 # To use these in the placement of @spawn,
 # declare these as global variables.
-cuda = PyCUDAArchitecture(DeviceType.CUDA)
-cpu = PyCPUArchitecture(DeviceType.CPU)
+cuda = PyCUDAArchitecture()
+cpu = PyCPUArchitecture()
 
 cdef class CyDeviceManager:
     """

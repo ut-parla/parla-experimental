@@ -1,5 +1,11 @@
 from enum import IntEnum
 
+try:
+    import cupy
+except ImportError:
+    cupy = None
+
+
 class DeviceType(IntEnum):
     """
     This class declares device types.
