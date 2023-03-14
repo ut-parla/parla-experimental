@@ -87,8 +87,8 @@ class PyDeviceManager:
 
         # TODO(hc): pack those config. to a data class.
         if dev_config == None or dev_config == "":
-            self.register_cuda_devices_cupy()
             self.register_cpu_devices()
+            self.register_cuda_devices_cupy()
         else:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
@@ -125,14 +125,14 @@ class PyDeviceManager:
             self.register_cpu_devices(cuda)
 
     def register_cpu_devices(self, register_to_cuda: bool = False):
-        # Get the number of usable CPUs from this process.
-        # This might not be equal to the number of CPUs in the system.
-        num_cores = len(os.sched_getaffinity(0))
-        mem_sz = long(psutil.virtual_memory().total)
-        py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
         if register_to_cuda:
-            cuda.add_device(py_cpu_device)
+            cuda.add_device(cpu(0))
         else:
+            # Get the number of usable CPUs from this process.
+            # This might not be equal to the number of CPUs in the system.
+            num_cores = len(os.sched_getaffinity(0))
+            mem_sz = long(psutil.virtual_memory().total)
+            py_cpu_device = PyCPUDevice(0, mem_sz, num_cores * VCU_BASELINE)
             self.py_registered_archs[cpu] = cpu
             cpu.add_device(py_cpu_device)
 
@@ -160,16 +160,18 @@ class PyDeviceManager:
             # Parse CPU device information.
             cpu_num_cores = parsed_configs["CPU"]["num_cores"]
             if cpu_num_cores > 0:
+                self.py_registered_archs[cpu] = cpu
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, \
                                             cpu_num_cores * VCU_BASELINE) 
-                py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
+                py_cpu_arch = self.py_registered_archs[cpu]
                 py_cpu_arch.add_device(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
+                self.py_registered_archs[cuda] = cuda
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
-                py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
+                py_cuda_arch = self.py_registered_archs[cuda]
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \

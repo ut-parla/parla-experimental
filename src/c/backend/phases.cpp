@@ -154,18 +154,27 @@ void Mapper::run(SchedulerPhase *next_phase) {
           chosen_devices.emplace_back(chosen_dev_req);
         }
       }
-      std::cout << "Chosen devices:\n";
-      for (size_t i = 0; i < chosen_devices.size(); ++i) {
-        std::cout << "\t>>" << i << " ";
-        if (chosen_devices[i] == nullptr) {
-          std::cout << "nullptr\n";
-        } else {
-          std::cout << chosen_devices[i]->device()->get_name() << "\n";
-        }
+    }
+    std::cout << "Chosen devices:\n";
+    for (size_t i = 0; i < chosen_devices.size(); ++i) {
+      std::cout << "\t>>" << i << " ";
+      if (chosen_devices[i] == nullptr) {
+        std::cout << "nullptr\n";
+      } else {
+        Device* chosen_device = chosen_devices[i]->device();
+        std::cout << "device addr:" << chosen_device << " ";
+        std::cout << "device name:" << chosen_device->get_name() << " ";
+        std::cout << "global id:" << chosen_device->get_global_id() << " ";
+        std::cout << "memory: " << chosen_devices[i]->res_req().get(Resource::Memory) << " ";
+        std::cout << "num_vcus: " <<
+          chosen_devices[i]->res_req().get(Resource::VCU) << "\n";
+        task->assigned_devices.push_back(chosen_device);
+        task->device_constraints.insert({chosen_device->get_global_id(),
+                                         chosen_devices[i]->res_req()});
       }
     }
 
-    std::cout << "Task name:" << task->get_name() << "\n";
+    std::cout << "Task name:" << task->get_name() << ", " << task << "\n";
 
     this->mapped_tasks_buffer.push_back(task);
     // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
@@ -187,7 +196,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
       memory_reserver->enqueue(mapped_task);
     }
   }
-
   this->mapped_tasks_buffer.clear();
 }
 
@@ -253,6 +261,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     InnerTask *task = this->reservable_tasks->front();
 
     if (task == nullptr) {
+      std::cout << "memory reserver task is null\n";
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
 
@@ -330,12 +339,10 @@ bool RuntimeReserver::check_resources(InnerTask *task) {
 
 void RuntimeReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
-
   for (Device *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-
     device_pool.decrease<ResourceCategory::NonPersistent>(task_pool);
   }
 }
@@ -354,22 +361,16 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   while (has_task) {
     num_tasks = this->get_count();
     has_task = num_tasks > 0;
-
-    // std::cout << "RuntimeReserver::run: num_tasks = " << num_tasks <<
-    // std::endl;
     if (has_task) {
 
       InnerTask *task = this->runnable_tasks->front();
-
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
       }
-
       bool has_resources = check_resources(task);
 
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-
         if (has_thread) {
           InnerTask *task = this->runnable_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();

@@ -45,8 +45,8 @@ private:
 
 class DeviceRequirement : public SinglePlacementRequirementBase {
 public:
-  DeviceRequirement(Device *dev, ResourcePool_t res_reqs)
-      : dev_(dev), res_reqs_(res_reqs) {}
+  DeviceRequirement(Device *dev, ResourcePool_t res_req)
+      : dev_(dev), res_req_(res_req) {}
 
   bool is_multidev_req() override { return false; }
   bool is_arch_req() override { return false; }
@@ -54,11 +54,12 @@ public:
 
   Device *device() { return dev_; }
 
-  const ResourcePool_t &res_req() { return res_reqs_; }
+  const ResourcePool_t &res_req() const { return res_req_; }
+  ResourcePool_t &res_req() { return res_req_; }
 
 private:
   Device *dev_;
-  ResourcePool_t res_reqs_;
+  ResourcePool_t res_req_;
 };
 
 class ArchitectureRequirement : public SinglePlacementRequirementBase {
