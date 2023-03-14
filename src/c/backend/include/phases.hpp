@@ -90,7 +90,6 @@ protected:
  */
 class Mapper : virtual public SchedulerPhase {
 public:
-  Map::Status status;
   Mapper() = delete;
   /* XXX(hc): is it necessary?
   Mapper(DevID_t num_total_devices) : SchedulerPhase(), dummy_dev_idx_{0} {

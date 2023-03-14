@@ -92,7 +92,8 @@ def spawn(task=None,
         device_manager = scheduler.device_manager
 
         # Get a set of candidate devices for a task.
-        # TODO(wlr): Is this too expensive?
+        # If none of the placement is passed, make
+        # all devices candidate.
         placement = placement if placement is not None else [
             arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
 

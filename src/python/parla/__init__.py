@@ -45,7 +45,7 @@ class Parla:
         self.kwds = kwds
         self.sig = sig_type
         self.handle_interrupt = True
-        self.device_manager = DeviceManager(dev_config_file)
+        self._device_manager = DeviceManager(dev_config_file)
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)

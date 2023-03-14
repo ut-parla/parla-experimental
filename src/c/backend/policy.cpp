@@ -28,8 +28,8 @@ void LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   *score = 0;
   std::cout << "\t[Device Requirement in device Requirement]\n"
             << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-            << dev_placement_req->res_req().get(MEMORY) << "B, VCU "
-            << dev_placement_req->res_req().get(VCU) << "\n";
+            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU "
+            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
 }
 
 void LocalityLoadBalancingMappingPolicy::calc_score_archplacement(

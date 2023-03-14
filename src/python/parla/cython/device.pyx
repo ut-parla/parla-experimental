@@ -120,7 +120,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(PyDeviceType.CUDA, "CUDA", dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -129,7 +129,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -137,7 +137,7 @@ class PyInvalidDevice(PyDevice):
     """
     """
     def __init__(self):
-        super().__init__(DeviceType.INVALID, "Invalid", -1)
+        super().__init__(PyDeviceType.INVALID, "Invalid", -1)
 
 
 class PyArchitecture(metaclass=ABCMeta):

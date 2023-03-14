@@ -22,7 +22,7 @@ size_t Mapper::get_count() {
   return count;
 }
 
-void Mapper::run(SchedulerPhase *memory_reserver) {
+void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
