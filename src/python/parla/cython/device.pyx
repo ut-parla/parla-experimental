@@ -264,6 +264,15 @@ class TaskEnvironment:
             else:
                 raise TypeError("[TaskEnvironment] Unsupported environment type.")
 
+    def __enter__(self):
+
+        if len(self.env_list) == 0:
+            raise RuntimeError("[TaskEnvironment] No environment or device is available.")
+        else:
+            self._stack.append(self.env_list[0].__enter__())
+
+
+
 
     def __getitem__(self, index):
 
