@@ -25,6 +25,8 @@ nvtx.initialize()
 
 Resources = core.Resources
 
+VCU_BASELINE = device_manager.VCU_BASELINE
+
 # @profile
 
 
@@ -72,6 +74,14 @@ def spawn(task=None,
         nonlocal dependencies
         nonlocal task
         nonlocal placement
+
+        if not isinstance(vcus, int):
+            # Default behavior the same as Parla 0.2.
+            if vcus <= 1:
+                vcus = int(vcus * VCU_BASELINE)
+            else:
+                # Only large values for ease of testing
+                vcus = int(vcus)
 
         if inspect.iscoroutine(body):
             separated_body = body

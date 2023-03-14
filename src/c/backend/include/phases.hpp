@@ -183,10 +183,6 @@ protected:
   void reserve_resources(InnerTask *task);
 };
 
-#ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(RuntimeReserver, print_status)
-#endif
-
 class Launcher : virtual public SchedulerPhase {
 public:
   /*Number of running tasks. A task is running if it has been assigned to a
