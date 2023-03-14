@@ -155,6 +155,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
     }
+#if 0
     std::cout << "Chosen devices:\n";
     for (size_t i = 0; i < chosen_devices.size(); ++i) {
       std::cout << "\t>>" << i << " ";
@@ -173,8 +174,16 @@ void Mapper::run(SchedulerPhase *next_phase) {
                                          chosen_devices[i]->res_req()});
       }
     }
+#endif
 
-    std::cout << "Task name:" << task->get_name() << ", " << task << "\n";
+    std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task << "\n";
+    for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+      std::cout << "\t [" << i << "] " << task->assigned_devices[i]->get_name() << "\n";
+      auto res = task->device_constraints[task->assigned_devices[i]->get_global_id()];
+      std::cout << "\t memory:" << res.get(Resource::Memory)  << ", vcu:" <<
+        res.get(Resource::VCU) << "\n";
+    }
+
 
     this->mapped_tasks_buffer.push_back(task);
     // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
@@ -240,7 +249,6 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-
     device_pool.decrease<ResourceCategory::Persistent>(task_pool);
   }
 }
