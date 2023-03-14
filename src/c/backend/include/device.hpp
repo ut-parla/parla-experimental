@@ -40,7 +40,7 @@ public:
     res_.set(Resource::Memory, mem_sz);
 
     reserved_res_.set(Resource::VCU, num_vcus);
-    reserved_res_.set(Resource::Memory, num_vcus);
+    reserved_res_.set(Resource::Memory, mem_sz);
 
     mapped_res_.set(Resource::VCU, 0);
     mapped_res_.set(Resource::Memory, 0);
