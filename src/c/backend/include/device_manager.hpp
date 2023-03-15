@@ -25,7 +25,6 @@ public:
 
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
-
     for (DeviceType dev_type : architecture_types) {
       int i = static_cast<int>(dev_type);
       std::cout << "Device type: " << i << "\n";
@@ -33,7 +32,9 @@ public:
 
       for (auto j = 0; j < device_list.size(); ++j) {
         auto device = device_list[j];
-        std::cout << "Device " << j << ": " << device->get_name() << "\n";
+        std::cout << "Device " << j << ": " << device->get_name()
+                << "\n\t mem. sz:" << device->get_memory_size()
+                << ", num. vcus:" << device->get_num_vcus() << "\n";
       }
     }
   }
@@ -80,6 +81,8 @@ public:
     }
   }
 
+  size_t get_num_devices() { return all_devices_.size(); }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds
@@ -90,6 +93,9 @@ protected:
   std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
   std::vector<Device *> all_devices_;
+
+  /// The total number of tasks mapped to and running on the whole devices. 
+  std::atomic<size_t> total_num_mapped_tasks_;
 };
 
 #endif

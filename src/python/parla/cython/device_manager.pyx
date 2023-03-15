@@ -18,6 +18,7 @@ VCU_BASELINE=1000
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
+PyInvalidDevice = device.PyInvalidDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
@@ -86,11 +87,16 @@ class PyDeviceManager:
 
         # TODO(hc): pack those config. to a data class.
         if dev_config == None or dev_config == "":
-            self.register_cuda_devices_cupy()
             self.register_cpu_devices()
+            self.register_cuda_devices_cupy()
         else:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
+
+    def __dealloc__(self):
+        for arch in self.py_registered_archs:
+            for dev in arch.devices:
+                del dev
 
     def register_cuda_devices_cupy(self):
         if cupy is not None:
@@ -103,7 +109,6 @@ class PyDeviceManager:
 
         if num_of_gpus > 0:
             self.py_registered_archs[cuda] = cuda
-        
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
@@ -111,15 +116,25 @@ class PyDeviceManager:
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
                 cuda.add_device(py_cuda_device)
+        else:
+            # It is possible that the current system does not have CUDA devices.
+            # But users can still specify `cuda` to task placement.
+            # To handle this case, we add a CPU device as the CUDA architecture
+            # type (So, Parla assumes that the target system must be equipped
+            # with at least one CPU core).
+            self.register_cpu_devices(cuda)
 
-    def register_cpu_devices(self):
-        # Get the number of usable CPUs from this process.
-        # This might not be equal to the number of CPUs in the system.
-        num_cores = len(os.sched_getaffinity(0))
-        mem_sz = long(psutil.virtual_memory().total)
-        py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
-        self.py_registered_archs[cpu] = cpu
-        cpu.add_device(py_cpu_device)
+    def register_cpu_devices(self, register_to_cuda: bool = False):
+        if register_to_cuda:
+            cuda.add_device(cpu(0))
+        else:
+            # Get the number of usable CPUs from this process.
+            # This might not be equal to the number of CPUs in the system.
+            num_cores = len(os.sched_getaffinity(0))
+            mem_sz = long(psutil.virtual_memory().total)
+            py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
+            self.py_registered_archs[cpu] = cpu
+            cpu.add_device(py_cpu_device)
 
     def register_devices_to_cpp(self):
         """
@@ -145,16 +160,17 @@ class PyDeviceManager:
             # Parse CPU device information.
             cpu_num_cores = parsed_configs["CPU"]["num_cores"]
             if cpu_num_cores > 0:
+                self.py_registered_archs[cpu] = cpu
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
-                py_cpu_device = PyCPUDevice(0, cpu_mem_sz, \
-                                            cpu_num_cores * VCU_BASELINE) 
-                py_cpu_arch = self.py_registered_archs[DeviceType.CPU]
+                py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
+                py_cpu_arch = self.py_registered_archs[cpu]
                 py_cpu_arch.add_device(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
+                self.py_registered_archs[cuda] = cuda
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
-                py_cuda_arch = self.py_registered_archs[DeviceType.CUDA]
+                py_cuda_arch = self.py_registered_archs[cuda]
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \
@@ -179,11 +195,14 @@ class PyDeviceManager:
 
     def construct_single_device_requirements(self, dev, res_req = None):
         res_req_ = res_req if res_req is not None else DeviceResource()
+        if isinstance(dev, PyInvalidDevice):
+            # If the specified device does not exist
+            # in the current system, replace it with CPU.
+            dev = cpu(0)
         return DeviceResourceRequirement(dev, res_req_)
 
     def construct_single_architecture_requirements(self, arch, res_req = None):
         arch_reqs = []
-        print(res_req)
         res_req_ = res_req if res_req is not None else DeviceResource()
         for d in arch.devices:
             arch_reqs.append(self.construct_single_device_requirements(
@@ -196,12 +215,9 @@ class PyDeviceManager:
                 # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
-                if placement is None:
-                    # If a device specified by users does not exit 
-                    # and was not registered to the Parla runtime,
-                    # its instance is set to None and should be
-                    # ignored.
-                    return None
+                # If a device specified by users does not exit 
+                # and was not registered to the Parla runtime,
+                # use CPU instead.
                 if isinstance(placement, PyArchitecture):
                     # Architecture placement means that the task mapper
                     # could choose one of the devices in the specified
@@ -224,7 +240,6 @@ class PyDeviceManager:
                 placement_component)
         else:
             raise TypeError("Incorrect placement")
-
 
 
     def unpack_placements(self, placement_components):

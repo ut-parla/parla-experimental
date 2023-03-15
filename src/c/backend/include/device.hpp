@@ -40,7 +40,7 @@ public:
     res_.set(Resource::Memory, mem_sz);
 
     reserved_res_.set(Resource::VCU, num_vcus);
-    reserved_res_.set(Resource::Memory, num_vcus);
+    reserved_res_.set(Resource::Memory, mem_sz);
 
     mapped_res_.set(Resource::VCU, 0);
     mapped_res_.set(Resource::Memory, 0);
@@ -99,6 +99,22 @@ public:
   void *get_py_device() { return py_dev_; }
   void set_global_id(DevID_t global_id) { dev_global_id_ = global_id; }
   const DevID_t get_global_id() const { return dev_global_id_; }
+
+  const MemorySz_t get_memory_size() const { return res_.get(Resource::Memory); }
+
+  const VCU_t get_num_vcus() const { return res_.get(Resource::VCU); }
+
+  const Resource_t get_max_resource(Resource type) const {
+    return this->res_.get(type);
+  }
+
+  const Resource_t get_reserved_resource(Resource type) const {
+    return this->reserved_res_.get(type);
+  }
+
+  const Resource_t get_mapped_resource(Resource type) const {
+    return this->mapped_res_.get(type);
+  }
 
 protected:
   DeviceType dev_type_;

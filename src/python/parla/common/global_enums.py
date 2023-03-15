@@ -17,5 +17,6 @@ class DeviceType(IntEnum):
      3) Device registration phase can utilize these types.
     """
     ANY = -1
+    INVALID = 2
     CUDA = 1
     CPU = 0

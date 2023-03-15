@@ -19,7 +19,9 @@ def main(T):
         print("-HELLO OUTER 0", flush=True)
 
     """
+#@spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}])])
     @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}]), (cpu(0), cuda(1)[{"vcus":10, "memory":2000}])])
+#@spawn(T[0], placement=[(cuda[{"vcus":20, "memory":40000}])])
     def task1():
         print("+HELLO OUTER 0", flush=True)
         bsleep(1000)

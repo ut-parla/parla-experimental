@@ -23,6 +23,7 @@ size_t Mapper::get_count() {
 }
 
 void Mapper::run(SchedulerPhase *next_phase) {
+
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
@@ -43,6 +44,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
+#if 0
 
     // TODO(wlr): Testing
     // Assign a random device set to each task
@@ -89,8 +91,104 @@ void Mapper::run(SchedulerPhase *next_phase) {
     // std::cout << "Mapping task " << task->get_name() << " to devices "
     //           << devices[0]->get_name() << " and " << devices[1]->get_name()
     //           << std::endl;
+#endif
+    PlacementRequirementCollections &placement_req_options =
+        task->get_placement_req_options();
+    std::vector<std::shared_ptr<PlacementRequirementBase>>
+        placement_req_options_vec =
+            placement_req_options.get_placement_req_opts_ref();
+    // A set of chosen devices to a task.
+    Score_t best_score{0};
+    std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
+
+    // Iterate all placement requirements passed by users and calculate
+    // scores based on a policy.
+    for (std::shared_ptr<PlacementRequirementBase> base_req :
+         placement_req_options_vec) {
+      if (base_req->is_multidev_req()) {
+        // Multi-device placement requirements.
+        std::cout << "[Multi-device requirement]\n";
+        MultiDeviceRequirements *mdev_reqs =
+            dynamic_cast<MultiDeviceRequirements *>(base_req.get());
+        std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
+        Score_t score{0};
+        policy_->calc_score_mdevplacement(
+            task, mdev_reqs, this->atomic_load_total_num_mapped_tasks(),
+            &mdev_reqs_vec, &score);
+        std::cout << "Chosen device from multi-device requirements\n";
+        std::cout << "Score:" << score << "\n";
+        for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
+          // std::cout << "\t>>" << mdev_reqs_vec[i] <<
+        }
+
+        if (best_score <= score) {
+          best_score = score;
+          chosen_devices.swap(mdev_reqs_vec);
+        }
+      } else if (base_req->is_dev_req()) {
+        // A single device placement requirement.
+        std::shared_ptr<DeviceRequirement> dev_req =
+            std::dynamic_pointer_cast<DeviceRequirement>(base_req);
+        Score_t score{0};
+        policy_->calc_score_devplacement(
+            task, dev_req, this->atomic_load_total_num_mapped_tasks(), &score);
+        if (best_score <= score) {
+          assert(dev_req != nullptr);
+          best_score = score;
+          chosen_devices.clear();
+          chosen_devices.emplace_back(dev_req);
+        }
+      } else if (base_req->is_arch_req()) {
+        // A single architecture placement requirement.
+        ArchitectureRequirement *arch_req =
+            dynamic_cast<ArchitectureRequirement *>(base_req.get());
+        std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
+        Score_t chosen_dev_score{0};
+        policy_->calc_score_archplacement(
+            task, arch_req, this->atomic_load_total_num_mapped_tasks(),
+            chosen_dev_req, &chosen_dev_score);
+        if (best_score <= chosen_dev_score) {
+          assert(chosen_dev_req != nullptr);
+          best_score = chosen_dev_score;
+          chosen_devices.clear();
+          chosen_devices.emplace_back(chosen_dev_req);
+        }
+      }
+    }
+#if 0
+    std::cout << "Chosen devices:\n";
+    for (size_t i = 0; i < chosen_devices.size(); ++i) {
+      std::cout << "\t>>" << i << " ";
+      if (chosen_devices[i] == nullptr) {
+        std::cout << "nullptr\n";
+      } else {
+        Device* chosen_device = chosen_devices[i]->device();
+        std::cout << "device addr:" << chosen_device << " ";
+        std::cout << "device name:" << chosen_device->get_name() << " ";
+        std::cout << "global id:" << chosen_device->get_global_id() << " ";
+        std::cout << "memory: " << chosen_devices[i]->res_req().get(Resource::Memory) << " ";
+        std::cout << "num_vcus: " <<
+          chosen_devices[i]->res_req().get(Resource::VCU) << "\n";
+        task->assigned_devices.push_back(chosen_device);
+        task->device_constraints.insert({chosen_device->get_global_id(),
+                                         chosen_devices[i]->res_req()});
+      }
+    }
+#endif
+
+    std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task << "\n";
+    for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+      std::cout << "\t [" << i << "] " << task->assigned_devices[i]->get_name() << "\n";
+      auto res = task->device_constraints[task->assigned_devices[i]->get_global_id()];
+      std::cout << "\t memory:" << res.get(Resource::Memory)  << ", vcu:" <<
+        res.get(Resource::VCU) << "\n";
+    }
+
 
     this->mapped_tasks_buffer.push_back(task);
+    // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
+    this->atomic_incr_num_mapped_tasks(0);
+    // this->device_manager->IncrAtomicTotalNumMappedTasks();
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 
@@ -107,7 +205,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
       memory_reserver->enqueue(mapped_task);
     }
   }
-
   this->mapped_tasks_buffer.clear();
 }
 
@@ -152,7 +249,6 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-
     device_pool.decrease<ResourceCategory::Persistent>(task_pool);
   }
 }
@@ -173,6 +269,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     InnerTask *task = this->reservable_tasks->front();
 
     if (task == nullptr) {
+      std::cout << "memory reserver task is null\n";
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
 
@@ -250,12 +347,10 @@ bool RuntimeReserver::check_resources(InnerTask *task) {
 
 void RuntimeReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
-
   for (Device *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-
     device_pool.decrease<ResourceCategory::NonPersistent>(task_pool);
   }
 }
@@ -274,22 +369,16 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   while (has_task) {
     num_tasks = this->get_count();
     has_task = num_tasks > 0;
-
-    // std::cout << "RuntimeReserver::run: num_tasks = " << num_tasks <<
-    // std::endl;
     if (has_task) {
 
       InnerTask *task = this->runnable_tasks->front();
-
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
       }
-
       bool has_resources = check_resources(task);
 
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-
         if (has_thread) {
           InnerTask *task = this->runnable_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
