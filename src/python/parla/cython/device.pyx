@@ -423,7 +423,7 @@ def create_env(sources):
         return TaskEnvironment(targets)
 
 _Locals = Locals()
-_StreamPool = StreamPool([PyCUDADevice(0), PyCUDADevice(1)])
+
 class TaskEnvironment:
 
     def __init__(self, environment_list, blocking=False):
