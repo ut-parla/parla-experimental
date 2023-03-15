@@ -126,7 +126,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CUDA, "CUDADev", dev_id)
+        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this
         self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
@@ -137,7 +137,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CPU, "CPUDev", dev_id)
+        super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -251,7 +251,7 @@ class StreamPool:
         self._device_list = device_list
         self._per_device = per_device
         self._pool = {}
-        print(device_list)
+        print("Device List: ", device_list)
         for device in self._device_list:
             self._pool[device] = []
             for i in range(self._per_device):
@@ -270,6 +270,8 @@ class StreamPool:
         summary  = ""
         for device in self._device_list:
             summary += f"({device} : {len(self._pool[device])})"
+
+        return summary
 
     def __repr__(self):
         return f"StreamPool({self.__summarize__()})"
