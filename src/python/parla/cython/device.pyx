@@ -373,6 +373,15 @@ class Locals(threading.local):
         self._context_stack = LocalStack()
         self._stream_stack = LocalStack()
 
+    def add_stream_pool(self, stream_pool):
+        self._stream_pool = stream_pool
+
+    @property
+    def stream_pool(self):
+        if not hasattr(self, "_stream_pool"):
+            raise ValueError("Stream pool not initialized.")
+        return self._stream_pool
+
     def push_context(self, context):
         self._context_stack.push(context)
 
@@ -499,7 +508,7 @@ class GPUEnvironment(TaskEnvironment):
         self.is_terminal = True
 
         for device in device_list:
-            stream = StreamPool.get_stream(device=device)
+            stream = Locals.stream_pool.get_stream(device=device)
 
     def __repr__(self):
         return f"GPUEnvironment({self.env_list})"
@@ -536,4 +545,4 @@ class GPUEnvironment(TaskEnvironment):
     def finalize(self):
         for stream in self.stream_list:
             stream.synchronize()
-            StreamPool.release_stream(stream)
+            Locals.stream_pool.return_stream(stream)
