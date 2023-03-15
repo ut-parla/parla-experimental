@@ -251,6 +251,7 @@ class StreamPool:
         self._device_list = device_list
         self._per_device = per_device
         self._pool = {}
+        print(device_list)
         for device in self._device_list:
             self._pool[device] = []
             for i in range(self._per_device):
