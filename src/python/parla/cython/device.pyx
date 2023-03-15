@@ -254,8 +254,9 @@ class StreamPool:
         print("Device List: ", device_list)
         for device in self._device_list:
             self._pool[device] = []
-            for i in range(self._per_device):
-                self._pool[device].append(Stream(device=device.device))
+            with device.device as d:
+                for i in range(self._per_device):
+                    self._pool[device].append(Stream(device=d))
 
     def get_stream(self, device):
         if len(self._pool[device]) == 0:
@@ -275,6 +276,20 @@ class StreamPool:
 
     def __repr__(self):
         return f"StreamPool({self.__summarize__()})"
+
+
+class Handle:
+    def __init__(self, name, value=None):
+        self.att = name
+        setattr(self, name, value)
+
+    def set(self, value):
+        setattr(self, self.att, value)
+
+    def get(self):
+        return getattr(self, self.att)
+
+GlobalStreamPool = Handle("stream_pool")
 
 class Stream:
 
@@ -304,27 +319,35 @@ class Stream:
         return self.__repr__()
 
     def __enter__(self):
+        print("Entering Stream: ", self, flush=True)
+
         #Set the device to the stream's device.
         self._device.__enter__()
-
+        print('1', flush=True)
         #Set the stream to the current stream.
         self._stream.__enter__()
+        print('2', flush=True)
+
+        _Locals.push_stream(self)
+
+        print('3', flush=True)
 
         return self 
 
     def __exit__(self, exc_type, exc_value, traceback):
+        print("Exiting Stream: ", self, flush=True)
 
         ret_stream = False
         ret_device = False
 
-        try:
-            #Restore the stream to the previous stream.
-            ret_stream = self._stream.__exit__(exc_type, exc_value, traceback)
+        #Restore the stream to the previous stream.
+        ret_stream = self._stream.__exit__(exc_type, exc_value, traceback)
 
-            #Restore the device to the previous device.
-            ret_device = self._device.__exit__(exc_type, exc_value, traceback)
-        finally:
-            return ret_stream and ret_device
+        #Restore the device to the previous device.
+        ret_device = self._device.__exit__(exc_type, exc_value, traceback)
+            
+        _Locals.pop_stream()
+        return ret_stream and ret_device
 
     @property
     def device(self):
@@ -376,9 +399,6 @@ class Locals(threading.local):
         self._context_stack = LocalStack()
         self._stream_stack = LocalStack()
 
-    def add_stream_pool(self, stream_pool):
-        self._stream_pool = stream_pool
-        
     def push_context(self, context):
         self._context_stack.push(context)
 
@@ -410,9 +430,9 @@ class Locals(threading.local):
 
 def create_device_env(device):
     if isinstance(device, PyCPUDevice):
-        return TaskEnvironment([device]), DeviceType.CPU
+        return TaskEnvironment(device), DeviceType.CPU
     elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment([device]), DeviceType.CUDA
+        return GPUEnvironment(device), DeviceType.CUDA
 
 def create_env(sources):
     targets = []
@@ -484,9 +504,9 @@ class TaskEnvironment:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("Exiting environment", self.env_list, flush=True)
-        ret = True
+        ret = False
 
-        _Locals.pop_context(self)
+        _Locals.pop_context()
         
         return ret 
 
@@ -508,46 +528,42 @@ class GPUEnvironment(TaskEnvironment):
 
         self.device_dict[DeviceType.CUDA].append(device)
 
-        self.device = device 
-        stream = Locals._stream_pool.get_stream(device=device)
+        self._device = device 
+        global GlobalStreamPool
+        stream = GlobalStreamPool.get().get_stream(device=device)
         self.stream_list.append(stream)
 
     def __repr__(self):
-        return f"GPUEnvironment({self.env_list})"
+        return f"GPUEnvironment({self._device})"
 
     def __enter__(self):
-        print("Entering GPU Environment", flush=True)
-        if len(self.env_list) == 0:
-            raise RuntimeError("[TaskEnvironment] No environment or device is available.")
+        print("Entering GPU Environment: ", self, flush=True)
 
         _Locals.push_context(self)
 
-        stream = self.stream_list[0]
+        self.active_stream = self.stream_list[0]
 
-        ret_stream = stream.__enter__()
+        ret_stream = self.active_stream.__enter__()
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting GPU Environment", flush=True)
-        ret = True
+        print("Exiting GPU Environment: ", self, flush=True)
+        ret = False
 
-        for stream in self.stream_list:
-            Locals.pop_stream(stream)
+        self.active_stream.__exit__(exc_type, exc_val, exc_tb)
 
-        _Locals.pop_context(self)
+        _Locals.pop_context()
+
         
         return ret 
 
     def __getitem__(self, index):
-
-        if isinstance(index, int):
-            return self.env_list[index]
-        
-        return create_env(self.env_list[index])
-
+        if index == 0:
+            return self
 
     def finalize(self):
+        global GlobalStreamPool
         for stream in self.stream_list:
             stream.synchronize()
-            Locals._stream_pool.return_stream(stream)
+            GlobalStreamPool.get().return_stream(stream)

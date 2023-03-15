@@ -21,6 +21,7 @@ DeviceManager = device_manager.PyDeviceManager
 
 Locals = device._Locals
 StreamPool = device.StreamPool
+GlobalStreamPool = device.GlobalStreamPool
 Stream = device.Stream
 create_env = device.create_env
 TaskEnvironment = device.TaskEnvironment
