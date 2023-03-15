@@ -2,11 +2,11 @@
 
 from libcpp cimport bool
 
-cdef extern from "c/parray_state.cpp":
-    pass
+#cdef extern from "parray_state.cpp":
+#    pass
 
 # a mapping between C++ PArrayState api to Cython PArrayState api
-cdef extern from "c/parray_state.h" namespace "parray":
+cdef extern from "include/parray_state.h" namespace "parray":
     cdef cppclass PArrayState:
         PArrayState() except +
         void set_exist_on_device(int device_id, bool exist)

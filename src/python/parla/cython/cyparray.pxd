@@ -4,11 +4,11 @@ from libc.stdint cimport uint64_t
 
 from .cyparray_state cimport PArrayState
 
-cdef extern from "c/parray.cpp":
-    pass
+#cdef extern from "parray.cpp":
+#    pass
 
 # a mapping between C++ PArray api to Cython PArray api
-cdef extern from "c/parray.h" namespace "parray":
+cdef extern from "include/parray.h" namespace "parray":
     cdef cppclass PArray:
         PArray() except +
         PArray(uint64_t, PArrayState *) except +
