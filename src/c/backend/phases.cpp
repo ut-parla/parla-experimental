@@ -155,26 +155,13 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
     }
-#if 0
-    std::cout << "Chosen devices:\n";
     for (size_t i = 0; i < chosen_devices.size(); ++i) {
-      std::cout << "\t>>" << i << " ";
-      if (chosen_devices[i] == nullptr) {
-        std::cout << "nullptr\n";
-      } else {
-        Device* chosen_device = chosen_devices[i]->device();
-        std::cout << "device addr:" << chosen_device << " ";
-        std::cout << "device name:" << chosen_device->get_name() << " ";
-        std::cout << "global id:" << chosen_device->get_global_id() << " ";
-        std::cout << "memory: " << chosen_devices[i]->res_req().get(Resource::Memory) << " ";
-        std::cout << "num_vcus: " <<
-          chosen_devices[i]->res_req().get(Resource::VCU) << "\n";
-        task->assigned_devices.push_back(chosen_device);
-        task->device_constraints.insert({chosen_device->get_global_id(),
-                                         chosen_devices[i]->res_req()});
-      }
+      assert(chosen_devices[i] != nullptr);
+      Device* chosen_device = chosen_devices[i]->device();
+      task->assigned_devices.push_back(chosen_device);
+      task->device_constraints.insert({chosen_device->get_global_id(),
+                                        chosen_devices[i]->res_req()});
     }
-#endif
 
     std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task << "\n";
     for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
