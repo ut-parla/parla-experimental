@@ -479,6 +479,7 @@ class TaskEnvironment:
                 env.synchronize()
 
     def __enter__(self):
+        print("Entering environment:", self.env_list, flush=True)
 
         if len(self.env_list) == 0:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
@@ -488,6 +489,7 @@ class TaskEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting environment", self.env_list, flush=True)
         ret = True
 
         _Locals.pop_context(self)
@@ -504,30 +506,36 @@ class TaskEnvironment:
 
 class GPUEnvironment(TaskEnvironment):
 
-    def __init__(self, device_list, blocking=False):
-        super(GPUEnvironment, self).__init__(device_list, blocking=blocking)
+    def __init__(self, device, blocking=False):
+        super(GPUEnvironment, self).__init__([], blocking=blocking)
 
         self.stream_list = []
         self.is_terminal = True
 
-        for device in device_list:
-            stream = Locals.stream_pool.get_stream(device=device)
+        self.device_dict[DeviceType.CUDA].append(device)
+
+        self.device = device 
+        stream = Locals.stream_pool.get_stream(device=device)
+        self.stream_list.append(stream)
 
     def __repr__(self):
         return f"GPUEnvironment({self.env_list})"
 
     def __enter__(self):
-
+        print("Entering GPU Environment", flush=True)
         if len(self.env_list) == 0:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
 
         _Locals.push_context(self)
 
-        default_stream = self.stream_list[0]
+        stream = self.stream_list[0]
+
+        ret_stream = stream.__enter__()
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting GPU Environment", flush=True)
         ret = True
 
         for stream in self.stream_list:
