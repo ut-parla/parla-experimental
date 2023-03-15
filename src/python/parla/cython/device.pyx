@@ -515,7 +515,7 @@ class GPUEnvironment(TaskEnvironment):
         self.device_dict[DeviceType.CUDA].append(device)
 
         self.device = device 
-        stream = Locals.stream_pool.get_stream(device=device)
+        stream = Locals._stream_pool.get_stream(device=device)
         self.stream_list.append(stream)
 
     def __repr__(self):
@@ -556,4 +556,4 @@ class GPUEnvironment(TaskEnvironment):
     def finalize(self):
         for stream in self.stream_list:
             stream.synchronize()
-            Locals.stream_pool.return_stream(stream)
+            Locals._stream_pool.return_stream(stream)
