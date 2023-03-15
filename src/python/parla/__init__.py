@@ -5,6 +5,7 @@ from .cython import tasks
 from .cython import scheduler
 from .cython import core
 from .cython import device_manager
+from .cython import device
 from .common.spawn import spawn
 
 from .common import containers
@@ -16,6 +17,15 @@ TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 
 DeviceManager = device_manager.PyDeviceManager
+
+
+Locals = device._Locals
+StreamPool = device._StreamPool
+Stream = device.Stream
+create_env = device.create_env
+TaskEnvironment = device.TaskEnvironment
+GPUEnvironment = device.GPUEnvironment
+
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
            'sleep_nogil', 'Tasks', 'parla_num_threads']
