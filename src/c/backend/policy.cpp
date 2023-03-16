@@ -1,10 +1,10 @@
 #include "include/policy.hpp"
+#include "include/phases.hpp"
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-    size_t num_total_mapped_tasks, Score_t *score
-    /*, std::vector<> num_mapped_tasks_foreach_device */) {
+    const Mapper &mapper, Score_t *score) {
   const Device &device = *(dev_placement_req->device());
   std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
   std::cout << " ** Device Score Calculation\n";
@@ -20,13 +20,39 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     return false;
   }
 
-  // Check device dependencies.
+  // Check how many dependencies are mapped to the device candidate
+  // being checked.
+  // Note that this only considers dependencies specified in a task
+  // @spawn decorator. So to speak, it considers immediate dependencies
+  // and does not consider the whole dependency subtree.
   TaskList &dependencies = task->dependencies;
+  size_t num_dependencies_on_device{0};
   for (size_t i = 0; i < dependencies.size_unsafe(); ++i) {
     InnerTask *dependency = dependencies.at_unsafe(i);
-    auto dep_placement_reqs = dependency->get_placement_reqs();
-    assert(dep_placement_reqs.size() > 0);
+    for (Device *dependency_devices : dependency->assigned_devices) {
+      if (dependency_devices->get_global_id() == device.get_global_id()) {
+        ++num_dependencies_on_device;
+        break;
+      }
+    }
   }
+  std::cout << num_dependencies_on_device << " of the " << task->get_name()
+            << "s dependencies have been mapped to device " << device.get_name()
+            << "\n";
+
+  /// Calculate device load balancing.
+  size_t total_num_mapped_tasks = mapper.atomic_load_total_num_mapped_tasks();
+  size_t num_tasks_to_device =
+      mapper.atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
+  double normalizd_device_load{0};
+  if (total_num_mapped_tasks != 0) {
+    normalizd_device_load =
+        num_tasks_to_device / double(total_num_mapped_tasks);
+  }
+  std::cout << "Device " << device.get_name()
+            << "'s num_tasks: " << num_tasks_to_device
+            << " (Total num of mapped tasks:" << total_num_mapped_tasks
+            << ") and load: " << normalizd_device_load << "\n";
 
   *score = 0;
   std::cout << "\t[Device Requirement in device Requirement]\n"
@@ -38,8 +64,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     InnerTask *task, ArchitectureRequirement *arch_placement_req,
-    size_t num_total_mapped_tasks,
-    std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+    const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score) {
   Score_t best_score{0};
   std::shared_ptr<DeviceRequirement> best_device_req{nullptr};
@@ -51,8 +76,8 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
   for (std::shared_ptr<DeviceRequirement> dev_req :
        arch_placement_req->GetDeviceRequirementOptions()) {
     Score_t score{0};
-    bool is_dev_available = this->calc_score_devplacement(
-        task, dev_req, num_total_mapped_tasks, &score);
+    bool is_dev_available =
+        this->calc_score_devplacement(task, dev_req, mapper, &score);
     if (!is_dev_available) {
       continue;
     }
@@ -71,7 +96,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-    size_t num_total_mapped_tasks,
+    const Mapper &mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score) {
   *average_score = 0;
@@ -88,20 +113,20 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     bool is_member_device_available{true};
     if (placement_req->is_dev_req()) {
       dev_req = std::dynamic_pointer_cast<DeviceRequirement>(placement_req);
-      is_member_device_available = this->calc_score_devplacement(
-          task, dev_req, num_total_mapped_tasks, &score);
+      is_member_device_available =
+          this->calc_score_devplacement(task, dev_req, mapper, &score);
     } else if (placement_req->is_arch_req()) {
       ArchitectureRequirement *arch_req =
           dynamic_cast<ArchitectureRequirement *>(placement_req.get());
       is_member_device_available = this->calc_score_archplacement(
-          task, arch_req, num_total_mapped_tasks, dev_req, &score);
+          task, arch_req, mapper, dev_req, &score);
     }
     assert(dev_req != nullptr);
     (*member_device_reqs)[did] = dev_req;
     *average_score += score;
     if (!is_member_device_available) {
       // If any of the device candidates is not available,
-      // return false and exclude this option from task mapping. 
+      // return false and exclude this option from task mapping.
       return false;
     }
   }

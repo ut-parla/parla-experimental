@@ -33,8 +33,8 @@ public:
       for (auto j = 0; j < device_list.size(); ++j) {
         auto device = device_list[j];
         std::cout << "Device " << j << ": " << device->get_name()
-                << "\n\t mem. sz:" << device->get_memory_size()
-                << ", num. vcus:" << device->get_num_vcus() << "\n";
+                  << "\n\t mem. sz:" << device->get_memory_size()
+                  << ", num. vcus:" << device->get_num_vcus() << "\n";
       }
     }
   }
@@ -93,9 +93,6 @@ protected:
   std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
   std::vector<Device *> all_devices_;
-
-  /// The total number of tasks mapped to and running on the whole devices. 
-  std::atomic<size_t> total_num_mapped_tasks_;
 };
 
 #endif

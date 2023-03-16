@@ -8,6 +8,8 @@
 
 using Score_t = double;
 
+class Mapper;
+
 class MappingPolicy {
 public:
   MappingPolicy(DeviceManager *device_manager)
@@ -23,16 +25,13 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param dev_placement_req Resource requirement of the device.
-  /// @param num_total_mapped_tasks The total number of tasks mapped to the
-  ///                               whole devices. TODO(hc): will be packed
-  ///                               these kind of factor information to a new
-  ///                               wrapper.
+  /// @param mapper Mapper instance to get mapping information.
   /// @param chosen_dev_score A pointer of a score of the device.
   /// @return True if a device is available
   virtual bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      size_t num_total_mapped_tasks, Score_t *score) = 0;
+      const Mapper &mapper, Score_t *score) = 0;
 
   /// Calculate a score of the architecture placement requirement.
   /// This function first iterates devices of the architecture, and calculates
@@ -45,21 +44,17 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param arch_placement_req Resource requirement of the architecture.
-  /// @param num_total_mapped_tasks The total number of tasks mapped to the
-  ///                               whole devices. TODO(hc): will pack these
-  ///                               kind of factor information to a new wrapper.
+  /// @param mapper Mapper instance to get mapping information.
   /// @param chosen_dev_req A pointer of a chosen device and its resource
   ///                       requirement. This is a reference type since
   ///                       this function chooses a device and updates its
   ///                       pointer to the device requirement.
   /// @param chosen_dev_score A pointer of a score of the chosen device.
   /// @return True if any device in the architecture is available
-  virtual bool
-  calc_score_archplacement(InnerTask *task,
-                           ArchitectureRequirement *arch_placement_req,
-                           size_t num_total_mapped_tasks,
-                           std::shared_ptr<DeviceRequirement> &chosen_dev_req,
-                           Score_t *chosen_dev_score) = 0;
+  virtual bool calc_score_archplacement(
+      InnerTask *task, ArchitectureRequirement *arch_placement_req,
+      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Score_t *chosen_dev_score) = 0;
 
   /// Calculate a score of the multi-device placement that users passed.
   /// The placement requirement could contain multiple device or/and
@@ -73,16 +68,14 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param mdev_placement_req Resource requirement of the multiple devices.
-  /// @param num_total_mapped_tasks The total number of tasks mapped to the
-  ///                               whole devices. TODO(hc): will pack these
-  ///                               kind of factor information to a new wrapper.
+  /// @param mapper Mapper instance to get mapping information.
   /// @param member_device_reqs A vector of the resource requirement of the
   ///                           member device.
   /// @param chosen_dev_score A pointer of a score of the multiple devices.
   /// @return True if all devices in the multi-device placement are available.
   virtual bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      size_t num_total_mapped_tasks,
+      const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score) = 0;
 
@@ -97,18 +90,16 @@ public:
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      size_t num_total_mapped_tasks, Score_t *score) override;
+      const Mapper &mapper, Score_t *score) override;
 
-  bool
-  calc_score_archplacement(InnerTask *task,
-                           ArchitectureRequirement *arch_placement_req,
-                           size_t num_total_mapped_tasks,
-                           std::shared_ptr<DeviceRequirement> &chosen_dev_req,
-                           Score_t *chosen_dev_score) override;
+  bool calc_score_archplacement(
+      InnerTask *task, ArchitectureRequirement *arch_placement_req,
+      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Score_t *chosen_dev_score) override;
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      size_t num_total_mapped_tasks,
+      const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score) override;
 };
