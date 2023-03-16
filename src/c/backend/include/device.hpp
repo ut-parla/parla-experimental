@@ -116,6 +116,8 @@ public:
     return this->mapped_res_.get(type);
   }
 
+  const bool check_resource_availability() const;
+
 protected:
   DeviceType dev_type_;
   DevID_t dev_id_;

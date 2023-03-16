@@ -44,54 +44,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
   has_task = this->get_count() > 0;
   while (has_task) {
     InnerTask *task = this->mappable_tasks.front_and_pop();
-#if 0
-
-    // TODO(wlr): Testing
-    // Assign a random device set to each task
-    // TODO(wlr): This is just used for random verification
-    // testing/benchmarking.
-    //            Remove this when we implement a policy.
-
-    // Just grabbing CPU VCUs for now.
-    // Assume it exists and is first.
-
-    auto valid_options = task->GetResourceRequirements();
-    auto dev_res_reqs = valid_options.GetDeviceRequirementOptions();
-    auto cpu_req = dev_res_reqs[0];
-
-    ArchitectureRequirement *arch_req =
-        dynamic_cast<ArchitectureRequirement *>(cpu_req.get());
-
-    auto specific_device_req = arch_req->GetDeviceRequirementOptions()[0];
-    int vcu = specific_device_req->res_req().get(Resource::VCU);
-
-    // std::cout << "VCU: " << vcu << std::endl;
-
-    std::vector<Device *> devices;
-    devices.insert(devices.end(),
-                   this->device_manager->get_devices(DeviceType::All).begin(),
-                   this->device_manager->get_devices(DeviceType::All).end());
-
-    std::random_device rd;
-    std::mt19937 g(rd());
-    // std::shuffle(devices.begin(), devices.end(), g);
-
-    ResourcePool_t sample;
-    sample.set(Resource::Memory, 0);
-    sample.set(Resource::VCU, vcu);
-
-    task->assigned_devices.push_back(devices[0]);
-    // task->assigned_devices.push_back(devices[1]);
-
-    // TODO(wlr): Maybe use shared_ptr<ResourcePool_t> to pass from existing
-    // res_req? Cannot be shared pools between devices. These are copies here.
-    task->device_constraints.insert({devices[0]->get_global_id(), sample});
-    // task->device_constraints.insert({devices[1]->get_global_id(), sample});
-
-    // std::cout << "Mapping task " << task->get_name() << " to devices "
-    //           << devices[0]->get_name() << " and " << devices[1]->get_name()
-    //           << std::endl;
-#endif
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
     std::vector<std::shared_ptr<PlacementRequirementBase>>
@@ -112,9 +64,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
             dynamic_cast<MultiDeviceRequirements *>(base_req.get());
         std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
         Score_t score{0};
-        policy_->calc_score_mdevplacement(
+        bool is_req_available = policy_->calc_score_mdevplacement(
             task, mdev_reqs, this->atomic_load_total_num_mapped_tasks(),
             &mdev_reqs_vec, &score);
+        if (!is_req_available) {
+          continue;
+        }
         std::cout << "Chosen device from multi-device requirements\n";
         std::cout << "Score:" << score << "\n";
         for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
@@ -130,8 +85,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::shared_ptr<DeviceRequirement> dev_req =
             std::dynamic_pointer_cast<DeviceRequirement>(base_req);
         Score_t score{0};
-        policy_->calc_score_devplacement(
+        bool is_req_available = policy_->calc_score_devplacement(
             task, dev_req, this->atomic_load_total_num_mapped_tasks(), &score);
+        if (!is_req_available) {
+          continue;
+        }
         if (best_score <= score) {
           assert(dev_req != nullptr);
           best_score = score;
@@ -144,9 +102,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
             dynamic_cast<ArchitectureRequirement *>(base_req.get());
         std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
         Score_t chosen_dev_score{0};
-        policy_->calc_score_archplacement(
+        bool is_req_available = policy_->calc_score_archplacement(
             task, arch_req, this->atomic_load_total_num_mapped_tasks(),
             chosen_dev_req, &chosen_dev_score);
+        if (!is_req_available) {
+          continue;
+        }
         if (best_score <= chosen_dev_score) {
           assert(chosen_dev_req != nullptr);
           best_score = chosen_dev_score;
@@ -155,27 +116,34 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
     }
-    for (size_t i = 0; i < chosen_devices.size(); ++i) {
-      assert(chosen_devices[i] != nullptr);
-      Device* chosen_device = chosen_devices[i]->device();
-      task->assigned_devices.push_back(chosen_device);
-      task->device_constraints.insert({chosen_device->get_global_id(),
-                                        chosen_devices[i]->res_req()});
+
+    if (chosen_devices.empty()) {
+      // It means that none of the devices is available for this task.
+      // If it is, re-enqueue the task to the mappable task queue.
+      this->enqueue(task);
+    } else {
+      for (size_t i = 0; i < chosen_devices.size(); ++i) {
+        assert(chosen_devices[i] != nullptr);
+        Device* chosen_device = chosen_devices[i]->device();
+        task->assigned_devices.push_back(chosen_device);
+        task->device_constraints.insert({chosen_device->get_global_id(),
+                                          chosen_devices[i]->res_req()});
+      }
+
+      std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task << "\n";
+      for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+        std::cout << "\t [" << i << "] " << task->assigned_devices[i]->get_name() << "\n";
+        auto res = task->device_constraints[task->assigned_devices[i]->get_global_id()];
+        std::cout << "\t memory:" << res.get(Resource::Memory)  << ", vcu:" <<
+          res.get(Resource::VCU) << "\n";
+      }
+
+
+      this->mapped_tasks_buffer.push_back(task);
+      // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
+      this->atomic_incr_num_mapped_tasks(0);
+      // this->device_manager->IncrAtomicTotalNumMappedTasks();
     }
-
-    std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task << "\n";
-    for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-      std::cout << "\t [" << i << "] " << task->assigned_devices[i]->get_name() << "\n";
-      auto res = task->device_constraints[task->assigned_devices[i]->get_global_id()];
-      std::cout << "\t memory:" << res.get(Resource::Memory)  << ", vcu:" <<
-        res.get(Resource::VCU) << "\n";
-    }
-
-
-    this->mapped_tasks_buffer.push_back(task);
-    // TODO(hc): this->atomic_incr_num_mapped_tasks(device id);
-    this->atomic_incr_num_mapped_tasks(0);
-    // this->device_manager->IncrAtomicTotalNumMappedTasks();
     has_task = this->get_count() > 0;
   } // while there are mappable tasks
 

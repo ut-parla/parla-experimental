@@ -28,7 +28,8 @@ public:
   ///                               these kind of factor information to a new
   ///                               wrapper.
   /// @param chosen_dev_score A pointer of a score of the device.
-  virtual void calc_score_devplacement(
+  /// @return True if a device is available
+  virtual bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       size_t num_total_mapped_tasks, Score_t *score) = 0;
@@ -52,7 +53,8 @@ public:
   ///                       this function chooses a device and updates its
   ///                       pointer to the device requirement.
   /// @param chosen_dev_score A pointer of a score of the chosen device.
-  virtual void
+  /// @return True if any device in the architecture is available
+  virtual bool
   calc_score_archplacement(InnerTask *task,
                            ArchitectureRequirement *arch_placement_req,
                            size_t num_total_mapped_tasks,
@@ -77,7 +79,8 @@ public:
   /// @param member_device_reqs A vector of the resource requirement of the
   ///                           member device.
   /// @param chosen_dev_score A pointer of a score of the multiple devices.
-  virtual void calc_score_mdevplacement(
+  /// @return True if all devices in the multi-device placement are available.
+  virtual bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
       size_t num_total_mapped_tasks,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
@@ -91,19 +94,19 @@ class LocalityLoadBalancingMappingPolicy : public MappingPolicy {
 public:
   using MappingPolicy::MappingPolicy;
 
-  void calc_score_devplacement(
+  bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       size_t num_total_mapped_tasks, Score_t *score) override;
 
-  void
+  bool
   calc_score_archplacement(InnerTask *task,
                            ArchitectureRequirement *arch_placement_req,
                            size_t num_total_mapped_tasks,
                            std::shared_ptr<DeviceRequirement> &chosen_dev_req,
                            Score_t *chosen_dev_score) override;
 
-  void calc_score_mdevplacement(
+  bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
       size_t num_total_mapped_tasks,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
