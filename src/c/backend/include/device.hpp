@@ -14,6 +14,8 @@ using MemorySz_t = Resource_t;
 using VCU_t = Resource_t;
 using ResourcePool_t = ResourcePool<std::atomic<Resource_t>>;
 
+class DeviceRequirement;
+
 /**
  * @brief Architecture types for devices.
  */
@@ -116,7 +118,7 @@ public:
     return this->mapped_res_.get(type);
   }
 
-  const bool check_resource_availability() const;
+  const bool check_resource_availability(DeviceRequirement* dev_req) const;
 
 protected:
   DeviceType dev_type_;

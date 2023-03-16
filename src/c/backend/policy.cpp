@@ -16,7 +16,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   // size_t dev_load = Get device's number of tasks mapped and running.
 
   // Check device resource availability.
-  if (!device.check_resource_availability()) {
+  if (!device.check_resource_availability(dev_placement_req.get())) {
     return false;
   }
 
