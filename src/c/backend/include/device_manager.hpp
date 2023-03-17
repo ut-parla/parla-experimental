@@ -33,8 +33,8 @@ public:
       for (auto j = 0; j < device_list.size(); ++j) {
         auto device = device_list[j];
         std::cout << "Device " << j << ": " << device->get_name()
-                << "\n\t mem. sz:" << device->get_memory_size()
-                << ", num. vcus:" << device->get_num_vcus() << "\n";
+                  << "\n\t mem. sz:" << device->get_memory_size()
+                  << ", num. vcus:" << device->get_num_vcus() << "\n";
       }
     }
   }
@@ -83,6 +83,15 @@ public:
 
   size_t get_num_devices() { return all_devices_.size(); }
 
+  const int get_parray_id(size_t global_dev_id) const {
+    Device *dev = all_devices_[global_dev_id];
+    if (dev->get_type() == DeviceType::CPU) {
+      return -1;
+    } else {
+      return dev->get_id();
+    }
+  }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds
@@ -94,7 +103,7 @@ protected:
   // Stores all devices in the system
   std::vector<Device *> all_devices_;
 
-  /// The total number of tasks mapped to and running on the whole devices. 
+  /// The total number of tasks mapped to and running on the whole devices.
   std::atomic<size_t> total_num_mapped_tasks_;
 };
 
