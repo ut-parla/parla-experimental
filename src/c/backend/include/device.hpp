@@ -76,7 +76,7 @@ public:
    * @brief Returns the device details (maximum resources available)
    * This is assumed to be constant after device creation.
    */
-  ResourcePool_t &get_resource_pool() { return res_; }
+  const ResourcePool_t &get_resource_pool() const { return res_; }
 
   /**
    * @brief Returns the currently mapped resources on the device.
