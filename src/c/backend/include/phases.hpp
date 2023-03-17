@@ -2,6 +2,7 @@
 #ifndef PARLA_PHASES_HPP
 #define PARLA_PHASES_HPP
 
+#include "atomic_wrapper.hpp"
 #include "containers.hpp"
 #include "device.hpp"
 #include "device_manager.hpp"
@@ -91,16 +92,10 @@ protected:
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
-  /* XXX(hc): is it necessary?
-  Mapper(DevID_t num_total_devices) : SchedulerPhase(), dummy_dev_idx_{0} {
-    // TODO(hc) dev_num_mapped_tasks_.resize(num_total_devices);
-  } */
-
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
          std::shared_ptr<MappingPolicy> policy)
       : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
-    // TODO(hc)
-    // dev_num_mapped_tasks_.resize(devices->get_num_registered_devices());
+    dev_num_mapped_tasks_.resize(devices->get_num_devices());
   }
 
   void enqueue(InnerTask *task);
@@ -108,46 +103,51 @@ public:
   void run(SchedulerPhase *next_phase);
   size_t get_count();
 
-  /// Increase the number of total mapped tasks to the whole devices
-  /// and the one for each device.
+  /// Increase the number of the total mapped tasks to the whole devices.
   ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return A pair of the number of total mapped tasks and mapped tasks
-  ///         to a single device
-  std::pair<size_t, size_t> atomic_incr_num_mapped_tasks(DevID_t dev_id) {
-    return std::make_pair(
-        total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed),
-        // TODO(hc): dev_num_mapped_tasks_[dev_id].fetch_add..
-        0);
+  /// @return The number of the total mapped tasks
+  size_t atomic_incr_num_mapped_tasks() {
+    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
   }
 
-  /// Decrease the number of total mapped tasks to the whole devices
-  /// and the one for each device.
+  /// Increase the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
-  /// @return A pair of the number of total mapped tasks and mapped tasks
-  ///         to a single device
-  std::pair<size_t, size_t> atomic_decr_num_mapped_tasks(DevID_t dev_id) {
-    return std::make_pair(
-        total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed),
-        // TODO(hc): dev_num_mapped_tasks_[dev_id].fetch_sub..
-        0);
+  /// @return The number of the tasks mapped to a device
+  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id) {
+    return dev_num_mapped_tasks_[dev_id].fetch_add(1,
+                                                   std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of the total mapped tasks to the whole devices.
+  ///
+  /// @return The number of the total mapped tasks
+  size_t atomic_decr_num_mapped_tasks() {
+    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of the tasks mapped to a device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The number of the tasks mapped to a device
+  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id) {
+    return dev_num_mapped_tasks_[dev_id].fetch_sub(1,
+                                                   std::memory_order_relaxed);
   }
 
   /// Return the number of total mapped tasks to the whole devices.
   ///
   /// @return The old number of total mapped tasks
-  size_t atomic_load_total_num_mapped_tasks() {
+  const size_t atomic_load_total_num_mapped_tasks() const {
     return total_num_mapped_tasks_.load(std::memory_order_relaxed);
   }
 
   /// Return the number of mapped tasks to a single device.
   ///
   /// @param dev_id Device global ID where a task is mapped
-  /// @return The old number of total tasks mapped to a device
-  size_t atomic_load_dev_num_mapped_tasks(DevID_t dev_id) {
-    // TODO(hc): return dev_num_mapped_tasks_[dev_id].load();
-    return 0;
+  /// @return The old number of the tasks mapped to a device
+  const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
+    return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
   }
 
 protected:
@@ -161,8 +161,7 @@ protected:
   /// The total number of tasks mapped to and running on the whole devices.
   std::atomic<size_t> total_num_mapped_tasks_;
   /// The total number of tasks mapped to and running on a single device.
-  /// TODO(hc):
-  // std::vector<AtomicWrapper<size_t>> dev_num_mapped_tasks_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
 };
 
 /**
