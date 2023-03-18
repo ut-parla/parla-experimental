@@ -36,7 +36,7 @@ def partition(pivot, beg, end, array, result_array):
             # TODO(hc): it may had been initialized to 0
             result_array[it] = False
 
-def scatter_and_merge(input_array, output_array):
+def scatter_and_merge(input_array, output_array, offset):
     # This function should do the following tasks:
     # First, scatter output crosspys to each device.
     # Second, materialize boolean output arrays and
@@ -45,44 +45,47 @@ def scatter_and_merge(input_array, output_array):
     # R array.
     # Then?   
     count = 0
+    # To store prefix sum
+    left_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
+    right_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
+    left_index_set = xp.array("""How to initilaize to store a list of indices?""")
+    right_index_set = xp.array("""TODO(hc)..""")
     for d in range(num_gpus):
         with locals.Device[d]:
-            true_idices, true_counts, false_idices, false_counts += counts(output_array[d])
-        locals.synchronized()
+            # Aggregate actual values of the left and the right array elements.
+            # Note that left values and right values are newly allocated arrays
+            # and contains copied original values.
+            # e.g., if output_array[0][1] == True:
+            #           left_values.append(input_array[d][offset + 1])?
+            left_values, left_counts, right_values, right_counts += counts(
+                output_array[d], input_array, offset, d)
+            left_prefix_sum[d] = left_counts
+            right_prefix_sum[d] = right_counts
+            left_index_set[d] = left_indices
+            right_index_set[d] = right_indices
+        locals.synchronize()
 
-    # Merge elements of true indices as the new crosspy?
-    read_idx = []
-    read_size = []
-    # Merge and partition left side.
-    for d in range(num_gpus):
-        d_beg, d_end = xp_block_partition(0, true_counts, d, num_gpus)
-        d_size = d_end - d_beg + 1
-        read_idx.append(d_beg)
-        if d == num_gpus - 1:
-            read_idx.append(d_end)
-        read_size.append(d_size)
-        output_cp = cp.zeros((d_size,))
-    L_xp = xp.array(read_idx, read_size, array)
-    # Set input_array[true_indices] to L_xp.
-    fill_array(L_xp, input_array, true_idices)
+    # Sequential
+    for d in range(0, num_gpus - 1):
+        left_prefix_sum[d + 1] = left_prefix_sum[d]
+        right_prefix_sum[d + 1] = right_prefix_sum[d]
+    left_prefix_sum.synchronize()
+    right_prefix_sum.synchronize()
 
-    # Partition right side.
+    # Sequentially fill left and right of the original inputs using prefix sum.
+    # TODO(hc): conisder offset!
     for d in range(num_gpus):
-        d_beg, d_end = xp_block_partition(0, false_counts, d, num_gpus)
-        d_size = d_end - d_beg + 1
-        read_idx.append(d_beg)
-        if d == num_gpus - 1:
-            read_idx.append(d_end)
-        read_size.append(d_size)
-        output_cp = cp.zeros((d_size,))
-    R_xp = xp.array(read_idx, read_size, array)
-    # Set input_array[false_indices] to R_xp.
-    fill_array(R_xp, input_array, false_idices)
+        l_offset = 0 if d == 0 else left_prefix_sum[d - 1]
+        l_end = left_prefix_sum[d]
+        r_offset = 0 if d == 0 else right_prefix_sum[d - 1]
+        r_end = right_prefix_sum[d]
+        fill_array(input_array, l_offset + offset, l_end, left_prefix_sum[d], left_values)
+        fill_array(input_array, r_offset + offset, r_end, right_prefix_sum[d], right_values) 
 
     # Swap pivot and the first element of the right array.
     # So pivot's index is done .
-    (input_array[false_indices[0] + offset], input_array[pivot + offset])
-        = (input_array[pivot + offset], input_array[false_idices[0] + offset])
+    (input_array[right_indices[0] + offset], input_array[pivot + offset])
+        = (input_array[pivot + offset], input_array[right_idices[0] + offset])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
     return L_xp, R_xp
