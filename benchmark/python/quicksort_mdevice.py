@@ -88,7 +88,8 @@ def scatter_and_merge(input_array, output_array, offset):
         = (input_array[pivot + offset], input_array[right_idices[0] + offset])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
-    return L_xp, R_xp
+    # Return the final position of the pivot.
+    return right_indices[0] + offset
         
 def quick_sort_main(beg, end, array, offset):
     if beg < end:
@@ -127,10 +128,10 @@ def quick_sort_main(beg, end, array, offset):
                     d_ouput_xp = do_read(output_xp[d])
                     partition(pivot, 0, len(d_array_xp), d_array_xp, d_output_xp)
         await T # TODO(hc): do/will we support this? 
-        L, R = scatter_and_merge(array, output_cp_list, offset)
+        pivot = scatter_and_merge(array, output_cp_list, offset)
         # So, size of (L + R) is (input_array size - 1)
-        quick_sort_main(L.beg, L.end, L, offset)
-        quick_sort_main(R.beg, R.end, R, offset + len(L))
+        quick_sort_main(beg, pivot - 1, array, offset)
+        quick_sort_main(pivot + 1, end, array, offset + pivot + 1)
 
 def main(T):
     input_arr = # input array
