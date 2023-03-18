@@ -21,7 +21,7 @@ def xp_block_partition(start, end, dev_id, num_gpus):
             block_end += (dev_id + 1)
     return block_beg, block_end
 
-def partition(pivot, beg, end, array, result_array):
+def partition(pivot, array, result_array):
     """
     Compare elements in an array with a pivot. 
     If an element is smaller than a pivot, set True
@@ -29,14 +29,14 @@ def partition(pivot, beg, end, array, result_array):
     This is not a task, but a normal kernel called by a task.
     This kernel is called by a single GPU.
     """
-    for it in range(beg, end):
+    for it in range(len(array)):
         if array[it] <= pivot:
             result_array[it] = True
         else:
             # TODO(hc): it may had been initialized to 0
             result_array[it] = False
 
-def scatter_and_merge(input_array, output_array, offset):
+def scatter_and_merge(input_array, output_array, offset, pivot_idx):
     # This function should do the following tasks:
     # First, scatter output crosspys to each device.
     # Second, materialize boolean output arrays and
@@ -48,8 +48,10 @@ def scatter_and_merge(input_array, output_array, offset):
     # To store prefix sum
     left_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
     right_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
-    left_index_set = xp.array("""How to initilaize to store a list of indices?""")
-    right_index_set = xp.array("""TODO(hc)..""")
+    # The first dimension is a device id and the second dimension
+    # stores left/rigth values based on a pivot.
+    left_value_array = xp.array("""How to initilaize to store a list of indices?""")
+    right_value_array = xp.array("""TODO(hc)..""")
     for d in range(num_gpus):
         with locals.Device[d]:
             # Aggregate actual values of the left and the right array elements.
@@ -61,42 +63,56 @@ def scatter_and_merge(input_array, output_array, offset):
                 output_array[d], input_array, offset, d)
             left_prefix_sum[d] = left_counts
             right_prefix_sum[d] = right_counts
-            left_index_set[d] = left_indices
-            right_index_set[d] = right_indices
+            # Left/right values are extracted and copied from
+            # the input array, but in this case, just store references.
+            left_value_array[d] = left_values
+            right_value_array[d] = right_values
+        # Crosspy's default model is a lazy write.
+        # To flush requested operations immediately, call synchronize.
         locals.synchronize()
 
-    # Sequential
+    # Sequentially calculates a prefix sum.
     for d in range(0, num_gpus - 1):
-        left_prefix_sum[d + 1] = left_prefix_sum[d]
-        right_prefix_sum[d + 1] = right_prefix_sum[d]
+        left_prefix_sum[d + 1] += left_prefix_sum[d]
+        right_prefix_sum[d + 1] += right_prefix_sum[d]
     left_prefix_sum.synchronize()
     right_prefix_sum.synchronize()
 
     # Sequentially fill left and right of the original inputs using prefix sum.
     # TODO(hc): conisder offset!
+    first_right_index = 0
     for d in range(num_gpus):
         l_offset = 0 if d == 0 else left_prefix_sum[d - 1]
         l_end = left_prefix_sum[d]
         r_offset = 0 if d == 0 else right_prefix_sum[d - 1]
         r_end = right_prefix_sum[d]
-        fill_array(input_array, l_offset + offset, l_end, left_prefix_sum[d], left_values)
-        fill_array(input_array, r_offset + offset, r_end, right_prefix_sum[d], right_values) 
+        # Now, we replace the original input arrays with new left/right values. 
+        # First, input_array[l_offset + offset:l_end + offset] <- left_values[:]
+        # Second, input_array[r_offset + offset:r_end + offset] <- right_values[:]
+        fill_array(input_array, l_offset + offset, l_end + offset, left_values)
+        fill_array(input_array, r_offset + offset, r_end + offset, right_values) 
+        if d == 0:
+            first_right_index = r_offset + offset
 
     # Swap pivot and the first element of the right array.
-    # So pivot's index is done .
-    (input_array[right_indices[0] + offset], input_array[pivot + offset])
-        = (input_array[pivot + offset], input_array[right_idices[0] + offset])
+    # So pivot's index is done, which means that it will not be accessed again.
+    (input_array[first_right_index], input_array[pivot_idx])
+        = (input_array[pivot_idx], input_array[first_right_index])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
     # Return the final position of the pivot.
-    return right_indices[0] + offset
+    return first_right_index 
         
 def quick_sort_main(beg, end, array, offset):
     if beg < end:
-        pivot = # calculate a pivot
+        # TODO(hc): is there any way to copy an element of the crosspy array
+        #           regardless of the current location?
+        pivot_idx = end - 1
+        pivot = array[pivot_idx]
         read_idx = []
         read_size = []
         output_cp_list = []
+        # Partition the input array.
         for d in range(num_gpus):
             d_beg, d_end = xp_block_partition(beg, end, d, num_gpus)
             d_size = d_end - d_beg + 1
@@ -109,11 +125,14 @@ def quick_sort_main(beg, end, array, offset):
             # greater than a pivot.
             output_cp = cupy.zeros((d_size,), dtype=bool)
             output_cp_list.append(output_cp)
-        # Create L and R which contains an array for each device.
         # The input array is partitioned based on read_idx and read_size to gpus.
+        # Each device iterates each element in a partition and splits to
+        # elements smaller than and equal to a pivot and ones greater than a pivot.
         array_xp = xp.array(read_idx, read_size, array)
         # TODO(hc): Is there any way to distribute a cupy list to each GPU? 
-        # TODO(hc): reuse this output array.
+        # TODO(hc): allocate once by using the very initial input partition size
+        #           and reuse it recursively.
+        #           So, always needs zerofication.
         output_xp = xp.array(output_cp_list)
   
         # This function uses four CUDA devices.
@@ -126,12 +145,12 @@ def quick_sort_main(beg, end, array, offset):
                     d_array_xp = do_read(array_xp[readidx[readsize[d]]])
                     # TODO(hc): How to get output_xd's gpu d's array?
                     d_ouput_xp = do_read(output_xp[d])
-                    partition(pivot, 0, len(d_array_xp), d_array_xp, d_output_xp)
+                    partition(pivot, d_array_xp, d_output_xp)
         await T # TODO(hc): do/will we support this? 
-        pivot = scatter_and_merge(array, output_cp_list, offset)
+        new_pivot_idx = scatter_and_merge(array, output_cp_list, offset, pivot_idx)
         # So, size of (L + R) is (input_array size - 1)
-        quick_sort_main(beg, pivot - 1, array, offset)
-        quick_sort_main(pivot + 1, end, array, offset + pivot + 1)
+        quick_sort_main(beg, new_pivot_idx - 1, array, offset)
+        quick_sort_main(new_pivot_idx + 1, end, array, offset + new_pivot_idx)
 
 def main(T):
     input_arr = # input array
