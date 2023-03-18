@@ -80,13 +80,14 @@ def scatter_and_merge(input_array, output_array):
     fill_array(R_xp, input_array, false_idices)
 
     # Swap pivot and the first element of the right array.
-    # So pivot's index is done.
-    (input_array[false_indices[0]], input_array[pivot]) = (input_array[pivot], input_array[false_idices[0]])
+    # So pivot's index is done .
+    (input_array[false_indices[0] + offset], input_array[pivot + offset])
+        = (input_array[pivot + offset], input_array[false_idices[0] + offset])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
     return L_xp, R_xp
         
-def quick_sort_main(beg, end, array):
+def quick_sort_main(beg, end, array, offset):
     if beg < end:
         pivot = # calculate a pivot
         read_idx = []
@@ -108,6 +109,7 @@ def quick_sort_main(beg, end, array):
         # The input array is partitioned based on read_idx and read_size to gpus.
         array_xp = xp.array(read_idx, read_size, array)
         # TODO(hc): Is there any way to distribute a cupy list to each GPU? 
+        # TODO(hc): reuse this output array.
         output_xp = xp.array(output_cp_list)
   
         # This function uses four CUDA devices.
@@ -122,10 +124,10 @@ def quick_sort_main(beg, end, array):
                     d_ouput_xp = do_read(output_xp[d])
                     partition(pivot, 0, len(d_array_xp), d_array_xp, d_output_xp)
         await T # TODO(hc): do/will we support this? 
-        L, R = scatter_and_merge(output_cp_list, L, R)
+        L, R = scatter_and_merge(array, output_cp_list, offset)
         # So, size of (L + R) is (input_array size - 1)
-        quick_sort_main(L.beg, L.end, L)
-        quick_sort_main(R.beg, R.end, R)
+        quick_sort_main(L.beg, L.end, L, offset)
+        quick_sort_main(R.beg, R.end, R, offset + len(L))
 
 def main(T):
     input_arr = # input array
