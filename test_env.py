@@ -19,12 +19,15 @@ context = create_env([cuda(0), cuda(1)])
 
 with context as outer:
 
+    print("Outer: ", get_current_devices(), flush=True)
+
     @outer.parallel()
     def f(inner):
-        print("outer: ", outer, flush=True)
-        print("inner: ", inner, flush=True)
-        print("streams: ", inner.streams, flush=True)
-        print("cupy: ", cp.cuda.get_current_stream(), cp.cuda.Device())
+        # print("outer: ", outer, flush=True)
+        # print("inner: ", inner, flush=True)
+        # print("streams: ", inner.streams, flush=True)
+        print("Inner: ", get_current_devices(), flush=True)
+        # print("cupy: ", cp.cuda.get_current_stream(), cp.cuda.Device())
 
 context.finalize()
 print(device_manager.stream_pool)
