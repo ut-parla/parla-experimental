@@ -13,6 +13,8 @@ from parla.cython import tasks
 cimport core
 from parla.cython import core
 
+from parla.common.globals import *
+
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 TaskSpace = tasks.TaskSpace
@@ -53,6 +55,12 @@ _scheduler_locals = _SchedulerLocals()
 def get_scheduler_context():
     return _scheduler_locals.scheduler_context
 
+def get_device_manager():
+    return get_scheduler_context().device_manager
+
+def get_stream_pool():
+    return get_scheduler_context().device_manager.stream_pool
+
 class SchedulerContext:
 
     #TODO: Add enviornments back
@@ -63,11 +71,14 @@ class SchedulerContext:
         raise NotImplementedError()
 
     def __enter__(self):
+        #TODO: Deprecate _scheduler_locals 
         _scheduler_locals._scheduler_context_stack.append(self)
+        _Locals.push_scheduler(self.scheduler)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         _scheduler_locals._scheduler_context_stack.pop()
+        _Locals.pop_scheduler()
 
 class ControllableThread(threading.Thread):
 

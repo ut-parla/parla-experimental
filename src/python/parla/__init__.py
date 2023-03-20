@@ -7,7 +7,7 @@ from .cython import core
 from .cython import device_manager
 from .cython import device
 from .common.spawn import spawn
-
+from .common.globals import Locals
 from .common import containers
 
 sleep_gil = core.cpu_bsleep_gil
@@ -18,14 +18,10 @@ Tasks = tasks.TaskCollection
 
 DeviceManager = device_manager.PyDeviceManager
 
-
-Locals = device._Locals
-StreamPool = device.StreamPool
-GlobalStreamPool = device.GlobalStreamPool
 Stream = device.Stream
-create_env = device.create_env
-TaskEnvironment = device.TaskEnvironment
-GPUEnvironment = device.GPUEnvironment
+create_env = tasks.create_env
+TaskEnvironment = tasks.TaskEnvironment
+GPUEnvironment = tasks.GPUEnvironment
 
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',

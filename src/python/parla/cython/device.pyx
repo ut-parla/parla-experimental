@@ -2,12 +2,15 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-from parla.common.globals import DeviceType, cupy
+from parla.common.globals import *
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Union, List, Iterable, Dict, Tuple
 from collections import defaultdict
+import os 
+
+CUPY_ENABLED = (os.getenv("PARLA_CUPY_ENABLE", "0") == "1")
 
 cdef class CyDevice:
     """
@@ -76,10 +79,9 @@ class PyDevice:
         self._device = self 
 
     def __enter__(self):
-        pass
-        #print(f"Entered device, {self.get_name()}, context", flush=True)
+        return self 
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
         #print(f"Exited device, {self.get_name()}, context", flush=True)
 
@@ -105,6 +107,13 @@ class PyDevice:
         """
         return self._device
 
+    @property
+    def architecture(self):
+        """
+        Returns the architecture of the device.
+        """
+        return self._dev_type
+
     def get_type(self):
         return self._dev_type
 
@@ -128,7 +137,9 @@ class PyCUDADevice(PyDevice):
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this
-        self._device = cupy.cuda.Device(dev_id)
+        if CUPY_ENABLED:
+            print("Creating CuPY device", flush=True)
+            self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -201,8 +212,10 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, type(self)) and \
-               self.id == o.id and self._name == o.name
+        if isinstance(o, int) or isinstance(o, IntEnum):
+            return self._id == o
+        elif isinstance(o, type(self)):
+            return ( (self.id == o.id) and (self._name == o.name) )
 
     def __hash__(self):
         return self._id
@@ -243,55 +256,35 @@ PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceRe
                         Tuple[PyDevice, DeviceResource]]
 
 
-import threading 
-
-class StreamPool:
-
-    def __init__(self, device_list, per_device=4):
-        self._device_list = device_list
-        self._per_device = per_device
-        self._pool = {}
-        print("Device List: ", device_list)
-        for device in self._device_list:
-            self._pool[device] = []
-            with device.device as d:
-                for i in range(self._per_device):
-                    self._pool[device].append(Stream(device=d))
-
-    def get_stream(self, device):
-        if len(self._pool[device]) == 0:
-            #Create a new stream if the pool is empty.
-            return Stream(device=device)
-        return self._pool[device].pop()
-
-    def return_stream(self, stream):
-        self._pool[stream.device].append(stream)
-
-    def __summarize__(self):
-        summary  = ""
-        for device in self._device_list:
-            summary += f"({device} : {len(self._pool[device])})"
-
-        return summary
+class Stream:
+    def __init__(self, device=None, stream=None, non_blocking=True):
+        self._device = device
+        self._stream = stream
 
     def __repr__(self):
-        return f"StreamPool({self.__summarize__()})"
+        return f"Stream({self._device})"
 
+    def __str__(self):
+        return self.__repr__()
 
-class Handle:
-    def __init__(self, name, value=None):
-        self.att = name
-        setattr(self, name, value)
+    def __enter__(self):
+        print("Entering Stream: ", self, flush=True)
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting Stream: ", self, flush=True)
 
-    def set(self, value):
-        setattr(self, self.att, value)
+    @property
+    def device(self):
+        return self._device
 
-    def get(self):
-        return getattr(self, self.att)
+    @property
+    def stream(self):
+        return self._stream
 
-GlobalStreamPool = Handle("stream_pool")
+    def synchronize(self):
+        print("Synchronizing stream", flush=True)
 
-class Stream:
+class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
         """
@@ -366,204 +359,3 @@ class Stream:
         if hasattr(self, name):
             return getattr(self, name)
         return getattr(self._stream, name)
-
-
-class LocalStack(threading.local):
-
-    def __init__(self):
-        super(LocalStack, self).__init__()
-        self._stack = []
-
-    def __repr__(self):
-        return str(self._stack)
-
-    def __str__(self):
-        return self.__repr__()
-
-    def push(self, context):
-        self._stack.append(context)
-
-    def pop(self):
-        return self._stack.pop()
-
-    @property
-    def current(self):
-        if len(self._stack) == 0:
-            return None
-        return self._context_stack[-1]
-
-class Locals(threading.local):
-
-    def __init__(self):
-        super(Locals, self).__init__()
-        self._context_stack = LocalStack()
-        self._stream_stack = LocalStack()
-
-    def push_context(self, context):
-        self._context_stack.push(context)
-
-    def pop_context(self):
-        return self._context_stack.pop()
-
-    @property
-    def context(self):
-        return self._context_stack.current
-
-    def push_stream(self, stream):
-        self._stream_stack.push(stream)
-    
-    def pop_stream(self):
-        return self._stream_stack.pop()
-
-    @property
-    def stream(self):
-        return self._stream_stack.current
-
-    @property
-    def active_device(self):
-        return self._stream_stack.current.device
-
-    @property
-    def current_devices(self):
-        return self._context_stack.current.devices
-
-
-def create_device_env(device):
-    if isinstance(device, PyCPUDevice):
-        return TaskEnvironment(device), DeviceType.CPU
-    elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
-
-def create_env(sources):
-    targets = []
-
-    for env in sources:
-        if isinstance(env, PyDevice):
-            device = env
-            new_env, dev_type = create_device_env(env)
-            targets.append(new_env)
-
-    if len(targets) == 1:
-        return targets[0]
-    else:
-        return TaskEnvironment(targets)
-
-_Locals = Locals()
-
-class TaskEnvironment:
-
-    def __init__(self, environment_list, blocking=False):
-
-        self.device_dict = defaultdict(list)
-        self.env_list = []
-        self.is_terminal = False
-        self.blocking = blocking
-
-        for env in environment_list:
-            for dev in env.device_dict:
-                self.device_dict[dev] += env.device_dict[dev]
-            self.env_list.append(env)
-
-    def __repr__(self):
-        return f"TaskEnvironment({self.env_list})"
-
-    @property
-    def streams(self):
-        if self.is_terminal:
-            return self.stream_list
-        else:
-            return None
-
-    def get_devices(self, arch):
-        return self.device_dict[arch]
-
-    def get_all_devices(self):
-        return list(self.device_dict.values())
-
-    def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
-
-    def synchronize(self):
-        print(f"Sychronizing {self}..", flush=True)
-        if self.is_terminal:
-            for stream in self.stream_list:
-                stream.synchronize()
-        else:
-            for env in self.env_list:
-                env.synchronize()
-
-    def __enter__(self):
-        print("Entering environment:", self.env_list, flush=True)
-
-        if len(self.env_list) == 0:
-            raise RuntimeError("[TaskEnvironment] No environment or device is available.")
-
-        _Locals.push_context(self)
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting environment", self.env_list, flush=True)
-        ret = False
-
-        _Locals.pop_context()
-        
-        return ret 
-
-    def __getitem__(self, index):
-
-        if isinstance(index, int):
-            return self.env_list[index]
-        
-        return create_env(self.env_list[index])
-
-
-class GPUEnvironment(TaskEnvironment):
-
-    def __init__(self, device, blocking=False):
-        super(GPUEnvironment, self).__init__([], blocking=blocking)
-
-        self.stream_list = []
-        self.is_terminal = True
-
-        self.device_dict[DeviceType.CUDA].append(device)
-
-        self._device = device 
-        global GlobalStreamPool
-        stream = GlobalStreamPool.get().get_stream(device=device)
-        self.stream_list.append(stream)
-
-    def __repr__(self):
-        return f"GPUEnvironment({self._device})"
-
-    def __enter__(self):
-        print("Entering GPU Environment: ", self, flush=True)
-
-        _Locals.push_context(self)
-
-        self.active_stream = self.stream_list[0]
-
-        ret_stream = self.active_stream.__enter__()
-
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting GPU Environment: ", self, flush=True)
-        ret = False
-
-        self.active_stream.__exit__(exc_type, exc_val, exc_tb)
-
-        _Locals.pop_context()
-
-        
-        return ret 
-
-    def __getitem__(self, index):
-        if index == 0:
-            return self
-
-    def finalize(self):
-        global GlobalStreamPool
-        for stream in self.stream_list:
-            stream.synchronize()
-            GlobalStreamPool.get().return_stream(stream)
