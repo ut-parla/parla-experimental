@@ -42,11 +42,8 @@ def partition(pivot, array, result_array):
     This kernel is called by a single GPU.
     """
     for it in range(len(array)):
-        if array[it] <= pivot:
-            result_array[it] = True
-        else:
-            # TODO(hc): it may had been initialized to 0
-            result_array[it] = False
+        # TODO(hc): it may had been initialized to 0
+        result_array[array[it] <= pivot] = True
 
 # TODO(hc): numba to make this run on gpu.
 def scatter_and_merge(input_array, output_array, offset, pivot_idx):
