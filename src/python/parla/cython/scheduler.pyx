@@ -13,11 +13,12 @@ from parla.cython import tasks
 cimport core
 from parla.cython import core
 
-from parla.common.globals import *
+from parla.common.globals import _Locals as Locals 
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 TaskSpace = tasks.TaskSpace
+create_env = tasks.create_env
 
 from parla.utility.tracer import NVTXTracer
 
@@ -73,12 +74,12 @@ class SchedulerContext:
     def __enter__(self):
         #TODO: Deprecate _scheduler_locals 
         _scheduler_locals._scheduler_context_stack.append(self)
-        _Locals.push_scheduler(self.scheduler)
+        Locals.push_scheduler(self.scheduler)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         _scheduler_locals._scheduler_context_stack.pop()
-        _Locals.pop_scheduler()
+        Locals.pop_scheduler()
 
 class ControllableThread(threading.Thread):
 
@@ -165,13 +166,19 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     if isinstance(self.task, ComputeTask):
                         active_task = self.task 
 
-                        #print("TASK", active_task.get_name(), " has devices: ", active_task.get_assigned_devices(), flush=True)
+                        parla_devices = active_task.get_assigned_devices()
+                        device_context = create_env(parla_devices)
+
+                    
 
                         core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
-                        active_task.run()
+
+                        with device_context as env:
+                            active_task.run()
+
                         nvtx.pop_range(domain="Python Runtime")
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
 

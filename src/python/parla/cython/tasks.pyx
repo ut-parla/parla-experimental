@@ -522,7 +522,7 @@ class TaskEnvironment:
         return self.device_dict[arch]
 
     def get_all_devices(self):
-        return list(self.device_dict.values())
+        return sum(self.device_dict.values(), [])
 
     @property
     def contexts(self):
