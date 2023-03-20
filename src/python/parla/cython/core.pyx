@@ -187,12 +187,18 @@ cdef class PyInnerTask:
         cdef bool status = False 
         cdef _StatusFlags status_flags
 
-        for i in range(0, len(dependency_list)):
-            d = dependency_list[i]
-            dependency = d.inner_task
-            c_dependency = dependency.c_task
-            c_self.queue_dependency(c_dependency)
-
+        try: 
+            for i in range(0, len(dependency_list)):
+                d = dependency_list[i]
+                dependency = d.inner_task
+                c_dependency = dependency.c_task
+                c_self.queue_dependency(c_dependency)
+        except TypeError:
+            for d in dependency_list:
+                dependency = d.inner_task
+                c_dependency = dependency.c_task
+                c_self.queue_dependency(c_dependency)
+                
         if process:
             with nogil:
                 status_flags = c_self.process_dependencies()
@@ -253,6 +259,22 @@ cdef class PyInnerTask:
     cpdef get_num_unmapped_dependencies(self):
         cdef InnerTask* c_self = self.c_task
         return c_self.get_num_unmapped_dependencies()
+
+    cpdef get_assigned_devices(self):
+        cdef InnerTask* c_self = self.c_task
+
+        cdef vector[Device*] c_devices = c_self.get_assigned_devices()
+        cdef size_t num_devices = c_devices.size()
+
+        cdef Device* c_device
+
+        devices = []
+        for i in range(num_devices):
+            c_device = <Device*> c_devices[i]
+            py_device = <object> c_device.get_py_device()
+            devices.append(py_device)
+
+        return devices
 
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task

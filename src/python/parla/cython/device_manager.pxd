@@ -1,7 +1,7 @@
 import cython
 cimport cython
 
-from parla.cython.device cimport Device, CyDevice 
+from parla.cython.device cimport CUDADevice, CPUDevice, Device, CyDevice 
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -9,8 +9,8 @@ from libcpp.vector cimport vector
 cdef extern from "include/device_manager.hpp" nogil:
     cdef cppclass DeviceManager:
         DeviceManager() except +
-        void RegisterDevice(Device*) except +
-        void PrintRegisteredDevices() except +
+        void register_device(Device*) except +
+        void print_registered_devices() except +
 
 
 cdef class CyDeviceManager:

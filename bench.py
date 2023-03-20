@@ -26,7 +26,7 @@ def main(workers, n, t, accesses, frac):
 
     @spawn(vcus=0)
     async def task1():
-        cost = 1.0/workers
+        cost = 1000.0/workers
 
         kernel_time = t / accesses
         free_time = kernel_time * (1 - frac)
@@ -47,6 +47,7 @@ def main(workers, n, t, accesses, frac):
 
                 if args.verbose:
                     inner_start_t = time.perf_counter()
+                    print("Task", i, " | Start", flush=True)
 
                 for k in range(accesses):
                     free_sleep(free_time)

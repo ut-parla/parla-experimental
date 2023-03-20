@@ -52,8 +52,7 @@ class Parla:
         self.kwds = kwds
         self.sig = sig_type
         self.handle_interrupt = True
-        self.device_manager = DeviceManager(dev_config_file)
-        # self.device_manager.print_registered_devices()
+        self._device_manager = DeviceManager(dev_config_file)
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
@@ -72,7 +71,7 @@ class Parla:
         if hasattr(self, "_sched"):
             raise ValueError(
                 "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(self.device_manager, **self.kwds)
+        self._sched = self.scheduler_class(self._device_manager, **self.kwds)
 
         self.interuppted = False
         self.released = False
@@ -99,6 +98,7 @@ class Parla:
         finally:
             self.release()
             del self._sched
+            del self._device_manager
             core.py_write_log(self.logfile)
 
     def release(self):

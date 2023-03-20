@@ -2,13 +2,16 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-from parla.common.globals import *
+from parla.common.globals import _Locals as Locals
+from parla.common.globals import cupy
+from parla.common.globals import DeviceType as PyDeviceType
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Union, List, Iterable, Dict, Tuple
 from collections import defaultdict
 import os 
+from enum import IntEnum
 
 CUPY_ENABLED = (os.getenv("PARLA_CUPY_ENABLE", "0") == "1")
 
@@ -18,6 +21,9 @@ cdef class CyDevice:
     """
     cdef Device* get_cpp_device(self):
         return self._cpp_device
+
+    def __dealloc__(self):
+        del self._cpp_device
 
 
 cdef class CyCUDADevice(CyDevice):
@@ -78,6 +84,9 @@ class PyDevice:
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self 
 
+    def __dealloc__(self):
+        del self._cy_device
+
     def __enter__(self):
         return self 
 
@@ -124,6 +133,9 @@ class PyDevice:
         #NOTE: DEVICE NAMES MUST BE UNIQUE IN A SCHEDULER INSTANCE
         return hash(self._device_name)
 
+    def __str__(self):
+        return repr(self)
+
 
 """
 Device instances in Python manage resource status.
@@ -150,6 +162,13 @@ class PyCPUDevice(PyDevice):
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
+
+
+class PyInvalidDevice(PyDevice):
+    """
+    """
+    def __init__(self):
+        super().__init__(PyDeviceType.INVALID, "Invalid", -1)
 
 
 class PyArchitecture(metaclass=ABCMeta):
@@ -186,7 +205,7 @@ class PyArchitecture(metaclass=ABCMeta):
             # ignore that placement.
             print(f"{self._name} does not have device({index}).", flush=True)
             print(f"Ignore this placement.", flush=True)
-            return None
+            return PyInvalidDevice()
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
@@ -229,7 +248,7 @@ class PyCUDAArchitecture(PyArchitecture):
         super().__init__("CUDAArch", DeviceType.CUDA)
 
     def add_device(self, device):
-        assert isinstance(device, PyCUDADevice)
+        assert isinstance(device, PyDevice)
         self._devices.append(device)
 
  
@@ -321,7 +340,7 @@ class CupyStream(Stream):
         self._stream.__enter__()
         print('2', flush=True)
 
-        _Locals.push_stream(self)
+        Locals.push_stream(self)
 
         print('3', flush=True)
 
@@ -339,7 +358,7 @@ class CupyStream(Stream):
         #Restore the device to the previous device.
         ret_device = self._device.__exit__(exc_type, exc_value, traceback)
             
-        _Locals.pop_stream()
+        Locals.pop_stream()
         return ret_stream and ret_device
 
     @property

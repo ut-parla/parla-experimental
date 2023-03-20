@@ -25,11 +25,11 @@
  * needs and bottlenecks change.*/
 
 // By default, types are not atomic,
-template <typename T> auto constexpr is_atomic = false;
+//template <typename T> auto constexpr is_atomic = false;
 // but std::atomic<T> types are,
-template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
+//template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
 // as well as std::atomic_flag.
-template <> auto constexpr is_atomic<std::atomic_flag> = true;
+//template <> auto constexpr is_atomic<std::atomic_flag> = true;
 
 template <typename T> class ProtectedVector {
 
@@ -136,7 +136,7 @@ public:
     return val;
   }
 
-  T back_unsafe() { return this->vec.back(); }
+  inline T back_unsafe() { return this->vec.back(); }
 
   T back_and_pop() {
     this->mtx.lock();
@@ -146,7 +146,7 @@ public:
     return val;
   }
 
-  T back_and_pop_unsafe() {
+  inline T back_and_pop_unsafe() {
     T val = this->back_unsafe();
     this->pop_back_unsafe();
     return val;
@@ -159,9 +159,11 @@ public:
     return val;
   }
 
-  T front_unsafe() { return this->vec.front(); }
+  inline T front_unsafe() { return this->vec.front(); }
 
   // TODO(hc): I think this can be just called "pop"
+  // TODO(wlr): I wasn't sure since STL container `pop` doesn't return the old
+  // head.
   T front_and_pop() {
     this->mtx.lock();
     T val = this->front_unsafe();
@@ -183,7 +185,7 @@ public:
     this->length = 0;
   }
 
-  void clear_unsafe() {
+  inline void clear_unsafe() {
     this->vec.clear();
     this->length = 0;
   }
@@ -194,7 +196,7 @@ public:
     this->mtx.unlock();
   }
 
-  void reserve_unsafe(size_t size) { this->vec.reserve(size); }
+  inline void reserve_unsafe(size_t size) { this->vec.reserve(size); }
 
   void resize(size_t size) {
     this->mtx.lock();
@@ -211,7 +213,7 @@ public:
     return val;
   }
 
-  T get_unsafe(size_t i) { return this->vec[i]; }
+  inline T get_unsafe(size_t i) { return this->vec[i]; }
 
   void set(size_t i, T val) {
     this->mtx.lock();
@@ -219,7 +221,7 @@ public:
     this->mtx.unlock();
   }
 
-  void set_unsafe(size_t i, T val) { this->vec[i] = val; }
+  inline void set_unsafe(size_t i, T val) { this->vec[i] = val; }
 
   std::vector<T> get_vector_copy() {
     this->mtx.lock();
@@ -228,7 +230,7 @@ public:
     return vec;
   }
 
-  std::vector<T> get_vector_copy_unsafe() {
+  inline std::vector<T> get_vector_copy_unsafe() {
     std::vector<T> vec = this->vec;
     return vec;
   }
@@ -246,6 +248,15 @@ public:
     this->mtx.unlock();
     return vec;
   }
+
+  bool empty() {
+    this->mtx.lock();
+    bool empty = this->vec.empty();
+    this->mtx.unlock();
+    return empty;
+  }
+
+  inline bool empty_unsafe() { return this->vec.empty(); }
 };
 
 template <typename T> class ProtectedQueue {
@@ -290,7 +301,7 @@ public:
     this->length++;
   }
 
-  void push_back_unsafe(T a) {
+  inline void push_back_unsafe(T a) {
     this->q.push_back(a);
     this->length++;
   }
@@ -303,7 +314,7 @@ public:
     this->mtx.unlock();
   }
 
-  void push_back_unsafe(std::vector<T> &a) {
+  inline void push_back_unsafe(std::vector<T> &a) {
     for (auto val : a) {
       this->push_back_unsafe(val);
     }
@@ -316,7 +327,7 @@ public:
     this->length++;
   }
 
-  void push_front_unsafe(T a) {
+  inline void push_front_unsafe(T a) {
     this->q.push_back(a);
     this->length++;
   }
@@ -329,7 +340,7 @@ public:
     this->mtx.unlock();
   }
 
-  void push_front_unsafe(std::vector<T> &a) {
+  inline void push_front_unsafe(std::vector<T> &a) {
     for (auto val : a) {
       this->push_back_unsafe(val);
     }
@@ -342,7 +353,7 @@ public:
     this->length--;
   }
 
-  void pop_back_unsafe() {
+  inline void pop_back_unsafe() {
     this->q.pop_back();
     this->length--;
   }
@@ -354,7 +365,7 @@ public:
     this->length--;
   }
 
-  void pop_front_unsafe() {
+  inline void pop_front_unsafe() {
     this->q.pop_front();
     this->length--;
   }
@@ -384,7 +395,7 @@ public:
     return val;
   }
 
-  T at_unsafe(size_t i) { return this->q.at(i); }
+  inline T at_unsafe(size_t i) { return this->q.at(i); }
 
   T back() {
     this->mtx.lock();
@@ -393,7 +404,7 @@ public:
     return val;
   }
 
-  T back_unsafe() { return this->q.back(); }
+  inline T back_unsafe() { return this->q.back(); }
 
   T back_and_pop() {
     this->mtx.lock();
@@ -403,7 +414,7 @@ public:
     return val;
   }
 
-  T back_and_pop_unsafe() {
+  inline T back_and_pop_unsafe() {
     T val = this->back_unsafe();
     this->pop_back_unsafe();
     return val;
@@ -416,7 +427,7 @@ public:
     return val;
   }
 
-  T front_unsafe() { return this->q.front(); }
+  inline T front_unsafe() { return this->q.front(); }
 
   T front_and_pop() {
     this->mtx.lock();
@@ -426,7 +437,7 @@ public:
     return val;
   }
 
-  T front_and_pop_unsafe() {
+  inline T front_and_pop_unsafe() {
     T val = this->front_unsafe();
     this->pop_front_unsafe();
     return val;
@@ -439,10 +450,19 @@ public:
     this->length = 0;
   }
 
-  void clear_unsafe() {
+  inline void clear_unsafe() {
     this->q.clear();
     this->length = 0;
   }
+
+  bool empty() {
+    this->mtx.lock();
+    bool empty = this->q.empty();
+    this->mtx.unlock();
+    return empty;
+  }
+
+  inline bool empty_unsafe() { return this->q.empty(); }
 };
 
 #endif // PARLA_CONTAINERS_HPP

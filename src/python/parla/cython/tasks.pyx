@@ -10,13 +10,15 @@ from parla.cython import device
 
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import get_stream_pool, get_scheduler
+from parla.common.globals import DeviceType as PyDeviceType
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
-DeviceType = device.DeviceType
+
+DeviceType = PyDeviceType
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, Union
@@ -30,9 +32,12 @@ import sys
 import cython 
 cimport cython
 
-from parla.cython import device
+from parla.cython import device, device_manager
 
 DeviceResourceRequirement = device.DeviceResourceRequirement 
+cpu = device_manager.cpu
+
+PyInvalidDevice = device.PyInvalidDevice
 
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []
@@ -261,6 +266,9 @@ class Task:
 
         name = name.encode('utf-8')
         self.inner_task.update_name(name)
+
+    def get_name(self):
+        return self.name
         
 
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
@@ -348,6 +356,9 @@ class Task:
         dependent_list = self.inner_task.get_dependents()
         return dependent_list
 
+    def get_assigned_devices(self):
+        return self.inner_task.get_assigned_devices()
+
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
         status = self.inner_task.notify_dependents_wrapper()
@@ -373,6 +384,10 @@ class Task:
         for req in device_reqs:
             if isinstance(req, DeviceResourceRequirement):
                 # Single device.
+                if isinstance(req.device, PyInvalidDevice):
+                    # If the specified device does not exist
+                    # in the current system, replace it with cpu.
+                    req.device = cpu(0)
                 self.inner_task.add_device_req(
                     req.device.get_cy_device(),
                     req.res_req.memory_sz, req.res_req.num_vcus)
@@ -380,6 +395,10 @@ class Task:
                 # Single architecture
                 self.inner_task.begin_arch_req_addition()
                 for member in req:
+                    if isinstance(member, PyInvalidDevice): 
+                        # If the specified device does not exist
+                        # in the current system, replace it with cpu.
+                        member = cpu(0)
                     self.inner_task.add_device_req(
                         member.device.get_cy_device(),
                         member.res_req.memory_sz, member.res_req.num_vcus)
@@ -422,7 +441,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies, constraints, priority)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -484,7 +503,11 @@ class TaskEnvironment:
         if self.is_terminal:
             return self.stream_list
         else:
-            return None
+            return [None]
+
+    @property
+    def stream(self):
+        return self.streams[0]
 
     def loop(self, sequence=None):
         if sequence is None:
@@ -560,7 +583,7 @@ class TaskEnvironment:
             stream.synchronize()
             stream_pool.return_stream(stream)
 
-    def parallel(self, envlist):
+    def parallel(self, envlist=None):
 
         if envlist is None:
             envlist = self.env_list

@@ -2,10 +2,13 @@
 #ifndef PARLA_PHASES_HPP
 #define PARLA_PHASES_HPP
 
+#include "atomic_wrapper.hpp"
 #include "containers.hpp"
 #include "device.hpp"
 #include "device_manager.hpp"
+#include "device_queues.hpp"
 #include "policy.hpp"
+#include "resources.hpp"
 #include "runtime.hpp"
 
 #include <memory>
@@ -82,19 +85,70 @@ protected:
   TaskStateList enqueue_buffer;
 };
 
+/**
+ * @brief Mapper phase of the scheduler. Uses constraints to assign tasks to
+ * device sets.
+ */
 class Mapper : virtual public SchedulerPhase {
 public:
-  Mapper() : SchedulerPhase(), dummy_dev_idx_{0} {}
-
+  Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
          std::shared_ptr<MappingPolicy> policy)
       : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+    dev_num_mapped_tasks_.resize(devices->get_num_devices());
   }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
+
+  /// Increase the number of the total mapped tasks to the whole devices.
+  ///
+  /// @return The number of the total mapped tasks
+  size_t atomic_incr_num_mapped_tasks() {
+    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  /// Increase the number of the tasks mapped to a device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The number of the tasks mapped to a device
+  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id) {
+    return dev_num_mapped_tasks_[dev_id].fetch_add(1,
+                                                   std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of the total mapped tasks to the whole devices.
+  ///
+  /// @return The number of the total mapped tasks
+  size_t atomic_decr_num_mapped_tasks() {
+    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of the tasks mapped to a device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The number of the tasks mapped to a device
+  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id) {
+    return dev_num_mapped_tasks_[dev_id].fetch_sub(1,
+                                                   std::memory_order_relaxed);
+  }
+
+  /// Return the number of total mapped tasks to the whole devices.
+  ///
+  /// @return The old number of total mapped tasks
+  const size_t atomic_load_total_num_mapped_tasks() const {
+    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
+  }
+
+  /// Return the number of mapped tasks to a single device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The old number of the tasks mapped to a device
+  const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
+    return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
+  }
 
 protected:
   inline static const std::string name{"Mapper"};
@@ -104,12 +158,27 @@ protected:
   uint64_t dummy_dev_idx_;
 
   std::shared_ptr<MappingPolicy> policy_;
+  /// The total number of tasks mapped to and running on the whole devices.
+  std::atomic<size_t> total_num_mapped_tasks_;
+  /// The total number of tasks mapped to and running on a single device.
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
 };
 
+/**
+ * @brief MemoryReserver phase of the scheduler. Reserves all 'persistent
+ * resources`. This plans task execution on the device set. Here all 'persistent
+ * resources` that have a lifetime greater than the task body are reserved and
+ * shared between tasks. At the moment this is only the memory a task uses. The
+ * memory is reserved to allow input data to be prefetched onto the devices.
+ */
 class MemoryReserver : virtual public SchedulerPhase {
 public:
   MemoryReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    // std::cout << "MemoryReserver created\n";
+    this->reservable_tasks =
+        new PhaseManager<ResourceCategory::Persistent>(devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -117,37 +186,54 @@ public:
   size_t get_count();
 
 protected:
+  // std::string name{"Memory Reserver"};
+  PhaseManager<ResourceCategory::Persistent> *reservable_tasks;
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
-  TaskQueue reservable_tasks;
   std::vector<InnerTask *> reserved_tasks_buffer;
+
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
 };
 
+/**
+ * @brief RuntimeReserver phase of the scheduler. Reserves all 'non-persistent
+ * resources`. This plans task execution on the device set. Here all
+ * 'non-persistent resources` that have a lifetime equal to the task body are
+ * reserved and are not directly shared between tasks. At the moment this is
+ * only the VCUS/Threads a task uses.
+ * This phase submits the task to the launcher.
+ */
 class RuntimeReserver : virtual public SchedulerPhase {
-
 public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
-      : SchedulerPhase(scheduler, devices) {}
+      : SchedulerPhase(scheduler, devices) {
+    // std::cout << "RuntimeReserver created" << std::endl;
+    this->runnable_tasks =
+        new PhaseManager<ResourceCategory::NonPersistent>(devices);
+  }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
+  PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
+    return this->runnable_tasks;
+  }
 
   const std::string &get_name() const { return this->name; }
   const RuntimeReserverStatus &get_status() const { return this->status; }
   const void print_status() const { this->status.print(); }
 
 protected:
+  PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
-  TaskQueue runnable_tasks;
   std::vector<InnerTask *> launchable_tasks_buffer;
-};
 
-#ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(RuntimeReserver, print_status)
-#endif
+  bool check_resources(InnerTask *task);
+  void reserve_resources(InnerTask *task);
+};
 
 class Launcher : virtual public SchedulerPhase {
 public:

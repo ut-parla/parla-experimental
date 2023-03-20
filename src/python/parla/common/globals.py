@@ -22,8 +22,10 @@ class DeviceType(IntEnum):
         can be distinguished through these types.
      3) Device registration phase can utilize these types.
     """
-    CUDA = 1
+    INVALID = -2
+    ANY = -1
     CPU = 0
+    CUDA = 1
 
 
 class LocalStack(threading.local):

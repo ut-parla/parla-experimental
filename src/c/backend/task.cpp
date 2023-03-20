@@ -10,8 +10,9 @@
 // TODO(hc) member initialization list is preferable as it can reduce
 //          instructions (e.g.,
 //          https://stackoverflow.com/questions/9903248/initializing-fields-in-constructor-initializer-list-vs-constructor-body)
-InnerTask::InnerTask() : req_addition_mode_(SingleDevAdd),
-    tmp_arch_req_(nullptr), tmp_multdev_reqs_(nullptr) {
+InnerTask::InnerTask()
+    : req_addition_mode_(SingleDevAdd), tmp_arch_req_(nullptr),
+      tmp_multdev_reqs_(nullptr) {
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   this->id = 0;
   this->py_task = nullptr;
@@ -267,7 +268,7 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
     }
   } else {
     if (dependency_state >= Task::RUNAHEAD) {
-      compute_runnable ==
+      compute_runnable =
           (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
     } else if (dependency_state >= Task::RESERVED) {
@@ -291,19 +292,13 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
 
 bool InnerTask::blocked() { return this->num_blocking_dependencies.load() > 0; }
 
+std::string InnerTask::get_name() { return this->name; }
+
 int InnerTask::get_num_dependencies() {
   return this->dependencies.atomic_size();
 }
 
 int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
-
-int InnerTask::get_num_blocking_dependencies() const {
-  return this->num_blocking_dependencies.load();
-}
-
-int InnerTask::get_num_unmapped_dependencies() const {
-  return this->num_unmapped_dependencies.load();
-}
 
 std::vector<void *> InnerTask::get_dependencies() {
   std::vector<void *> dependency_list;
@@ -333,6 +328,10 @@ int InnerTask::set_state(int state) {
   Task::State old_state = this->set_state(new_state);
   int old_state_id = static_cast<int>(new_state);
   return old_state_id;
+}
+
+std::vector<Device *> &InnerTask::get_assigned_devices() {
+  return this->assigned_devices;
 }
 
 Task::State InnerTask::set_state(Task::State state) {
@@ -368,17 +367,17 @@ bool InnerTask::get_complete() { return this->get_state(); }
 void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
-  res_req.set(MEMORY, mem_sz);
-  res_req.set(VCU, num_vcus);
+  res_req.set(Resource::Memory, mem_sz);
+  res_req.set(Resource::VCU, num_vcus);
 
   std::shared_ptr<DeviceRequirement> dev_req =
       std::make_shared<DeviceRequirement>(dev_ptr, res_req);
   if (req_addition_mode_ == SingleDevAdd) {
-    dev_res_reqs_.AppendDeviceRequirementOption(std::move(dev_req));
+    placement_req_options_.append_placement_req_opt(std::move(dev_req));
   } else if (req_addition_mode_ % 2 == 0) { /* Architecture requirement */
-    tmp_arch_req_->AppendDeviceRequirementOption(std::move(dev_req));
+    tmp_arch_req_->append_placement_req_opt(std::move(dev_req));
   } else if (req_addition_mode_ == MultiDevAdd) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(dev_req));
+    tmp_multdev_reqs_->append_placement_req(std::move(dev_req));
   }
 }
 
@@ -394,9 +393,9 @@ void InnerTask::begin_arch_req_addition() {
 void InnerTask::end_arch_req_addition() {
   assert(req_addition_mode_ % 2 == 0);
   if (req_addition_mode_ == 4) {
-    tmp_multdev_reqs_->AppendDeviceRequirement(std::move(tmp_arch_req_));
+    tmp_multdev_reqs_->append_placement_req(std::move(tmp_arch_req_));
   } else {
-    dev_res_reqs_.AppendDeviceRequirementOption(std::move(tmp_arch_req_));
+    placement_req_options_.append_placement_req_opt(std::move(tmp_arch_req_));
   }
   --req_addition_mode_;
 }
@@ -410,7 +409,6 @@ void InnerTask::begin_multidev_req_addition() {
 
 void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
-  dev_res_reqs_.AppendDeviceRequirementOption(
-      std::move(tmp_multdev_reqs_));
+  placement_req_options_.append_placement_req_opt(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }
