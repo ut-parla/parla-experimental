@@ -36,6 +36,16 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
 
+/* Access mode to a PArray. */
+enum AccessMode {
+  // Input of a task.
+  IN = 0, 
+  // Output of a task.
+  OUT = 1,
+  // Input/output of a task.
+  INOUT = 2
+};
+
 // Busy sleep for a given number of microseconds
 inline void cpu_busy_sleep(unsigned int micro) {
   // compute_range r("sleep::busy", nvtx3::rgb{0, 127, 127});
@@ -233,6 +243,9 @@ public:
    * if none exist. */
   std::atomic<bool> processed_data{true};
 
+  /* A list of PArrays. */
+  std::vector<std::pair<void*, AccessMode>> parray_list;
+
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
@@ -286,6 +299,10 @@ public:
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
+
+  // TODO(hc): string should be a PArray.
+  /* Add a PArray to the task */
+  void add_parray(void *py_parray, int access_mode);
 
   /*
    *  Notify dependents that dependencies have completed

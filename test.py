@@ -29,13 +29,13 @@ def main(T):
         bsleep(1000)
         print("-HELLO OUTER 0", get_current_devices(), flush=True)
 
-    @spawn(T[1], placement=[cpu[{"vcus": 0, "memory": 1000}]], dependencies=[T[0]])
+    @spawn(T[1], placement=[cpu[{"vcus":0, "memory":1000}]], dependencies=[T[0]], input=["DF1", "DF2", "DF3"], output=["DF4"], inout=["DF5", "DF6"])
     def task2():
         print("+HELLO OUTER 1", flush=True)
         bsleep(1000)
         print("-HELLO OUTER 1", get_current_devices(), flush=True)
 
-    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0)
+    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0, input=["DF7"], output=["DF8"], inout=["DF9"])
     def task3():
         print("+HELLO OUTER 2", flush=True)
         bsleep(1000)

@@ -39,6 +39,8 @@ cpu = device_manager.cpu
 
 PyInvalidDevice = device.PyInvalidDevice
 
+AccessMode = global_enums.AccessMode
+
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []
 
@@ -271,13 +273,21 @@ class Task:
         return self.name
         
 
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None):
 
         self.dependencies = dependencies
         self.constraints = constraints
 
         self.add_constraints(constraints)
         self.add_dependencies(dependencies)
+
+        # A base task class holds a dataflow since both task types,
+        # compute and data move, need it temporarily (e.g., compute tasks
+        # need dataflow to create data move tasks) or
+        # permanently (e.g., data move tasks need dataflow during its lifecycle).
+        # Each data move task only needs a single Parray at this moment,
+        # but moving multiple PArrays was also considered as the future work.
+        self.add_dataflow(dataflow)
 
     def _wait_for_dependency_events(self, enviornment):
         pass
@@ -358,6 +368,10 @@ class Task:
 
     def get_assigned_devices(self):
         return self.inner_task.get_assigned_devices()
+
+    def add_dataflow(self, dataflow):
+        if dataflow is not None:
+            self.inner_task.add_dataflow(dataflow)
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
@@ -441,7 +455,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -761,6 +775,26 @@ class GPUEnvironment(TerminalEnvironment):
 #######
 # Task Collections
 #######
+class DataMovementTask(Task):
+
+    def __init__(self, taskspace=None, compute_task: ComputeTask=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
+        super().__init__(taskspace, idx, state, scheduler, name)
+
+    def instantiate(self, parray, op_type, dependencies=None, constraints=None, priority=0):
+        # Holds the parray that this task will move
+        self.parray = parray
+
+        # Holds the access mode to the parray
+        self.op_type = op_type
+
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
+
+    def _execute_taks(self):
+        write_flag = True if self.op_type != AccessMode.IN else False
+        # TODO(hc) self.inner_task.auto_move(write_flag, self.parray)?
+        # How will parray support auto move?
+        # TODO(hc) is 0 fine for this return value?
+        return TaskCompleted(0)
 
 cpdef flatten_tasks(tasks, list output=[]):
 

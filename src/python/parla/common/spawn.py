@@ -2,13 +2,14 @@ from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
 from parla.cython import device, device_manager
+from parla.common.dataflow import Dataflow
 from parla.utility.tracer import NVTXTracer
 
 import inspect
 
 from parla.cython import tasks
 
-from typing import Optional, Collection, Any, Union
+from typing import Optional, Collection, Any, Union, List
 
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
@@ -53,8 +54,9 @@ def spawn(task=None,
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
-          vcus=1000,
-          memory=0):
+          # TODO(hc): This should be PArray, not Any.
+          input: List[Any] = None, output: List[Any] = None,
+          inout: List[Any] = None, vcus=1000, memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -110,11 +112,13 @@ def spawn(task=None,
         device_reqs = scheduler.get_device_reqs_from_placement(placement)
         task.set_device_reqs(device_reqs)
 
+        dataflow = Dataflow(input, output, inout) 
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
-                         constraints=vcus)
+                         constraints=vcus,
+                         dataflow=dataflow)
 
         scheduler.spawn_task(task)
         # scheduler.run_scheduler()

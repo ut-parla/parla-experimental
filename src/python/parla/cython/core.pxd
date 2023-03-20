@@ -15,7 +15,6 @@ cdef extern from "include/resources.hpp" nogil:
         VCUS = 1,
 
 cdef extern from "include/runtime.hpp" nogil:
-
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
 
@@ -51,6 +50,7 @@ cdef extern from "include/runtime.hpp" nogil:
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
         vector[Device*]& get_assigned_devices() 
+        void add_parray(void* py_parray, int access_mode)
         bool notify_dependents_wrapper()
 
         void* get_py_task()

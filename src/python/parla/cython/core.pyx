@@ -1,5 +1,8 @@
 import cython 
 
+from parla.common.dataflow import Dataflow
+from parla.common.globals import AccessMode
+
 from parla.cython.device cimport Device
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
 import threading
@@ -275,6 +278,26 @@ cdef class PyInnerTask:
             devices.append(py_device)
 
         return devices
+
+    cpdef add_dataflow(self, dataflow):
+        cdef InnerTask* c_self = self.c_task
+        # TODO(hc): Iterate a dataflow and adds PArrays
+        # to a C++ task. During resource reservation phase,
+        # the new C++ data movement tasks will be created based on them.
+        # When those task are launched, the new Python data movement tasks
+        # will be created and the C++ data movement tasks will return this
+        # dataflow to make the Python instances move them to the proper
+        # devices.
+        # But for now, we don't have PArrays, so just use string.
+        for in_parray in dataflow.input:
+            print("input:", in_parray)
+            c_self.add_parray(<void *> in_parray, int(AccessMode.IN))
+        for out_parray in dataflow.output:
+            print("output:", out_parray)
+            c_self.add_parray(<void *> out_parray, int(AccessMode.OUT))
+        for inout_parray in dataflow.output:
+            print("inout:", inout_parray)
+            c_self.add_parray(<void *> inout_parray, int(AccessMode.INOUT))
 
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
