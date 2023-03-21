@@ -135,5 +135,5 @@ def get_stream_pool():
     return get_device_manager().stream_pool
 
 
-def has_env():
+def has_environment():
     return True if _Locals.current_context else False
