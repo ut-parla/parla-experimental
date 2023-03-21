@@ -462,7 +462,7 @@ class ComputeTask(Task):
 
 def create_device_env(device):
     if isinstance(device, PyCPUDevice):
-        return TaskEnvironment(device), DeviceType.CPU
+        return CPUEnvironment(device), DeviceType.CPU
     elif isinstance(device, PyCUDADevice):
         return GPUEnvironment(device), DeviceType.CUDA
 

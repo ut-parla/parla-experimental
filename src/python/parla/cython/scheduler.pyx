@@ -168,7 +168,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         parla_devices = active_task.get_assigned_devices()
                         device_context = create_env(parla_devices)
-
                     
 
                         core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)

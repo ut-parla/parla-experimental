@@ -90,11 +90,9 @@ class Locals(threading.local):
         return self._context_stack.current.devices
 
     def push_scheduler(self, scheduler):
-        print("push scheduler", scheduler)
         self._scheduler_stack.push(scheduler)
 
     def pop_scheduler(self):
-        print("pop scheduler", self._scheduler_stack.current)
         return self._scheduler_stack.pop()
 
     @property

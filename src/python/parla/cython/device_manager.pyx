@@ -83,10 +83,8 @@ class StreamPool:
         self._per_device = per_device
         self._pool = {}
 
-        print("Device List: ", device_list)
         for device in self._device_list:
             self._pool[device] = []
-            print("CHECK: ", device.device)
             with device.device as d:
                 for i in range(self._per_device):
                     self._pool[device].append(StreamClass(device=d))
