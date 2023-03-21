@@ -2,12 +2,18 @@
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
 
-#TODO(wlr): Is there a better way to sync C++ and Python enums?
-from parla.common.global_enums import DeviceType as PyDeviceType
+from parla.common.globals import _Locals as Locals
+from parla.common.globals import cupy
+from parla.common.globals import DeviceType as PyDeviceType
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Union, List, Iterable, Dict, Tuple
+from collections import defaultdict
+import os 
+from enum import IntEnum
+
+CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 
 cdef class CyDevice:
     """
@@ -76,15 +82,15 @@ class PyDevice:
     def __init__(self, dev_type, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
+        self._device = self 
 
     def __dealloc__(self):
         del self._cy_device
 
     def __enter__(self):
-        pass
-        #print(f"Entered device, {self.get_name()}, context", flush=True)
+        return self 
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
         #print(f"Exited device, {self.get_name()}, context", flush=True)
 
@@ -93,9 +99,8 @@ class PyDevice:
             memory_sz = 0 if "memory" not in param else param["memory"]
             num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        print("[PyDevice] Parameter should be a dictionary specifying resource",
-              " requirements.", flush=True)
-        assert False
+        raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
+              " requirements.")
 
     def get_name(self):
         return self._device_name
@@ -103,8 +108,33 @@ class PyDevice:
     def get_cy_device(self):
         return self._cy_device
 
+    @property
+    def device(self):
+        """
+        Returns the external library device object if it exists (e.g. cupy for GPU devices).
+        Otherwise, return the Parla device object (self).
+        """
+        return self._device
+
+    @property
+    def architecture(self):
+        """
+        Returns the architecture (type) of the device.
+        """
+        return self._dev_type
+
+    def get_type(self):
+        """
+        Returns the architecture (type) of the device.
+        """
+        return self._dev_type
+
     def __repr__(self):
         return self._device_name
+
+    def __hash__(self):
+        #NOTE: DEVICE NAMES MUST BE UNIQUE IN A SCHEDULER INSTANCE
+        return hash(self._device_name)
 
     def __str__(self):
         return repr(self)
@@ -120,7 +150,11 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(PyDeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        #TODO(wlr): If we ever support VECs, we might need to move this
+        if CUPY_ENABLED:
+            print("Creating CuPY device", flush=True)
+            self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -129,7 +163,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
+        super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -181,9 +215,8 @@ class PyArchitecture(metaclass=ABCMeta):
             memory_sz = 0 if "memory" not in param else param["memory"]
             num_vcus = 0 if "vcus" not in param else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
-        print("[PyArchitecture] Parameter should be a dictionary specifying resource",
-              " requirements.", flush=True)
-        assert False
+        raise TypeError("[PyArchitecture] Parameter should be a dictionary specifying resource",
+              " requirements.")
 
     @property
     def id(self):
@@ -201,19 +234,21 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, type(self)) and \
-               self.id == o.id and self._name == o.name
+        if isinstance(o, int) or isinstance(o, IntEnum):
+            return self._id == o
+        elif isinstance(o, type(self)):
+            return ( (self.id == o.id) and (self._name == o.name) )
 
     def __hash__(self):
-        return hash(self._id)
+        return self._id
 
     def __repr__(self):
         return type(self).__name__
 
  
 class PyCUDAArchitecture(PyArchitecture):
-    def __init__(self, id):
-        super().__init__("CUDAArch", id)
+    def __init__(self):
+        super().__init__("CUDAArch", DeviceType.CUDA)
 
     def add_device(self, device):
         assert isinstance(device, PyDevice)
@@ -221,8 +256,8 @@ class PyCUDAArchitecture(PyArchitecture):
 
  
 class PyCPUArchitecture(PyArchitecture):
-    def __init__(self, id):
-        super().__init__("CPUArch", id)
+    def __init__(self):
+        super().__init__("CPUArch", DeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
@@ -241,3 +276,108 @@ class DeviceResourceRequirement:
 
 PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource], \
                         Tuple[PyDevice, DeviceResource]]
+
+
+class Stream:
+    def __init__(self, device=None, stream=None, non_blocking=True):
+        self._device = device
+        self._stream = stream
+
+    def __repr__(self):
+        return f"Stream({self._device})"
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __enter__(self):
+        print("Entering Stream: ", self, flush=True)
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting Stream: ", self, flush=True)
+
+    @property
+    def device(self):
+        return self._device
+
+    @property
+    def stream(self):
+        return self._stream
+
+    def synchronize(self):
+        print("Synchronizing stream", flush=True)
+
+class CupyStream(Stream):
+
+    def __init__(self, device=None, stream=None, non_blocking=True):
+        """
+        Initialize a Parla Stream object.
+        Assumes device and stream are cupy objects.
+        """ 
+
+        if device is None and stream is not None:
+            raise ValueError("Device must be specified if stream is specified.")
+
+        if device is None:
+            self._device = cupy.cuda.Device()
+        else:
+            self._device = device
+
+        if stream is None:
+            self._stream = cupy.cuda.Stream(non_blocking=non_blocking)
+        else:
+            self._stream = stream
+
+    def __repr__(self):
+        return f"Stream({self._device}, {self._stream})"
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __enter__(self):
+        print("Entering Stream: ", self, flush=True)
+
+        #Set the device to the stream's device.
+        self._device.__enter__()
+        print('1', flush=True)
+        #Set the stream to the current stream.
+        self._stream.__enter__()
+        print('2', flush=True)
+
+        Locals.push_stream(self)
+
+        print('3', flush=True)
+
+        return self 
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print("Exiting Stream: ", self, flush=True)
+
+        ret_stream = False
+        ret_device = False
+
+        #Restore the stream to the previous stream.
+        ret_stream = self._stream.__exit__(exc_type, exc_value, traceback)
+
+        #Restore the device to the previous device.
+        ret_device = self._device.__exit__(exc_type, exc_value, traceback)
+            
+        Locals.pop_stream()
+        return ret_stream and ret_device
+
+    @property
+    def device(self):
+        return self._device
+
+    @property
+    def stream(self):
+        return self._stream
+
+    def synchronize(self):
+        print("Synchronizing stream", flush=True)
+        self._stream.synchronize()
+
+    #TODO(wlr): What is the performance impact of this?
+    def __getatrr__(self, name):
+        if hasattr(self, name):
+            return getattr(self, name)
+        return getattr(self._stream, name)
