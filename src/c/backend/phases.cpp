@@ -208,6 +208,17 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
   }
 }
 
+void MemoryReserver::create_datamove_tasks(InnerTask *task) {
+  const std::vector<std::pair<void*, AccessMode>>& py_parray_list =
+      task->py_parray_list;
+  
+  for (size_t i = 0; i < py_parray_list.size(); ++i) {
+    void *py_parray = py_parray_list[i].first;
+    AccessMode access_mode = py_parray_list[i].second;
+    InnerDataTask *datamove_task = new InnerDataTask(py_parray, access_mode);
+  }
+}
+
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
@@ -233,6 +244,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     if (can_reserve) {
       this->reserve_resources(task);
       this->reservable_tasks->pop();
+      this->create_datamove_tasks(task);
       this->reserved_tasks_buffer.push_back(task);
     } else {
       // TODO:(wlr) we need some break condition to allow the scheduler to

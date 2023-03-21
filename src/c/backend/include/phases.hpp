@@ -194,6 +194,7 @@ protected:
 
   bool check_resources(InnerTask *task);
   void reserve_resources(InnerTask *task);
+  void create_datamove_tasks(InnerTask *task);
 };
 
 /**

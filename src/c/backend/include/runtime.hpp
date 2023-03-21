@@ -244,7 +244,7 @@ public:
   std::atomic<bool> processed_data{true};
 
   /* A list of PArrays. */
-  std::vector<std::pair<void*, AccessMode>> parray_list;
+  std::vector<std::pair<void*, AccessMode>> py_parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -470,7 +470,15 @@ protected:
 
 class InnerDataTask : public InnerTask {
 public:
-  InnerDataTask() : InnerTask() { this->has_data = true; }
+  InnerDataTask() = delete;
+  InnerDataTask(void *py_parray, AccessMode access_mode) :
+      py_parray_(py_parray), access_mode_(access_mode), InnerTask() {
+    this->has_data = true;
+  }
+
+private:
+  void *py_parray_;
+  AccessMode access_mode_;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
