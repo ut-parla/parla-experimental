@@ -645,14 +645,16 @@ class TaskEnvironment:
         return deco
 
 
-class CPUEnvironment(TaskEnvironment):
-    def __init__(self,  device, blocking=False):
-        super(CPUEnvironment, self).__init__([], blocking=blocking)
-        self.device_dict[DeviceType.CPU].append(self)
+class TerminalEnvironment(TaskEnvironment):
+    def  __init__(self,  device, blocking=False):
+        super(TerminalEnvironment, self).__init__([], blocking=blocking)
+        self.device_dict[device.architecture].append(self)
         self._device = device
+        self._arch_type = device.architecture
+        self.is_terminal = True
 
     def __repr__(self):
-        return f"CPUEnvironment({self._device})"
+        return f"TerminalEnvironment({self._device})"
 
     @property
     def contexts(self):
@@ -666,21 +668,50 @@ class CPUEnvironment(TaskEnvironment):
     def device(self):
         return self
 
+    @property
+    def architecture(self):
+        return self._arch_type
+
+    def __eq__(self, other):
+        if isinstance(other, int) or isinstance(other, PyDevice):
+            return self._device == other
+        elif isinstance(other, TerminalEnvironment):
+            return self._device == other._device
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self._device)
+
     def __call__(self):
         return self._device
 
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self
+        else:
+            raise IndexError("TerminalEnvironment only has one device.")
+
+    
+class CPUEnvironment(TerminalEnvironment):
+
+    def __init__(self,  device, blocking=False):
+        super(CPUEnvironment, self).__init__(device, blocking=blocking)
+
+    def __repr__(self):
+        return f"CPUEnvironment({self._device})"
+
     def __enter__(self):
         print("Entering CPU Environment: ", self, flush=True)
-
         Locals.push_context(self)
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("Exiting CPU Environment: ", self, flush=True)
-
         Locals.pop_context()
-
         return False
 
     def __len__(self):
@@ -693,18 +724,11 @@ class CPUEnvironment(TaskEnvironment):
     def finalize(self):
         pass
 
-
-class GPUEnvironment(TaskEnvironment):
+class GPUEnvironment(TerminalEnvironment):
 
     def __init__(self, device, blocking=False):
-        super(GPUEnvironment, self).__init__([], blocking=blocking)
+        super(GPUEnvironment, self).__init__(device, blocking=blocking)
 
-        self.stream_list = []
-        self.is_terminal = True
-
-        self.device_dict[DeviceType.CUDA].append(self)
-
-        self._device = device 
         stream_pool = get_stream_pool()
         stream = stream_pool.get_stream(device=device)
         self.stream_list.append(stream)
@@ -712,49 +736,20 @@ class GPUEnvironment(TaskEnvironment):
     def __repr__(self):
         return f"GPUEnvironment({self._device})"
 
-    @property
-    def devices(self):
-        return [self]
-
-    @property
-    def device(self):
-        return self
-
-    def __call__(self):
-        return self._device
-
-    @property
-    def device(self):
-        return self._device
 
     def __enter__(self):
         print("Entering GPU Environment: ", self, flush=True)
-
         Locals.push_context(self)
-
         self.active_stream = self.stream_list[0]
-
         ret_stream = self.active_stream.__enter__()
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("Exiting GPU Environment: ", self, flush=True)
         ret = False
-
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
-
         Locals.pop_context()
-
-        
         return ret 
-
-    def __len__(self):
-        return 1
-
-    def __getitem__(self, index):
-        if index == 0:
-            return self
 
     def finalize(self):
         stream_pool = get_stream_pool()

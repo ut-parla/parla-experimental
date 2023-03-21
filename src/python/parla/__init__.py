@@ -6,9 +6,12 @@ from .cython import scheduler
 from .cython import core
 from .cython import device_manager
 from .cython import device
+from .cython import variants
 from .common.spawn import spawn
 from .common.globals import Locals
 from .common import containers
+
+specialize = variants.specialize
 
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
