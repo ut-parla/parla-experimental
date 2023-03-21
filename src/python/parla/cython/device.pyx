@@ -13,7 +13,7 @@ from collections import defaultdict
 import os 
 from enum import IntEnum
 
-CUPY_ENABLED = (os.getenv("PARLA_CUPY_ENABLE", "0") == "1")
+CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 
 cdef class CyDevice:
     """
