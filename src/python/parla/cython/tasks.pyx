@@ -485,18 +485,27 @@ class TaskEnvironment:
     def __init__(self, environment_list, blocking=False):
 
         self.device_dict = defaultdict(list)
+
         self.env_list = []
         self.stream_list = []
         self.is_terminal = False
         self.blocking = blocking
+        self._device = None
 
         for env in environment_list:
             for dev in env.device_dict:
                 self.device_dict[dev] += env.device_dict[dev]
+
             self.env_list.append(env)
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
+
+    def get_parla_device(self):
+        return self._device
+
+    def get_library_device(self):
+        return self._device.device
 
     @property
     def streams(self):
@@ -524,6 +533,12 @@ class TaskEnvironment:
     def get_all_devices(self):
         return sum(self.device_dict.values(), [])
 
+    def get_terminal_environments(self, arch):
+        return self.terminal_dict[arch]
+
+    def get_all_terminal_environments(self):
+        return sum(self.terminal_dict.values(), [])
+
     @property
     def contexts(self):
         return self.env_list
@@ -532,6 +547,10 @@ class TaskEnvironment:
     def devices(self):
         #TODO: Improve this
         return self.get_all_devices()
+    
+    @property
+    def device(self):
+        return self.devices[0]
 
     def get_cupy_devices(self):
         return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
@@ -594,7 +613,8 @@ class TaskEnvironment:
                 res = [Exception('Parallel Launcher [%s] raised an exception!' % (
                     func.__name__))]
 
-                def EnvHandler(env):
+                def EnvHandler(env, idx):
+                    Locals.index = idx 
                     env.__enter__()
                     try:
                         res[0] = func(env, *args, **kwargs)
@@ -605,8 +625,8 @@ class TaskEnvironment:
 
                 thread_list = []
                 return_list = []
-                for env in envlist:
-                    thread_list.append(Propagate(target=EnvHandler, args=(env,)))
+                for idx, env in enumerate(envlist):
+                    thread_list.append(Propagate(target=EnvHandler, args=(env, idx)))
                 try:
                     for t in thread_list:
                         t.start()
@@ -628,7 +648,7 @@ class TaskEnvironment:
 class CPUEnvironment(TaskEnvironment):
     def __init__(self,  device, blocking=False):
         super(CPUEnvironment, self).__init__([], blocking=blocking)
-        self.device_dict[DeviceType.CPU].append(device)
+        self.device_dict[DeviceType.CPU].append(self)
         self._device = device
 
     def __repr__(self):
@@ -640,7 +660,14 @@ class CPUEnvironment(TaskEnvironment):
 
     @property
     def devices(self):
-        return [self._device]
+        return [self]
+
+    @property
+    def device(self):
+        return self
+
+    def __call__(self):
+        return self._device
 
     def __enter__(self):
         print("Entering CPU Environment: ", self, flush=True)
@@ -675,7 +702,7 @@ class GPUEnvironment(TaskEnvironment):
         self.stream_list = []
         self.is_terminal = True
 
-        self.device_dict[DeviceType.CUDA].append(device)
+        self.device_dict[DeviceType.CUDA].append(self)
 
         self._device = device 
         stream_pool = get_stream_pool()
@@ -686,12 +713,19 @@ class GPUEnvironment(TaskEnvironment):
         return f"GPUEnvironment({self._device})"
 
     @property
-    def contexts(self):
+    def devices(self):
         return [self]
 
     @property
-    def devices(self):
-        return [self._device]
+    def device(self):
+        return self
+
+    def __call__(self):
+        return self._device
+
+    @property
+    def device(self):
+        return self._device
 
     def __enter__(self):
         print("Entering GPU Environment: ", self, flush=True)

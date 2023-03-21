@@ -60,6 +60,7 @@ class Locals(threading.local):
         self._context_stack = LocalStack()
         self._stream_stack = LocalStack()
         self._scheduler_stack = LocalStack()
+        self._index = 0
 
     def push_context(self, context):
         self._context_stack.push(context)
@@ -98,6 +99,14 @@ class Locals(threading.local):
     @property
     def current_scheduler(self):
         return self._scheduler_stack.current
+
+    @property
+    def index(self):
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = value
 
 
 _Locals = Locals()
