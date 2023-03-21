@@ -36,9 +36,11 @@ void InnerWorker::assign_task(InnerTask *task) {
   cv.notify_one();
 }
 
-InnerTask *InnerWorker::get_task() {
+void InnerWorker::get_task(InnerTask **task, bool *is_data_task) {
   this->scheduler->decrease_num_notified_workers();
-  return this->task;
+  *task = this->task;
+  std::cout << "Innerworker get task:" << this->task->has_data.load(std::memory_order_relaxed) << "\n";
+  *is_data_task = this->task->has_data.load(std::memory_order_relaxed);
 }
 
 void InnerWorker::remove_task() {

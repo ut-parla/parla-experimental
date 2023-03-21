@@ -539,7 +539,7 @@ public:
   void assign_task(InnerTask *task);
 
   /* Get task */
-  InnerTask *get_task();
+  void get_task(InnerTask **task, bool *is_data_task);
 
   /* Remove task */
   void remove_task();

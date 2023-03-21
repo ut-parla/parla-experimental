@@ -376,10 +376,17 @@ cdef class PyInnerWorker:
         _inner_worker = self.inner_worker
 
         cdef InnerTask* c_task
+        cdef bool is_data_task = False
 
         if _inner_worker.ready:
-            c_task = _inner_worker.get_task()
-            py_task = <object> c_task.get_py_task()
+            _inner_worker.get_task(&c_task, &is_data_task)
+            if is_data_task == True:
+                print("This is a data task ***************")
+                # TODO(hc): Create a Python data move task at here.
+                py_task = None
+            else:
+                print("This is not a data task ***************")
+                py_task = <object> c_task.get_py_task()
         else:
             py_task = None
 

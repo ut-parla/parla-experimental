@@ -216,6 +216,13 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     void *py_parray = py_parray_list[i].first;
     AccessMode access_mode = py_parray_list[i].second;
     InnerDataTask *datamove_task = new InnerDataTask(py_parray, access_mode);
+    //this->reserved_tasks_buffer.push_back(datamove_task);
+    // TODO(hc): maintain a list of tasks in the PArray
+    //           to do that, use c++ parray
+    //           currently, we only pass python parray but later pass
+    //           c++ parray.
+    // for (size_t j = 0; j < parray_list[i].dependent_tasks; j++)
+    //datamove_task->dependencies = std::move(task->dependencies);
   }
 }
 

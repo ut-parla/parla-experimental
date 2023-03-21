@@ -62,6 +62,15 @@ public:
     this->mtx.unlock();
   }
 
+  /// Explicit move assignment due to the atomic size member.
+  ProtectedVector& operator=(ProtectedVector&& other) {
+    this->length.exchange(other.length);
+    this->vec = std::move(other.vec);
+    // The string should be small 
+    this->name = std::move(other.name);
+    return *this;
+  }
+
   void lock() { this->mtx.lock(); }
 
   void unlock() { this->mtx.unlock(); }

@@ -84,7 +84,7 @@ cdef extern from "include/runtime.hpp" nogil:
         )
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
-        InnerTask* get_task()
+        void get_task(InnerTask** task, bool* is_data_task)
         void remove_task() except +
 
         void wait()
