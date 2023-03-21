@@ -518,11 +518,11 @@ class TaskEnvironment:
     def stream(self):
         return self.streams[0]
 
-    def loop(self, sequence=None):
-        if sequence is None:
-            sequence = self.env_list
+    def loop(self, envlist=None):
+        if envlist is None:
+            envlist = self.env_list
         
-        for env in sequence:
+        for env in envlist:
             env.__enter__()
             yield env
             env.__exit__(None, None, None)
@@ -602,7 +602,7 @@ class TaskEnvironment:
             stream.synchronize()
             stream_pool.return_stream(stream)
 
-    def parallel(self, envlist=None):
+    def parfor(self, envlist=None):
 
         if envlist is None:
             envlist = self.env_list

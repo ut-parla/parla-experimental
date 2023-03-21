@@ -119,11 +119,14 @@ class PyDevice:
     @property
     def architecture(self):
         """
-        Returns the architecture of the device.
+        Returns the architecture (type) of the device.
         """
         return self._dev_type
 
     def get_type(self):
+        """
+        Returns the architecture (type) of the device.
+        """
         return self._dev_type
 
     def __repr__(self):
