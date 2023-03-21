@@ -133,8 +133,16 @@ class PyDevice:
         return self._device_name
 
     def __hash__(self):
-        #NOTE: DEVICE NAMES MUST BE UNIQUE IN A SCHEDULER INSTANCE
+        #NOTE: DEVICE NAMES MUST BE UNIQUE INSIDE A SCHEDULER INSTANCE
         return hash(self._device_name)
+
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return self._dev_type == other
+        elif isinstance(other, PyDevice):
+            return self._device_name == other._device_name
+        else:
+            return False
 
     def __str__(self):
         return repr(self)
@@ -151,9 +159,8 @@ class PyCUDADevice(PyDevice):
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
-        #TODO(wlr): If we ever support VECs, we might need to move this
+        #TODO(wlr): If we ever support VECs, we might need to move this device initialization
         if CUPY_ENABLED:
-            print("Creating CuPY device", flush=True)
             self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
@@ -234,10 +241,12 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, int) or isinstance(o, IntEnum):
-            return self._id == o
+        if isinstance(o, int):
+            return self.id == o
         elif isinstance(o, type(self)):
             return ( (self.id == o.id) and (self._name == o.name) )
+        else:
+            return False
 
     def __hash__(self):
         return self._id
