@@ -71,8 +71,8 @@ def scatter_and_merge(input_array, output_array):
     right_prefix_sum = np.zeros((num_gpus,))
     # Dense array; so depending on the results, some last elements are not
     # used. The end index is specified through the below counts.
-    left_value_array = xp.array(input_array.shape)
-    right_value_array = xp.array(input_array.shape)
+    left_value_array = xp.from_shape(input_array.shape)
+    right_value_array = xp.from_shape(input_array.shape)
     for d in range(num_gpus):
         with locals.Device[d]:
             # Aggregate actual values of the left and the right array elements.
@@ -141,7 +141,7 @@ def quick_sort_main(array_xp):
 
     # Deep copy from the input xp array with its partitioning. 
     # Existing values will be overwritten so fine.
-    output_xp = xp.deepcopy(array_xp)
+    output_xp = xp.from_shape(array_xp.shape)
 
     # Construct placement.
     ps = ()
@@ -164,10 +164,10 @@ def quick_sort_main(array_xp):
             # Slice the range from 0 to left_slice_size of array_xp and create new crosspy array variable.
             # Internally share PArrays between the parent crosspy and this.
             if left_slice_size > 0:
-                left_xparray = xp.slice(array_xp, 0, left_slice_size)
+                left_xparray = array_xp[0:left_slice_size]
                 quick_sort_main(left_xparray)
             if right_slice_size > 0:
-                right_xparray = xp.slice(array_xp, new_pivot_idx + 1, right_slice_size + new_pivot_idx + 1)
+                right_xparray = array_xp[new_pivot_idx+1:right_slice_size+new_pivot_idx+1]
                 quick_sort_main(right_xparray)
     await T
 
