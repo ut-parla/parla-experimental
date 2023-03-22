@@ -128,52 +128,53 @@ def scatter_and_merge(input_array, output_array):
         = (input_array[-1], input_array[first_right_index])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
-    # Return the final position of the pivot, and
-    # the size of the next and the right slices for the next quicksort level.
-    # NOTE that the right array size should subtract 1 since we need to exclude
-    # the pivot from the next level computation!
-    return first_right_index, left_prefix_sum[-1], (right_prefix_sum[-1] - 1)
+    # Return the final position of the pivot
+    return first_right_index
         
 # This should be a function since we need to pass parameters.
-def quick_sort_main(array_xp):
+def quick_sort_main(target_xparray, beg, end, input_array, offset):
     # Always use the last element as the pivot.
-    pivot = array_xp[-1]
+    pivot = target_xparray[-1]
 
     # Deep copy from the input xp array with its partitioning. 
     # Existing values will be overwritten so fine.
-    output_xp = xp.from_shape(array_xp.shape, type=bool)
+    comparison_output_xp = xp.from_shape(target_xparray.shape, type=bool)
 
     # Construct placement.
     ps = ()
     # TODO: new xpy interface is necessary
-    num_gpus = array_xp.get_num_partitions()
+    num_gpus = target_xparray.get_num_partitions()
     for g in range(0, num_gpus):
         ps.append((cuda))
   
-    @spawn(T, placement=[ps], inout=[array_xp])
+    @spawn(T, placement=[ps], inout=[target_xparray])
     def partition_task():
         for d in range(num_gpus):
             with locals.Device[d]:
                 # Partition the input with the left and the right partiitons
                 # based on the pivot.
-                partition(pivot, array_xp.get_partition(d), output_xp.get_partition(d))
-            new_pivot_idx, left_slice_size, right_slice_size = \
-                scatter_and_merge(array_xp, output_xp)
+                partition(pivot, target_xparray.get_partition(d), comparison_output_xp.get_partition(d))
+            new_pivot_idx = scatter_and_merge(target_xparray, comparison_output_xp)
 
-            # TODO: new xpy interface is necessary (renaming is also necessary)
-            # Slice the range from 0 to left_slice_size of array_xp and create new crosspy array variable.
-            # Internally share PArrays between the parent crosspy and this.
             if left_slice_size > 0:
-                left_xparray = array_xp[0:left_slice_size]
-                quick_sort_main(left_xparray)
+                # Slice the range from 0 to left_slice_size of target_xparray and create new crosspy array variable.
+                # Internally share PArrays between the parent crosspy and this.
+
+                # As the current PArray does not support nested slicing,
+                # slice the original input array with its offset.
+                left_xparray = input_array[offset : offset+new_pivot_idx-1]
+                quick_sort_main(left_xparray, offset, offset+new_pivot_idx-1, input_array, offset)
             if right_slice_size > 0:
-                right_xparray = array_xp[new_pivot_idx+1:right_slice_size+new_pivot_idx+1]
-                quick_sort_main(right_xparray)
+                right_xparray = input_array[offset+new_pivot_idx+1:offset+end]
+                quick_sort_main(right_xparray, offset+new_pivot_idx+1, offset+end, \
+                                input_array, offset)
     await T
 
 def main(T):
     input_arr = # input xp array. first it knows the current number of gpus.
-    quick_sort_main(full_array)
+    # We need to pass the original input array since PArray does not support 
+    # nested slicing and we should update the original PArray with the offset.
+    quick_sort_main(input_array, 0, len(input_array), input_array, 0)
 
 if __name__ == "__main__":
     with Parla(dev_config_file=args.dev_config):
