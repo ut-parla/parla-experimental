@@ -141,7 +141,7 @@ def quick_sort_main(array_xp):
 
     # Deep copy from the input xp array with its partitioning. 
     # Existing values will be overwritten so fine.
-    output_xp = xp.from_shape(array_xp.shape)
+    output_xp = xp.from_shape(array_xp.shape, type=bool)
 
     # Construct placement.
     ps = ()
