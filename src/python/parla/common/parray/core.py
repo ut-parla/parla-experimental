@@ -1,14 +1,13 @@
 from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
-from parla.cpu_impl import cpu
-from parla import task_runtime
-from parla.device import Device
+from parla.cython.device import PyCPUDevice
+from parla.common.globals import get_current_devices, has_environment
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
-from .cyparray_state import CyPArrayState
-from .cyparray import CyPArray
+from parla.cython.cyparray_state import CyPArrayState
+from parla.cython.cyparray import CyPArray
 
 import threading
 import numpy
@@ -22,6 +21,7 @@ except ImportError:
     num_gpu = 0
 
 if TYPE_CHECKING:
+    from parla.cython.device import PyDevice
     ndarray = Union[numpy.ndarray, cupy.ndarray]
     SlicesType = Union[slice, int, tuple]
 
@@ -100,8 +100,8 @@ class PArray:
             self.nbytes = array.nbytes
             self.subarray_nbytes = self.nbytes  # no subarray
 
-            # Register the parray with the scheduler
-            task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
+            # # Register the parray with the scheduler
+            # task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
 
         # record the size in Cython PArray
         self._cyparray = CyPArray(self.ID, self._cyparray_state)
@@ -149,12 +149,12 @@ class PArray:
         device = PArray._get_current_device()
         if device is None:  # not called inside current task
             return self._coherence.owner
-        elif device.architecture == cpu:
+        elif isinstance(device, PyCPUDevice):
             return CPU_INDEX
         else:
-            # assume GPU here, won't check device.architecture == gpu
-            # to avoid import `gpu`, which is slow to setup.
-            return device.index
+            # assume GPU here, won't check isinstance(device, PyCUDADevice)
+            # to avoid import gpu context, which is slow to setup.
+            return device.device.id  # device.device should be a cupy.cuda.Device object
 
     # Public API:
 
@@ -399,14 +399,16 @@ class PArray:
                                    f"detail: opcode {op.inst}, dst {op.dst}, src {op.src}")
 
     @staticmethod
-    def _get_current_device() -> Device | None:
+    def _get_current_device() -> PyDevice | None:
         """
         Get current device from task environment.
 
         Return None if it is not called within the current task context
+
+        Note: should not be called within multi-device task since that is ambigous
         """
-        if task_runtime.has_environment():
-            return task_runtime.get_current_devices()[0]
+        if has_environment():
+            return get_current_devices()[0].get_parla_device()
         return None
 
     def _auto_move(self, device_id: int = None, do_write: bool = False) -> None:
