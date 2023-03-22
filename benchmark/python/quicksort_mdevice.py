@@ -46,7 +46,21 @@ def partition(pivot, input_array, output_array):
         output_array[input_array[it] <= pivot] = True
 
 # TODO(hc): numba to make this run on gpu.
-def scatter_and_merge(input_array, output_array, pivot_idx):
+def counts(output_array, input_array, left_values, right_values):
+    # Assume that the sliced arrays support local index.
+    right_index = 0
+    left_index = 0
+    for i in range(len(output_array)):
+        if output_array[i] == True:
+            right_values[right_index] = input_array[i]
+            right_index += 1
+        else:
+            left_values[left_index] = input_array[i]
+            left_index += 1
+    return left_index, right_index
+
+# TODO(hc): numba to make this run on gpu.
+def scatter_and_merge(input_array, output_array):
     # This function should do the following tasks:
     # First, scatter output crosspys to each device.
     # Third, swap the last pivot with the first element in the
@@ -55,13 +69,15 @@ def scatter_and_merge(input_array, output_array, pivot_idx):
     # To store prefix sum
     left_prefix_sum = np.zeros((num_gpus,))
     right_prefix_sum = np.zeros((num_gpus,))
-    left_value_array = xp.array(input_array.get_partition(d).shape)
-    right_value_array = xp.array(input_array.get_partition(d).shape)
+    # Dense array; so depending on the results, some last elements are not
+    # used. The end index is specified through the below counts.
+    left_value_array = xp.array(input_array.shape)
+    right_value_array = xp.array(input_array.shape)
     for d in range(num_gpus):
         with locals.Device[d]:
             # Aggregate actual values of the left and the right array elements.
             # Those aggregated values are held in right_ and left_value_arrays. 
-            left_values, left_counts, right_values, right_counts += counts(
+            left_counts, right_counts += counts(
                 output_array.get_partition(d), input_array.get_partition(d),
                 left_value_array.get_partition(d), right_value_array.get_partition(d))
             left_prefix_sum[d] = left_counts
@@ -103,13 +119,13 @@ def scatter_and_merge(input_array, output_array, pivot_idx):
                 #first_right_index = r_offset + offset
                 # TODO(hc) If xparray spports a local index of a slice of the xparray
                 # then we can use the following pattern.
-                first_right_index = r_offset + offset
+                first_right_index = r_offset
 
     # TODO(hc): who call this?
     # Swap pivot and the first element of the right array.
     # So pivot's index is done, which means that it will not be accessed again.
-    (input_array[first_right_index], input_array[pivot_idx])
-        = (input_array[pivot_idx], input_array[first_right_index])
+    (input_array[first_right_index], input_array[-1])
+        = (input_array[-1], input_array[first_right_index])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
     # Return the final position of the pivot, and
@@ -142,7 +158,7 @@ def quick_sort_main(array_xp):
                 # based on the pivot.
                 partition(pivot, array_xp.get_partition(d), output_xp.get_partition(d))
             new_pivot_idx, left_slice_size, right_slice_size = \
-                scatter_and_merge(array_xp, output_xp, pivot_idx)
+                scatter_and_merge(array_xp, output_xp)
 
             # TODO: new xpy interface is necessary (renaming is also necessary)
             # Slice the range from 0 to left_slice_size of array_xp and create new crosspy array variable.
@@ -157,7 +173,7 @@ def quick_sort_main(array_xp):
 
 def main(T):
     input_arr = # input xp array. first it knows the current number of gpus.
-    quick_sort_main(full_array, slices)
+    quick_sort_main(full_array)
 
 if __name__ == "__main__":
     with Parla(dev_config_file=args.dev_config):
