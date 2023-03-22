@@ -13,7 +13,7 @@ def fill_array(input_array, offset, values):
         input_array[i + offset] = values[i]
 
 # TODO(hc): numba to make this run on gpu.
-def xp_block_partition(start, end, dev_id, num_gpus):
+def block_partition(start, end, dev_id, num_gpus):
     """
     This function partitions a range by a device id
     and returns a disjointed range in a [beg, end) form.
@@ -33,7 +33,7 @@ def xp_block_partition(start, end, dev_id, num_gpus):
     return block_beg, block_end
 
 # TODO(hc): numba to make this run on gpu.
-def partition(pivot, array, result_array):
+def partition(pivot, input_array, output_array):
     """
     Compare elements in an array with a pivot. 
     If an element is smaller than a pivot, set True
@@ -41,53 +41,40 @@ def partition(pivot, array, result_array):
     This is not a task, but a normal kernel called by a task.
     This kernel is called by a single GPU.
     """
-    for it in range(len(array)):
+    for it in range(len(input_array)):
         # TODO(hc): it may had been initialized to 0
-        result_array[array[it] <= pivot] = True
+        output_array[input_array[it] <= pivot] = True
 
 # TODO(hc): numba to make this run on gpu.
-def scatter_and_merge(input_array, output_array, offset, pivot_idx):
+def scatter_and_merge(input_array, output_array, pivot_idx):
     # This function should do the following tasks:
     # First, scatter output crosspys to each device.
-    # Second, materialize boolean output arrays and
-    #         merge them? TODO(hc): I have no idea!!!!
     # Third, swap the last pivot with the first element in the
     # R array.
-    # Then?   
     count = 0
     # To store prefix sum
-    left_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
-    right_prefix_sum = xp.array([cp.zeros(1,)] * num_gpus)
-    # The first dimension is a device id and the second dimension
-    # stores left/rigth values based on a pivot.
-    left_value_array = xp.array("""How to initilaize to store a list of indices?""")
-    right_value_array = xp.array("""TODO(hc)..""")
+    left_prefix_sum = np.zeros((num_gpus,))
+    right_prefix_sum = np.zeros((num_gpus,))
+    left_value_array = xp.array(input_array.get_partition(d).shape)
+    right_value_array = xp.array(input_array.get_partition(d).shape)
     for d in range(num_gpus):
         with locals.Device[d]:
             # Aggregate actual values of the left and the right array elements.
-            # Note that left values and right values are newly allocated arrays
-            # and contains copied original values.
-            # e.g., if output_array[0][1] == True:
-            #           left_values.append(input_array[d][offset + 1])?
+            # Those aggregated values are held in right_ and left_value_arrays. 
             left_values, left_counts, right_values, right_counts += counts(
-                output_array[d], input_array, offset, d)
+                output_array.get_partition(d), input_array.get_partition(d),
+                left_value_array.get_partition(d), right_value_array.get_partition(d))
             left_prefix_sum[d] = left_counts
             right_prefix_sum[d] = right_counts
-            # Left/right values are extracted and copied from
-            # the input array, but in this case, just store references.
-            left_value_array[d] = left_values
-            right_value_array[d] = right_values
         # Crosspy's default model is a lazy write.
         # To flush requested operations immediately, call synchronize.
         locals.synchronize()
 
     # Sequentially calculates a prefix sum.
+    # Run this prefix sum in CPU.
     for d in range(0, num_gpus - 1):
-        with locals.Device[d]:
-            left_prefix_sum[d + 1] += left_prefix_sum[d]
-            right_prefix_sum[d + 1] += right_prefix_sum[d]
-    left_prefix_sum.synchronize()
-    right_prefix_sum.synchronize()
+        left_prefix_sum[d + 1] += left_prefix_sum[d]
+        right_prefix_sum[d + 1] += right_prefix_sum[d]
 
     # Sequentially fill left and right of the original inputs using prefix sum.
     # TODO(hc): conisder offset!
@@ -107,8 +94,10 @@ def scatter_and_merge(input_array, output_array, offset, pivot_idx):
             # TODO(hc) If xparray supports a local index for a slice of the xparray, then
             # we can use the following pattern. Otherwise, we should do like the above.
 
-            fill_array(input_array, l_offset, left_values)
-            fill_array(input_array, r_offset, right_values)
+            # TODO(hc): Does xparray also support operators with cupy or numpy arrays?
+            #           (that the lazy update)
+            fill_array(input_array, l_offset, left_value_array.get_partition(d))
+            fill_array(input_array, r_offset, right_value_array.get_partition(d))
               
             if d == 0:
                 #first_right_index = r_offset + offset
@@ -123,75 +112,52 @@ def scatter_and_merge(input_array, output_array, offset, pivot_idx):
         = (input_array[pivot_idx], input_array[first_right_index])
     # The above assignment is a lazy operation and so we need synchronization.
     input_array.synchronize()
-    # Return the final position of the pivot.
-    return first_right_index 
+    # Return the final position of the pivot, and
+    # the size of the next and the right slices for the next quicksort level.
+    # NOTE that the right array size should subtract 1 since we need to exclude
+    # the pivot from the next level computation!
+    return first_right_index, left_prefix_sum[-1], (right_prefix_sum[-1] - 1)
         
 # This should be a function since we need to pass parameters.
-def quick_sort_main(beg, end, array, offset, num_gpus):
-    if beg < end:
-        # TODO(hc): is there any way to copy an element of the crosspy array
-        #           regardless of the current location?
-        pivot_idx = end - 1
-        pivot = array[pivot_idx]
-        read_idx = []
-        read_size = []
-        output_cp_list = []
-        # Partition the input array.
-        for d in range(num_gpus):
-            d_beg, d_end = xp_block_partition(beg, end, d, num_gpus)
-            d_size = d_end - d_beg + 1
-            read_idx.append(d_beg)
-            if d == num_gpus - 1:
-                read_idx.append(d_end)
-            read_size.append(d_size)
-            # This declares an output of the partition().
-            # If it is True, the corresponding input element has a value
-            # greater than a pivot.
-            # TODO(hc): This can be reused.
-            output_cp = cupy.zeros((d_size,), dtype=bool)
-            output_cp_list.append(output_cp)
-        # This repartitions a slice of the input array (the original input array)
-        # to target devices passed to this function.
-        # The input array is partitioned based on read_idx and read_size to gpus.
-        # Each device iterates each element in a partition and splits to
-        # elements smaller than and equal to a pivot and ones greater than a pivot.
-        array_xp = xp.repartition(read_idx, read_size, array)
-        # TODO(hc): Is there any way to distribute a cupy list to each GPU? 
-        # TODO(hc): allocate once by using the very initial input partition size
-        #           and reuse it recursively.
-        #           So, always needs zerofication.
-        output_xp = xp.array(output_cp_list)
+def quick_sort_main(array_xp):
+    # Always use the last element as the pivot.
+    pivot = array_xp[-1]
 
-        # Construct placement.
-        ps = ()
-        for g in range(0, num_gpus):
-            ps.append((cuda))
+    # Deep copy from the input xp array with its partitioning. 
+    # Existing values will be overwritten so fine.
+    output_xp = xp.deepcopy(array_xp)
+
+    # Construct placement.
+    ps = ()
+    # TODO: new xpy interface is necessary
+    num_gpus = array_xp.get_num_partitions()
+    for g in range(0, num_gpus):
+        ps.append((cuda))
   
-        # This function uses four CUDA devices.
-        @spawn(T, placement=[ps], inout=[array_xp])
-        def partition_task():
-            for d in range(num_gpus):
-                with locals.Device[d]:
-                    # TODO(hc): Is this necessary? We already partition a crosspy
-                    # based on read index and size.
-                    d_array_xp = do_read(array_xp[readidx[readsize[d]]])
-                    # TODO(hc): How to get output_xd's gpu d's array?
-                    d_ouput_xp = do_read(output_xp[d])
-                    partition(pivot, d_array_xp, d_output_xp)
-                new_pivot_idx = scatter_and_merge(array, output_cp_list, offset, pivot_idx)
-                # So, size of (L + R) is (input_array size - 1)
-                next_num_gpus = num_gpus/2
-                # At least, one gpu should be used.
-                if next_num_gpus == 0:
-                    next_num_gpus = 1
-                quick_sort_main(beg, new_pivot_idx - 1, array, offset, next_num_gpus)
-                quick_sort_main(new_pivot_idx + 1, end, array, offset + new_pivot_idx, next_num_gpus)
+    @spawn(T, placement=[ps], inout=[array_xp])
+    def partition_task():
+        for d in range(num_gpus):
+            with locals.Device[d]:
+                # Partition the input with the left and the right partiitons
+                # based on the pivot.
+                partition(pivot, array_xp.get_partition(d), output_xp.get_partition(d))
+            new_pivot_idx, left_slice_size, right_slice_size = \
+                scatter_and_merge(array_xp, output_xp, pivot_idx)
 
-        await T # TODO(hc): do/will we support this? 
+            # TODO: new xpy interface is necessary (renaming is also necessary)
+            # Slice the range from 0 to left_slice_size of array_xp and create new crosspy array variable.
+            # Internally share PArrays between the parent crosspy and this.
+            if left_slice_size > 0:
+                left_xparray = xp.slice(array_xp, 0, left_slice_size)
+                quick_sort_main(left_xparray)
+            if right_slice_size > 0:
+                right_xparray = xp.slice(array_xp, new_pivot_idx + 1, right_slice_size + new_pivot_idx + 1)
+                quick_sort_main(right_xparray)
+    await T
 
 def main(T):
-    input_arr = # input array
-    quick_sort_main(0, len(input_arr), input_array, num_gpus)
+    input_arr = # input xp array. first it knows the current number of gpus.
+    quick_sort_main(full_array, slices)
 
 if __name__ == "__main__":
     with Parla(dev_config_file=args.dev_config):
