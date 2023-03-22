@@ -10,6 +10,7 @@ from .cython import variants
 from .common.spawn import spawn
 from .common.globals import Locals
 from .common import containers
+from .common import parray
 
 specialize = variants.specialize
 
