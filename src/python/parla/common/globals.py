@@ -145,4 +145,4 @@ def get_stream_pool():
 
 
 def has_environment():
-    return True if _Locals.current_context else False
+    return True if _Locals.context else False
