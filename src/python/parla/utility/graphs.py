@@ -2,11 +2,10 @@ import pprint
 import os
 from ast import literal_eval as make_tuple
 from fractions import Fraction
-from typing import Dict, Tuple
 import numpy as np
 import subprocess
 import re
-from typing import NamedTuple, Union
+from typing import NamedTuple, Union, List, Dict, Tuple
 from dataclasses import dataclass, field
 import tempfile
 import time
@@ -232,7 +231,7 @@ class RunConfig:
 task_filter = re.compile(r'InnerTask\{ .*? \}')
 
 
-def convert_to_dictionary(task_list: list[TaskInfo]) -> dict[TaskID, TaskInfo]:
+def convert_to_dictionary(task_list: List[TaskInfo]) -> Dict[TaskID, TaskInfo]:
     """
     Converts a task list to a task graph dictionary
     """
@@ -262,7 +261,7 @@ def extract(string: str) -> Union[int, Fraction]:
         return int(string)
 
 
-def read_pgraph(filename: str) -> Tuple[dict[int, DataInfo], dict[TaskID, TaskInfo]]:
+def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskInfo]]:
     """
     Reads a pgraph file and returns:
     1. A list of the nodes in the graph
@@ -452,7 +451,7 @@ def get_task_properties(line: str):
     return tprops
 
 
-def parse_blog(filename: str = 'parla.blog') -> Tuple[dict[TaskID, TaskTime],  dict[TaskID, list[TaskID]]]:
+def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  Dict[TaskID, List[TaskID]]]:
 
     try:
         result = subprocess.run(
