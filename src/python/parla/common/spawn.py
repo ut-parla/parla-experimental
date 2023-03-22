@@ -3,6 +3,7 @@ from parla.cython import core
 from parla.cython import tasks
 from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
+from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
 
 import inspect
@@ -55,8 +56,8 @@ def spawn(task=None,
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
           # TODO(hc): This should be PArray, not Any.
-          input: List[Any] = None, output: List[Any] = None,
-          inout: List[Any] = None, vcus=1000, memory=0):
+          input: List[PArray] = None, output: List[PArray] = None,
+          inout: List[PArray] = None, vcus=1000, memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler

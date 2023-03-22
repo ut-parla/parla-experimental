@@ -11,6 +11,7 @@ from parla.cython import device
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import get_stream_pool, get_scheduler
 from parla.common.globals import DeviceType as PyDeviceType
+from parla.common.globals import AccessMode
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -38,8 +39,6 @@ DeviceResourceRequirement = device.DeviceResourceRequirement
 cpu = device_manager.cpu
 
 PyInvalidDevice = device.PyInvalidDevice
-
-AccessMode = global_enums.AccessMode
 
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []

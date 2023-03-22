@@ -1,3 +1,5 @@
+from parla.common.parray.core import PArray
+
 from typing import List, Any
 from itertools import chain
 
@@ -39,7 +41,8 @@ class Dataflow:
     The dataflow can be iterated through DataflowIterator.
     """
 
-    def __init__(self, input: List[Any], output: List[Any], inout: List[Any]):
+    def __init__(self, input: List[PArray], \
+                 output: List[PArray], inout: List[PArray]):
         self._input = input
         self._output = output
         self._inout = inout
