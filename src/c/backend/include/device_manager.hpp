@@ -102,9 +102,6 @@ protected:
   std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
   std::vector<Device *> all_devices_;
-
-  /// The total number of tasks mapped to and running on the whole devices.
-  std::atomic<size_t> total_num_mapped_tasks_;
 };
 
 #endif

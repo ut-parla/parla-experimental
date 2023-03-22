@@ -5,9 +5,13 @@ from .cython import tasks
 from .cython import scheduler
 from .cython import core
 from .cython import device_manager
+from .cython import device
+from .cython import variants
 from .common.spawn import spawn
-
+from .common.globals import Locals
 from .common import containers
+
+specialize = variants.specialize
 
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
@@ -16,6 +20,12 @@ TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 
 DeviceManager = device_manager.PyDeviceManager
+
+Stream = device.Stream
+create_env = tasks.create_env
+TaskEnvironment = tasks.TaskEnvironment
+GPUEnvironment = tasks.GPUEnvironment
+
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
            'sleep_nogil', 'Tasks', 'parla_num_threads']

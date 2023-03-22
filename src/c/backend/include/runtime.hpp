@@ -156,6 +156,7 @@ using TaskStateList = std::vector<TaskState>;
  */
 class InnerTask {
 
+  // TODO(hc): those member vars should be protected.
 public:
   /* Unique ID of the task. Can be used as a dictionary key.*/
   long long int id = 0;
@@ -433,14 +434,6 @@ public:
     return placement_req_options_;
   }
 
-  void add_placement_req(std::shared_ptr<DeviceRequirement> ps_req) {
-    placement_reqs_.emplace_back(ps_req);
-  }
-
-  const std::vector<std::shared_ptr<DeviceRequirement>> &get_placement_reqs() {
-    return placement_reqs_;
-  }
-
 protected:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
@@ -456,9 +449,6 @@ protected:
   std::shared_ptr<MultiDeviceRequirements> tmp_multdev_reqs_;
   // TODO(hc): rename these..
   PlacementRequirementCollections placement_req_options_;
-  /// This requirement is used to hold chosen devices and
-  /// their requirements during task mapping.
-  std::vector<std::shared_ptr<DeviceRequirement>> placement_reqs_;
 };
 
 class InnerDataTask : public InnerTask {

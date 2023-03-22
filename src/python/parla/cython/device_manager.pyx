@@ -1,11 +1,6 @@
 from parla.cython import device
 from parla.cython.device cimport Device
-from parla.common.global_enums import DeviceType
-
-try:
-    import cupy
-except ImportError:
-    cupy = None
+from parla.common.globals import DeviceType, cupy
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 
@@ -24,12 +19,17 @@ PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
 DeviceResource = device.DeviceResource
 DeviceResourceRequirement = device.DeviceResourceRequirement
+Stream = device.Stream
+CupyStream = device.CupyStream
+CUPY_ENABLED = device.CUPY_ENABLED
 
 # Architecture declaration.
 # To use these in the placement of @spawn,
 # declare these as global variables.
-cuda = PyCUDAArchitecture(DeviceType.CUDA)
-cpu = PyCPUArchitecture(DeviceType.CPU)
+cuda = PyCUDAArchitecture()
+cpu = PyCPUArchitecture()
+
+
 
 cdef class CyDeviceManager:
     """
@@ -70,6 +70,44 @@ class PrintableFrozenSet(frozenset):
     def __repr__(self):
         return self.get_name()
 
+class StreamPool:
+
+    def __init__(self, device_list, per_device=4):
+
+        if CUPY_ENABLED:
+            StreamClass = CupyStream 
+        else:
+            StreamClass = Stream
+
+        self._device_list = device_list
+        self._per_device = per_device
+        self._pool = {}
+
+        for device in self._device_list:
+            self._pool[device] = []
+            with device.device as d:
+                for i in range(self._per_device):
+                    self._pool[device].append(StreamClass(device=d))
+
+    def get_stream(self, device):
+        if len(self._pool[device]) == 0:
+            #Create a new stream if the pool is empty.
+            return Stream(device=device)
+        return self._pool[device].pop()
+
+    def return_stream(self, stream):
+        self._pool[stream.device].append(stream)
+
+    def __summarize__(self):
+        summary  = ""
+        for device in self._device_list:
+            summary += f"({device} : {len(self._pool[device])})"
+
+        return summary
+
+    def __repr__(self):
+        return f"StreamPool({self.__summarize__()})"
+
 
 class PyDeviceManager:
     """
@@ -86,12 +124,16 @@ class PyDeviceManager:
         self.py_registered_archs = {}
 
         # TODO(hc): pack those config. to a data class.
+        #Initialize Devices
         if dev_config == None or dev_config == "":
             self.register_cpu_devices()
             self.register_cuda_devices_cupy()
         else:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
+
+        #Initialize Device Hardware Queues
+        self.stream_pool = StreamPool(cuda.devices)
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
@@ -163,14 +205,13 @@ class PyDeviceManager:
                 self.py_registered_archs[cpu] = cpu
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
-                py_cpu_arch = self.py_registered_archs[cpu]
-                py_cpu_arch.add_device(py_cpu_device)
+                cpu.add_device(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
                 self.py_registered_archs[cuda] = cuda
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
-                py_cuda_arch = self.py_registered_archs[cuda]
+                py_cuda_arch = cuda
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \
