@@ -87,7 +87,7 @@ class Locals(threading.local):
         return self._stream_stack.current.device
 
     @property
-    def current_devices(self):
+    def devices(self):
         return self._context_stack.current.devices
 
     def push_scheduler(self, scheduler):
@@ -97,7 +97,7 @@ class Locals(threading.local):
         return self._scheduler_stack.pop()
 
     @property
-    def current_scheduler(self):
+    def scheduler(self):
         return self._scheduler_stack.current
 
     @property
@@ -117,7 +117,7 @@ def get_locals():
 
 
 def get_current_devices():
-    return _Locals.current_devices
+    return _Locals.devices
 
 
 def get_active_device():
@@ -133,7 +133,7 @@ def get_current_context():
 
 
 def get_scheduler():
-    return _Locals.current_scheduler
+    return _Locals.scheduler
 
 
 def get_device_manager():
