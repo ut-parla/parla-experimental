@@ -5,7 +5,7 @@ Repository for refactoring Parla to a C++ runtime to avoid GIL during scheduling
 # Installation and Use
 
 Requires: 
-- psutil, cython, scikit-build, Python>=3.8, nvtx (python module)
+- psutil, cython, scikit-build, Python>=3.9, nvtx (python module)
 - A C++ compiler that supports C++20 float atomics
 - An internet connection. I don't know how to make scikit-build stop building in its own venv. 
 
