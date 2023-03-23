@@ -6,7 +6,7 @@ from libcpp cimport bool
 #    pass
 
 # a mapping between C++ PArrayState api to Cython PArrayState api
-cdef extern from "include/parray_state.h" namespace "parray":
+cdef extern from "include/parray_state.hpp" namespace "parray":
     cdef cppclass PArrayState:
         PArrayState() except +
         void set_exist_on_device(int device_id, bool exist)

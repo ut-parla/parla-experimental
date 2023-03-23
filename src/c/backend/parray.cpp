@@ -1,11 +1,12 @@
 #include <unordered_map>
 #include <cstdint>
-#include "parray.h"
+#include "parray.hpp"
 
 namespace parray {
     PArray::PArray() : id(-1), _state(nullptr) {}
 
-    PArray::PArray(uint64_t id, PArrayState* state) : id(id), _state(state) {}
+    PArray::PArray(void *py_parray, uint64_t id, PArrayState* state) :
+        _py_parray(py_parray), id(id), _state(state) {}
 
     uint64_t PArray::get_size() {
         return this->_size;

@@ -3,6 +3,7 @@ cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
+from parla.cython.cyparray cimport PArray
 
 from libcpp  cimport bool
 from libcpp.string cimport string
@@ -50,7 +51,7 @@ cdef extern from "include/runtime.hpp" nogil:
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
         vector[Device*]& get_assigned_devices() 
-        void add_parray(void* py_parray, int access_mode)
+        void add_parray(PArray* py_parray, int access_mode)
         bool notify_dependents_wrapper()
 
         void* get_py_task()

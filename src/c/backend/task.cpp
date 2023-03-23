@@ -212,11 +212,11 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::add_parray(void *py_parray, int access_mode) {
+void InnerTask::add_parray(parray::PArray *parray, int access_mode) {
   AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
   std::cout << "CPP PArray is added to a task " << this->get_name() << " with access_mode "
     << test_access_mode << "\n";
-  this->py_parray_list.emplace_back(std::make_pair(py_parray, test_access_mode));
+  this->parray_list.emplace_back(std::make_pair(parray, test_access_mode));
 }
 
 void InnerTask::notify_dependents(TaskStateList &buffer,

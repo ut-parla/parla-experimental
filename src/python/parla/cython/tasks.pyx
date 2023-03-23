@@ -370,7 +370,21 @@ class Task:
 
     def add_dataflow(self, dataflow):
         if dataflow is not None:
-            self.inner_task.add_dataflow(dataflow)
+            for in_parray in dataflow.input:
+                print("input:", in_parray)
+                cy_parray = in_parray.cy_parray()
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.IN)
+            for out_parray in dataflow.output:
+                print("output:", out_parray)
+                cy_parray = out_parray.cy_parray()
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.OUT)
+            for inout_parray in dataflow.output:
+                print("inout:", inout_parray)
+                cy_parray = inout_parray.cy_parray()
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.INOUT)
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """

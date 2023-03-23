@@ -18,6 +18,7 @@ using namespace std::chrono_literals;
 
 #include "containers.hpp"
 #include "device_manager.hpp"
+#include "parray.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
 
@@ -244,7 +245,7 @@ public:
   std::atomic<bool> processed_data{true};
 
   /* A list of PArrays. */
-  std::vector<std::pair<void*, AccessMode>> py_parray_list;
+  std::vector<std::pair<parray::PArray*, AccessMode>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -300,9 +301,8 @@ public:
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
 
-  // TODO(hc): string should be a PArray.
   /* Add a PArray to the task */
-  void add_parray(void *py_parray, int access_mode);
+  void add_parray(parray::PArray *parray, int access_mode);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -471,13 +471,13 @@ protected:
 class InnerDataTask : public InnerTask {
 public:
   InnerDataTask() = delete;
-  InnerDataTask(void *py_parray, AccessMode access_mode) :
-      py_parray_(py_parray), access_mode_(access_mode), InnerTask() {
+  InnerDataTask(parray::PArray *parray, AccessMode access_mode) :
+      parray_(parray), access_mode_(access_mode), InnerTask() {
     this->has_data = true;
   }
 
 private:
-  void *py_parray_;
+  parray::PArray *parray_;
   AccessMode access_mode_;
 };
 

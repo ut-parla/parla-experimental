@@ -1,7 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <unordered_map>
-#include "parray_state.h"
+#include <vector>
+#include "parray_state.hpp"
+
+class InnerTask;
 
 namespace parray {
     // PArray C++ interface which provides some information that will be used for scheduling task
@@ -10,7 +14,7 @@ namespace parray {
             uint64_t id;  // unique ID of the PArray
 
             PArray();
-            PArray(uint64_t, PArrayState *);
+            PArray(void *, uint64_t, PArrayState *);
 
             // Get current size (in bytes) of each copy of the PArray
             // if it is a subarray, return the subarray's size
@@ -28,5 +32,7 @@ namespace parray {
         private:
             uint64_t _size;  // number of bytes consumed by each copy of the array/subarray
             PArrayState* _state;  // state of a PArray (subarray share this object with its parent)
+            std::vector<InnerTask*> _task_lists;
+            void *_py_parray;
     };
 }

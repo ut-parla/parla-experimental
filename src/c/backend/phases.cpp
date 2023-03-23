@@ -1,3 +1,4 @@
+#include "include/parray.hpp"
 #include "include/phases.hpp"
 #include "include/device.hpp"
 #include "include/policy.hpp"
@@ -209,13 +210,13 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 }
 
 void MemoryReserver::create_datamove_tasks(InnerTask *task) {
-  const std::vector<std::pair<void*, AccessMode>>& py_parray_list =
-      task->py_parray_list;
+  const std::vector<std::pair<parray::PArray*, AccessMode>>& parray_list =
+      task->parray_list;
   
-  for (size_t i = 0; i < py_parray_list.size(); ++i) {
-    void *py_parray = py_parray_list[i].first;
-    AccessMode access_mode = py_parray_list[i].second;
-    InnerDataTask *datamove_task = new InnerDataTask(py_parray, access_mode);
+  for (size_t i = 0; i < parray_list.size(); ++i) {
+    parray::PArray *parray = parray_list[i].first;
+    AccessMode access_mode = parray_list[i].second;
+    InnerDataTask *datamove_task = new InnerDataTask(parray, access_mode);
     //this->reserved_tasks_buffer.push_back(datamove_task);
     // TODO(hc): maintain a list of tasks in the PArray
     //           to do that, use c++ parray

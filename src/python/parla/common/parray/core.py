@@ -104,10 +104,13 @@ class PArray:
             # task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
 
         # record the size in Cython PArray
-        self._cyparray = CyPArray(self.ID, self._cyparray_state)
-        self._cyparray.set_size(self.subarray_nbytes)
+        self._cy_parray = CyPArray(self, self.ID, self._cyparray_state)
+        self._cy_parray.set_size(self.subarray_nbytes)
 
     # Properties:
+
+    def cy_parray(self):
+        return self._cy_parray
 
     @property
     def array(self) -> ndarray:
