@@ -1,6 +1,6 @@
-#include "include/parray.hpp"
 #include "include/phases.hpp"
 #include "include/device.hpp"
+#include "include/parray.hpp"
 #include "include/policy.hpp"
 #include "include/profiling.hpp"
 #include "include/resource_requirements.hpp"
@@ -60,7 +60,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
          placement_req_options_vec) {
       if (base_req->is_multidev_req()) {
         // Multi-device placement requirements.
-        std::cout << "[Multi-device requirement]\n";
+        // std::cout << "[Multi-device requirement]\n";
         MultiDeviceRequirements *mdev_reqs =
             dynamic_cast<MultiDeviceRequirements *>(base_req.get());
         std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
@@ -70,11 +70,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
         if (!is_req_available) {
           continue;
         }
-        std::cout << "Chosen device from multi-device requirements\n";
-        std::cout << "Score:" << score << "\n";
-        for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
-          // std::cout << "\t>>" << mdev_reqs_vec[i] <<
-        }
+        // std::cout << "Chosen device from multi-device requirements\n";
+        // std::cout << "Score:" << score << "\n";
+        // for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
+        //  std::cout << "\t>>" << mdev_reqs_vec[i] <<
+        //}
 
         if (best_score <= score) {
           best_score = score;
@@ -210,28 +210,49 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 }
 
 void MemoryReserver::create_datamove_tasks(InnerTask *task) {
-  const std::vector<std::pair<parray::PArray*, AccessMode>>& parray_list =
+  const std::vector<std::pair<parray::PArray *, AccessMode>> &parray_list =
       task->parray_list;
-  
+
+  std::string task_base_name = task->get_name();
+  std::vector<InnerTask *> data_tasks;
   for (size_t i = 0; i < parray_list.size(); ++i) {
     parray::PArray *parray = parray_list[i].first;
     AccessMode access_mode = parray_list[i].second;
-    InnerDataTask *datamove_task = new InnerDataTask(parray, access_mode);
+    InnerDataTask *datamove_task = new InnerDataTask(
+        // TODO(hc): id should be updated!
+        task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode);
     auto &parray_task_list = parray->get_task_list_ref();
-    parray_task_list.lock();
-    std::cout << "Task list in parray:\n";
-    for (size_t j = 0; j < parray_task_list.size_unsafe(); j++) {
-      std::cout << j << ", " << parray_task_list.at_unsafe(j)->get_name() << "\n";
+    // TODO(hc): This is not the complete implementation since it assumes
+    //           that all the dependencies of the compute task are data
+    //           depencies. We will find intersection between compute task and
+    //           parrays. To do this, we will use a concurrent map for parray's
+    //           task list and we first will iterate compute task's dependencies
+    //           and look up them from parray's task map. so O(N).
+    std::vector<void *> compute_task_dependencies = task->get_dependencies();
+    std::vector<InnerTask *> data_task_dependencies;
+    for (size_t j = 0; j < compute_task_dependencies.size(); ++j) {
+      InnerTask *parray_dependency =
+          static_cast<InnerTask *>(compute_task_dependencies[j]);
+      if (parray_dependency->get_state() == Task::COMPLETED) {
+        continue;
+      }
+      parray_task_list.lock();
+      for (size_t k = 0; k < parray_task_list.size_unsafe(); ++k) {
+        if (parray_task_list.at_unsafe(k)->id == parray_dependency->id) {
+          data_task_dependencies.push_back(parray_dependency);
+        }
+      }
+      parray_task_list.unlock();
     }
-    parray_task_list.unlock();
-    //this->reserved_tasks_buffer.push_back(datamove_task);
-    // TODO(hc): maintain a list of tasks in the PArray
-    //           to do that, use c++ parray
-    //           currently, we only pass python parray but later pass
-    //           c++ parray.
-    // for (size_t j = 0; j < parray_list[i].dependent_tasks; j++)
-    //datamove_task->dependencies = std::move(task->dependencies);
+    // TODO(hc): pass false to add_dependencies().
+    datamove_task->add_dependencies(data_task_dependencies);
+    datamove_task->copy_assigned_devices(task->get_assigned_devices());
+    data_tasks.push_back(datamove_task);
+    // Add the created data movement task to a reserved task queue.
+    this->reserved_tasks_buffer.push_back(datamove_task);
   }
+  // Create dependencies between data move task and compute tasks.
+  task->add_dependencies(data_tasks);
 }
 
 void MemoryReserver::run(SchedulerPhase *next_phase) {
@@ -250,7 +271,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     InnerTask *task = this->reservable_tasks->front();
 
     if (task == nullptr) {
-      std::cout << "memory reserver task is null\n";
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
 
@@ -282,7 +302,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     // Possibly enqueue this task
     bool enqueue_flag =
         (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
-
     if (enqueue_flag) {
       reserved_task->set_status(Task::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
@@ -352,13 +371,11 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     num_tasks = this->get_count();
     has_task = num_tasks > 0;
     if (has_task) {
-
       InnerTask *task = this->runnable_tasks->front();
       if (task == nullptr) {
         throw std::runtime_error("RuntimeReserver::run: task is nullptr");
       }
       bool has_resources = check_resources(task);
-
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
@@ -369,7 +386,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           this->reserve_resources(task);
 
           launcher->enqueue(task, worker);
-
           this->status.increase(RuntimeReserverState::Success);
         } else {
           this->status.increase(RuntimeReserverState::NoWorker);

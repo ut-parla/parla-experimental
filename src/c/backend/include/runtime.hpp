@@ -40,7 +40,7 @@ using TaskList = ProtectedVector<InnerTask *>;
 /* Access mode to a PArray. */
 enum AccessMode {
   // Input of a task.
-  IN = 0, 
+  IN = 0,
   // Output of a task.
   OUT = 1,
   // Input/output of a task.
@@ -245,7 +245,7 @@ public:
   std::atomic<bool> processed_data{true};
 
   /* A list of PArrays. */
-  std::vector<std::pair<parray::PArray*, AccessMode>> parray_list;
+  std::vector<std::pair<parray::PArray *, AccessMode>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -292,7 +292,8 @@ public:
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
-  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks);
+  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks,
+                                     bool data_tasks = false);
 
   /* Add a dependent to the task */
   Task::State add_dependent(InnerTask *task);
@@ -409,6 +410,8 @@ public:
   /* Get the python assigned devices */
   std::vector<Device *> &get_assigned_devices();
 
+  void copy_assigned_devices(const std::vector<Device *> &others);
+
   /* Set the task status */
   int set_state(int state);
 
@@ -471,9 +474,13 @@ protected:
 class InnerDataTask : public InnerTask {
 public:
   InnerDataTask() = delete;
-  InnerDataTask(parray::PArray *parray, AccessMode access_mode) :
-      parray_(parray), access_mode_(access_mode), InnerTask() {
+  // TODO(hc):id should be fixed.
+  InnerDataTask(std::string name, long long int id, parray::PArray *parray,
+                AccessMode access_mode)
+      : parray_(parray), access_mode_(access_mode),
+        InnerTask(name, id, nullptr) {
     this->has_data = true;
+    this->set_state(Task::RESERVED);
   }
 
 private:

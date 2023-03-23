@@ -39,7 +39,8 @@ void InnerWorker::assign_task(InnerTask *task) {
 void InnerWorker::get_task(InnerTask **task, bool *is_data_task) {
   this->scheduler->decrease_num_notified_workers();
   *task = this->task;
-  std::cout << "Innerworker get task:" << this->task->has_data.load(std::memory_order_relaxed) << "\n";
+  std::cout << "Innerworker get task:" << this->task->get_name() << ", "
+            << this->task->has_data.load(std::memory_order_relaxed) << "\n";
   *is_data_task = this->task->has_data.load(std::memory_order_relaxed);
 }
 
@@ -202,7 +203,6 @@ void InnerScheduler::spawn_task(InnerTask *task) {
   auto status = task->process_dependencies();
   this->increase_num_active_tasks();
   task->set_state(Task::SPAWNED);
-
   this->enqueue_task(task, status);
 }
 
