@@ -17,6 +17,7 @@ from parla.common.globals import _Locals as Locals
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
+DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
 create_env = tasks.create_env
 
@@ -207,7 +208,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         nvtx.pop_range(domain="Python Runtime")
-
+                    elif isinstance(self.task, DataMovementTask):
+                        print("Data move task is popped")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:

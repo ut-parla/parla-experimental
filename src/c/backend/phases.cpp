@@ -210,13 +210,13 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 }
 
 void MemoryReserver::create_datamove_tasks(InnerTask *task) {
-  const std::vector<std::pair<parray::PArray *, AccessMode>> &parray_list =
+  const std::vector<std::pair<parray::InnerPArray *, AccessMode>> &parray_list =
       task->parray_list;
 
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
   for (size_t i = 0; i < parray_list.size(); ++i) {
-    parray::PArray *parray = parray_list[i].first;
+    parray::InnerPArray *parray = parray_list[i].first;
     AccessMode access_mode = parray_list[i].second;
     InnerDataTask *datamove_task = new InnerDataTask(
         // TODO(hc): id should be updated!

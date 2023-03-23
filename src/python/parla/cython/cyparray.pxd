@@ -9,12 +9,12 @@ from .cyparray_state cimport PArrayState
 
 # a mapping between C++ PArray api to Cython PArray api
 cdef extern from "include/parray.hpp" namespace "parray":
-    cdef cppclass PArray:
-        PArray() except +
-        PArray(void *, uint64_t, PArrayState *) except +
+    cdef cppclass InnerPArray:
+        InnerPArray() except +
+        InnerPArray(void *, uint64_t, PArrayState *) except +
         void set_size(uint64_t)
 
 cdef class CyPArray:
     # Hold a C++ instance which we're wrapping
-    cdef PArray* cpp_parray
-    cdef PArray* get_cpp_parray(self)
+    cdef InnerPArray* cpp_parray
+    cdef InnerPArray* get_cpp_parray(self)

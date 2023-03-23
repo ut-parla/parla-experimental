@@ -245,7 +245,7 @@ public:
   std::atomic<bool> processed_data{true};
 
   /* A list of PArrays. */
-  std::vector<std::pair<parray::PArray *, AccessMode>> parray_list;
+  std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -303,7 +303,7 @@ public:
   // tasks);
 
   /* Add a PArray to the task */
-  void add_parray(parray::PArray *parray, int access_mode);
+  void add_parray(parray::InnerPArray *parray, int access_mode);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -475,7 +475,7 @@ class InnerDataTask : public InnerTask {
 public:
   InnerDataTask() = delete;
   // TODO(hc):id should be fixed.
-  InnerDataTask(std::string name, long long int id, parray::PArray *parray,
+  InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
                 AccessMode access_mode)
       : parray_(parray), access_mode_(access_mode),
         InnerTask(name, id, nullptr) {
@@ -483,8 +483,11 @@ public:
     this->set_state(Task::RESERVED);
   }
 
+  /// Return python PArray.
+  void *get_py_parray();
+
 private:
-  parray::PArray *parray_;
+  parray::InnerPArray *parray_;
   AccessMode access_mode_;
 };
 

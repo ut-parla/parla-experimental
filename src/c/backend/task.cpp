@@ -210,7 +210,7 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::add_parray(parray::PArray *parray, int access_mode) {
+void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode) {
   AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
   parray->add_task(this);
   this->parray_list.emplace_back(std::make_pair(parray, test_access_mode));
@@ -419,4 +419,8 @@ void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
   placement_req_options_.append_placement_req_opt(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
+}
+
+void *InnerDataTask::get_py_parray() {
+  return this->parray_->get_py_parray();
 }

@@ -13,6 +13,8 @@ from parla.common.globals import get_stream_pool, get_scheduler
 from parla.common.globals import DeviceType as PyDeviceType
 from parla.common.globals import AccessMode
 
+from parla.common.parray.core import PArray
+
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
@@ -481,7 +483,25 @@ class ComputeTask(Task):
         pass
 
 
-#TODO: Data Movement Task  
+class DataMovementTask(Task):
+
+    def __init__(self, parray: PArray, access_mode, assigned_devices: List[PyDevice], taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
+        super().__init__(taskspace, idx, state, scheduler, name)
+        self.parray = parray
+        self.access_mode = access_mode
+        self.assigned_devices = assigned_devices
+        # TODO(hc): should we set dependencies and constraints in data movement task?
+
+    def _execute_taks(self):
+        write_flag = True if self.access_mode != AccessMode.IN else False
+        device_manager = self.scheduler.get_device_manager()
+        for device in self.assigned_devices:
+            global_device_id = device.get_global_id()
+            self.parray._auto_move(device_manager.get_parray_id(global_device_id), \
+                                   write_flag)
+        # TODO(hc) is 0 fine for this return value?
+        return TaskCompleted(0)
+
 ######
 # Task Environment
 ######
@@ -787,26 +807,6 @@ class GPUEnvironment(TerminalEnvironment):
 #######
 # Task Collections
 #######
-class DataMovementTask(Task):
-
-    def __init__(self, taskspace=None, compute_task: ComputeTask=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
-        super().__init__(taskspace, idx, state, scheduler, name)
-
-    def instantiate(self, parray, op_type, dependencies=None, constraints=None, priority=0):
-        # Holds the parray that this task will move
-        self.parray = parray
-
-        # Holds the access mode to the parray
-        self.op_type = op_type
-
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
-
-    def _execute_taks(self):
-        write_flag = True if self.op_type != AccessMode.IN else False
-        # TODO(hc) self.inner_task.auto_move(write_flag, self.parray)?
-        # How will parray support auto move?
-        # TODO(hc) is 0 fine for this return value?
-        return TaskCompleted(0)
 
 cpdef flatten_tasks(tasks, list output=[]):
 

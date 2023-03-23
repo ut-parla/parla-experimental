@@ -12,12 +12,12 @@ using TaskList = ProtectedVector<InnerTask *>;
 
 namespace parray {
     // PArray C++ interface which provides some information that will be used for scheduling task
-    class PArray{
+    class InnerPArray{
         public:
             uint64_t id;  // unique ID of the PArray
 
-            PArray();
-            PArray(void *, uint64_t, PArrayState *);
+            InnerPArray();
+            InnerPArray(void *, uint64_t, PArrayState *);
 
             // Get current size (in bytes) of each copy of the PArray
             // if it is a subarray, return the subarray's size
@@ -35,7 +35,11 @@ namespace parray {
             // Add a pointer of the task that will use this PArray to the task list
             void add_task(InnerTask *task);
 
+            // Get a list of tasks who are using this PArray
             TaskList& get_task_list_ref();
+
+            // Return the instance of Python PArray
+            void *get_py_parray();
 
         private:
             uint64_t _size;  // number of bytes consumed by each copy of the array/subarray
