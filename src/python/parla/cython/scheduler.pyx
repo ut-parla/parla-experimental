@@ -173,7 +173,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         # - May be used by dependent tasks to query event, stream, device information from runahead or completed tasks
                         active_task.env = device_context
 
-                        #Pass streams and event pointers to c++ task
+                        #Pass streams and event pointers to c++ task (only saves initial runtime ones, TODO(wlr): save user ones after body returns)
                         device_context.write_to_task(active_task)
                         device_context.handle_runahead_dependencies()  #handle in C++ (good if num_dependencies > 100)
                         #active_task.py_handle_runahead_dependencies() #handle in python 
@@ -217,8 +217,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 
                         print("Cleaning up Task", active_task, flush=True)
+                        #Handle synchronization in C++
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         
+                        #Handle synchronization in Python (for debugging, works!)
                         #self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         #device_context.synchronize(events=True)
                         #self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
