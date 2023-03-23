@@ -3,7 +3,6 @@ import cython
 from parla.common.parray.core import PArray
 from parla.common.dataflow import Dataflow
 from parla.common.globals import AccessMode
-from parla.cython import tasks
 
 from parla.cython.device cimport Device
 from parla.cython.cyparray cimport CyPArray
@@ -13,8 +12,6 @@ from enum import IntEnum, auto
 
 #Resource Types
 #TODO: Python ENUM
-
-DataMovementTask = tasks.DataMovementTask
 
 #Logging functions
 
@@ -135,8 +132,8 @@ cdef void callback_stop(void* python_function) nogil:
 
         #(<object>python_function)(<object>python_input)
 
-
 #Define the Cython Wrapper Classes
+
 cdef class PyInnerTask:
     cdef InnerTask* c_task
     cdef string name
@@ -323,6 +320,9 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         c_self.end_multidev_req_addition()
 
+    cpdef set_c_task(self, CyDataMovementTaskAttributes c_attrs):
+        self.c_task = c_attrs.get_c_task()
+
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -340,7 +340,6 @@ cdef class PyInnerWorker:
         _inner_worker.set_thread_idx(python_worker.index)
 
         cdef InnerScheduler* c_scheduler
-        self.python_scheduler = python_scheduler
         c_scheduler = python_scheduler.inner_scheduler
         _inner_worker.set_scheduler(c_scheduler)
 
@@ -359,35 +358,43 @@ cdef class PyInnerWorker:
             _inner_worker.wait()
 
     cpdef get_task(self):
-
-        
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
 
         cdef InnerTask* c_task
         cdef InnerDataTask* c_data_task
         cdef bool is_data_task = False
+        cdef vector[Device*] c_devices 
+        cdef size_t num_devices
+        cdef Device* c_device
 
         if _inner_worker.ready:
             _inner_worker.get_task(&c_task, &is_data_task)
             if is_data_task == True:
+                py_assigned_devices = []
+                c_devices = c_task.get_assigned_devices()
+                name = c_task.get_name()
+                num_devices = c_devices.size()
+                for i in range(num_devices):
+                    c_device = <Device*> c_devices[i]
+                    py_device = <object> c_device.get_py_device()
+                    py_assigned_devices.append(py_device)
                 c_data_task = <InnerDataTask *> c_task
                 py_parray = <object> c_data_task.get_py_parray()
-                print("This is a data task ***************")
+                access_mode = c_data_task.get_access_mode()
                 # TODO(hc): Create a Python data move task at here.
                 # TODO(hc): this data movement task cannot be imported 
                 #           due to the circular import. so i will use a dummy
                 #           data class and when this function is returned to scheduler
                 #           i'll let the scheduler create data movement task.
-                py_task = DataMovementTask(py_parray, 0, \
-                            self.python_scheduler, None)
+                cy_data_attrs = CyDataMovementTaskAttributes()
+                cy_data_attrs.set_c_task(c_data_task)
+                py_task = DataMovementTaskAttributes(name, py_parray, \
+                                  access_mode, py_assigned_devices, cy_data_attrs)
             else:
-                print("This is not a data task ***************")
                 py_task = <object> c_task.get_py_task()
         else:
             py_task = None
-
-
         return py_task
 
     cpdef stop(self):
@@ -505,3 +512,23 @@ class Resources:
 
     def __init__(self, vcus):
         self.resources = vcus
+
+
+cdef class CyDataMovementTaskAttributes:
+    cdef InnerDataTask* c_data_task
+    cdef set_c_task(self, InnerDataTask* c_data_task):
+        self.c_data_task = c_data_task
+
+    cdef InnerTask* get_c_task(self):
+        return self.c_data_task
+
+
+class DataMovementTaskAttributes:
+    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+                 c_attrs: CyDataMovementTaskAttributes):
+        self.name = name
+        self.parray = py_parray
+        self.access_mode = access_mode
+        self.assigned_devices = assigned_devices
+        self.c_attrs = c_attrs
+

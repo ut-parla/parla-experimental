@@ -250,6 +250,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     data_tasks.push_back(datamove_task);
     // Add the created data movement task to a reserved task queue.
     this->reserved_tasks_buffer.push_back(datamove_task);
+    this->scheduler->increase_num_active_tasks();
   }
   // Create dependencies between data move task and compute tasks.
   task->add_dependencies(data_tasks);

@@ -485,21 +485,30 @@ class ComputeTask(Task):
 
 class DataMovementTask(Task):
 
-    def __init__(self, parray: PArray, access_mode, assigned_devices: List[PyDevice], taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
+    def __init__(self, parray: PArray=None, access_mode=None, \
+        assigned_devices: List[PyDevice]=None, taskspace=None, \
+        idx=0, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
-        # TODO(hc): should we set dependencies and constraints in data movement task?
 
-    def _execute_taks(self):
+    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler):
+        self.name = attrs.name
+        self.parray = attrs.parray
+        self.access_mode = attrs.access_mode
+        self.assigned_devices = attrs.assigned_devices
+        self.scheduler = scheduler
+        self.inner_task.set_c_task(attrs.c_attrs)
+
+    def _execute_task(self):
         write_flag = True if self.access_mode != AccessMode.IN else False
-        device_manager = self.scheduler.get_device_manager()
+        device_manager = self.scheduler.device_manager
+        print(self.name, " starts its body")
         for device in self.assigned_devices:
             global_device_id = device.get_global_id()
-            self.parray._auto_move(device_manager.get_parray_id(global_device_id), \
+            self.parray._auto_move(device_manager.get_parray_id(global_device_id),
                                    write_flag)
-        # TODO(hc) is 0 fine for this return value?
         return TaskCompleted(0)
 
 ######

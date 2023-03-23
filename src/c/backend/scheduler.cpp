@@ -267,11 +267,12 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   this->launcher->num_running_tasks--;
 
+  //std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
 
-    // std::cout << "Task Complete: " << task->name << std::endl;
+    //std::cout << "Task Complete: " << task->name << std::endl;
 
     // Reset all runtime counters and state of the continuation task.
     auto &enqueue_buffer = worker->enqueue_buffer;
@@ -308,8 +309,8 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   }
 
   if (state == Task::RUNNING) {
-    // std::cout << "Task Continuation (C++) " << task->name << " " << state
-    //          << std::endl;
+    //std::cout << "Task Continuation (C++) " << task->name << " " << state
+    //         << std::endl;
     // Do continuation handling
     // TODO:
     //  - make sure state ids match

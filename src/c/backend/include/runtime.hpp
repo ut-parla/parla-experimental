@@ -486,6 +486,9 @@ public:
   /// Return python PArray.
   void *get_py_parray();
 
+  /// Return a access mode of PArray.
+  AccessMode get_access_mode();
+
 private:
   parray::InnerPArray *parray_;
   AccessMode access_mode_;

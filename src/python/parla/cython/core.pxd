@@ -59,9 +59,10 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_dependencies()
         int get_num_dependents()
 
-
         int get_num_blocking_dependencies()
         int get_num_unmapped_dependencies()
+
+        string get_name()
 
         int set_state(int state)
         void add_device_req(void* dev_ptr, long mem_sz, int num_vcus)
@@ -73,6 +74,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
+        int get_access_mode()
 
 
     cdef cppclass InnerWorker:

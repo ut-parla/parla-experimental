@@ -158,13 +158,17 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.inner_worker.wait_for_task()
 
                     self.task = self.inner_worker.get_task()
+                    if isinstance(self.task, core.DataMovementTaskAttributes):
+                        self.task_attrs = self.task
+                        self.task = DataMovementTask()
+                        self.task.instantiate(self.task_attrs, self.scheduler)
                     nvtx.pop_range(domain="Python Runtime")
 
                     #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
                     self.status = "Running"
 
-                    if isinstance(self.task, ComputeTask):
+                    if isinstance(self.task, ComputeTask) or isinstance(self.task, DataMovementTask):
                         active_task = self.task 
 
                         parla_devices = active_task.get_assigned_devices()
@@ -178,6 +182,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         with device_context as env:
                             active_task.run()
+
+                        #print(active_task.name, " is done")
 
                         nvtx.pop_range(domain="Python Runtime")
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
@@ -203,13 +209,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         
                         elif  isinstance(final_state, tasks.TaskCompleted):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
-
-
                     
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         nvtx.pop_range(domain="Python Runtime")
-                    elif isinstance(self.task, DataMovementTask):
-                        print("Data move task is popped")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:

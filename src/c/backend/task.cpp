@@ -235,8 +235,9 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
     auto task = this->dependents.get_unsafe(i);
     Task::StatusFlags status = task->notify(new_state);
 
+    //std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
-      // std::cout << "Dependent Task Ready: " << task->name << std::endl;
+      //std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
     }
   }
@@ -423,4 +424,8 @@ void InnerTask::end_multidev_req_addition() {
 
 void *InnerDataTask::get_py_parray() {
   return this->parray_->get_py_parray();
+}
+
+AccessMode InnerDataTask::get_access_mode() {
+  return this->access_mode_;
 }
