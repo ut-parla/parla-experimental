@@ -3,9 +3,12 @@
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
+#include "containers.hpp"
 #include "parray_state.hpp"
 
 class InnerTask;
+
+using TaskList = ProtectedVector<InnerTask *>;
 
 namespace parray {
     // PArray C++ interface which provides some information that will be used for scheduling task
@@ -29,10 +32,19 @@ namespace parray {
             // Return True if there is an PArray copy and its coherence state is valid on this device
             bool valid_on_device(uint64_t device_id);
 
+            // Add a pointer of the task that will use this PArray to the task list
+            void add_task(InnerTask *task);
+
+            TaskList& get_task_list_ref();
+
         private:
             uint64_t _size;  // number of bytes consumed by each copy of the array/subarray
             PArrayState* _state;  // state of a PArray (subarray share this object with its parent)
-            std::vector<InnerTask*> _task_lists;
+            // TODO(hc): this should be a concurrent map.
+            //           this requires freuqent addition/removal.
+            //           I will use this map: https://github.com/greg7mdp/parallel-hashmap
+            //           I have used this for a while and it is good.
+            TaskList _task_lists;
             void *_py_parray;
     };
 }

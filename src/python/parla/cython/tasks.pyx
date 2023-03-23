@@ -273,7 +273,6 @@ class Task:
         
 
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None):
-
         self.dependencies = dependencies
         self.constraints = constraints
 
@@ -380,7 +379,7 @@ class Task:
                 cy_parray = out_parray.cy_parray()
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.OUT)
-            for inout_parray in dataflow.output:
+            for inout_parray in dataflow.inout:
                 print("inout:", inout_parray)
                 cy_parray = inout_parray.cy_parray()
                 self.inner_task.add_parray(cy_parray,

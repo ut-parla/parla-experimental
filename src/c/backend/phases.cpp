@@ -217,6 +217,13 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     parray::PArray *parray = parray_list[i].first;
     AccessMode access_mode = parray_list[i].second;
     InnerDataTask *datamove_task = new InnerDataTask(parray, access_mode);
+    auto &parray_task_list = parray->get_task_list_ref();
+    parray_task_list.lock();
+    std::cout << "Task list in parray:\n";
+    for (size_t j = 0; j < parray_task_list.size_unsafe(); j++) {
+      std::cout << j << ", " << parray_task_list.at_unsafe(j)->get_name() << "\n";
+    }
+    parray_task_list.unlock();
     //this->reserved_tasks_buffer.push_back(datamove_task);
     // TODO(hc): maintain a list of tasks in the PArray
     //           to do that, use c++ parray

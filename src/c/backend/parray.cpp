@@ -23,4 +23,13 @@ namespace parray {
     bool PArray::valid_on_device(uint64_t device_id) {
         return this->_state->valid_on_device(device_id);
     }
+
+    void PArray::add_task(InnerTask *task) {
+      // This pushing is thread-safe.
+      this->_task_lists.push_back(task);
+    }
+
+    TaskList& PArray::get_task_list_ref() {
+      return this->_task_lists;
+    }
 }
