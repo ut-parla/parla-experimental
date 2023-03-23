@@ -3,6 +3,7 @@ from parla.cython import core
 from parla.cython import tasks
 from parla.cython import device, device_manager
 from parla.utility.tracer import NVTXTracer
+from parla.common.globals import SynchronizationType as SyncType
 
 import inspect
 
@@ -47,14 +48,16 @@ def _make_cell(val):
 # @profile
 def spawn(task=None,
           dependencies=[],
-          # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
           # This collection does not contain Union anymore, which was used by the
           # old Parla, since we now allow support {arch, arch, arch} placement
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
           vcus=1000,
-          memory=0):
+          memory=0,
+          runahead=SyncType.BLOCKING):
+
+    print("Spawn::spawn", task, flush=True)
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -114,7 +117,8 @@ def spawn(task=None,
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
-                         constraints=vcus)
+                         constraints=vcus,
+                         runahead=runahead)
 
         scheduler.spawn_task(task)
         # scheduler.run_scheduler()

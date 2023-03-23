@@ -26,6 +26,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
+  std::cout << "Mapper::run" << std::endl;
+
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -72,7 +74,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::cout << "Chosen device from multi-device requirements\n";
         std::cout << "Score:" << score << "\n";
         for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
-          // std::cout << "\t>>" << mdev_reqs_vec[i] <<
+          std::cout << "\t>>" << mdev_reqs_vec[i] << "\n";
         }
 
         if (best_score <= score) {
@@ -211,6 +213,8 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
+  std::cout << "MemoryReserver::run" << std::endl;
+
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
 
@@ -313,6 +317,8 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
+  std::cout << "RuntimeReserver::run" << std::endl;
+
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
   // Only one thread can reserve runtime resources at a time.
@@ -365,6 +371,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
+  std::cout << "Launcher::enqueue" << std::endl;
+
   // Immediately launch task
   task->set_state(Task::RUNNING);
   this->num_running_tasks++;
@@ -373,8 +381,8 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-  //           << std::endl;
+  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
+            << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

@@ -182,10 +182,13 @@ class PyDeviceManager:
         """
         Register devices to the both Python/C++ runtime.
         """
+        current_idx = 0
         for py_arch in self.py_registered_archs:
             for py_device in py_arch.devices:
                 cy_device = py_device.get_cy_device()
                 self.cy_device_manager.register_device(cy_device)
+                py_device.global_id = current_idx 
+                current_idx += 1
 
     def print_registered_devices(self):
         print("Python devices:", flush=True)

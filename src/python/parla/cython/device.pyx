@@ -3,7 +3,7 @@
 ################################################################################
 
 from parla.common.globals import _Locals as Locals
-from parla.common.globals import cupy
+from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType
 
 from abc import ABCMeta, abstractmethod
@@ -12,8 +12,6 @@ from typing import Union, List, Iterable, Dict, Tuple
 from collections import defaultdict
 import os 
 from enum import IntEnum
-
-CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 
 cdef class CyDevice:
     """
@@ -83,6 +81,8 @@ class PyDevice:
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self 
+        self._dev_id = dev_id
+        self._global_id = None 
 
     def __dealloc__(self):
         del self._cy_device
@@ -93,6 +93,22 @@ class PyDevice:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
         #print(f"Exited device, {self.get_name()}, context", flush=True)
+
+    @property
+    def id(self):
+        return self._dev_id 
+    
+    @id.setter
+    def id(self, new_id):
+        self._dev_id = new_id
+
+    @property
+    def global_id(self):
+        return self._global_id
+    
+    @global_id.setter
+    def global_id(self, new_id):
+        self._global_id = new_id
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
@@ -315,6 +331,9 @@ class Stream:
     def synchronize(self):
         print("Synchronizing stream", flush=True)
 
+    def create_event(self):
+        return None
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
@@ -384,6 +403,9 @@ class CupyStream(Stream):
     def synchronize(self):
         print("Synchronizing stream", flush=True)
         self._stream.synchronize()
+
+    def create_event(self):
+        return cupy.cuda.Event(block=True, disable_timing=True, interprocess=False)
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):

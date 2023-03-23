@@ -1,10 +1,37 @@
 from enum import IntEnum
 import threading
+import os
 
 try:
     import cupy
+    CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 except ImportError:
     cupy = None
+    CUPY_ENABLED = False
+
+
+class SynchronizationType(IntEnum):
+    """
+    This class declares the type of event synchronization used for runahead scheduling.
+    """
+
+    # No runahaed scheduling is used.
+    NONE = 0
+
+    # Default events are recorded for each stream in the task.
+    # The host waits for all event dependencies to be completed before launching the task body.
+    BLOCKING = 1
+
+    # Default events are recorded for each stream in the task.
+    # The host launches the task body without waiting for event dependencies to be completed.
+    # The tasks work is enqueued on streams that wait for the event dependencies to be completed.
+    NON_BLOCKING = 2
+
+    # Default events are recorded for each stream in the task.
+    # The runtime does not handle any synchronization around the task body.
+    # Data movement is assumed to happen on the tasks associated 'default' events.
+    # TODO(wlr): This is very poorly supported and highly experimental.
+    USER = 3
 
 
 class DeviceType(IntEnum):

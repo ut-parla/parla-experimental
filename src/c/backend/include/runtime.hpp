@@ -17,6 +17,8 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
+#include "events.hpp"
+
 #include "device_manager.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
@@ -35,6 +37,10 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
+
+// TODO(wlr): Make this architecture agnostic
+using StreamList = ProtectedVector<CUDAStream>;
+using EventList = ProtectedVector<CUDAEvent>;
 
 // Busy sleep for a given number of microseconds
 inline void cpu_busy_sleep(unsigned int micro) {
@@ -96,6 +102,17 @@ enum State {
   // Task has completed
   COMPLETED = 7
 };
+
+enum SynchronizationType {
+  // No synchronization
+  NONE = 0,
+  // BLocking synchronization
+  BLOCKING = 1,
+  // Non-blocking synchronization
+  NON_BLOCKING = 2,
+  // User defined synchronization
+  USER = 3
+}
 
 class StatusFlags {
 public:
@@ -175,6 +192,15 @@ public:
 
   /* Reference to the scheduler (used for synchronizing state on events) */
   InnerScheduler *scheduler = nullptr;
+
+  /*Container for Events*/
+  EventList events;
+
+  /*Synchronization Type */
+  Task::SynchronizationType sync_type = Task::BLOCKING;
+
+  /*Container for Streams*/
+  StreamList streams;
 
   /*Task monitor*/
   std::mutex mtx;
@@ -385,6 +411,76 @@ public:
 
   /* Get dependents list. Used for testing Python interface. */
   std::vector<void *> get_dependents();
+
+  /*Add event to task*/
+  void add_event(void *event) { this->events.push_back(event); }
+
+  /*Add stream to task */
+  void add_stream(void *stream) { this->streams.push_back(stream); };
+
+  /* Reset events and streams */
+  void reset_events_streams() {
+    this->events.clear();
+    this->streams.clear();
+  }
+
+  /* Synchronize self */
+  void synchronize_events() {
+    this->events.lock();
+    size_t num_events = this->events.size();
+    for (size_t i = 0; i < num_events; i++) {
+      CUDAEvent &event = this->events[i];
+      event.synchronize();
+    }
+    this->events.unlock();
+  }
+
+  /*handle_runahead_dependencies*/
+  void handle_runahead_dependencies() {
+    if (this->sync_type == Task::SyncType::BLOCKING) {
+      this->synchronize_dependency_events();
+    } else if (this->sync_type == Task::SyncType::NON_BLOCKING) {
+      this->wait_dependency_events();
+    }
+  }
+
+  /*Synchronize dependencies*/
+  void synchronize_dependency_events() {
+    this->dependencies.lock();
+    size_t num_dependencies = this->dependencies.size();
+    for (size_t i = 0; i < num_dependencies; i++) {
+      InnerTask *dependency = this->dependencies.unsafe_at(i);
+      dependency->synchronize_events();
+    }
+    this->dependencies.unlock();
+  }
+
+  /*Wait dependencies*/
+  // TODO(wlr): This locking is overkill. Some of these aren't even necessary.
+  void wait_dependency_events() {
+    // For each dependency, wait on all of its events on all of our streams
+    this->dependencies.lock();
+    size_t num_dependencies = this->dependencies.size();
+    for (size_t i = 0; i < num_dependencies; i++) {
+      InnerTask *dependency = this->dependencies.unsafe_at(i);
+      auto &dependency_events = dependency->events;
+      dependency_events.lock();
+      size_t num_events = dependency_events.size();
+      for (size_t j = 0; j < num_events; j++) {
+        CUDAEvent &event = dependency_events[j];
+
+        // Wait on the event on all of our streams
+        this->streams.lock();
+        for (size_t k = 0; k < this->streams.size(); k++) {
+          CUDAStream &stream = this->streams[k];
+          event.wait(stream);
+        }
+        this->streams.unlock();
+      }
+      dependency_events.unlock();
+    }
+    this->dependencies.unlock();
+  }
 
   /* Get python task */
   void *get_py_task();
@@ -738,6 +834,9 @@ public:
   /* Complete all task finalization. Notify Dependents / Release Resources /
    * Worker Enqueue */
   void task_cleanup(InnerWorker *worker, InnerTask *task, int state);
+
+  void task_cleanup_presync(InnerWorker *worker, InnerTask *task, int state);
+  void task_cleanup_postsync(InnerWorker *worker, InnerTask *task, int state);
 
   /* Get number of active tasks. A task is active if it is spawned but not
    * complete */

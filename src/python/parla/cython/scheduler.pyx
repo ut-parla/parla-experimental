@@ -159,7 +159,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.task = self.inner_worker.get_task()
                     nvtx.pop_range(domain="Python Runtime")
 
-                    #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
+                    print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
                     self.status = "Running"
 
@@ -168,15 +168,27 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         parla_devices = active_task.get_assigned_devices()
                         device_context = create_env(parla_devices)
-                    
 
-                        core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                        #Save device_context with task object
+                        # - May be used by dependent tasks to query event, stream, device information from runahead or completed tasks
+                        active_task.env = device_context
 
-                        #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
+                        #Pass streams and event pointers to c++ task
+                        device_context.write_to_task(active_task)
+                        device_context.handle_runahead_dependencies()  #handle in C++ (good if num_dependencies > 100)
+                        #active_task.py_handle_runahead_dependencies() #handle in python 
+
+                        print("Running Task", active_task, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
                         with device_context as env:
+                            
+                            core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                            #Run the task body (this may complete the task or return a continuation)
+                            #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
                             active_task.run()
+
+                            env.record_events()
 
                         nvtx.pop_range(domain="Python Runtime")
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
@@ -185,7 +197,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         final_state  = active_task.state
 
-                        #TODO: Add better exception handling
+                        #TODO(wlr): Add better exception handling
                         if isinstance(final_state, tasks.TaskException):
                             raise TaskBodyException(active_task.state.exception)
 
@@ -204,8 +216,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
 
-                    
+                        print("Cleaning up Task", active_task, flush=True)
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        
+                        #self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #device_context.synchronize(events=True)
+                        #self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        print("Finished Cleaning up Task", active_task, flush=True)
+
                         nvtx.pop_range(domain="Python Runtime")
 
                     elif self._should_run:
@@ -319,6 +337,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Scheduler: Stopped", flush=True)
 
     def spawn_task(self, task):
+        print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
 
     
@@ -363,9 +382,9 @@ def _task_callback(task, body):
                 result = None
                 if e.args:
                     (result,) = e.args
-                return tasks.TaskCompleted(result)
+                return tasks.TaskRunahead(result)
         else:
             result = body()
-            return tasks.TaskCompleted(result)
+            return tasks.TaskRunahead(result)
     finally:
         pass
