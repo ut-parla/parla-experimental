@@ -240,8 +240,6 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
         np.cumsum(sizes)
         np.sum(sizes)
 
-        print("SIZES", size_prefix)
-
         if len(A) == 1:
             # print("BASE")
             A[0].array.sort()
