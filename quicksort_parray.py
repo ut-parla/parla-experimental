@@ -137,8 +137,8 @@ def scatter(A, B, left_info, right_info):
                 # A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
                 target = A[target_idx]
                 source = B[source_idx]
-                print("TARGET: ", target, type(target))
-                print("SOURCE: ", source, type(source))
+                # print("TARGET: ", target, type(target))
+                # print("SOURCE: ", source, type(source))
                 target[target_start:target_end] = source[source_start:source_end]
 
     source_starts, target_starts, sizes = right_info
@@ -181,12 +181,16 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     A = []
     workspace = []
 
+    print("START: ", start, "END: ", end)
+    print("GLOBAL_START: ", global_start_idx, "GLOBAL_END: ", global_end_idx)
+    print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
+
     if global_start_idx == global_end_idx and local_left_split < local_right_split:
         A.append(global_A[global_start_idx]
                  [local_left_split:local_right_split])
         workspace.append(global_workspace[global_start_idx])
-    elif global_start_idx < global_end_idx:
-        if local_left_split < len(global_A[global_start_idx]):
+    else:
+        if (global_start_idx < global_end_idx) and (local_left_split < len(global_A[global_start_idx])):
             A.append(global_A[global_start_idx][local_left_split:])
             workspace.append(
                 global_workspace[global_start_idx][local_left_split:])
@@ -195,7 +199,7 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
             A.append(global_A[i])
             workspace.append(global_workspace[i])
 
-        if local_right_split > 0:
+        if (global_end_idx < len(A)) and local_right_split > 0:
             A.append(global_A[global_end_idx][:local_right_split])
             workspace.append(
                 global_workspace[global_end_idx][:local_right_split])
@@ -207,7 +211,7 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     for i in range(len(A)):
         # print("INCOMING ARRAY", A[i].array)
         # sizes[i+1] = len(A[i].array)
-        print("INCOMING ARRAY", len(A[i]))
+        print("INCOMING ARRAY", A[i], len(A[i]))
         sizes[i+1] = len(A[i])
 
     local_size_prefix = np.cumsum(sizes)
@@ -231,18 +235,22 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     pivot_idx = np.random.randint(0, len(A[pivot_block]))
     pivot = (int)(A[pivot_block][pivot_idx])
 
-    # print("Pivot: ", pivot)
+    print("Pivot: ", pivot)
 
     # local partition
     left_counts = partition(A, workspace, pivot)
     local_left_count = np.sum(left_counts)
     global_left_count = start+local_left_count
 
+    print("LOCAL LEFT COUNT: ", local_left_count)
+
     # compute communication pattern
     left_info, right_info = balance_partition(A, left_counts)
 
     # Send left to left and right to right
     scatter(A, workspace, left_info, right_info)
+
+    print("-------")
 
     quicksort(global_prefix, global_A, global_workspace,
               start, start+global_left_count, T)
@@ -263,7 +271,7 @@ def main(T):
     cupy_list_B = []
     for i in range(args.num_gpus):
         with cp.cuda.Device(0) as dev:
-            random_array = cp.random.randint(0, 100000000000, size=m)
+            random_array = cp.random.randint(0, 100, size=m)
             random_array = random_array.astype(cp.int32)
 
             cupy_list_A.append(random_array)
