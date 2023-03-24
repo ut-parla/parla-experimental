@@ -1,13 +1,17 @@
 import cython 
 
+from parla.common.parray.core import PArray
+from parla.common.dataflow import Dataflow
+from parla.common.globals import AccessMode
+
 from parla.cython.device cimport Device
+from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
 import threading
 from enum import IntEnum, auto
 
 #Resource Types
 #TODO: Python ENUM
-
 
 #Logging functions
 
@@ -128,8 +132,8 @@ cdef void callback_stop(void* python_function) nogil:
 
         #(<object>python_function)(<object>python_input)
 
-
 #Define the Cython Wrapper Classes
+
 cdef class PyInnerTask:
     cdef InnerTask* c_task
     cdef string name
@@ -276,6 +280,10 @@ cdef class PyInnerTask:
 
         return devices
 
+    cpdef add_parray(self, CyPArray cy_parray, flag, int dev_id):
+        cdef InnerTask* c_self = self.c_task
+        c_self.add_parray(cy_parray.get_cpp_parray(), int(flag), dev_id)
+
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
         cdef bool status = False
@@ -312,6 +320,9 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         c_self.end_multidev_req_addition()
 
+    cpdef set_c_task(self, CyDataMovementTaskAttributes c_attrs):
+        self.c_task = c_attrs.get_c_task()
+
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -347,20 +358,51 @@ cdef class PyInnerWorker:
             _inner_worker.wait()
 
     cpdef get_task(self):
-
-        
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
 
         cdef InnerTask* c_task
+        cdef InnerDataTask* c_data_task
+        cdef bool is_data_task = False
+        cdef vector[Device*] c_devices 
+        cdef size_t num_devices
+        cdef Device* c_device
 
         if _inner_worker.ready:
-            c_task = _inner_worker.get_task()
-            py_task = <object> c_task.get_py_task()
+            _inner_worker.get_task(&c_task, &is_data_task)
+            if is_data_task == True:
+                # This case is that the current task that
+                # this worker thread gets is a data movement task.
+                py_assigned_devices = []
+                c_devices = c_task.get_assigned_devices()
+                name = c_task.get_name()
+                # Cast the base class instance to the inherited
+                # data movement task.
+                c_data_task = <InnerDataTask *> c_task
+                num_devices = c_devices.size()
+                # Construct a list of Python PArrays.
+                for i in range(num_devices):
+                    c_device = <Device *> c_devices[i]
+                    py_device = <object> c_device.get_py_device()
+                    py_assigned_devices.append(py_device)
+                py_parray = <object> c_data_task.get_py_parray()
+                access_mode = c_data_task.get_access_mode()
+                dev_id = c_data_task.get_device_id();
+
+                # Due to circular imports, the data movement task
+                # is not created, but necessary information/objects
+                # are created here.
+                cy_data_attrs = CyDataMovementTaskAttributes()
+                # A C++ pointer cannot be held in Python object.
+                # Therefore, exploit a Cython class.
+                cy_data_attrs.set_c_task(c_data_task)
+                py_task = DataMovementTaskAttributes(name, py_parray, \
+                                  access_mode, py_assigned_devices, cy_data_attrs, \
+                                  dev_id)
+            else:
+                py_task = <object> c_task.get_py_task()
         else:
             py_task = None
-
-
         return py_task
 
     cpdef stop(self):
@@ -478,3 +520,36 @@ class Resources:
 
     def __init__(self, vcus):
         self.resources = vcus
+
+
+cdef class CyDataMovementTaskAttributes:
+    """
+    While creating a Python data movement task,
+    we need to connect the Python and the C++ instances.
+    However, we cannot pass the C++ instance (or its pointer)
+    through a normal Python class, but need to use a bridge
+    Cython class. This is for that.
+    """
+    cdef InnerDataTask* c_data_task
+    cdef set_c_task(self, InnerDataTask* c_data_task):
+        self.c_data_task = c_data_task
+
+    cdef InnerTask* get_c_task(self):
+        return self.c_data_task
+
+
+class DataMovementTaskAttributes:
+    """
+    Hold necessary information to create a data move task.
+    This is delcared to avoid circular imports that could happen
+    when we import tasks.pyx in here.
+    """
+    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+                 c_attrs: CyDataMovementTaskAttributes, dev_id):
+        self.name = name
+        self.parray = py_parray
+        self.access_mode = access_mode
+        self.assigned_devices = assigned_devices
+        self.c_attrs = c_attrs
+        self.dev_id = dev_id
+

@@ -18,6 +18,7 @@ cdef extern from "include/device.hpp" nogil:
         long get_memory_size() except +
         long get_num_vcus() except +
         void *get_py_device() except +
+        int get_global_id() except +
 
     cdef cppclass CUDADevice(Device):
         CUDADevice(int, long, long, void*) except +
@@ -32,3 +33,4 @@ cdef extern from "include/device.hpp" nogil:
 cdef class CyDevice:
     cdef Device* _cpp_device
     cdef Device* get_cpp_device(self)
+    cpdef int get_global_id(self)

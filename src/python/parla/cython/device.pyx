@@ -25,6 +25,9 @@ cdef class CyDevice:
     def __dealloc__(self):
         del self._cpp_device
 
+    cpdef int get_global_id(self):
+        return self._cpp_device.get_global_id()
+
 
 cdef class CyCUDADevice(CyDevice):
     """
@@ -101,6 +104,9 @@ class PyDevice:
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
               " requirements.")
+
+    def get_global_id(self):
+        return self._cy_device.get_global_id()
 
     def get_name(self):
         return self._device_name
