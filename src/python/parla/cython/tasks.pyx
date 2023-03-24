@@ -1,8 +1,25 @@
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
+import functools 
+
+from parla.utility.threads import Propagate
 
 cimport core
 from parla.cython import core
+from parla.cython import device
+
+from parla.common.globals import _Locals as Locals
+from parla.common.globals import get_stream_pool, get_scheduler
+from parla.common.globals import DeviceType as PyDeviceType
+
+PyDevice = device.PyDevice
+PyCUDADevice = device.PyCUDADevice
+PyCPUDevice = device.PyCPUDevice
+PyArchitecture = device.PyArchitecture
+PyCUDAArchitecture = device.PyCUDAArchitecture
+
+DeviceType = PyDeviceType
+
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, Union
 from typing import Awaitable, Collection, Iterable, FrozenSet
@@ -180,6 +197,7 @@ class TaskException(TaskState):
 TaskAwaitTasks = namedtuple("AwaitTasks", ["dependencies", "value_task"])
 
 
+#TODO: Deprecate Task Locals
 class _TaskLocals(threading.local):
     def __init__(self):
         super(_TaskLocals, self).__init__()
@@ -438,7 +456,311 @@ class ComputeTask(Task):
 
 
 #TODO: Data Movement Task  
+######
+# Task Environment
+######
 
+def create_device_env(device):
+    if isinstance(device, PyCPUDevice):
+        return CPUEnvironment(device), DeviceType.CPU
+    elif isinstance(device, PyCUDADevice):
+        return GPUEnvironment(device), DeviceType.CUDA
+
+def create_env(sources):
+    targets = []
+
+    for env in sources:
+        if isinstance(env, PyDevice):
+            device = env
+            new_env, dev_type = create_device_env(env)
+            targets.append(new_env)
+
+    if len(targets) == 1:
+        return targets[0]
+    else:
+        return TaskEnvironment(targets)
+
+class TaskEnvironment:
+
+    def __init__(self, environment_list, blocking=False):
+
+        self.device_dict = defaultdict(list)
+
+        self.env_list = []
+        self.stream_list = []
+        self.is_terminal = False
+        self.blocking = blocking
+        self._device = None
+
+        for env in environment_list:
+            for dev in env.device_dict:
+                self.device_dict[dev] += env.device_dict[dev]
+
+            self.env_list.append(env)
+
+    def __repr__(self):
+        return f"TaskEnvironment({self.env_list})"
+
+    def get_parla_device(self):
+        return self._device
+
+    def get_library_device(self):
+        return self._device.device
+
+    @property
+    def streams(self):
+        if self.is_terminal:
+            return self.stream_list
+        else:
+            return [None]
+
+    @property
+    def stream(self):
+        return self.streams[0]
+
+    def loop(self, envlist=None):
+        if envlist is None:
+            envlist = self.env_list
+        
+        for env in envlist:
+            env.__enter__()
+            yield env
+            env.__exit__(None, None, None)
+
+    def get_devices(self, arch):
+        return self.device_dict[arch]
+
+    def get_all_devices(self):
+        return sum(self.device_dict.values(), [])
+
+    def get_terminal_environments(self, arch):
+        return self.terminal_dict[arch]
+
+    def get_all_terminal_environments(self):
+        return sum(self.terminal_dict.values(), [])
+
+    @property
+    def contexts(self):
+        return self.env_list
+
+    @property
+    def devices(self):
+        #TODO: Improve this
+        return self.get_all_devices()
+    
+    @property
+    def device(self):
+        return self.devices[0]
+
+    def get_cupy_devices(self):
+        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+
+    def synchronize(self):
+        print(f"Sychronizing {self}..", flush=True)
+        if self.is_terminal:
+            for stream in self.stream_list:
+                stream.synchronize()
+        else:
+            for env in self.env_list:
+                env.synchronize()
+
+    def __enter__(self):
+        print("Entering environment:", self.env_list, flush=True)
+
+        if len(self.env_list) == 0:
+            raise RuntimeError("[TaskEnvironment] No environment or device is available.")
+
+        Locals.push_context(self)
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting environment", self.env_list, flush=True)
+        ret = False
+
+        Locals.pop_context()
+        
+        return ret 
+
+    def __getitem__(self, index):
+
+        if isinstance(index, int):
+            return self.env_list[index]
+        
+        return create_env(self.env_list[index])
+
+    def __len__(self):
+        return len(self.env_list)
+
+    def finalize(self):
+        stream_pool = get_stream_pool()
+
+        for env in self.env_list:
+            env.finalize()
+        
+        for stream in self.stream_list:
+            stream.synchronize()
+            stream_pool.return_stream(stream)
+
+    def parfor(self, envlist=None):
+
+        if envlist is None:
+            envlist = self.env_list
+
+        def deco(func):
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                res = [Exception('Parallel Launcher [%s] raised an exception!' % (
+                    func.__name__))]
+
+                def EnvHandler(env, idx):
+                    Locals.index = idx 
+                    env.__enter__()
+                    try:
+                        res[0] = func(env, *args, **kwargs)
+                    except Exception as e:
+                        res[0] = e
+                    finally:
+                        env.__exit__(None, None, None)
+
+                thread_list = []
+                return_list = []
+                for idx, env in enumerate(envlist):
+                    thread_list.append(Propagate(target=EnvHandler, args=(env, idx)))
+                try:
+                    for t in thread_list:
+                        t.start()
+                    for t in thread_list:
+                        t.join()
+                        return_list.append(t.value)
+                except Exception as e:
+                    print('Unhandled exception in Propagate wrapper', flush=True)
+                    raise e
+
+                ret = res[0]
+                if isinstance(ret, BaseException):
+                    raise ret
+                return ret
+            return wrapper()
+        return deco
+
+
+class TerminalEnvironment(TaskEnvironment):
+    def  __init__(self,  device, blocking=False):
+        super(TerminalEnvironment, self).__init__([], blocking=blocking)
+        self.device_dict[device.architecture].append(self)
+        self._device = device
+        self._arch_type = device.architecture
+        self.is_terminal = True
+
+    def __repr__(self):
+        return f"TerminalEnvironment({self._device})"
+
+    @property
+    def contexts(self):
+        return [self]
+
+    @property
+    def devices(self):
+        return [self]
+
+    @property
+    def device(self):
+        return self
+
+    @property
+    def architecture(self):
+        return self._arch_type
+
+    def __eq__(self, other):
+        if isinstance(other, int) or isinstance(other, PyDevice):
+            return self._device == other
+        elif isinstance(other, TerminalEnvironment):
+            return self._device == other._device
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self._device)
+
+    def __call__(self):
+        return self._device
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self
+        else:
+            raise IndexError("TerminalEnvironment only has one device.")
+
+    
+class CPUEnvironment(TerminalEnvironment):
+
+    def __init__(self,  device, blocking=False):
+        super(CPUEnvironment, self).__init__(device, blocking=blocking)
+
+    def __repr__(self):
+        return f"CPUEnvironment({self._device})"
+
+    def __enter__(self):
+        print("Entering CPU Environment: ", self, flush=True)
+        Locals.push_context(self)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting CPU Environment: ", self, flush=True)
+        Locals.pop_context()
+        return False
+
+    def __len__(self):
+            return 1
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self
+
+    def finalize(self):
+        pass
+
+class GPUEnvironment(TerminalEnvironment):
+
+    def __init__(self, device, blocking=False):
+        super(GPUEnvironment, self).__init__(device, blocking=blocking)
+
+        stream_pool = get_stream_pool()
+        stream = stream_pool.get_stream(device=device)
+        self.stream_list.append(stream)
+
+    def __repr__(self):
+        return f"GPUEnvironment({self._device})"
+
+
+    def __enter__(self):
+        print("Entering GPU Environment: ", self, flush=True)
+        Locals.push_context(self)
+        self.active_stream = self.stream_list[0]
+        ret_stream = self.active_stream.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Exiting GPU Environment: ", self, flush=True)
+        ret = False
+        self.active_stream.__exit__(exc_type, exc_val, exc_tb)
+        Locals.pop_context()
+        return ret 
+
+    def finalize(self):
+        stream_pool = get_stream_pool()
+        for stream in self.stream_list:
+            stream.synchronize()
+            stream_pool.return_stream(stream)
+
+
+#######
+# Task Collections
+#######
 
 cpdef flatten_tasks(tasks, list output=[]):
 

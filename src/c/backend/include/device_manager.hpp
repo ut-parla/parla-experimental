@@ -83,6 +83,15 @@ public:
 
   size_t get_num_devices() { return all_devices_.size(); }
 
+  const int get_parray_id(size_t global_dev_id) const {
+    Device *dev = all_devices_[global_dev_id];
+    if (dev->get_type() == DeviceType::CPU) {
+      return -1;
+    } else {
+      return dev->get_id();
+    }
+  }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds
