@@ -7,7 +7,7 @@ import time
 from parla import parray as pa
 from parla import Parla, spawn, TaskSpace
 from parla.cython.device_manager import cuda
-
+from parla.common.globals import get_current_context
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
@@ -33,11 +33,12 @@ def partition_kernel(A, B, comp, pivot):
 
 
 def partition(A, B, pivot):
+    context = get_current_context()
     n_partitions = len(A)
     mid = np.zeros(n_partitions, dtype=np.uint32)
 
     for i, (array_in, array_out) in enumerate(zip(A, B)):
-        with cp.cuda.Device(0):
+        with context.device[i]:
             comp = cp.empty_like(array_in, dtype=cp.bool_)
             mid[i] = partition_kernel(array_in, array_out, comp, pivot)
     return mid
@@ -117,6 +118,8 @@ def balance_partition(A, left_counts):
 
 
 def scatter(A, B, left_info, right_info):
+    context = get_current_contex()
+
     source_starts, target_starts, sizes = left_info
 
     for source_idx in range(len(A)):
@@ -124,7 +127,7 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with cp.cuda.Device(0):
+            with context.device[target_idx]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
@@ -134,8 +137,8 @@ def scatter(A, B, left_info, right_info):
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
 
-                A[target_idx].array[target_start:target_end] = B[source_idx].array[
-                    source_start:source_end
+                A[target_idx].array[target_start:target_end] = cp.asarray(B[source_idx].array[
+                    source_start:source_end)
                 ]
                 # target = A[target_idx]
                 # source = B[source_idx]
@@ -149,7 +152,7 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with cp.cuda.Device(0):
+            with context.device[target_idx]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
@@ -159,9 +162,9 @@ def scatter(A, B, left_info, right_info):
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
 
-                A[target_idx].array[target_start:target_end] = B[source_idx].array[
+                A[target_idx].array[target_start:target_end] = cp.asarray(B[source_idx].array[
                     source_start:source_end
-                ]
+                ])
                 # target = A[target_idx]
                 # source = B[source_idx]
                 # target[target_start:target_end] = source[source_start:source_end]
@@ -221,15 +224,15 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
 
     n_partitions = len(A)
 
-    tag_A = [(A[i], 0) for i in range(len(A))]
-    tag_B = [(workspace[i], 0) for i in range(len(workspace))]
+    tag_A = [(A[i], i) for i in range(len(A))]
+    tag_B = [(workspace[i], i) for i in range(len(workspace))]
 
     unpacked = tag_A + tag_B
 
     print("unpacked: ", unpacked)
 
 
-    @spawn(T[idx], placement=[cuda(0)[{"vcus": 0}]], inout=unpacked)
+    @spawn(T[idx], placement=[cuda*n_partitions], inout=unpacked)
     def quicksort_task():
         nonlocal global_prefix
         nonlocal global_A
