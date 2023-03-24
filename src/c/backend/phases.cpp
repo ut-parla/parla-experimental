@@ -214,6 +214,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
   const std::vector<std::pair<parray::InnerPArray *, AccessMode>> &parray_list =
       task->parray_list;
 
+  const std::vector<int> &parray_dev_list = task->parray_dev_list;
+
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
   for (size_t i = 0; i < parray_list.size(); ++i) {
@@ -222,7 +224,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     AccessMode access_mode = parray_list[i].second;
     InnerDataTask *datamove_task = new InnerDataTask(
         // TODO(hc): id should be updated!
-        task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode);
+        task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
+        parray_dev_list[i]);
     auto &parray_task_list = parray->get_task_list_ref();
     // Find dependency intersection between compute and data movement tasks.
 

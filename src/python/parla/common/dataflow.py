@@ -1,6 +1,6 @@
 from parla.common.parray.core import PArray
 
-from typing import List, Any
+from typing import List, Any, Tuple
 from itertools import chain
 
 
@@ -21,14 +21,14 @@ class DataflowIterator:
                         len(self._df._inout)):
             if self._idx < len(self._df._input):
                 # First, iterate input data operands.
-                cur_item = self._df._input[self._idx]
+                cur_item = self._df._input[self._idx][0]
             elif self._idx < (len(self._df._input) + len(self._df._output)):
                 # Second, iterate output data operands.
-                cur_item = self._df._output[self._idx - len(self._df._input)]
+                cur_item = self._df._output[self._idx - len(self._df._input)][0]
             else:
                 # Third, iterate input/output data operands.
                 cur_item = self._df._inout[self._idx - len(self._df._input) -
-                                           len(self._df._output)]
+                                           len(self._df._output)][0]
             self._idx += 1
             return cur_item
         raise StopIteration
@@ -41,8 +41,8 @@ class Dataflow:
     The dataflow can be iterated through DataflowIterator.
     """
 
-    def __init__(self, input: List[PArray], \
-                 output: List[PArray], inout: List[PArray]):
+    def __init__(self, input: List[Tuple[PArray, int]], \
+                 output: List[Tuple[PArray, int]], inout: List[Tuple[PArray, int]]):
         self._input = input
         self._output = output
         self._inout = inout

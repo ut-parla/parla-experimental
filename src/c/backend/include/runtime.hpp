@@ -246,6 +246,8 @@ public:
 
   /* A list of a pair of PArray instances and access modes to them */
   std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
+  /* TODO(hc): will be removed */
+  std::vector<int> parray_dev_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -313,7 +315,7 @@ public:
    * Cython, but C++ enum and Python enum or int are not compatible. So, for
    * conveniency, I just pass int between Python and C++.
    */
-  void add_parray(parray::InnerPArray *parray, int access_mode);
+  void add_parray(parray::InnerPArray *parray, int access_mode, int dev_id);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -496,8 +498,8 @@ public:
   //           call from Python t C++ when we create Python data move task
   //           later. The current id for all the data move tasks is 0.
   InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
-                AccessMode access_mode)
-      : parray_(parray), access_mode_(access_mode),
+                AccessMode access_mode, int dev_id)
+      : parray_(parray), access_mode_(access_mode), dev_id_(dev_id),
         InnerTask(name, id, nullptr) {
     this->has_data = true;
     // Data tasks are created after persistent resource reservation.
@@ -511,9 +513,13 @@ public:
   /// Return a access mode of PArray.
   AccessMode get_access_mode();
 
+  // TODO(hc): will be removed
+  int get_device_id() { return this->dev_id_; }
+
 private:
   parray::InnerPArray *parray_;
   AccessMode access_mode_;
+  int dev_id_;
 };
 
 #ifdef PARLA_ENABLE_LOGGING

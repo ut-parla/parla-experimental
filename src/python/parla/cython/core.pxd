@@ -51,7 +51,7 @@ cdef extern from "include/runtime.hpp" nogil:
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
         vector[Device*]& get_assigned_devices() 
-        void add_parray(InnerPArray* py_parray, int access_mode)
+        void add_parray(InnerPArray* py_parray, int access_mode, int dev_id)
         bool notify_dependents_wrapper()
 
         void* get_py_task()
@@ -75,6 +75,7 @@ cdef extern from "include/runtime.hpp" nogil:
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
+        int get_device_id()
 
 
     cdef cppclass InnerWorker:

@@ -280,9 +280,9 @@ cdef class PyInnerTask:
 
         return devices
 
-    cpdef add_parray(self, CyPArray cy_parray, flag):
+    cpdef add_parray(self, CyPArray cy_parray, flag, int dev_id):
         cdef InnerTask* c_self = self.c_task
-        c_self.add_parray(cy_parray.get_cpp_parray(), int(flag))
+        c_self.add_parray(cy_parray.get_cpp_parray(), int(flag), dev_id)
 
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
@@ -387,6 +387,7 @@ cdef class PyInnerWorker:
                     py_assigned_devices.append(py_device)
                 py_parray = <object> c_data_task.get_py_parray()
                 access_mode = c_data_task.get_access_mode()
+                dev_id = c_data_task.get_device_id();
 
                 # Due to circular imports, the data movement task
                 # is not created, but necessary information/objects
@@ -396,7 +397,8 @@ cdef class PyInnerWorker:
                 # Therefore, exploit a Cython class.
                 cy_data_attrs.set_c_task(c_data_task)
                 py_task = DataMovementTaskAttributes(name, py_parray, \
-                                  access_mode, py_assigned_devices, cy_data_attrs)
+                                  access_mode, py_assigned_devices, cy_data_attrs, \
+                                  dev_id)
             else:
                 py_task = <object> c_task.get_py_task()
         else:
@@ -543,10 +545,11 @@ class DataMovementTaskAttributes:
     when we import tasks.pyx in here.
     """
     def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
-                 c_attrs: CyDataMovementTaskAttributes):
+                 c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
         self.c_attrs = c_attrs
+        self.dev_id = dev_id
 

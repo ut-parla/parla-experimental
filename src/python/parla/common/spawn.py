@@ -10,7 +10,7 @@ import inspect
 
 from parla.cython import tasks
 
-from typing import Optional, Collection, Any, Union, List
+from typing import Optional, Collection, Any, Union, List, Tuple
 
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
@@ -56,8 +56,8 @@ def spawn(task=None,
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
           # TODO(hc): This should be PArray, not Any.
-          input: List[PArray] = None, output: List[PArray] = None,
-          inout: List[PArray] = None, vcus=1000, memory=0):
+          input: List[Tuple[PArray, int]] = None, output: List[Tuple[PArray, int]] = None,
+          inout: List[Tuple[PArray, int]] = None, vcus=1000, memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler

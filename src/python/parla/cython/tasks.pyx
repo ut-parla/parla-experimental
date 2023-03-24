@@ -371,21 +371,27 @@ class Task:
 
     def add_dataflow(self, dataflow):
         if dataflow is not None:
-            for in_parray in dataflow.input:
-                print("input:", in_parray)
+            for in_parray_tpl in dataflow.input:
+                print("input:", in_parray_tpl)
+                in_parray = in_parray_tpl[0]
+                in_parray_devid = in_parray_tpl[1]
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
-                    AccessMode.IN)
-            for out_parray in dataflow.output:
-                print("output:", out_parray)
+                    AccessMode.IN, in_parray_devid)
+            for out_parray_tpl in dataflow.output:
+                print("output:", out_parray_tpl)
+                out_parray = out_parray_tpl[0]
+                out_parray_devid = out_parray_tpl[1]
                 cy_parray = out_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
-                    AccessMode.OUT)
-            for inout_parray in dataflow.inout:
-                print("inout:", inout_parray)
+                    AccessMode.OUT, out_parray_devid)
+            for inout_parray_tpl in dataflow.inout:
+                print("inout:", inout_parray_tpl)
+                inout_parray = inout_parray_tpl[0]
+                inout_parray_devid = inout_parray_tpl[1]
                 cy_parray = inout_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
-                    AccessMode.INOUT)
+                    AccessMode.INOUT, inout_parray_devid)
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
@@ -500,15 +506,19 @@ class DataMovementTask(Task):
         self.assigned_devices = attrs.assigned_devices
         self.scheduler = scheduler
         self.inner_task.set_c_task(attrs.c_attrs)
+        self.dev_id = attrs.dev_id
 
     def _execute_task(self):
         write_flag = True if self.access_mode != AccessMode.IN else False
         device_manager = self.scheduler.device_manager
         print(self.name, " starts its body")
+        """
         for device in self.assigned_devices:
             global_device_id = device.get_global_id()
             self.parray._auto_move(device_manager.get_parray_id(global_device_id),
                                    write_flag)
+        """
+        self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
         return TaskCompleted(0)
 
 ######
