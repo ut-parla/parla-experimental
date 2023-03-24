@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union, List, Dict, Tuple, Any
 
 import numpy
+import ctypes
 
 #TODO: Fix this to be more stable and less of a hack.
 try:
@@ -16,7 +17,7 @@ if TYPE_CHECKING:  # False at runtime
     ndarray = Union[numpy.ndarray, cupy.ndarray]
     SlicesType = Union[slice, int, tuple]
     IndicesMapType = List[Union[Dict[int, int], tuple]]
-    from .cyparray_state import CyPArrayState
+    from parla.cython.cyparray_state import CyPArrayState
 
 class MultiDeviceBuffer:
     """Underlying Buffer of PArray.
@@ -488,11 +489,13 @@ class MultiDeviceBuffer:
         prime = 31
         if not isinstance(global_slices, tuple):
             if isinstance(global_slices, list):
-                hash_value = hash_value * prime + hash(tuple(global_slices))
+                # Built-int hash() method might return negtive value.
+                # c_size_t is to ensure it is not negative
+                hash_value = hash_value * prime + ctypes.c_size_t(hash(tuple(global_slices))).value
             elif isinstance(global_slices, slice):
-                hash_value = hash_value * prime + hash(global_slices.indices(self.shape[0]))
+                hash_value = hash_value * prime + ctypes.c_size_t(hash(global_slices.indices(self.shape[0]))).value
             else:
-                hash_value = hash_value * prime + hash(global_slices)
+                hash_value = hash_value * prime + ctypes.c_size_t(hash(global_slices)).value
         else:
             if len(self.shape) < len(global_slices):
                 raise IndexError(f"index out of range, index:{global_slices}")
@@ -500,11 +503,11 @@ class MultiDeviceBuffer:
             for d in range(len(global_slices)):
                 index = global_slices[d]
                 if isinstance(index, list):
-                    hash_value = hash_value * prime + hash(tuple(index))
+                    hash_value = hash_value * prime + ctypes.c_size_t(hash(tuple(index))).value
                 elif isinstance(index, slice):
-                    hash_value = hash_value * prime + hash(index.indices(self.shape[d]))
+                    hash_value = hash_value * prime + ctypes.c_size_t(hash(index.indices(self.shape[d]))).value
                 else:
-                    hash_value = hash_value * prime + hash(index)
+                    hash_value = hash_value * prime + ctypes.c_size_t(hash(index)).value
 
         return hash_value
 
