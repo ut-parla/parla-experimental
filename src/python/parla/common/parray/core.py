@@ -26,6 +26,9 @@ if TYPE_CHECKING:
     SlicesType = Union[slice, int, tuple]
 
 
+UINT64_LIMIT = (1 << 64 - 1)
+
+
 class PArray:
     """Multi-dimensional array on a CPU or CUDA device.
 
@@ -66,7 +69,9 @@ class PArray:
             # a unique ID for this subarray
             # which is the combine of parent id and slice hash
             self.parent_ID = parent.ID
-            self.ID = parent.ID * 31 + self._slices_hash  # use a prime number to avoid collision
+            # use a prime number to avoid collision
+            # modulo over uint64 to make it compatible with C++ end
+            self.ID = (parent.ID * 31 + self._slices_hash) % UINT64_LIMIT  
 
             self.nbytes = parent.nbytes          # the bytes used by the complete array
             self.subarray_nbytes = array.nbytes  # the bytes used by this subarray
