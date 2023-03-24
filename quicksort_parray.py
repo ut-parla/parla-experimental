@@ -8,6 +8,8 @@ from crosspy import cpu, gpu
 
 from parla import parray as pa
 
+from numba import njit
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
 parser.add_argument("-num_gpus", type=int, default=3)
