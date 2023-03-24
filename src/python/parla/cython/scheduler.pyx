@@ -168,7 +168,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                     self.status = "Running"
 
-                    if isinstance(self.task, ComputeTask) or isinstance(self.task, DataMovementTask):
+                    if isinstance(self.task, Task):
                         active_task = self.task 
 
                         parla_devices = active_task.get_assigned_devices()
