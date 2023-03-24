@@ -27,7 +27,7 @@ def partition_kernel(A, B, comp, pivot):
     bufferA = A  # .array
     bufferB = B  # .array
     comp[:] = (bufferA[:] < pivot)
-    mid = comp.sum()
+    mid = (int)(comp.sum())
     bufferB[:mid] = bufferA[comp]
     bufferB[mid:] = bufferA[~comp]
     # print("Reordered Buffer:", bufferA, comp, bufferB, (bufferB[:] < pivot))
@@ -137,8 +137,8 @@ def scatter(A, B, left_info, right_info):
                 # A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
                 target = A[target_idx]
                 source = B[source_idx]
-                # print("TARGET: ", target, type(target))
-                # print("SOURCE: ", source, type(source))
+                print("TARGET: ", target, type(target))
+                print("SOURCE: ", source, type(source))
                 target[target_start:target_end] = source[source_start:source_end]
 
     source_starts, target_starts, sizes = right_info
@@ -163,7 +163,43 @@ def scatter(A, B, left_info, right_info):
                 target[target_start:target_end] = source[source_start:source_end]
 
 
-def quicksort(global_prefix, global_A, A, global_workspace, workspace, start, end, T):
+def quicksort(global_prefix, global_A, global_workspace, start, end, T):
+    start = int(start)
+    end = int(end)
+
+    # How to select the active block from the global array
+    global_start_idx = np.searchsorted(global_prefix, start, side="right")-1
+    global_end_idx = np.searchsorted(global_prefix, end, side="right")-1
+
+    # Split within a blocks at the endpoints (form slices)
+    local_left_split = start - global_prefix[global_start_idx]
+    local_right_split = end - global_prefix[global_end_idx]
+
+    local_left_split = (int)(local_left_split)
+    local_right_split = (int)(local_right_split)
+
+    A = []
+    workspace = []
+
+    if global_start_idx == global_end_idx and local_left_split < local_right_split:
+        A.append(global_A[global_start_idx]
+                 [local_left_split:local_right_split])
+        workspace.append(global_workspace[global_start_idx])
+    elif global_start_idx < global_end_idx:
+        if local_left_split < len(global_A[global_start_idx]):
+            A.append(global_A[global_start_idx][local_left_split:])
+            workspace.append(
+                global_workspace[global_start_idx][local_left_split:])
+
+        for i in range(global_start_idx+1, global_end_idx):
+            A.append(global_A[i])
+            workspace.append(global_workspace[i])
+
+        if local_right_split > 0:
+            A.append(global_A[global_end_idx][:local_right_split])
+            workspace.append(
+                global_workspace[global_end_idx][:local_right_split])
+
     n_partitions = len(A)
     print("LENGTH", n_partitions, end - start, start, end)
 
@@ -208,79 +244,9 @@ def quicksort(global_prefix, global_A, A, global_workspace, workspace, start, en
     # Send left to left and right to right
     scatter(A, workspace, left_info, right_info)
 
-    # print(size_prefix, global_left_count)
-
-    global_split_idx = np.searchsorted(
-        global_prefix, global_left_count, side="right")-1
-
-    # How to select the active block from the global array (surely I can just pass this in from the previous call lol)
-    # Doing this at the start of the function for yourself would be better than for the children.
-    global_start_idx = np.searchsorted(global_prefix, start, side="right")-1
-    global_end_idx = np.searchsorted(global_prefix, end, side="right")-1
-
-    # Split within a blocks at the endpoints (form slices)
-    local_left_split = start - global_prefix[global_start_idx]
-    local_mid_split = global_left_count - global_prefix[global_split_idx]
-    local_right_split = end - global_prefix[global_end_idx]
-
-    # print(local_split)
-    # print("Split Index: ", split_idx)
-
-    array_left = []
-    workspace_left = []
-    # Sliced endpoint (end of left)
-    if 0 < global_start_idx < global_split_idx and local_left_split < sizes[global_start_idx+1]:
-        array_left += [global_A[global_start_idx][local_left_split:]]
-        workspace_left += [global_workspace[global_start_idx]
-                           [local_left_split:]]
-
-    # Unsliced middle
-    if global_start_idx+1 < global_split_idx:
-        array_left += [A[i]
-                       for i in range(global_start_idx+1, global_split_idx)]
-        workspace_left += [global_workspace[i]
-                           for i in range(global_start_idx+1, global_split_idx)]
-
-    # Sliced endpoint (start of middle)
-    if global_split_idx < len(A) and local_mid_split > 0:
-        array_left += [A[global_split_idx][0:local_mid_split]]
-        workspace_left += [global_workspace[0:local_mid_split]]
-
-    array_right = []
-    workspace_right = []
-
-    # Sliced endpoint (end of middle)
-    if global_split_idx < global_end_idx and local_mid_split < sizes[global_split_idx+1]:
-        array_right += [A[global_split_idx][local_mid_split:]]
-        workspace_right += [global_workspace[global_split_idx]
-                            [local_mid_split:]]
-
-    # Unsliced middle
-    if global_split_idx+1 < global_end_idx:
-        array_right += [A[i]
-                        for i in range(global_split_idx+1, global_end_idx)]
-        workspace_right += [global_workspace[i]
-                            for i in range(global_split_idx+1, global_end_idx)]
-
-    # Sliced endpoint (start of right)
-    if global_end_idx < len(A) and local_right_split > 0:
-        array_right += [A[global_end_idx][0:local_right_split]]
-        workspace_right += [global_workspace[global_end_idx]
-                            [0:local_right_split]]
-
-    print("Left", len(array_left), local_left_count)
-    for array in array_left:
-        # print(array.array)
-        print(array)
-
-    print("Right", len(array_right), local_size - local_left_count)
-    for array in array_right:
-        # print(array.array)
-        print(array)
-
-    quicksort(global_prefix, global_A, array_left, global_workspace, workspace_left,
+    quicksort(global_prefix, global_A, global_workspace,
               start, start+global_left_count, T)
-    quicksort(global_prefix, global_A, array_right, global_workspace, workspace_right,
+    quicksort(global_prefix, global_A, global_workspace,
               start+global_left_count, end, T)
 
     # Scatter to other partitions
@@ -290,7 +256,7 @@ def quicksort(global_prefix, global_A, A, global_workspace, workspace, start, en
 def main(T):
 
     # Per device size
-    m = 10000
+    m = 5
 
     # Initilize a CrossPy Array
     cupy_list_A = []
@@ -317,7 +283,7 @@ def main(T):
 
     t_start = time.perf_counter()
     with cp.cuda.Device(0) as d:
-        quicksort(size_prefix, A, A, workspace, 0, m*args.num_gpus, T)
+        quicksort(size_prefix, A, workspace, 0, m*args.num_gpus, T)
         d.synchronize()
     t_end = time.perf_counter()
 
