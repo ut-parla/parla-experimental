@@ -109,6 +109,7 @@ class PArray:
 
     # Properties:
 
+    @property
     def cy_parray(self):
         return self._cy_parray
 

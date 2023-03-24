@@ -25,11 +25,11 @@
  * needs and bottlenecks change.*/
 
 // By default, types are not atomic,
-//template <typename T> auto constexpr is_atomic = false;
+// template <typename T> auto constexpr is_atomic = false;
 // but std::atomic<T> types are,
-//template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
+// template <typename T> auto constexpr is_atomic<std::atomic<T>> = true;
 // as well as std::atomic_flag.
-//template <> auto constexpr is_atomic<std::atomic_flag> = true;
+// template <> auto constexpr is_atomic<std::atomic_flag> = true;
 
 template <typename T> class ProtectedVector {
 
@@ -63,10 +63,10 @@ public:
   }
 
   /// Explicit move assignment due to the atomic size member.
-  ProtectedVector& operator=(ProtectedVector&& other) {
+  ProtectedVector &operator=(ProtectedVector &&other) {
     this->length.exchange(other.length);
     this->vec = std::move(other.vec);
-    // The string should be small 
+    // The string should be small
     this->name = std::move(other.name);
     return *this;
   }

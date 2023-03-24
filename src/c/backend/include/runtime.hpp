@@ -244,7 +244,7 @@ public:
    * if none exist. */
   std::atomic<bool> processed_data{true};
 
-  /* A list of PArrays. */
+  /* A list of a pair of PArray instances and access modes to them */
   std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
 
   InnerTask();
@@ -302,7 +302,17 @@ public:
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
 
-  /* Add a PArray to the task */
+  /*
+   * Add a PArray to the task
+   *
+   * @param parray Pointer to a PArray that this task use
+   * @param access_mode Access mode TODO(hc): This type is int and
+   *                                          it is immediately casted to
+   *                                          an enum type. This function
+   *                                          is called by Python through
+   * Cython, but C++ enum and Python enum or int are not compatible. So, for
+   * conveniency, I just pass int between Python and C++.
+   */
   void add_parray(parray::InnerPArray *parray, int access_mode);
 
   /*
@@ -410,6 +420,11 @@ public:
   /* Get the python assigned devices */
   std::vector<Device *> &get_assigned_devices();
 
+  /*
+   * Copy a vector of device pointers
+   *
+   * @param others Source vector of device pointers to copy
+   */
   void copy_assigned_devices(const std::vector<Device *> &others);
 
   /* Set the task status */
@@ -474,16 +489,23 @@ protected:
 class InnerDataTask : public InnerTask {
 public:
   InnerDataTask() = delete;
-  // TODO(hc):id should be fixed.
+  // TODO(hc): this id is not unique (In case of compute task,
+  //           The Python runtime maintains the unique id and assigns it.
+  //           but this data move task is created in C++ and we cannot
+  //           immediately assign the unique id. We may need another function
+  //           call from Python t C++ when we create Python data move task
+  //           later. The current id for all the data move tasks is 0.
   InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
                 AccessMode access_mode)
       : parray_(parray), access_mode_(access_mode),
         InnerTask(name, id, nullptr) {
     this->has_data = true;
+    // Data tasks are created after persistent resource reservation.
+    // Therefore its start state is always RESERVED.
     this->set_state(Task::RESERVED);
   }
 
-  /// Return python PArray.
+  /// Return a python PArray pointer (as void*).
   void *get_py_parray();
 
   /// Return a access mode of PArray.
@@ -551,7 +573,17 @@ public:
   /* Assign a task to the worker and notify worker that it is available*/
   void assign_task(InnerTask *task);
 
-  /* Get task */
+  /*
+   * Get a C++ task instance that this worker thread will execute.
+   * This function returns two outputs, a pointer to a task pointer and
+   * a pointer to a flag specifying if this task is data task or not.
+   * If that is the data task, the callee creates a Python data task instance
+   * and makes a connection between the Python and the C++ instances.
+   *
+   * @param task A pointer to a pointer to a task (output)
+   * @param is_data_task A pointer to a flag that sets True if the task is data
+   * task.
+   */
   void get_task(InnerTask **task, bool *is_data_task);
 
   /* Remove task */

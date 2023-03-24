@@ -210,24 +210,26 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 }
 
 void MemoryReserver::create_datamove_tasks(InnerTask *task) {
+  // Get a list of the parrays the current task holds.
   const std::vector<std::pair<parray::InnerPArray *, AccessMode>> &parray_list =
       task->parray_list;
 
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
   for (size_t i = 0; i < parray_list.size(); ++i) {
+    // Create a data movement task for each PArray.
     parray::InnerPArray *parray = parray_list[i].first;
     AccessMode access_mode = parray_list[i].second;
     InnerDataTask *datamove_task = new InnerDataTask(
         // TODO(hc): id should be updated!
         task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode);
     auto &parray_task_list = parray->get_task_list_ref();
-    // TODO(hc): This is not the complete implementation since it assumes
-    //           that all the dependencies of the compute task are data
-    //           depencies. We will find intersection between compute task and
-    //           parrays. To do this, we will use a concurrent map for parray's
-    //           task list and we first will iterate compute task's dependencies
-    //           and look up them from parray's task map. so O(N).
+    // Find dependency intersection between compute and data movement tasks.
+
+    // TODO(hc): This is not the complete implementation.
+    //           We will use a concurrent map for parray's
+    //           task list as an optimization.
+
     std::vector<void *> compute_task_dependencies = task->get_dependencies();
     std::vector<InnerTask *> data_task_dependencies;
     for (size_t j = 0; j < compute_task_dependencies.size(); ++j) {
@@ -236,16 +238,26 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       if (parray_dependency->get_state() == Task::COMPLETED) {
         continue;
       }
-      parray_task_list.lock();
+      // The task list in PArray is currently thread safe since
+      // we do not remove tasks from the list but just keep even completed
+      // task as its implementation is easier.
+      // TODO(hc): If this list becomes too long to degrade our performance,
+      //           we will need to think about how to remove completed
+      //           tasks from this list. In this case, we need a lock.
+      // parray_task_list.lock();
       for (size_t k = 0; k < parray_task_list.size_unsafe(); ++k) {
         if (parray_task_list.at_unsafe(k)->id == parray_dependency->id) {
           data_task_dependencies.push_back(parray_dependency);
         }
       }
-      parray_task_list.unlock();
+      // parray_task_list.unlock();
     }
-    // TODO(hc): pass false to add_dependencies().
+
+    // TODO(hc): pass false to add_dependencies() as optimization.
     datamove_task->add_dependencies(data_task_dependencies);
+    // Copy assigned devices to a compute task to a data movement task.
+    // TODO(hc): When we support xpy, it should be devices corresponding
+    //           to placements of the local partition.
     datamove_task->copy_assigned_devices(task->get_assigned_devices());
     data_tasks.push_back(datamove_task);
     // Add the created data movement task to a reserved task queue.

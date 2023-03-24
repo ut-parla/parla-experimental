@@ -102,7 +102,9 @@ public:
   void set_global_id(DevID_t global_id) { dev_global_id_ = global_id; }
   const DevID_t get_global_id() const { return dev_global_id_; }
 
-  const MemorySz_t get_memory_size() const { return res_.get(Resource::Memory); }
+  const MemorySz_t get_memory_size() const {
+    return res_.get(Resource::Memory);
+  }
 
   const VCU_t get_num_vcus() const { return res_.get(Resource::VCU); }
 
@@ -118,7 +120,7 @@ public:
     return this->mapped_res_.get(type);
   }
 
-  const bool check_resource_availability(DeviceRequirement* dev_req) const;
+  const bool check_resource_availability(DeviceRequirement *dev_req) const;
 
 protected:
   DeviceType dev_type_;
