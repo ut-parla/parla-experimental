@@ -33,7 +33,7 @@ def main(T):
     """
 # @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}])])
     @spawn(T[0], placement=[(cpu[{"vcus": 20, "memory": 40000}], cuda[{"vcus": 1, "memory": 20}]), (cpu(0), cuda(1)[{"vcus": 10, "memory": 2000}])], \
-          input=[(a, 1), (b, 0)], output=[(c, 3)], inout=[(d, 2)])
+          input=[(a, 0), (b, 1)], output=[(c, 0)], inout=[(d, 1)])
 # @spawn(T[0], placement=[(cuda[{"vcus":20, "memory":40000}])])
     def task1():
         print("+HELLO OUTER 0", flush=True)
@@ -47,7 +47,7 @@ def main(T):
 
         print("-HELLO OUTER 0", get_current_devices(), flush=True)
 
-    @spawn(T[1], placement=[cpu[{"vcus":0, "memory":1000}]], dependencies=[T[0]], inout=[(c, 1), (d, 3)])
+    @spawn(T[1], placement=[cpu[{"vcus":0, "memory":1000}]], dependencies=[T[0]], inout=[(c, 0), (d, 0)])
     def task2():
         print("+HELLO OUTER 1", flush=True)
         bsleep(1000)
@@ -56,7 +56,7 @@ def main(T):
         print("- d:", d._array._buffer)
 
 
-    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0, input=[(a, 2), (b, 4)])
+    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0, input=[(a, 0), (b, 1)])
     def task3():
         print("+HELLO OUTER 2", flush=True)
         bsleep(1000)
