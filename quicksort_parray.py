@@ -163,7 +163,7 @@ def scatter(A, B, left_info, right_info):
                 target[target_start:target_end] = source[source_start:source_end]
 
 
-def quicksort(global_prefix, global_A, A, workspace, start, end, T):
+def quicksort(global_prefix, global_A, A, global_workspace, workspace, start, end, T):
     n_partitions = len(A)
     print("LENGTH", n_partitions, end - start, start, end)
 
@@ -214,6 +214,7 @@ def quicksort(global_prefix, global_A, A, workspace, start, end, T):
         global_prefix, global_left_count, side="right")-1
 
     # How to select the active block from the global array (surely I can just pass this in from the previous call lol)
+    # Doing this at the start of the function for yourself would be better than for the children.
     global_start_idx = np.searchsorted(global_prefix, start, side="right")-1
     global_end_idx = np.searchsorted(global_prefix, end, side="right")-1
 
@@ -230,18 +231,20 @@ def quicksort(global_prefix, global_A, A, workspace, start, end, T):
     # Sliced endpoint (end of left)
     if 0 < global_start_idx < global_split_idx and local_left_split < sizes[global_start_idx+1]:
         array_left += [global_A[global_start_idx][local_left_split:]]
-        workspace_left += [workspace[global_start_idx][local_left_split:]]
+        workspace_left += [global_workspace[global_start_idx]
+                           [local_left_split:]]
 
     # Unsliced middle
     if global_start_idx+1 < global_split_idx:
         array_left += [A[i]
                        for i in range(global_start_idx+1, global_split_idx)]
-        workspace_left += [workspace[i]
+        workspace_left += [global_workspace[i]
                            for i in range(global_start_idx+1, global_split_idx)]
 
     # Sliced endpoint (start of middle)
     if global_split_idx < len(A) and local_mid_split > 0:
         array_left += [A[global_split_idx][0:local_mid_split]]
+        workspace_left += [global_workspace[0:local_mid_split]]
 
     array_right = []
     workspace_right = []
@@ -249,19 +252,21 @@ def quicksort(global_prefix, global_A, A, workspace, start, end, T):
     # Sliced endpoint (end of middle)
     if global_split_idx < global_end_idx and local_mid_split < sizes[global_split_idx+1]:
         array_right += [A[global_split_idx][local_mid_split:]]
-        workspace_right += [workspace[global_split_idx][local_mid_split:]]
+        workspace_right += [global_workspace[global_split_idx]
+                            [local_mid_split:]]
 
     # Unsliced middle
     if global_split_idx+1 < global_end_idx:
         array_right += [A[i]
                         for i in range(global_split_idx+1, global_end_idx)]
-        workspace_right += [workspace[i]
+        workspace_right += [global_workspace[i]
                             for i in range(global_split_idx+1, global_end_idx)]
 
     # Sliced endpoint (start of right)
     if global_end_idx < len(A) and local_right_split > 0:
         array_right += [A[global_end_idx][0:local_right_split]]
-        workspace_right += [workspace[global_end_idx][0:local_right_split]]
+        workspace_right += [global_workspace[global_end_idx]
+                            [0:local_right_split]]
 
     print("Left", len(array_left), local_left_count)
     for array in array_left:
@@ -273,9 +278,9 @@ def quicksort(global_prefix, global_A, A, workspace, start, end, T):
         # print(array.array)
         print(array)
 
-    quicksort(global_prefix, global_A, array_left, workspace_left,
+    quicksort(global_prefix, global_A, array_left, global_workspace, workspace_left,
               start, start+global_left_count, T)
-    quicksort(global_prefix, global_A, array_right, workspace_right,
+    quicksort(global_prefix, global_A, array_right, global_workspace, workspace_right,
               start+global_left_count, end, T)
 
     # Scatter to other partitions
