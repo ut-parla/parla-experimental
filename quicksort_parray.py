@@ -228,15 +228,16 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
 
     n_partitions = len(A)
 
-    tag_A = [(A[i], 0) for i in range(len(A))]
-    tag_B = [(workspace[i], 0) for i in range(len(workspace))]
+    tag_A = [(A[i], i) for i in range(len(A))]
+    tag_B = [(workspace[i], i) for i in range(len(workspace))]
 
     unpacked = tag_A + tag_B
 
     print("unpacked: ", unpacked)
 
-    #device_list = tuple([cuda for i in range(n_partitions)])
-    device_list = cuda
+# TODO(hc): just cuda doesnt work well.
+    device_list = tuple([cuda(i) for i in range(n_partitions)])
+#device_list = cuda
 
     @spawn(T[idx], placement=[device_list], inout=unpacked)
     def quicksort_task():
