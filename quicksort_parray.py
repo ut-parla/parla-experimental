@@ -3,8 +3,8 @@
 import argparse
 import cupy as cp
 import numpy as np
-import crosspy as xp
-from crosspy import cpu, gpu
+#import crosspy as xp
+#from crosspy import cpu, gpu
 import time
 
 from parla import parray as pa
