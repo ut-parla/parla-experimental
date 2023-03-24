@@ -38,7 +38,7 @@ def partition(A, B, pivot):
     mid = np.zeros(n_partitions, dtype=np.uint32)
 
     for i, (array_in, array_out) in enumerate(zip(A, B)):
-        with context.device[i]:
+        with context.device[0]:
             comp = cp.empty_like(array_in, dtype=cp.bool_)
             mid[i] = partition_kernel(array_in, array_out, comp, pivot)
     return mid
@@ -127,7 +127,7 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with context.device[target_idx]:
+            with context.device[0]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
@@ -136,10 +136,11 @@ def scatter(A, B, left_info, right_info):
 
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
+                
 
                 A[target_idx].array[target_start:target_end] = cp.asarray(B[source_idx].array[
-                    source_start:source_end)
-                ]
+                    source_start:source_end
+                ])
                 # target = A[target_idx]
                 # source = B[source_idx]
                 # print("TARGET: ", target, type(target))
@@ -152,7 +153,7 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with context.device[target_idx]:
+            with context.device[0]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
@@ -224,15 +225,17 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
 
     n_partitions = len(A)
 
-    tag_A = [(A[i], i) for i in range(len(A))]
-    tag_B = [(workspace[i], i) for i in range(len(workspace))]
+    tag_A = [(A[i], 0) for i in range(len(A))]
+    tag_B = [(workspace[i], 0) for i in range(len(workspace))]
 
     unpacked = tag_A + tag_B
 
     print("unpacked: ", unpacked)
 
+    #device_list = tuple([cuda for i in range(n_partitions)])
+    device_list = cuda
 
-    @spawn(T[idx], placement=[cuda*n_partitions], inout=unpacked)
+    @spawn(T[idx], placement=[device_list], inout=unpacked)
     def quicksort_task():
         nonlocal global_prefix
         nonlocal global_A
