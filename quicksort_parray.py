@@ -181,6 +181,7 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     A = []
     workspace = []
 
+    print("GLOBAL_PREFIX: ", global_prefix)
     print("START: ", start, "END: ", end)
     print("GLOBAL_START: ", global_start_idx, "GLOBAL_END: ", global_end_idx)
     print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
@@ -253,9 +254,9 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     print("-------")
 
     quicksort(global_prefix, global_A, global_workspace,
-              start, start+global_left_count, T)
+              start, global_left_count, T)
     quicksort(global_prefix, global_A, global_workspace,
-              start+global_left_count, end, T)
+              global_left_count, end, T)
 
     # Scatter to other partitions
     # scatter(active_A, active_B, mid)
