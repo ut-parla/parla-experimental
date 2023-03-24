@@ -118,7 +118,7 @@ def balance_partition(A, left_counts):
 
 
 def scatter(A, B, left_info, right_info):
-    context = get_current_contex()
+    context = get_current_context()
 
     source_starts, target_starts, sizes = left_info
 
@@ -137,12 +137,15 @@ def scatter(A, B, left_info, right_info):
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
                 
+                target = A[target_idx]
+                source = B[source_idx]
+
+                print("Target:", target, flush=True)
+                print("Source: ", source, flush=True)
 
                 A[target_idx].array[target_start:target_end] = cp.asarray(B[source_idx].array[
                     source_start:source_end
                 ])
-                # target = A[target_idx]
-                # source = B[source_idx]
                 # print("TARGET: ", target, type(target))
                 # print("SOURCE: ", source, type(source))
                 # target[target_start:target_end] = source[source_start:source_end]
