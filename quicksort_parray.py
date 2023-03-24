@@ -8,6 +8,8 @@ from crosspy import cpu, gpu
 import time
 
 from parla import parray as pa
+from parla import Parla, spawn, TaskSpace
+from parla.cython.device_manager import cpu, cuda
 
 from numba import njit
 
@@ -165,105 +167,120 @@ def scatter(A, B, left_info, right_info):
 
 def quicksort(global_prefix, global_A, global_workspace, start, end, T):
 
-    print('-----')
-    start = int(start)
-    end = int(end)
+    @spawn(T[(start, end)], placement=[cuda(0)[{'vcus': 1}]])
+    def quicksort_task():
+        nonlocal global_prefix
+        nonlocal global_A
+        nonlocal global_workspace
+        nonlocal start
+        nonlocal end
+        nonlocal T
 
-    # How to select the active block from the global array
-    global_start_idx = np.searchsorted(global_prefix, start, side="right")-1
-    global_end_idx = np.searchsorted(global_prefix, end, side="right")-1
+        # start = int(start)
+        # end = int(end)
 
-    # Split within a blocks at the endpoints (form slices)
-    local_left_split = start - global_prefix[global_start_idx]
-    local_right_split = end - global_prefix[global_end_idx]
+        # # How to select the active block from the global array
+        # global_start_idx = np.searchsorted(
+        #     global_prefix, start, side="right")-1
+        # global_end_idx = np.searchsorted(global_prefix, end, side="right")-1
 
-    local_left_split = (int)(local_left_split)
-    local_right_split = (int)(local_right_split)
+        # # Split within a blocks at the endpoints (form slices)
+        # local_left_split = start - global_prefix[global_start_idx]
+        # local_right_split = end - global_prefix[global_end_idx]
 
-    A = []
-    workspace = []
+        # local_left_split = (int)(local_left_split)
+        # local_right_split = (int)(local_right_split)
 
-    print("GLOBAL_PREFIX: ", global_prefix)
-    print("START: ", start, "END: ", end)
-    print("GLOBAL_START: ", global_start_idx, "GLOBAL_END: ", global_end_idx)
-    print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
+        # A = []
+        # workspace = []
 
-    if global_start_idx == global_end_idx and local_left_split < local_right_split:
-        A.append(global_A[global_start_idx]
-                 [local_left_split:local_right_split])
-        workspace.append(global_workspace[global_start_idx])
-    else:
-        print("local_left_split: ", local_left_split,
-              "len: ", len(global_A[global_start_idx]))
-        if (global_start_idx < global_end_idx) and (local_left_split < len(global_A[global_start_idx])):
-            A.append(global_A[global_start_idx][local_left_split:])
-            workspace.append(
-                global_workspace[global_start_idx][local_left_split:])
-            print("ADDED LEFT")
+        # print("GLOBAL_PREFIX: ", global_prefix)
+        # print("START: ", start, "END: ", end)
+        # print("GLOBAL_START: ", global_start_idx,
+        #       "GLOBAL_END: ", global_end_idx)
+        # print("LOCAL_START: ", local_left_split,
+        #       "LOCAL_END: ", local_right_split)
 
-        for i in range(global_start_idx+1, global_end_idx):
-            A.append(global_A[i])
-            workspace.append(global_workspace[i])
-            print("ADDED MIDDLE")
+        # if global_start_idx == global_end_idx and local_left_split < local_right_split:
+        #     A.append(global_A[global_start_idx]
+        #              [local_left_split:local_right_split])
+        #     workspace.append(global_workspace[global_start_idx])
+        # else:
+        #     print("local_left_split: ", local_left_split,
+        #           "len: ", len(global_A[global_start_idx]))
+        #     if (global_start_idx < global_end_idx) and (local_left_split < len(global_A[global_start_idx])):
+        #         A.append(global_A[global_start_idx][local_left_split:])
+        #         workspace.append(
+        #             global_workspace[global_start_idx][local_left_split:])
+        #         print("ADDED LEFT")
 
-        if (global_end_idx < len(global_A)) and local_right_split > 0:
-            A.append(global_A[global_end_idx][:local_right_split])
-            workspace.append(
-                global_workspace[global_end_idx][:local_right_split])
-            print("ADDED RIGHT")
+        #     for i in range(global_start_idx+1, global_end_idx):
+        #         A.append(global_A[i])
+        #         workspace.append(global_workspace[i])
+        #         print("ADDED MIDDLE")
 
-    n_partitions = len(A)
-    print("LENGTH", n_partitions, end - start, start, end)
+        #     if (global_end_idx < len(global_A)) and local_right_split > 0:
+        #         A.append(global_A[global_end_idx][:local_right_split])
+        #         workspace.append(
+        #             global_workspace[global_end_idx][:local_right_split])
+        #         print("ADDED RIGHT")
 
-    sizes = np.zeros(len(A)+1, dtype=np.uint32)
-    for i in range(len(A)):
-        # print("INCOMING ARRAY", A[i].array)
-        sizes[i+1] = len(A[i].array)
-        # print("INCOMING ARRAY", A[i], len(A[i]))
-        # sizes[i+1] = len(A[i])
+        # n_partitions = len(A)
+        # print("LENGTH", n_partitions, end - start, start, end)
 
-    local_size_prefix = np.cumsum(sizes)
-    local_size = np.sum(sizes)
+        # sizes = np.zeros(len(A)+1, dtype=np.uint32)
+        # for i in range(len(A)):
+        #     # print("INCOMING ARRAY", A[i].array)
+        #     sizes[i+1] = len(A[i].array)
+        #     # print("INCOMING ARRAY", A[i], len(A[i]))
+        #     # sizes[i+1] = len(A[i])
 
-    # print("SIZES", size_prefix)
+        # local_size_prefix = np.cumsum(sizes)
+        # local_size = np.sum(sizes)
 
-    if len(A) == 1:
-        # print("BASE")
-        A[0].array.sort()
-        # A[0].sort()
-        return
+        # # print("SIZES", size_prefix)
 
-    if len(A) == 0:
-        return
+        # if len(A) == 1:
+        #     # print("BASE")
+        #     A[0].array.sort()
+        #     # A[0].sort()
+        #     return
 
-    n_partitions = len(A)
+        # if len(A) == 0:
+        #     return
 
-    # Choose random pivot
-    pivot_block = np.random.randint(0, n_partitions)
-    pivot_idx = np.random.randint(0, len(A[pivot_block]))
-    pivot = (int)(A[pivot_block][pivot_idx])
+        # n_partitions = len(A)
 
-    print("Pivot: ", pivot)
+        # # Choose random pivot
+        # pivot_block = np.random.randint(0, n_partitions)
+        # pivot_idx = np.random.randint(0, len(A[pivot_block]))
+        # pivot = (int)(A[pivot_block][pivot_idx])
 
-    # local partition
-    left_counts = partition(A, workspace, pivot)
-    local_left_count = np.sum(left_counts)
-    global_left_count = start+local_left_count
+        # print("Pivot: ", pivot)
 
-    print("LOCAL LEFT COUNT: ", local_left_count)
+        # # local partition
+        # left_counts = partition(A, workspace, pivot)
+        # local_left_count = np.sum(left_counts)
+        # global_left_count = start+local_left_count
 
-    # compute communication pattern
-    left_info, right_info = balance_partition(A, left_counts)
+        # print("LOCAL LEFT COUNT: ", local_left_count)
 
-    # Send left to left and right to right
-    scatter(A, workspace, left_info, right_info)
+        # # compute communication pattern
+        # left_info, right_info = balance_partition(A, left_counts)
 
-    print("-------")
+        # # Send left to left and right to right
+        # scatter(A, workspace, left_info, right_info)
 
-    quicksort(global_prefix, global_A, global_workspace,
-              start, global_left_count, T)
-    quicksort(global_prefix, global_A, global_workspace,
-              global_left_count, end, T)
+        # print("-------")
+        if start >= end:
+            return
+        global_left_count = (end - start)//2
+        print(start, global_left_count, end, flush=True)
+
+        quicksort(global_prefix, global_A, global_workspace,
+                  start, global_left_count, T)
+        quicksort(global_prefix, global_A, global_workspace,
+                  global_left_count, end, T)
 
     # Scatter to other partitions
     # scatter(active_A, active_B, mid)
@@ -322,5 +339,6 @@ def main(T):
 
 
 if __name__ == "__main__":
-    T = None
-    main(T)
+    with Parla():
+        T = TaskSpace("T")
+        main(T)
