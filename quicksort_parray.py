@@ -164,6 +164,8 @@ def scatter(A, B, left_info, right_info):
 
 
 def quicksort(global_prefix, global_A, global_workspace, start, end, T):
+
+    print('-----')
     start = int(start)
     end = int(end)
 
@@ -191,19 +193,24 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
                  [local_left_split:local_right_split])
         workspace.append(global_workspace[global_start_idx])
     else:
+        print("local_left_split: ", local_left_split,
+              "len: ", len(global_A[global_start_idx]))
         if (global_start_idx < global_end_idx) and (local_left_split < len(global_A[global_start_idx])):
             A.append(global_A[global_start_idx][local_left_split:])
             workspace.append(
                 global_workspace[global_start_idx][local_left_split:])
+            print("ADDED LEFT")
 
         for i in range(global_start_idx+1, global_end_idx):
             A.append(global_A[i])
             workspace.append(global_workspace[i])
+            print("ADDED MIDDLE")
 
-        if (global_end_idx < len(A)) and local_right_split > 0:
+        if (global_end_idx < len(global_A)) and local_right_split > 0:
             A.append(global_A[global_end_idx][:local_right_split])
             workspace.append(
                 global_workspace[global_end_idx][:local_right_split])
+            print("ADDED RIGHT")
 
     n_partitions = len(A)
     print("LENGTH", n_partitions, end - start, start, end)
@@ -265,14 +272,14 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
 def main(T):
 
     # Per device size
-    m = 5
+    m = 10
 
     # Initilize a CrossPy Array
     cupy_list_A = []
     cupy_list_B = []
     for i in range(args.num_gpus):
         with cp.cuda.Device(0) as dev:
-            random_array = cp.random.randint(0, 100, size=m)
+            random_array = cp.random.randint(0, 1000000, size=m)
             random_array = random_array.astype(cp.int32)
 
             cupy_list_A.append(random_array)
