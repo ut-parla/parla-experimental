@@ -168,7 +168,68 @@ def scatter(A, B, left_info, right_info):
 
 
 def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
-    @spawn(T[idx], placement=[cuda(0)[{"vcus": 0}]])
+    
+    start = int(start)
+    end = int(end)
+
+    # # How to select the active block from the global array
+    global_start_idx = np.searchsorted(global_prefix, start, side="right") - 1
+    global_end_idx = np.searchsorted(global_prefix, end, side="right") - 1
+
+    # Split within a blocks at the endpoints (form slices)
+    local_left_split = start - global_prefix[global_start_idx]
+    local_right_split = end - global_prefix[global_end_idx]
+
+    local_left_split = (int)(local_left_split)
+    local_right_split = (int)(local_right_split)
+
+    A = []
+    workspace = []
+
+    print("GLOBAL_PREFIX: ", global_prefix)
+    print("START: ", start, "END: ", end)
+    print("GLOBAL_START: ", global_start_idx, "GLOBAL_END: ", global_end_idx)
+    print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
+
+    if global_start_idx == global_end_idx and local_left_split < local_right_split:
+        A.append(global_A[global_start_idx][local_left_split:local_right_split])
+        workspace.append(global_workspace[global_start_idx])
+    else:
+        print(
+            "local_left_split: ",
+            local_left_split,
+            "len: ",
+            len(global_A[global_start_idx]),
+        )
+        if (global_start_idx < global_end_idx) and (
+            local_left_split < len(global_A[global_start_idx])
+        ):
+            A.append(global_A[global_start_idx][local_left_split:])
+            workspace.append(global_workspace[global_start_idx][local_left_split:])
+            print("ADDED LEFT")
+
+        for i in range(global_start_idx + 1, global_end_idx):
+            A.append(global_A[i])
+            workspace.append(global_workspace[i])
+            print("ADDED MIDDLE")
+
+        if (global_end_idx < len(global_A)) and local_right_split > 0:
+            A.append(global_A[global_end_idx][:local_right_split])
+            workspace.append(global_workspace[global_end_idx][:local_right_split])
+            print("ADDED RIGHT")
+
+
+    n_partitions = len(A)
+
+    tag_A = [(A[i], 0) for i in range(len(A))]
+    tag_B = [(workspace[i], 0) for i in range(len(workspace))]
+
+    unpacked = tag_A + tag_B
+
+    print("unpacked: ", unpacked)
+
+
+    @spawn(T[idx], placement=[cuda(0)[{"vcus": 0}]], inout=unpacked)
     def quicksort_task():
         nonlocal global_prefix
         nonlocal global_A
@@ -176,58 +237,10 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
         nonlocal start
         nonlocal end
         nonlocal T
+        n_partitions = len(A)
 
         print("TASK", T[idx], flush=True)
-        start = int(start)
-        end = int(end)
 
-        # # How to select the active block from the global array
-        global_start_idx = np.searchsorted(global_prefix, start, side="right") - 1
-        global_end_idx = np.searchsorted(global_prefix, end, side="right") - 1
-
-        # Split within a blocks at the endpoints (form slices)
-        local_left_split = start - global_prefix[global_start_idx]
-        local_right_split = end - global_prefix[global_end_idx]
-
-        local_left_split = (int)(local_left_split)
-        local_right_split = (int)(local_right_split)
-
-        A = []
-        workspace = []
-
-        print("GLOBAL_PREFIX: ", global_prefix)
-        print("START: ", start, "END: ", end)
-        print("GLOBAL_START: ", global_start_idx, "GLOBAL_END: ", global_end_idx)
-        print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
-
-        if global_start_idx == global_end_idx and local_left_split < local_right_split:
-            A.append(global_A[global_start_idx][local_left_split:local_right_split])
-            workspace.append(global_workspace[global_start_idx])
-        else:
-            print(
-                "local_left_split: ",
-                local_left_split,
-                "len: ",
-                len(global_A[global_start_idx]),
-            )
-            if (global_start_idx < global_end_idx) and (
-                local_left_split < len(global_A[global_start_idx])
-            ):
-                A.append(global_A[global_start_idx][local_left_split:])
-                workspace.append(global_workspace[global_start_idx][local_left_split:])
-                print("ADDED LEFT")
-
-            for i in range(global_start_idx + 1, global_end_idx):
-                A.append(global_A[i])
-                workspace.append(global_workspace[i])
-                print("ADDED MIDDLE")
-
-            if (global_end_idx < len(global_A)) and local_right_split > 0:
-                A.append(global_A[global_end_idx][:local_right_split])
-                workspace.append(global_workspace[global_end_idx][:local_right_split])
-                print("ADDED RIGHT")
-
-        n_partitions = len(A)
         print("LENGTH", n_partitions, end - start, start, end)
 
         sizes = np.zeros(len(A) + 1, dtype=np.uint32)
