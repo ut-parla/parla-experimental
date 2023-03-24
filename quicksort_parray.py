@@ -170,7 +170,6 @@ def scatter(A, B, left_info, right_info):
 def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
     @spawn(T[idx], placement=[cuda(0)[{"vcus": 0}]])
     def quicksort_task():
-        print("TASK", T[idx], flush=True)
         nonlocal global_prefix
         nonlocal global_A
         nonlocal global_workspace
@@ -178,6 +177,7 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
         nonlocal end
         nonlocal T
 
+        print("TASK", T[idx], flush=True)
         start = int(start)
         end = int(end)
 
