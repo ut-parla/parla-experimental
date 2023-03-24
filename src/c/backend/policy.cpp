@@ -6,8 +6,8 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
     const Mapper &mapper, Score_t *score) {
   const Device &device = *(dev_placement_req->device());
-  std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
-  std::cout << " ** Device Score Calculation\n";
+  // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
+  // std::cout << " ** Device Score Calculation\n";
 
   // TODO(hc): Data locality calculation.
   size_t local_data = 0, nonlocal_data = 0;
@@ -36,9 +36,10 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
       }
     }
   }
-  std::cout << num_dependencies_on_device << " of the " << task->get_name()
-            << "s dependencies have been mapped to device " << device.get_name()
-            << "\n";
+  // std::cout << num_dependencies_on_device << " of the " << task->get_name()
+  //           << "s dependencies have been mapped to device " <<
+  //           device.get_name()
+  //           << "\n";
 
   /// Calculate device load balancing.
   size_t total_num_mapped_tasks = mapper.atomic_load_total_num_mapped_tasks();
@@ -49,16 +50,17 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     normalizd_device_load =
         num_tasks_to_device / double(total_num_mapped_tasks);
   }
-  std::cout << "Device " << device.get_name()
-            << "'s num_tasks: " << num_tasks_to_device
-            << " (Total num of mapped tasks:" << total_num_mapped_tasks
-            << ") and load: " << normalizd_device_load << "\n";
+  // std::cout << "Device " << device.get_name()
+  //           << "'s num_tasks: " << num_tasks_to_device
+  //           << " (Total num of mapped tasks:" << total_num_mapped_tasks
+  //           << ") and load: " << normalizd_device_load << "\n";
 
   *score = 0;
-  std::cout << "\t[Device Requirement in device Requirement]\n"
-            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU "
-            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+  // std::cout << "\t[Device Requirement in device Requirement]\n"
+  //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
+  //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
+  //           "
+  //           << dev_placement_req->res_req().get(Resource::VCU) << "\n";
   return true;
 }
 

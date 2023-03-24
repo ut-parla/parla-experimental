@@ -36,9 +36,10 @@ void InnerWorker::assign_task(InnerTask *task) {
   cv.notify_one();
 }
 
-InnerTask *InnerWorker::get_task() {
+void InnerWorker::get_task(InnerTask **task, bool *is_data_task) {
   this->scheduler->decrease_num_notified_workers();
-  return this->task;
+  *task = this->task;
+  *is_data_task = this->task->has_data.load(std::memory_order_relaxed);
 }
 
 void InnerWorker::remove_task() {
@@ -200,7 +201,6 @@ void InnerScheduler::spawn_task(InnerTask *task) {
   auto status = task->process_dependencies();
   this->increase_num_active_tasks();
   task->set_state(Task::SPAWNED);
-
   this->enqueue_task(task, status);
 }
 
@@ -265,6 +265,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   this->launcher->num_running_tasks--;
 
+  // std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
     // When a task completes we need to notify all of its dependents
     // and enqueue them if they are ready
@@ -308,11 +309,11 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   if (state == Task::RUNNING) {
     // std::cout << "Task Continuation (C++) " << task->name << " " << state
     //          << std::endl;
-    // Do continuation handling
-    // TODO:
-    //  - make sure state ids match
-    //  - add and process dependencies
-    //  - if true, enqueue task
+    //  Do continuation handling
+    //  TODO:
+    //   - make sure state ids match
+    //   - add and process dependencies
+    //   - if true, enqueue task
     task->reset();
     auto status = task->process_dependencies();
     this->enqueue_task(task, status);

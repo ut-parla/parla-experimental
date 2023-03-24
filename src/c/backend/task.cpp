@@ -118,10 +118,8 @@ Task::Status InnerTask::determine_status(bool new_spawnable, bool new_mappable,
   }
 }
 
-Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks) {
-
-  bool data_tasks = false;
-
+Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
+                                              bool data_tasks) {
   LOG_INFO(TASK, "Adding dependencies to {}. D={}", this, tasks);
 
   // TODO: Change all of this to lock free.
@@ -212,6 +210,13 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
+void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode, int dev_id) {
+  AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
+  parray->add_task(this);
+  this->parray_list.emplace_back(std::make_pair(parray, test_access_mode));
+  this->parray_dev_list.emplace_back(dev_id);
+}
+
 void InnerTask::notify_dependents(TaskStateList &buffer,
                                   Task::State new_state) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
@@ -231,6 +236,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
     auto task = this->dependents.get_unsafe(i);
     Task::StatusFlags status = task->notify(new_state);
 
+    // std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
       // std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
@@ -334,6 +340,10 @@ std::vector<Device *> &InnerTask::get_assigned_devices() {
   return this->assigned_devices;
 }
 
+void InnerTask::copy_assigned_devices(const std::vector<Device *> &others) {
+  this->assigned_devices = others;
+}
+
 Task::State InnerTask::set_state(Task::State state) {
   Task::State new_state = state;
   Task::State old_state;
@@ -412,3 +422,7 @@ void InnerTask::end_multidev_req_addition() {
   placement_req_options_.append_placement_req_opt(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
 }
+
+void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }
+
+AccessMode InnerDataTask::get_access_mode() { return this->access_mode_; }

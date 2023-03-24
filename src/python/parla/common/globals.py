@@ -28,6 +28,16 @@ class DeviceType(IntEnum):
     CUDA = 1
 
 
+class AccessMode(IntEnum):
+    """
+    This class declares PArray access modes that are used
+    in @spawn.
+    """
+    IN = 0
+    OUT = 1
+    INOUT = 2
+
+
 class LocalStack(threading.local):
 
     def __init__(self):

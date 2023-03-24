@@ -11,6 +11,9 @@ from parla.cython import device
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import get_stream_pool, get_scheduler
 from parla.common.globals import DeviceType as PyDeviceType
+from parla.common.globals import AccessMode
+
+from parla.common.parray.core import PArray
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -271,13 +274,20 @@ class Task:
         return self.name
         
 
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None):
-
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None):
         self.dependencies = dependencies
         self.constraints = constraints
 
         self.add_constraints(constraints)
         self.add_dependencies(dependencies)
+
+        # A base task class holds a dataflow since both task types,
+        # compute and data move, need it temporarily (e.g., compute tasks
+        # need dataflow to create data move tasks) or
+        # permanently (e.g., data move tasks need dataflow during its lifecycle).
+        # Each data move task only needs a single Parray at this moment,
+        # but moving multiple PArrays was also considered as the future work.
+        self.add_dataflow(dataflow)
 
     def _wait_for_dependency_events(self, enviornment):
         pass
@@ -358,6 +368,30 @@ class Task:
 
     def get_assigned_devices(self):
         return self.inner_task.get_assigned_devices()
+
+    def add_dataflow(self, dataflow):
+        if dataflow is not None:
+            for in_parray_tpl in dataflow.input:
+                print("input:", in_parray_tpl)
+                in_parray = in_parray_tpl[0]
+                in_parray_devid = in_parray_tpl[1]
+                cy_parray = in_parray.cy_parray
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.IN, in_parray_devid)
+            for out_parray_tpl in dataflow.output:
+                print("output:", out_parray_tpl)
+                out_parray = out_parray_tpl[0]
+                out_parray_devid = out_parray_tpl[1]
+                cy_parray = out_parray.cy_parray
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.OUT, out_parray_devid)
+            for inout_parray_tpl in dataflow.inout:
+                print("inout:", inout_parray_tpl)
+                inout_parray = inout_parray_tpl[0]
+                inout_parray_devid = inout_parray_tpl[1]
+                cy_parray = inout_parray.cy_parray
+                self.inner_task.add_parray(cy_parray,
+                    AccessMode.INOUT, inout_parray_devid)
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
@@ -441,7 +475,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -455,7 +489,38 @@ class ComputeTask(Task):
         pass
 
 
-#TODO: Data Movement Task  
+class DataMovementTask(Task):
+
+    def __init__(self, parray: PArray=None, access_mode=None, \
+        assigned_devices: List[PyDevice]=None, taskspace=None, \
+        idx=0, state=TaskCreated(), scheduler=None, name=None):
+        super().__init__(taskspace, idx, state, scheduler, name)
+        self.parray = parray
+        self.access_mode = access_mode
+        self.assigned_devices = assigned_devices
+
+    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler):
+        self.name = attrs.name
+        self.parray = attrs.parray
+        self.access_mode = attrs.access_mode
+        self.assigned_devices = attrs.assigned_devices
+        self.scheduler = scheduler
+        self.inner_task.set_c_task(attrs.c_attrs)
+        self.dev_id = attrs.dev_id
+
+    def _execute_task(self):
+        write_flag = True if self.access_mode != AccessMode.IN else False
+        device_manager = self.scheduler.device_manager
+        print(self.name, " starts its body")
+        """
+        for device in self.assigned_devices:
+            global_device_id = device.get_global_id()
+            self.parray._auto_move(device_manager.get_parray_id(global_device_id),
+                                   write_flag)
+        """
+        self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
+        return TaskCompleted(0)
+
 ######
 # Task Environment
 ######

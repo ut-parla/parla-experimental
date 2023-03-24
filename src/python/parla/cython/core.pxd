@@ -3,6 +3,7 @@ cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
+from parla.cython.cyparray cimport InnerPArray
 
 from libcpp  cimport bool
 from libcpp.string cimport string
@@ -15,7 +16,6 @@ cdef extern from "include/resources.hpp" nogil:
         VCUS = 1,
 
 cdef extern from "include/runtime.hpp" nogil:
-
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
 
@@ -51,6 +51,7 @@ cdef extern from "include/runtime.hpp" nogil:
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
         vector[Device*]& get_assigned_devices() 
+        void add_parray(InnerPArray* py_parray, int access_mode, int dev_id)
         bool notify_dependents_wrapper()
 
         void* get_py_task()
@@ -58,9 +59,10 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_dependencies()
         int get_num_dependents()
 
-
         int get_num_blocking_dependencies()
         int get_num_unmapped_dependencies()
+
+        string get_name()
 
         int set_state(int state)
         void add_device_req(void* dev_ptr, long mem_sz, int num_vcus)
@@ -68,6 +70,12 @@ cdef extern from "include/runtime.hpp" nogil:
         void end_arch_req_addition()
         void begin_multidev_req_addition()
         void end_multidev_req_addition()
+
+
+    cdef cppclass InnerDataTask(InnerTask):
+        void* get_py_parray()
+        int get_access_mode()
+        int get_device_id()
 
 
     cdef cppclass InnerWorker:
@@ -84,7 +92,7 @@ cdef extern from "include/runtime.hpp" nogil:
         )
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
-        InnerTask* get_task()
+        void get_task(InnerTask** task, bool* is_data_task)
         void remove_task() except +
 
         void wait()
