@@ -24,8 +24,8 @@ cp.random.seed(10)
 
 def partition_kernel(A, B, comp, pivot):
     # TODO(wlr): Fuse this kernel
-    bufferA = A  # .array
-    bufferB = B  # .array
+    bufferA = A.array
+    bufferB = B.array
     comp[:] = (bufferA[:] < pivot)
     mid = (int)(comp.sum())
     bufferB[:mid] = bufferA[comp]
@@ -134,12 +134,12 @@ def scatter(A, B, left_info, right_info):
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
 
-                # A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
-                target = A[target_idx]
-                source = B[source_idx]
+                A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
+                # target = A[target_idx]
+                # source = B[source_idx]
                 # print("TARGET: ", target, type(target))
                 # print("SOURCE: ", source, type(source))
-                target[target_start:target_end] = source[source_start:source_end]
+                # target[target_start:target_end] = source[source_start:source_end]
 
     source_starts, target_starts, sizes = right_info
     for source_idx in range(len(A)):
@@ -157,10 +157,10 @@ def scatter(A, B, left_info, right_info):
                 # print(source_idx, target_idx, (source_start,
                 #      source_end), (target_start, target_end))
 
-                # A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
-                target = A[target_idx]
-                source = B[source_idx]
-                target[target_start:target_end] = source[source_start:source_end]
+                A[target_idx].array[target_start:target_end] = B[source_idx].array[source_start:source_end]
+                # target = A[target_idx]
+                # source = B[source_idx]
+                # target[target_start:target_end] = source[source_start:source_end]
 
 
 def quicksort(global_prefix, global_A, global_workspace, start, end, T):
@@ -218,9 +218,9 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
     sizes = np.zeros(len(A)+1, dtype=np.uint32)
     for i in range(len(A)):
         # print("INCOMING ARRAY", A[i].array)
-        # sizes[i+1] = len(A[i].array)
-        print("INCOMING ARRAY", A[i], len(A[i]))
-        sizes[i+1] = len(A[i])
+        sizes[i+1] = len(A[i].array)
+        # print("INCOMING ARRAY", A[i], len(A[i]))
+        # sizes[i+1] = len(A[i])
 
     local_size_prefix = np.cumsum(sizes)
     local_size = np.sum(sizes)
@@ -229,8 +229,8 @@ def quicksort(global_prefix, global_A, global_workspace, start, end, T):
 
     if len(A) == 1:
         # print("BASE")
-        # A[0].array.sort()
-        A[0].sort()
+        A[0].array.sort()
+        # A[0].sort()
         return
 
     if len(A) == 0:
@@ -286,16 +286,16 @@ def main(T):
             cupy_list_B.append(cp.zeros(m, dtype=cp.int32))
             dev.synchronize()
 
-    # A = pa.asarray_batch(cupy_list_A)
-    A = cupy_list_A
+    A = pa.asarray_batch(cupy_list_A)
+    # A = cupy_list_A
 
     sizes = np.zeros(len(A)+1, dtype=np.uint32)
     for i in range(len(A)):
         sizes[i+1] = len(A[i])
     size_prefix = np.cumsum(sizes)
 
-    # workspace = pa.asarray_batch(cupy_list_B)
-    workspace = cupy_list_B
+    workspace = pa.asarray_batch(cupy_list_B)
+    # workspace = cupy_list_B
 
     t_start = time.perf_counter()
     with cp.cuda.Device(0) as d:
