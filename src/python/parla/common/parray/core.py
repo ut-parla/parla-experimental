@@ -236,6 +236,35 @@ class PArray:
         if num_gpu > 0:
             cupy.cuda.stream.get_current_stream().synchronize()
 
+    def print_overview(self) -> None:
+        """
+        Print global overview of current PArray for debugging
+        """
+        state_str_map = {0: "INVALID",
+                         1: "SHARED",
+                         2: "MODIFIED"}
+
+        print(f"---Overview of PArray\n"
+              f"ID: {self.ID}, "
+              f"Parent_ID: {self.parent_ID if self.ID != self.parent_ID else None}, "
+              f"Slice: {self._slices[0] if self.ID != self.parent_ID else None}, "
+              f"Bytes: {self.subarray_nbytes}, "
+              f"Owner: {'GPU ' + str(self._coherence.owner) if self._coherence.owner != CPU_INDEX else 'CPU'}")
+        for device_id, state in self._coherence._local_states.items():
+            if device_id == CPU_INDEX:
+                device_name = "CPU"
+            else:
+                device_name = f"GPU {device_id}"
+            print(f"At {device_name}: ", end="")
+            
+            if isinstance(state, dict):
+                print(f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices")
+                for slice, slice_id in zip(self._array._indices_map[device_id], range(len(self._array._indices_map[device_id]))):
+                    print(f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}")
+            else:
+                print(f"state: {state_str_map[state]}")
+        print("---End of Overview")
+
     # slicing/indexing
 
     def __getitem__(self, slices: SlicesType) -> PArray | Any:

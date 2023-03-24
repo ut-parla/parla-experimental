@@ -33,6 +33,7 @@ def test_parray_task():
                 b._auto_move(1, do_write = True)
                 assert b[0,0] == 1
                 assert b._current_device_index == 1
+                b.print_overview()
                 
                 b[1,1] = 0
                 assert b[1,1] == 0
@@ -48,11 +49,15 @@ def test_parray_task():
                 assert a._coherence._local_states[1] == Coherence.INVALID
                 assert a._coherence._local_states[-1] == Coherence.MODIFIED
 
+            A = a[0:2]
+            B = a[2]
             @spawn(ts[2], dependencies=[ts[1]], placement=cuda(0))
             def check_array_slicing():
-                a[1]._auto_move(0, do_write = True)
+                A._auto_move(0, do_write = True)
+                B._auto_move(0, do_write = True)
                 assert a[1,0] == 1
                 assert a._current_device_index == 0
+                a[0:2].print_overview()
                 
                 a[1,1] = 0
                 assert a[1,1] == 0
@@ -66,6 +71,7 @@ def test_parray_task():
                 a._auto_move(-1, do_write = True)
                 assert a[1,1] == 0
                 assert a._current_device_index == -1
+                a.print_overview()
                 
                 assert a._array._buffer[-1] is not None
                 assert a._array._buffer[0] is None
