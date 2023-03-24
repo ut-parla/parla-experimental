@@ -163,9 +163,9 @@ def scatter(A, B, left_info, right_info):
                 target[target_start:target_end] = source[source_start:source_end]
 
 
-def quicksort(global_prefix, A, workspace, start, end, T):
+def quicksort(global_prefix, global_A, A, workspace, start, end, T):
     n_partitions = len(A)
-    print("LENGTH", n_partitions, end - start)
+    print("LENGTH", n_partitions, end - start, start, end)
 
     sizes = np.zeros(len(A)+1, dtype=np.uint32)
     for i in range(len(A)):
@@ -208,7 +208,14 @@ def quicksort(global_prefix, A, workspace, start, end, T):
     scatter(A, workspace, left_info, right_info)
 
     # print(size_prefix, global_left_count)
-    split_idx = np.searchsorted(size_prefix, global_left_count, side="right")-1
+    split_idx = np.searchsorted(
+        global_prefix, start+global_left_count, side="right")-1
+
+    # How to select the active block from the global array
+    local_start_idx = np.searchsorted(global_prefix, start, side="right")-1
+    local_end_idx = np.searchsorted(global_prefix, end, side="right")-1
+
+    # Split within a block
     local_split = global_left_count - size_prefix[split_idx]
 
     # print(local_split)
@@ -216,21 +223,21 @@ def quicksort(global_prefix, A, workspace, start, end, T):
 
     array_left = []
     array_left += [A[i] for i in range(split_idx)]
-    if split_idx < len(A) and local_split > 0:
+    if split_idx-local_start_idx < len(A) and local_split > 0:
         array_left += [A[split_idx][0:local_split]]
 
     workspace_left = []
     workspace_left += [workspace[i] for i in range(split_idx)]
-    if split_idx < len(A) and local_split > 0:
+    if split_idx-local_start_idx < len(A) and local_split > 0:
         workspace_left += [workspace[split_idx][0:local_split]]
 
     array_right = []
-    if split_idx < len(A) and local_split < sizes[split_idx+1]:
+    if split_idx-local_start_idx < len(A) and local_split < sizes[split_idx+1]:
         array_right += [A[split_idx][local_split:sizes[split_idx+1]]]
     array_right += [A[i] for i in range(split_idx+1, len(A))]
 
     workspace_right = []
-    if split_idx < len(A) and local_split < sizes[split_idx+1]:
+    if split_idx-local_start_idx < len(A) and local_split < sizes[split_idx+1]:
         workspace_right += [workspace[split_idx]
                             [local_split:sizes[split_idx+1]]]
     workspace_right += [workspace[i] for i in range(split_idx+1, len(A))]
