@@ -1,9 +1,11 @@
 from parla.common.parray import core
+from parla.cython.device import PyDevice
 from parla.cython.device_manager import PyDeviceManager
 
 from typing import Dict
 
 PArray = core.PArray
+Device = PyDevice
 
 class PArrayTracker:
   _managed_parray_tbl: Dict[int, Dict[int, bool]]
@@ -49,16 +51,22 @@ class PArrayTracker:
            parray.parent_ID if parray.ID != parray.parent_ID else None,
            " is untracked.")
 
-  def reserve_parray(self, parray: PArray, device):
+  def reserve_parray(self, parray: PArray, device: Device):
       """
       Reserve PArray usage in a specified device.
       If a PArray is reserved to a specific device, it implies that
       the corresponding PArray instance is planned to be instantiated or is
       already instantiated in the device.
       """
-      pass
+      dev_global_id = device.get_global_id()
+      if parray.parent_ID not in self._managed_parray_tbl[dev_global_id]:
+          self.track_parray(parray, dev_global_id)
+      if self._managed_parray_tbl[dev_global_id][dev_global_id] == False:
+          self._managed_parray_tbl[dev_global_id][dev_global_id] = True
+          # TODO(hc): allocate resources by decreasing mapped resouce metrics
+          #           on a device.
 
-  def release_parray(self, parray: PArray, device):
+  def release_parray(self, parray: PArray, device: Device):
       """
       Release a PArray from a specified device.
       A PArray is released from a device when its instance does not exist
