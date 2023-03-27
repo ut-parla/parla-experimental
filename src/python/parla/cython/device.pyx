@@ -367,9 +367,7 @@ class CupyStream(Stream):
         #Set the stream to the current stream.
         self._stream.__enter__()
 
-
         Locals.push_stream(self)
-
 
         return self 
 

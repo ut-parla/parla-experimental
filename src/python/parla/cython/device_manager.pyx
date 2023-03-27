@@ -126,9 +126,10 @@ class PyDeviceManager:
         # TODO(hc): I don't know a better way to register architecture.
         # TODO(wlr): I made this a dict so that device manager doesn't have to have all arch types.
         self.py_registered_archs = {}
+        self.registered_devices = []
 
         # TODO(hc): pack those config. to a data class.
-        #Initialize Devices
+        # Initialize Devices
         if dev_config == None or dev_config == "":
             self.register_cpu_devices()
             self.register_cuda_devices_cupy()
@@ -136,7 +137,7 @@ class PyDeviceManager:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
 
-        #Initialize Device Hardware Queues
+        # Initialize Device Hardware Queues
         self.stream_pool = StreamPool(cuda.devices)
 
     def __dealloc__(self):
@@ -144,6 +145,7 @@ class PyDeviceManager:
             for dev in arch.devices:
                 del dev
 
+    # TODO(hc): this postfix *_cupy() looks confusing.
     def register_cuda_devices_cupy(self):
         if cupy is not None:
             try:
@@ -162,6 +164,7 @@ class PyDeviceManager:
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
                 cuda.add_device(py_cuda_device)
+                self.registered_devices.append(py_cuda_device)
         else:
             # It is possible that the current system does not have CUDA devices.
             # But users can still specify `cuda` to task placement.
@@ -173,6 +176,7 @@ class PyDeviceManager:
     def register_cpu_devices(self, register_to_cuda: bool = False):
         if register_to_cuda:
             cuda.add_device(cpu(0))
+            self.registered_devices.append(cpu(0))
         else:
             # Get the number of usable CPUs from this process.
             # This might not be equal to the number of CPUs in the system.
@@ -181,6 +185,7 @@ class PyDeviceManager:
             py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
             self.py_registered_archs[cpu] = cpu
             cpu.add_device(py_cpu_device)
+            self.registered_devices.append(py_cpu_device)
 
     def register_devices_to_cpp(self):
         """
@@ -210,24 +215,21 @@ class PyDeviceManager:
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
                 cpu.add_device(py_cpu_device)
+                self.registered_devices(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
                 self.py_registered_archs[cuda] = cuda
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
-                py_cuda_arch = cuda
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \
                                                   VCU_BASELINE)
-                    py_cuda_arch.add_device(py_cuda_device)
+                    cuda.add_device(py_cuda_device)
+                    self.registered_devices.append(py_cuda_device)
 
     def get_all_devices(self):
-        devs = []
-        for arch in self.py_registered_archs:
-            for dev in arch.devices:
-                devs.append(dev)
-        return devs
+        return self.registered_devices
 
     def get_all_architectures(self):
         return self.py_registered_archs.values()

@@ -257,7 +257,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         cy_device_manager = self.device_manager.get_cy_device_manager()
         self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
 
-        self.parray_tracker = PArrayTracker()
+        self.parray_tracker = PArrayTracker(self.device_manager)
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
