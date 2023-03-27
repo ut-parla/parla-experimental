@@ -14,6 +14,7 @@ cimport core
 from parla.cython import core
 
 from parla.common.globals import _Locals as Locals 
+from parla.common.parray.tracker import PArrayTracker
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
@@ -255,6 +256,8 @@ class Scheduler(ControllableThread, SchedulerContext):
         self.device_manager = device_manager
         cy_device_manager = self.device_manager.get_cy_device_manager()
         self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
+
+        self.parray_tracker = PArrayTracker()
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
