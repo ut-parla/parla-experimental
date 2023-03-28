@@ -52,8 +52,8 @@ cdef class CyDeviceManager:
     cpdef print_registered_devices(self):
         self.cpp_device_manager_.print_registered_devices()
 
-    cpdef get_parray_id(self, global_device_id):
-        return self.cpp_device_manager_.get_parray_id(global_device_id)
+    cpdef globalid_to_parrayid(self, global_device_id):
+        return self.cpp_device_manager_.globalid_to_parrayid(global_device_id)
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_
@@ -333,5 +333,5 @@ class PyDeviceManager:
             return [DeviceResourceRequirement(d, DeviceResource()) \
                     for d in self.get_all_devices()]
 
-    def get_parray_id(self, global_device_id):
-        return self.cy_device_manager.get_parray_id(global_device_id)
+    def globalid_to_parrayid(self, global_device_id):
+        return self.cy_device_manager.globalid_to_parrayid(global_device_id)

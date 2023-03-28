@@ -846,9 +846,16 @@ public:
     return this->workers.get_num_notified_workers();
   }
 
-  /* Get a PArray trcker */
+  /* Get a PArray tracker */
   PArrayTracker* get_parray_tracker() {
     return &(this->parray_tracker_);
+  }
+
+  /* Reserve a PArray in a device */
+  void reserve_parray(parray::InnerPArray *parray, size_t parray_dev_id) {
+    Device *device =
+        this->device_manager_->get_device_by_parray_id(parray_dev_id);
+    this->parray_tracker_.reserve_parray(*parray, device);
   }
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other

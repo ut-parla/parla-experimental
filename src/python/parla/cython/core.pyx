@@ -515,6 +515,9 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.spawn_wait()
 
+    cpdef reserve_parray(self, CyPArray cy_parray, int dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.reserve_parray(cy_parray.get_cpp_parray(), dev_id)
     
 class Resources:
 

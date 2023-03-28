@@ -14,7 +14,7 @@ cimport core
 from parla.cython import core
 
 from parla.common.globals import _Locals as Locals 
-from parla.common.parray.tracker import PArrayTracker
+from parla.common.parray.core import PArray
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
@@ -257,8 +257,6 @@ class Scheduler(ControllableThread, SchedulerContext):
         cy_device_manager = self.device_manager.get_cy_device_manager()
         self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
 
-        self.parray_tracker = PArrayTracker(self.device_manager)
-
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
         with self.start_monitor:
@@ -338,6 +336,18 @@ class Scheduler(ControllableThread, SchedulerContext):
 
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
+
+    def reserve_parray(self, parray: PArray, dev_id: int):
+        """
+        Reserve PArray instances that are created through
+        __init__() of the PArray class.
+        In the current Parla, crosspy calls this function
+        during initialization if its internal array type is PArray.
+
+        :param parray: Created PArray instance
+        :param dev_id: device global id that the PArray will be placed
+        """
+        self.inner_scheduler.reserve_parray(parray.cy_parray, dev_id)
 
     
 def _task_callback(task, body):
