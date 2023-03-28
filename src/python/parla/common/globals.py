@@ -1,10 +1,12 @@
 from enum import IntEnum
 import threading
-
+import os
 try:
     import cupy
+    CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 except ImportError:
     cupy = None
+    CUPY_ENABLED = False
 
 
 class DeviceType(IntEnum):
