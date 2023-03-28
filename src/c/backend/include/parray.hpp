@@ -22,7 +22,7 @@ public:
 
   // Get current size (in bytes) of each copy of the PArray
   // if it is a subarray, return the subarray's size
-  uint64_t get_size();
+  const uint64_t get_size() const;
 
   // Set the size of the PArray
   void set_size(uint64_t new_size);

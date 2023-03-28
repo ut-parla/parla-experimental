@@ -8,7 +8,7 @@ InnerPArray::InnerPArray() : id(-1), _state(nullptr) {}
 InnerPArray::InnerPArray(void *py_parray, uint64_t id, PArrayState *state)
     : _py_parray(py_parray), id(id), _state(state) {}
 
-uint64_t InnerPArray::get_size() { return this->_size; }
+const uint64_t InnerPArray::get_size() const { return this->_size; }
 
 void InnerPArray::set_size(uint64_t new_size) { this->_size = new_size; }
 
