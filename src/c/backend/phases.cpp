@@ -137,9 +137,9 @@ void Mapper::run(SchedulerPhase *next_phase) {
       &parray_list = task->parray_list;
       const std::vector<int> &parray_dev_list = task->parray_dev_list;
       for (size_t i = 0; i < parray_dev_list.size(); ++i) {
-        Device *target_device = chosen_devices[i]->device();
+        Device *target_device = chosen_devices[parray_dev_list[i]]->device();
         this->scheduler->get_parray_tracker()->reserve_parray(
-            *parray_list[i].first, target_device);
+            *(parray_list[i].first), target_device);
       }
 
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
