@@ -134,6 +134,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void spawn_wait() except +
 
         void reserve_parray(InnerPArray* parray, int dev_id) except +
+        void release_parray(InnerPArray* parray, int dev_id) except +
 
 
 cdef extern from "include/profiling.hpp" nogil:

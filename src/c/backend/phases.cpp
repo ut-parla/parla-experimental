@@ -133,13 +133,15 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
       // TODO(hc): temporarily use manual device index of a PArray
       //           to track its state.
-      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-      &parray_list = task->parray_list;
-      const std::vector<int> &parray_dev_list = task->parray_dev_list;
+      std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+      *parray_list = &(task->parray_list);
+      const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
       for (size_t i = 0; i < parray_dev_list.size(); ++i) {
         Device *target_device = chosen_devices[parray_dev_list[i]]->device();
+        parray::InnerPArray *parray = (*parray_list)[i].first;
         this->scheduler->get_parray_tracker()->reserve_parray(
-            *(parray_list[i].first), target_device);
+            *parray, target_device);
+        parray->incr_num_active_tasks(target_device->get_global_id());
       }
 
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
@@ -225,7 +227,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
   const std::vector<std::pair<parray::InnerPArray *, AccessMode>> &parray_list =
       task->parray_list;
 
-  const std::vector<int> &parray_dev_list = task->parray_dev_list;
+  const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
 
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;

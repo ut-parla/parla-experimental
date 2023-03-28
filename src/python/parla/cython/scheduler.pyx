@@ -12,6 +12,7 @@ from parla.cython import tasks
 
 cimport core
 from parla.cython import core
+from parla.cython.cyparray import CyPArray
 
 from parla.common.globals import _Locals as Locals 
 from parla.common.parray.core import PArray
@@ -337,17 +338,28 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
 
-    def reserve_parray(self, parray: PArray, dev_id: int):
+    def reserve_parray(self, cy_parray: CyPArray, global_dev_id: int):
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
         In the current Parla, crosspy calls this function
         during initialization if its internal array type is PArray.
 
-        :param parray: Created PArray instance
-        :param dev_id: device global id that the PArray will be placed
+        :param parray: Created Cython PArray instance
+        :param global_dev_id: global logical device id that
+                              the PArray will be placed
         """
-        self.inner_scheduler.reserve_parray(parray.cy_parray, dev_id)
+        self.inner_scheduler.reserve_parray(cy_parray, global_dev_id)
+
+    def release_parray(self, cy_parray: CyPArray, global_dev_id: int):
+        """
+        Release PArray instances that are evicted.
+
+        :param parray: Cython PArray instance to be evicted
+        :param global_dev_id: global logical device id that
+                              the PArray will be evicted
+        """
+        self.inner_scheduler.release_parray(cy_parray, global_dev_id)
 
     
 def _task_callback(task, body):

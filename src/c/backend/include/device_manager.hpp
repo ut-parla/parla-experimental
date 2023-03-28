@@ -75,6 +75,10 @@ public:
     return all_devices_[global_dev_id];
   }
 
+  Device *get_device_by_global_id(DevID_t global_dev_id) const {
+    return all_devices_[global_dev_id];
+  }
+
   std::vector<Device *> &get_devices(DeviceType dev_type) {
     switch (dev_type) {
     case DeviceType::CPU:

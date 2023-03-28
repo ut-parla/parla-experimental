@@ -288,6 +288,17 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // If this is the last active task, the scheduler is stopped
     this->decrease_num_active_tasks();
 
+    for (size_t i = 0; i < task->parray_list.size(); ++i) {
+      parray::InnerPArray *parray = task->parray_list[i].first;
+      DevID_t target_dev_id = task->parray_dev_list[i];
+      Device *target_device = task->assigned_devices[target_dev_id];
+      DevID_t global_dev_id = target_device->get_global_id();
+      parray->decr_num_active_tasks(global_dev_id);
+      // This PArray is not released from the PArray tracker here,
+      // but when it is EVICTED, it will check the number of referneces
+      // and will be released if that is 0.
+    }
+   
     // TODO: Move this when we do runahead
     task->set_state(Task::COMPLETED);
   }

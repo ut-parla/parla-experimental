@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
-from parla.common.globals import get_current_devices, has_environment
+from parla.common.globals import get_current_devices, get_scheduler, has_environment
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -109,8 +109,15 @@ class PArray:
             # task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
 
         # record the size in Cython PArray
-        self._cy_parray = CyPArray(self, self.ID, self._cyparray_state)
+        scheduler = get_scheduler()
+        num_devices = len(scheduler.device_manager.get_all_devices())
+        self._cy_parray = CyPArray(self, self.ID, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
+        target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
+        if (target_dev_id > 0):
+            assert isinstance(array, cupy.ndarray)
+        target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(target_dev_id)
+        scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
 
     # Properties:
 
@@ -427,6 +434,12 @@ class PArray:
                          self._coherence.set_data_as_ready(op.dst)
                     self._coherence_cv[op.dst].notify_all()  # let other threads know the data is ready
             elif op.inst == MemoryOperation.EVICT:
+                scheduler = get_scheduler()
+                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(op.src)
+                if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
+                    # If none of visible tasks will refer this PArray, release
+                    # this PArray instance of the source device from the PArray tracker.
+                    scheduler.release_parray(self._cy_parray, src_global_dev_id)
                 self._array.clear(op.src)  # decrement the reference counter, relying on GC to free the memory
                 if MemoryOperation.NO_MARK_AS_READY not in op.flag:
                     self._coherence.set_data_as_ready(op.src, None)  # mark it as done

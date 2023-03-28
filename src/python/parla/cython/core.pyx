@@ -518,7 +518,12 @@ cdef class PyInnerScheduler:
     cpdef reserve_parray(self, CyPArray cy_parray, int dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.reserve_parray(cy_parray.get_cpp_parray(), dev_id)
-    
+
+    cpdef release_parray(self, CyPArray cy_parray, int dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.release_parray(cy_parray.get_cpp_parray(), dev_id)
+
+
 class Resources:
 
     def __init__(self, vcus):

@@ -248,7 +248,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them */
   std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
   /* TODO(hc): will be removed */
-  std::vector<int> parray_dev_list;
+  std::vector<DevID_t> parray_dev_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -852,10 +852,17 @@ public:
   }
 
   /* Reserve a PArray in a device */
-  void reserve_parray(parray::InnerPArray *parray, size_t parray_dev_id) {
+  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
     Device *device =
-        this->device_manager_->get_device_by_parray_id(parray_dev_id);
+        this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.reserve_parray(*parray, device);
+  }
+
+  /* Release a PArray in a device */
+  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+    Device *device =
+        this->device_manager_->get_device_by_global_id(global_dev_id);
+    this->parray_tracker_.release_parray(*parray, device);
   }
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
