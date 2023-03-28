@@ -21,7 +21,8 @@ class ArrayType(metaclass=ABCMeta):
         :param b: An array of any type.
         :return: True iff `a` supports assignments from `b`.
         """
-        pass
+        raise NotImplementedError(
+            "can_assign_from not implemented for type {}".format(type(self).__name__))
 
     @abstractmethod
     def get_array_module(self, src):
@@ -29,7 +30,8 @@ class ArrayType(metaclass=ABCMeta):
         :param a: An array of self's type.
         :return: The `numpy` compatible module for the array `a`.
         """
-        pass
+        raise NotImplementedError(
+            "get_array_module not implemented for type {}".format(type(self).__name__))
 
     @abstractmethod
     def copy_from(self, src, target_device_id: int):
@@ -37,7 +39,8 @@ class ArrayType(metaclass=ABCMeta):
         :param a: An array of some type.
         :return: A copy of `a` of this type
         """
-        pass
+        raise NotImplementedError(
+            "copy_from not implemented for type {}".format(type(self).__name__))
 
     @abstractmethod
     def copy_into(self, src, dst):
@@ -46,7 +49,8 @@ class ArrayType(metaclass=ABCMeta):
         :param dst: An array of this type.
         :return: A copy of `src` into `dst`.
         """
-        pass
+        raise NotImplementedError(
+            "copy_into not implemented for type {}".format(type(self).__name__))
 
 
 class NumpyArray(ArrayType):
@@ -59,15 +63,15 @@ class NumpyArray(ArrayType):
 
     def copy_from(self, src, target_device_id: int):
 
+        if isinstance(src, numpy.ndarray):
+            return src
+
         current_context = get_current_context()
         current_device = current_context.devices[0]
 
         is_gpu = (current_device.architecture == DeviceType.CUDA)
 
-        if isinstance(src, numpy.ndarray):
-            return src
-
-        elif CUPY_ENABLED and isinstance(src, cupy.ndarray):
+        if CUPY_ENABLED and isinstance(src, cupy.ndarray):
             if is_gpu and (src.flags['C_CONTIGUOUS'] or src.flags['F_CONTIGUOUS']):
 
                 dst = cupy.empty_like(src)
@@ -85,7 +89,7 @@ class NumpyArray(ArrayType):
                 "Non-ndarray types are not currently supported")
 
     def copy_into(self, src, dst):
-        #TODO: Add contiguous copy into memory buffer directly
+        # TODO: Add contiguous copy into memory buffer directly
 
         if self.can_assign_from(src, dst):
             dst[:] = src
@@ -145,26 +149,14 @@ class CupyArray(ArrayType):
 
                 return dst
 
-            if is_gpu:
-                # FIXME: Add event to wait for copy to finish to the current context.
-                print("Trying direct copy:")
-                if isinstance(src, cupy.ndarray):
-                    with cupy.cuda.Device(src.device.id):
-                        print("Packing array:")
-                        src = cupy.ascontiguousarray(src)
-                        print("Packed array")
-    
-                with cupy.cuda.Device(target_device_id):
-                    dst = cupy.asarray(src)
+            if isinstance(src, cupy.ndarray):
+                with cupy.cuda.Device(src.device.id):
+                    src = cupy.ascontiguousarray(src)
 
-                return dst
-            else:
-                with cupy.cuda.Device(target_device_id):
-                    stream = cupy.cuda.Stream(non_blocking=True)
-                    with stream:
-                        dst = cupy.asarray(src)
-                    stream.synchronize()
-                return dst
+            with cupy.cuda.Device(target_device_id):
+                dst = cupy.asarray(src)
+
+            return dst
 
         else:
             raise NotImplementedError(
@@ -172,18 +164,18 @@ class CupyArray(ArrayType):
 
     def copy_into(self, src, dst):
 
-        #TODO: Add contiguous copy into memory buffer directly
+        # TODO: Add contiguous copy into memory buffer directly
 
         if self.can_assign_from(src, dst):
-            #FIXME: When is this guaranteed to work for src/dst on different devices
-            #Strided access seems to fail.
+            # FIXME: When is this guaranteed to work for src/dst on different devices
+            # Strided access seems to fail (sometimes) on Peer access.
             with cupy.cuda.Device(dst.device.id):
                 dst[:] = src
         elif isinstance(src, numpy.ndarray) or isinstance(src, cupy.ndarray):
-            print("Target ID: ", dst.device.id)
             temp = self.copy_from(src, dst.device.id)
             with cupy.cuda.Device(dst.device.id):
                 dst[:] = temp
+                # FIXME: What stream should we use here? How can we synchronize reliably?
         else:
             raise NotImplementedError(
                 "Non-ndarray types are not currently supported")
