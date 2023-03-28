@@ -52,6 +52,10 @@ private:
   /// we don't need to create device keys whenever we add a new PArray
   /// to the table.
   std::vector<std::unordered_map<uint64_t, bool>> managed_parrays_;
+  /// Any worker thread can update states of PArrays.
+  /// Guard operations by this lock.
+  /// TODO(hc): This will be replaced with parallel hash map.
+  std::mutex mtx;
 };
 
 #endif

@@ -22,6 +22,7 @@ void PArrayTracker::untrack_parray(const InnerPArray& parray, DevID_t dev_id) {
 
 void PArrayTracker::reserve_parray(const InnerPArray& parray, Device* device) {
   DevID_t dev_global_id = device->get_global_id();
+  this->mtx.lock();
   if (this->managed_parrays_[dev_global_id].find(parray.parent_id) ==
           this->managed_parrays_[dev_global_id].end()) {
     this->track_parray(parray, dev_global_id);
@@ -38,10 +39,12 @@ void PArrayTracker::reserve_parray(const InnerPArray& parray, Device* device) {
       parray.parent_id << ") allocates "
       << parray.get_size() << "Bytes in Device " << device->get_name() << "\n";
   }
+  this->mtx.unlock();
 }
 
 void PArrayTracker::release_parray(const InnerPArray& parray, Device* device) {
   DevID_t dev_global_id = device->get_global_id();
+  this->mtx.lock();
   if (this->managed_parrays_[dev_global_id].find(parray.parent_id) ==
           this->managed_parrays_[dev_global_id].end()) {
     return;
@@ -58,4 +61,5 @@ void PArrayTracker::release_parray(const InnerPArray& parray, Device* device) {
       parray.parent_id << ") releases "
       << parray.get_size() << "Bytes in Device " << device->get_name() << "\n";
   }
+  this->mtx.unlock();
 }
