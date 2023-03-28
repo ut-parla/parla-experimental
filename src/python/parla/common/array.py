@@ -85,6 +85,7 @@ class NumpyArray(ArrayType):
                 "Non-ndarray types are not currently supported")
 
     def copy_into(self, src, dst):
+        #TODO: Add contiguous copy into memory buffer directly
 
         if self.can_assign_from(src, dst):
             dst[:] = src
@@ -98,7 +99,7 @@ class NumpyArray(ArrayType):
 class CupyArray(ArrayType):
 
     def can_assign_from(self, src, dst):
-        return isinstance(src, cupy.ndarray)
+        return isinstance(src, cupy.ndarray) and (src.device.id == dst.device.id)
 
     def get_array_module(self, a):
         return cupy
@@ -144,16 +145,26 @@ class CupyArray(ArrayType):
 
                 return dst
 
-            with cupy.cuda.Device(target_device_id):
-                if is_gpu:
-                    # FIXME: Add event to wait for copy to finish to the current context.
-                    return cupy.asarray(src)
-                else:
+            if is_gpu:
+                # FIXME: Add event to wait for copy to finish to the current context.
+                print("Trying direct copy:")
+                if isinstance(src, cupy.ndarray):
+                    with cupy.cuda.Device(src.device.id):
+                        print("Packing array:")
+                        src = cupy.ascontiguousarray(src)
+                        print("Packed array")
+    
+                with cupy.cuda.Device(target_device_id):
+                    dst = cupy.asarray(src)
+
+                return dst
+            else:
+                with cupy.cuda.Device(target_device_id):
                     stream = cupy.cuda.Stream(non_blocking=True)
                     with stream:
                         dst = cupy.asarray(src)
                     stream.synchronize()
-                    return dst
+                return dst
 
         else:
             raise NotImplementedError(
@@ -161,10 +172,18 @@ class CupyArray(ArrayType):
 
     def copy_into(self, src, dst):
 
+        #TODO: Add contiguous copy into memory buffer directly
+
         if self.can_assign_from(src, dst):
-            dst[:] = src
+            #FIXME: When is this guaranteed to work for src/dst on different devices
+            #Strided access seems to fail.
+            with cupy.cuda.Device(dst.device.id):
+                dst[:] = src
         elif isinstance(src, numpy.ndarray) or isinstance(src, cupy.ndarray):
-            dst[:] = self.copy_from(src, dst.device.id)
+            print("Target ID: ", dst.device.id)
+            temp = self.copy_from(src, dst.device.id)
+            with cupy.cuda.Device(dst.device.id):
+                dst[:] = temp
         else:
             raise NotImplementedError(
                 "Non-ndarray types are not currently supported")
@@ -230,10 +249,11 @@ def copy(destination, source):
             # We assume all non-array types are by-value and hence already exist in the Python interpreter
             # and don't need to be copied.
             destination[:] = source
-    except ValueError:
+    except ValueError as e:
+        print("Error in copy: ", e)
         raise ValueError("Failed to copy ({} {} to {} {})".format(source, getattr(
             source, "shape", None),
-            destination, getattr(destination, "shape", None)))
+            destination, getattr(destination, "shape", None))) from e
 
 
 def clone_here(source, kind=None):

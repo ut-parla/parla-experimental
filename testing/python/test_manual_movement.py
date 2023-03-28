@@ -66,10 +66,10 @@ def test_clone_here_gpu_cpu_on_gpu_stride():
 
 def test_copy_gpu_cpu_into_on_cpu():
 
-    A = cp.zeros(100)
 
     reference = np.arange(100)
-    reference = reference[1:30:3]
+    A = np.zeros_like(reference)
+    reference = reference[1:30]
 
     B = cp.empty_like(reference)
 
@@ -83,13 +83,15 @@ def test_copy_gpu_cpu_into_on_cpu():
             copy(A[1:30], C)
 
             print(A[1:30])
+
+    assert np.array_equal(reference, A[1:30])
 
 
 def test_copy_gpu_cpu_into_on_cpu_stride():
 
-    A = cp.zeros(100)
 
     reference = np.arange(100)
+    A = np.zeros_like(reference)
     reference = reference[1:30:3]
 
     B = cp.empty_like(reference)
@@ -105,13 +107,15 @@ def test_copy_gpu_cpu_into_on_cpu_stride():
 
             print(A[1:30:3])
 
+    assert np.array_equal(reference, A[1:30:3])
+
 
 def test_copy_gpu_gpu_into_on_cpu():
 
-    A = cp.zeros(100)
 
-    reference = np.arange(100)
-    reference = reference[1:30:3]
+    reference = cp.arange(100)
+    A = cp.zeros_like(reference)
+    reference = reference[1:30]
 
     B = cp.empty_like(reference)
 
@@ -125,13 +129,15 @@ def test_copy_gpu_gpu_into_on_cpu():
             copy(A[1:30], C)
 
             print(A[1:30])
+
+    assert cp.array_equal(reference, A[1:30])
 
 
 def test_copy_gpu_gpu_into_on_cpu_stride():
 
-    A = cp.zeros(100)
 
-    reference = np.arange(100)
+    reference = cp.arange(100)
+    A = cp.zeros_like(reference)
     reference = reference[1:30:3]
 
     B = cp.empty_like(reference)
@@ -147,13 +153,15 @@ def test_copy_gpu_gpu_into_on_cpu_stride():
 
             print(A[1:30:3])
 
+    assert cp.array_equal(reference, A[1:30:3])
+
 
 def test_copy_gpu_gpu_into_on_gpu():
 
-    A = cp.zeros(100)
 
-    reference = np.arange(100)
-    reference = reference[1:30:3]
+    reference = cp.arange(100)
+    A = cp.zeros_like(reference)
+    reference = reference[1:30]
 
     B = cp.empty_like(reference)
 
@@ -168,12 +176,14 @@ def test_copy_gpu_gpu_into_on_gpu():
 
             print(A[1:30])
 
+    assert cp.array_equal(reference, A[1:30])
+
 
 def test_copy_gpu_gpu_into_on_gpu_stride():
 
-    A = cp.zeros(100)
 
-    reference = np.arange(100)
+    reference = cp.arange(100)
+    A = cp.zeros_like(reference)
     reference = reference[1:30:3]
 
     B = cp.empty_like(reference)
@@ -188,12 +198,13 @@ def test_copy_gpu_gpu_into_on_gpu_stride():
             copy(A[1:30:3], C)
 
             print(A[1:30:3])
+
+    assert cp.array_equal(A[1:30:3], reference)
 
 
 def test_clone_here_cpu_gpu_on_gpu():
 
     A = np.array([[1, 2], [3, 4]])
-    reference = cp.array([[1, 2], [3, 4]])
 
     with Parla():
 
@@ -201,30 +212,13 @@ def test_clone_here_cpu_gpu_on_gpu():
         def main():
             B = clone_here(A)
 
+            reference = cp.array([[1, 2], [3, 4]])
             assert isinstance(B, cupy.ndarray)
             assert cp.array_equal(reference, B)
-
-
-def test_clone_here_cpu_gpu_on_gpu_stride():
-
-    A = np.arange(100)
-    reference = cp.arange(100)
-    reference = reference[1:30:3]
-
-    with Parla():
-
-        @spawn(placement=gpu)
-        def main():
-            B = clone_here(A[1:30:3])
-
-            assert isinstance(B, cupy.ndarray)
-            assert cp.array_equal(reference, B)
-
 
 def test_clone_here_gpu_gpu_on_gpu():
 
     A = cp.arange(100)
-    reference = cp.arange(100)
 
     with Parla():
 
@@ -232,17 +226,13 @@ def test_clone_here_gpu_gpu_on_gpu():
         def main():
             B = clone_here(A)
 
+            reference = cp.arange(100)
             assert isinstance(B, cupy.ndarray)
             assert cp.array_equal(reference, B)
 
+def test_clone_here_cpu_gpu_on_gpu_stride():
 
-@mark.parametrize("i", range(num_gpus))
-def test_clone_here_gpu_gpu_on_gpu_stride(i):
-
-    with cp.cuda.Device(i):
-        A = cp.arange(100)
-        reference = cp.arange(100)
-        reference = reference[1:30:3]
+    A = np.arange(100)
 
     with Parla():
 
@@ -250,5 +240,24 @@ def test_clone_here_gpu_gpu_on_gpu_stride(i):
         def main():
             B = clone_here(A[1:30:3])
 
+            reference = cp.arange(100)
+            reference = reference[1:30:3]
+
             assert isinstance(B, cupy.ndarray)
             assert cp.array_equal(reference, B)
+
+def test_clone_here_gpu_gpu_on_gpu_stride():
+
+    A = cp.arange(100)
+
+    with Parla():
+
+        @spawn(placement=gpu)
+        def main():
+            B = clone_here(A[1:30:3])
+
+            reference = cp.arange(100)
+            reference = reference[1:30:3]
+            assert isinstance(B, cupy.ndarray)
+            assert cp.array_equal(reference, B)
+
