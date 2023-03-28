@@ -124,7 +124,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 // Scheduler Implementation
 
 InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager) {
+    : device_manager_(device_manager), parray_tracker_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,

@@ -19,6 +19,7 @@ using namespace std::chrono_literals;
 #include "containers.hpp"
 #include "device_manager.hpp"
 #include "parray.hpp"
+#include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
 
@@ -840,9 +841,14 @@ public:
    * dispatched to a hardware queue or are complete */
   int get_num_ready_tasks();
 
-  /* Get number of noitified workers*/
+  /* Get number of noitified workers */
   int get_num_notified_workers() {
     return this->workers.get_num_notified_workers();
+  }
+
+  /* Get a PArray trcker */
+  PArrayTracker* get_parray_tracker() {
+    return &(this->parray_tracker_);
   }
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
@@ -850,9 +856,13 @@ public:
   void spawn_wait();
 
 protected:
-  /// This manager manages all device instances in C++.
+  /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
+
+  /// It manages the current/planned distribution of PArrays across devices.
+  /// Parla task mapping policy considers locality of PArrays through this.
+  PArrayTracker parray_tracker_; 
 };
 
 #endif // PARLA_BACKEND_HPP
