@@ -114,7 +114,7 @@ class PArray:
         self._cy_parray = CyPArray(self, self.ID, self.parent_ID, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
         target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
-        if (target_dev_id > 0):
+        if (target_dev_id >= 0):
             assert isinstance(array, cupy.ndarray)
         target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(target_dev_id)
         scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
