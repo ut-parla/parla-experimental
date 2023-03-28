@@ -849,3 +849,9 @@ class PArray:
 
     def __format__(self, format_spec):
         return self._array.__format__(format_spec)
+
+    # Member methods to test C++ PArray instances.
+
+    def get_parray_parentid_from_cpp(self):
+        return self._cy_parray.get_parray_parentid()
+

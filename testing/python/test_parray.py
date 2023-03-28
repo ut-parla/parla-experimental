@@ -26,6 +26,12 @@ def test_parray_task():
             a = parray.asarray(a)
             b = parray.asarray(a)
 
+            # C++ test: parray parent id check
+            c = b[0:10]
+            a_parentid = a.get_parray_parentid_from_cpp()
+            b_parentid = b.get_parray_parentid_from_cpp()
+            assert c.get_parray_parentid_from_cpp() == b_parentid
+
             ts = TaskSpace("CopyBack")
 
             @spawn(ts[1], placement=cuda(1))
@@ -42,7 +48,6 @@ def test_parray_task():
                 assert b._coherence._local_states[-1] == Coherence.INVALID
                 assert b._coherence._local_states[1] == Coherence.MODIFIED
 
-
                 assert a._current_device_index == 1
                 assert a._array._buffer[1] is None
                 assert a._array._buffer[-1] is not None
@@ -58,6 +63,7 @@ def test_parray_task():
                 assert a[1,0] == 1
                 assert a._current_device_index == 0
                 a[0:2].print_overview()
+                assert a_parentid == a[0:2].get_parray_parentid_from_cpp()
                 
                 a[1,1] = 0
                 assert a[1,1] == 0
@@ -79,5 +85,6 @@ def test_parray_task():
                 assert a._coherence._local_states[0] == Coherence.INVALID
 
 if __name__=="__main__":
-    test_parray_creation()
-    test_parray_task()
+    with Parla():
+        test_parray_creation()
+        test_parray_task()

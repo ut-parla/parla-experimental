@@ -27,3 +27,6 @@ cdef class CyPArray:
 
     cpdef get_num_active_tasks(self, int global_dev_id):
         return self.cpp_parray.get_num_active_tasks(global_dev_id)
+
+    cpdef get_parray_parentid(self):
+        return self.cpp_parray.get_parray_parentid()

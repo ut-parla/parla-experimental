@@ -13,9 +13,11 @@ cdef extern from "include/parray.hpp" namespace "parray":
         InnerPArray(void *, uint64_t, uint64_t, PArrayState *i, uint32_t) except +
         void set_size(uint64_t)
         uint64_t get_num_active_tasks(uint32_t global_dev_id) except +
+        uint64_t get_parray_parentid() except +
 
 cdef class CyPArray:
     # Hold a C++ instance which we're wrapping
     cdef InnerPArray* cpp_parray
     cdef InnerPArray* get_cpp_parray(self)
     cpdef get_num_active_tasks(self, int global_dev_id)
+    cpdef get_parray_parentid(self)

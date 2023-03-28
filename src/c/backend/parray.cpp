@@ -41,4 +41,7 @@ size_t InnerPArray::get_num_active_tasks(DevID_t global_dev_id) {
 TaskList &InnerPArray::get_task_list_ref() { return this->_task_lists; }
 
 void *InnerPArray::get_py_parray() { return this->_py_parray; }
+
+uint64_t InnerPArray::get_parray_parentid() { return this->parent_id; }
+
 } // namespace parray
