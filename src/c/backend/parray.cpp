@@ -4,8 +4,8 @@
 
 namespace parray {
 
-InnerPArray::InnerPArray(void *py_parray, uint64_t id, PArrayState *state, DevID_t num_devices)
-    : _py_parray(py_parray), id(id), _state(state), _num_devices(num_devices) {
+InnerPArray::InnerPArray(void *py_parray, uint64_t id, uint64_t parent_id, PArrayState *state, DevID_t num_devices)
+    : _py_parray(py_parray), id(id), parent_id(parent_id), _state(state), _num_devices(num_devices) {
   _num_active_tasks.resize(num_devices);    
 }
 

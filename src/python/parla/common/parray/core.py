@@ -111,7 +111,7 @@ class PArray:
         # record the size in Cython PArray
         scheduler = get_scheduler()
         num_devices = len(scheduler.device_manager.get_all_devices())
-        self._cy_parray = CyPArray(self, self.ID, self._cyparray_state, num_devices)
+        self._cy_parray = CyPArray(self, self.ID, self.parent_ID, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
         target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
         if (target_dev_id > 0):

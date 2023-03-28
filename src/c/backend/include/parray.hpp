@@ -18,9 +18,10 @@ namespace parray {
 class InnerPArray {
 public:
   uint64_t id; // unique ID of the PArray
+  uint64_t parent_id; // unique ID of the parent PArray
 
   InnerPArray() = delete;
-  InnerPArray(void *, uint64_t, PArrayState *, DevID_t);
+  InnerPArray(void *, uint64_t, uint64_t, PArrayState *, DevID_t);
 
   // Get current size (in bytes) of each copy of the PArray
   // if it is a subarray, return the subarray's size

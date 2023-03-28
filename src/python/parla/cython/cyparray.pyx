@@ -6,11 +6,15 @@ from .cyparray_state cimport CyPArrayState
 # a Cython wrapper class around C++ PArray
 cdef class CyPArray:
 
-    def __init__(self, py_parray, uint64_t id, CyPArrayState parray_state, int num_devices):
+    def __init__(self, py_parray, uint64_t id, uint64_t parent_id, \
+                 CyPArrayState parray_state, int num_devices):
         pass
 
-    def __cinit__(self, py_parray, uint64_t id, CyPArrayState parray_state, int num_devices):
-        self.cpp_parray = new InnerPArray(<void *> py_parray, id, parray_state.get_cpp_parray_state(), num_devices)
+    def __cinit__(self, py_parray, uint64_t id, uint64_t parent_id, \
+                  CyPArrayState parray_state, int num_devices):
+        self.cpp_parray = new InnerPArray(\
+            <void *> py_parray, id, parent_id,
+            parray_state.get_cpp_parray_state(), num_devices)
 
     def __dealloc__(self):
         del self.cpp_parray
