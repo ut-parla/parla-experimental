@@ -38,8 +38,8 @@ def partition(A, B, pivot):
     mid = np.zeros(n_partitions, dtype=np.uint32)
 
     for i in range(len(A)):
-        with context.device[0]:
-            array_in = A[i].array
+        with context.devices[i]:
+            array_in = A[i]
             comp = cp.empty_like(array_in, dtype=cp.bool_)
             array_out = cp.empty_like(array_in)
             print("Locations: ", comp.device, array_in.device, array_out.device)
@@ -131,28 +131,20 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with context.device[0]:
+            with context.devices[target_idx]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
                 target_start = target_starts[source_idx, target_idx]
                 target_end = target_start + sizes[source_idx, target_idx]
 
-                # print(source_idx, target_idx, (source_start,
-                #      source_end), (target_start, target_end))
-                
                 target = A[target_idx]
                 source = B[source_idx]
 
-                print("Target:", target, flush=True)
-                print("Source: ", source, flush=True)
+                with context.devices[source_idx]:
+                    temp = cp.ascontiguousarray(source[source_start:source_end])
 
-                A[target_idx].array[target_start:target_end] = cp.asarray(source[
-                    source_start:source_end
-                ])
-                # print("TARGET: ", target, type(target))
-                # print("SOURCE: ", source, type(source))
-                # target[target_start:target_end] = source[source_start:source_end]
+                target[target_start:target_end] = cp.asarray(temp)
 
     source_starts, target_starts, sizes = right_info
     for source_idx in range(len(A)):
@@ -160,24 +152,23 @@ def scatter(A, B, left_info, right_info):
             if sizes[source_idx, target_idx] == 0:
                 continue
 
-            with context.device[0]:
+            with context.devices[target_idx]:
                 source_start = source_starts[source_idx, target_idx]
                 source_end = source_start + sizes[source_idx, target_idx]
 
                 target_start = target_starts[source_idx, target_idx]
                 target_end = target_start + sizes[source_idx, target_idx]
 
-                # print(source_idx, target_idx, (source_start,
-                #      source_end), (target_start, target_end))
-
-
+                target = A[target_idx]
                 source = B[source_idx]
 
-                A[target_idx].array[target_start:target_end] = cp.asarray(source[
-                    source_start:source_end
-                ])
-                # target = A[target_idx]
-                # target[target_start:target_end] = source[source_start:source_end]
+                print("TARGET: ", target, type(target))
+                print("SOURCE: ", source, type(source))
+
+                with context.devices[source_idx]:
+                    temp = cp.ascontiguousarray(source[source_start:source_end])
+
+                target[target_start:target_end] = cp.asarray(temp)
 
 
 def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
@@ -232,19 +223,18 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
             print("ADDED RIGHT")
 
 
-    n_partitions = len(A)
-
-    tag_A = [(A[i], 0) for i in range(len(A))]
-    tag_B = [(workspace[i], 0) for i in range(len(A))]
+    tag_A = [(A[i], i) for i in range(len(A))]
+    tag_B = [(workspace[i], i) for i in range(len(A))]
 
     unpacked = tag_A + tag_B
 
     print("unpacked: ", unpacked)
 
-    #device_list = tuple([cuda for i in range(n_partitions)])
-    device_list = cuda
+    device_list = tuple([cuda(a.device.id) for a in A])
+    print("Spawning task with device list: ", device_list, flush=True)
+    # device_list = cuda
 
-    @spawn(T[idx], placement=[device_list], inout=unpacked)
+    @spawn(T[idx], placement=[device_list])
     def quicksort_task():
         nonlocal global_prefix
         nonlocal global_A
@@ -261,7 +251,7 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
         sizes = np.zeros(len(A) + 1, dtype=np.uint32)
         for i in range(len(A)):
             # print("INCOMING ARRAY", A[i].array)
-            sizes[i + 1] = len(A[i].array)
+            sizes[i + 1] = len(A[i])
             # print("INCOMING ARRAY", A[i], len(A[i]))
             # sizes[i+1] = len(A[i])
 
@@ -270,7 +260,7 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
 
         if len(A) == 1:
             # print("BASE")
-            A[0].array.sort()
+            A[0].sort()
             # A[0].sort()
             return
 
@@ -320,10 +310,6 @@ def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
             T,
         )
 
-    # Scatter to other partitions
-    # scatter(active_A, active_B, mid)
-
-
 def main():
     # Per device size
     m = 10
@@ -331,8 +317,9 @@ def main():
     # Initilize a CrossPy Array
     cupy_list_A = []
     cupy_list_B = []
+
     for i in range(args.num_gpus):
-        with cp.cuda.Device(0) as dev:
+        with cp.cuda.Device(i) as dev:
             random_array = cp.random.randint(0, 1000000, size=m)
             random_array = random_array.astype(cp.int32)
 
@@ -340,16 +327,19 @@ def main():
             cupy_list_B.append(cp.zeros(m, dtype=cp.int32))
             dev.synchronize()
 
-    A = pa.asarray_batch(cupy_list_A)
-    # A = cupy_list_A
+    #A = pa.asarray_batch(cupy_list_A)
+
+    A = cupy_list_A
 
     sizes = np.zeros(len(A) + 1, dtype=np.uint32)
     for i in range(len(A)):
         sizes[i + 1] = len(A[i])
     size_prefix = np.cumsum(sizes)
 
-    workspace = pa.asarray_batch(cupy_list_B)
-    # workspace = cupy_list_B
+    # workspace = pa.asarray_batch(cupy_list_B)
+    workspace = cupy_list_B
+
+    print("Original Array: ", A, flush=True)
 
     with Parla():
         T = TaskSpace("T")
