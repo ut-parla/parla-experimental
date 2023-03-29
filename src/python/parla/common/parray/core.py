@@ -75,6 +75,7 @@ class PArray:
 
             self.nbytes = parent.nbytes          # the bytes used by the complete array
             self.subarray_nbytes = array.nbytes  # the bytes used by this subarray
+            self.parent = self
 
             # no need to register again since parent already did that
         else:  # initialize a new PArray
@@ -105,13 +106,15 @@ class PArray:
             self.nbytes = array.nbytes
             self.subarray_nbytes = self.nbytes  # no subarray
 
+            self.parent = parent
+
             # # Register the parray with the scheduler
             # task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
 
         # record the size in Cython PArray
         scheduler = get_scheduler()
         num_devices = len(scheduler.device_manager.get_all_devices())
-        self._cy_parray = CyPArray(self, self.ID, self.parent_ID, self._cyparray_state, num_devices)
+        self._cy_parray = CyPArray(self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
         target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
         if (target_dev_id >= 0):

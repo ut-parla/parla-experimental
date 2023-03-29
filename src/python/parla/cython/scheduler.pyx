@@ -361,7 +361,20 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         self.inner_scheduler.release_parray(cy_parray, global_dev_id)
 
-    
+    def get_parray_state(\
+        self, global_dev_id: int, parray_parent_id):
+        """
+        Return True if a parent PArray of the passed PArray exists on a
+        device.
+
+        :param global_dev_id: global logical device id that 
+                              this function interests 
+        :param parray_parent_id: parent PArray ID
+        """
+        return self.inner_scheduler.get_parray_state( \
+            global_dev_id, parray_parent_id)
+
+
 def _task_callback(task, body):
     """
     A function which forwards to a python function in the appropriate device context.

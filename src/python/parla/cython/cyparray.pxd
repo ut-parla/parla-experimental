@@ -10,7 +10,7 @@ from .cyparray_state cimport PArrayState
 # a mapping between C++ PArray api to Cython PArray api
 cdef extern from "include/parray.hpp" namespace "parray":
     cdef cppclass InnerPArray:
-        InnerPArray(void *, uint64_t, uint64_t, PArrayState *i, uint32_t) except +
+        InnerPArray(void *, uint64_t, uint64_t, InnerPArray *, PArrayState *i, uint32_t) except +
         void set_size(uint64_t)
         uint64_t get_num_active_tasks(uint32_t global_dev_id) except +
         uint64_t get_parray_parentid() except +

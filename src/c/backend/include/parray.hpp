@@ -20,8 +20,18 @@ public:
   uint64_t id; // unique ID of the PArray
   uint64_t parent_id; // unique ID of the parent PArray
 
+  /// Track the number of tasks that are using or are planning to use this
+  /// PArray.
+  /// NOTE that this counter is not necessarily matching to the size of
+  /// the `_task_lists`. This is because `_task_lists` does not remove a
+  /// task after it is completed (since it is not worth to remove that
+  /// compared to restructuring overheads), but this counter is decreased.
+  /// This is used to provide more accurate PArray placement information
+  /// to the task mapping step.
+  std::vector<CopyableAtomic<size_t>> num_active_tasks;
+
   InnerPArray() = delete;
-  InnerPArray(void *, uint64_t, uint64_t, PArrayState *, DevID_t);
+  InnerPArray(void *, uint64_t, uint64_t, InnerPArray *, PArrayState *, DevID_t);
 
   /// Get current size (in bytes) of each copy of the PArray
   /// if it is a subarray, return the subarray's size
@@ -61,6 +71,7 @@ public:
 
 private:
   uint64_t _size; // number of bytes consumed by each copy of the array/subarray
+  InnerPArray *_parent_parray;
   PArrayState
       *_state; // state of a PArray (subarray share this object with its parent)
   DevID_t _num_devices;
@@ -70,17 +81,7 @@ private:
   //           I will use this map: https://github.com/greg7mdp/parallel-hashmap
   //           I have used this for a while and it is good.
   TaskList _task_lists;
-  /// Track the number of tasks that are using or are planning to use this
-  /// PArray.
-  /// NOTE that this counter is not necessarily matching to the size of
-  /// the `_task_lists`. This is because `_task_lists` does not remove a
-  /// task after it is completed (since it is not worth to remove that
-  /// compared to restructuring overheads), but this counter is decreased.
-  /// This is used to provide more accurate PArray placement information
-  /// to the task mapping step.
-  std::vector<CopyableAtomic<size_t>> _num_active_tasks;
 
   void *_py_parray;
-
 };
 } // namespace parray

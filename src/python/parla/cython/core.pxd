@@ -5,6 +5,7 @@ from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
 from parla.cython.cyparray cimport InnerPArray
 
+from libc.stdint cimport uint32_t, uint64_t
 from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -130,6 +131,7 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()
+        bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
         void spawn_wait() except +
 
