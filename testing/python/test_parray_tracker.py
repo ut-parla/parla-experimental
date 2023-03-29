@@ -146,7 +146,6 @@ def test_parray_task():
 
             @spawn(ts[12], dependencies=[ts[11]], placement=[cuda(2)], inout=[(c[0:2], 0)])
             def task12():
-                print("task12", flush=True)
                 assert c[0:2].get_num_active_tasks(1) == 0
                 assert c[0:2].get_num_active_tasks(2) == 0
                 assert c[0:2].get_num_active_tasks(3) == 1 or c[0:2].get_num_active_tasks(3) == 1
@@ -156,9 +155,29 @@ def test_parray_task():
                 assert scheduler.get_parray_state(3, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(4, c[0:2].parent_ID)
             await ts
-
+            # Reset devices.
+            c._auto_move(-1, do_write = True)
+            a._auto_move(-1, do_write = True)
 
             ## Simple test for PArray tracker memory management.
+
+            # 40 bytes
+            d = np.array([1, 2, 4, 5, 6])
+            d = parray.asarray(d)
+            @spawn(ts[13], placement=[cuda(3)], inout=[(d, 0)])
+            def task13():
+                assert cuda(3).query_mapped_resource(0) == 40
+            await ts[13]
+
+            assert cuda(3).query_mapped_resource(0) == 40
+            d._auto_move(-1, do_write = True)
+            assert cuda(3).query_mapped_resource(0) == 0
+
+            @spawn(ts[14], placement=[cuda(2)], inout=[(d[0:2], 0)])
+            def task14():
+                assert cuda(2).query_mapped_resource(0) == 16
+            await ts
+
 
 
 if __name__=="__main__":

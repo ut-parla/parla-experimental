@@ -29,7 +29,6 @@ void InnerPArray::add_task(InnerTask *task) {
 }
 
 void InnerPArray::incr_num_active_tasks(DevID_t global_dev_id) {
-  std::cout << global_dev_id << " is increased\n";
   if (this->_parent_parray != nullptr) {
     this->_parent_parray->num_active_tasks[global_dev_id].fetch_add(
         1, std::memory_order_relaxed);
@@ -39,7 +38,6 @@ void InnerPArray::incr_num_active_tasks(DevID_t global_dev_id) {
 }
 
 void InnerPArray::decr_num_active_tasks(DevID_t global_dev_id) {
-  std::cout << global_dev_id << " is decreased\n";
   if (this->_parent_parray != nullptr) {
     this->_parent_parray->num_active_tasks[global_dev_id].fetch_sub(
         1, std::memory_order_relaxed);

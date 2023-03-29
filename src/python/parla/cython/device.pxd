@@ -1,3 +1,5 @@
+from parla.cython.resources cimport Resource
+
 import cython
 cimport cython
 
@@ -19,6 +21,9 @@ cdef extern from "include/device.hpp" nogil:
         long get_num_vcus() except +
         void *get_py_device() except +
         int get_global_id() except +
+        long long int query_resource(Resource) except +
+        long long int query_reserved_resource(Resource) except +
+        long long int query_mapped_resource(Resource) except +
 
     cdef cppclass CUDADevice(Device):
         CUDADevice(int, long, long, void*) except +
@@ -34,3 +39,6 @@ cdef class CyDevice:
     cdef Device* _cpp_device
     cdef Device* get_cpp_device(self)
     cpdef int get_global_id(self)
+    cpdef long long int query_resource(self, int)
+    cpdef long long int query_reserved_resource(self, int)
+    cpdef long long int query_mapped_resource(self, int)
