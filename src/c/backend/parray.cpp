@@ -5,10 +5,11 @@
 namespace parray {
 
 InnerPArray::InnerPArray(void *py_parray, uint64_t id, uint64_t parent_id,
-    InnerPArray *parent_parray, PArrayState *state, DevID_t num_devices)
+                         InnerPArray *parent_parray, PArrayState *state,
+                         DevID_t num_devices)
     : _py_parray(py_parray), id(id), parent_id(parent_id),
-  _parent_parray(parent_parray), _state(state), _num_devices(num_devices) {
-  num_active_tasks.resize(num_devices);    
+      _parent_parray(parent_parray), _state(state), _num_devices(num_devices) {
+  num_active_tasks.resize(num_devices);
 }
 
 const uint64_t InnerPArray::get_size() const { return this->_size; }
@@ -33,7 +34,8 @@ void InnerPArray::incr_num_active_tasks(DevID_t global_dev_id) {
     this->_parent_parray->num_active_tasks[global_dev_id].fetch_add(
         1, std::memory_order_relaxed);
   } else {
-    this->num_active_tasks[global_dev_id].fetch_add(1, std::memory_order_relaxed);
+    this->num_active_tasks[global_dev_id].fetch_add(1,
+                                                    std::memory_order_relaxed);
   }
 }
 
@@ -42,7 +44,8 @@ void InnerPArray::decr_num_active_tasks(DevID_t global_dev_id) {
     this->_parent_parray->num_active_tasks[global_dev_id].fetch_sub(
         1, std::memory_order_relaxed);
   } else {
-    this->num_active_tasks[global_dev_id].fetch_sub(1, std::memory_order_relaxed);
+    this->num_active_tasks[global_dev_id].fetch_sub(1,
+                                                    std::memory_order_relaxed);
   }
 }
 
@@ -51,7 +54,8 @@ size_t InnerPArray::get_num_active_tasks(DevID_t global_dev_id) {
     return this->_parent_parray->num_active_tasks[global_dev_id].load(
         std::memory_order_relaxed);
   } else {
-    return this->num_active_tasks[global_dev_id].load(std::memory_order_relaxed);
+    return this->num_active_tasks[global_dev_id].load(
+        std::memory_order_relaxed);
   }
 }
 

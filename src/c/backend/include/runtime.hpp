@@ -847,9 +847,7 @@ public:
   }
 
   /* Get a PArray tracker */
-  PArrayTracker* get_parray_tracker() {
-    return &(this->parray_tracker_);
-  }
+  PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
 
   /* Reserve a PArray in a device */
   void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
@@ -866,7 +864,8 @@ public:
   }
 
   bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
-    return this->parray_tracker_.get_parray_state(global_dev_idx, parray_parent_id);
+    return this->parray_tracker_.get_parray_state(global_dev_idx,
+                                                  parray_parent_id);
   }
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
@@ -880,7 +879,7 @@ protected:
 
   /// It manages the current/planned distribution of PArrays across devices.
   /// Parla task mapping policy considers locality of PArrays through this.
-  PArrayTracker parray_tracker_; 
+  PArrayTracker parray_tracker_;
 };
 
 #endif // PARLA_BACKEND_HPP

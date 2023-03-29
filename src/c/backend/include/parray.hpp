@@ -17,7 +17,7 @@ namespace parray {
 // scheduling task
 class InnerPArray {
 public:
-  uint64_t id; // unique ID of the PArray
+  uint64_t id;        // unique ID of the PArray
   uint64_t parent_id; // unique ID of the parent PArray
 
   /// Track the number of tasks that are using or are planning to use this
@@ -31,7 +31,8 @@ public:
   std::vector<CopyableAtomic<size_t>> num_active_tasks;
 
   InnerPArray() = delete;
-  InnerPArray(void *, uint64_t, uint64_t, InnerPArray *, PArrayState *, DevID_t);
+  InnerPArray(void *, uint64_t, uint64_t, InnerPArray *, PArrayState *,
+              DevID_t);
 
   /// Get current size (in bytes) of each copy of the PArray
   /// if it is a subarray, return the subarray's size
@@ -67,7 +68,7 @@ public:
   void *get_py_parray();
 
   /// Return the parent id of the current instance.
-  uint64_t get_parray_parentid();  
+  uint64_t get_parray_parentid();
 
 private:
   uint64_t _size; // number of bytes consumed by each copy of the array/subarray
