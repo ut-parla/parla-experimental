@@ -15,10 +15,10 @@ cdef class CyPArray:
                   CyPArrayState parray_state, int num_devices):
         cdef InnerPArray* cpp_parent_parray = NULL
         cdef CyPArray cy_parent_parray
-        print("py_parray:", py_parray.ID, " parent py parray:", py_parent_parray.ID)
         if py_parent_parray is not None and py_parent_parray.ID != py_parray.ID:
-            cy_parent_parray = py_parray.cy_parray
+            cy_parent_parray = py_parent_parray.cy_parray
             cpp_parent_parray = cy_parent_parray.get_cpp_parray()
+
         self.cpp_parray = new InnerPArray(\
             <void *> py_parray, id, parent_id, cpp_parent_parray,
             parray_state.get_cpp_parray_state(), num_devices)

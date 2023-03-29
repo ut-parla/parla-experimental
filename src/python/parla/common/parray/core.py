@@ -75,7 +75,7 @@ class PArray:
 
             self.nbytes = parent.nbytes          # the bytes used by the complete array
             self.subarray_nbytes = array.nbytes  # the bytes used by this subarray
-            self.parent = self
+            self.parent = parent
 
             # no need to register again since parent already did that
         else:  # initialize a new PArray
@@ -106,10 +106,7 @@ class PArray:
             self.nbytes = array.nbytes
             self.subarray_nbytes = self.nbytes  # no subarray
 
-            self.parent = parent
-
-            # # Register the parray with the scheduler
-            # task_runtime.get_scheduler_context().scheduler._available_resources.track_parray(self)
+            self.parent = self
 
         # record the size in Cython PArray
         scheduler = get_scheduler()
