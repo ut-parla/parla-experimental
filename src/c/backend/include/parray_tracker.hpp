@@ -40,6 +40,13 @@ public:
    * to the device) to be referenced in the device.
    */
   void release_parray(const InnerPArray& parray, Device* device);
+
+  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
+    mtx.lock();
+    bool state = this->managed_parrays_[global_dev_idx][parray_parent_id];
+    mtx.unlock();
+    return state;
+  }
 private:
 
   DeviceManager* device_manager_;

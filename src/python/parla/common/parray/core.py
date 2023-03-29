@@ -855,3 +855,6 @@ class PArray:
     def get_parray_parentid_from_cpp(self):
         return self._cy_parray.get_parray_parentid()
 
+
+    def get_num_active_tasks(self, global_dev_id):
+        return self._cy_parray.get_num_active_tasks(global_dev_id)

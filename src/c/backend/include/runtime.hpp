@@ -865,6 +865,10 @@ public:
     this->parray_tracker_.release_parray(*parray, device);
   }
 
+  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
+    return this->parray_tracker_.get_parray_state(global_dev_idx, parray_parent_id);
+  }
+
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
   void spawn_wait();

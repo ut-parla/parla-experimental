@@ -6,13 +6,14 @@ from parla.cython.device_manager import cpu, cuda
 import numpy as np
 
 def test_parray_creation():
-    A = parray.asarray([[1, 2], [3, 4]])
+    with Parla():
+        A = parray.asarray([[1, 2], [3, 4]])
 
-    a = A[0]
-    assert A[0,1] == 2
-    assert A[1,0] == 3
-    assert A[1,1] == 4
-    assert np.array_equal(A, np.asarray([[1, 2], [3, 4]]))
+        a = A[0]
+        assert A[0,1] == 2
+        assert A[1,0] == 3
+        assert A[1,1] == 4
+        assert np.array_equal(A, np.asarray([[1, 2], [3, 4]]))
 
 def test_parray_task():
     with Parla():
@@ -85,6 +86,5 @@ def test_parray_task():
                 assert a._coherence._local_states[0] == Coherence.INVALID
 
 if __name__=="__main__":
-    with Parla():
-        test_parray_creation()
-        test_parray_task()
+    test_parray_creation()
+    test_parray_task()
