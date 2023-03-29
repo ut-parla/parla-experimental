@@ -634,7 +634,7 @@ class TaskEnvironment:
                 env.synchronize()
 
     def __enter__(self):
-        print("Entering environment:", self.env_list, flush=True)
+        #print("Entering environment:", self.env_list, flush=True)
 
         if len(self.env_list) == 0:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
@@ -644,7 +644,7 @@ class TaskEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting environment", self.env_list, flush=True)
+        #print("Exiting environment", self.env_list, flush=True)
         ret = False
 
         Locals.pop_context()
@@ -774,12 +774,12 @@ class CPUEnvironment(TerminalEnvironment):
         return f"CPUEnvironment({self._device})"
 
     def __enter__(self):
-        print("Entering CPU Environment: ", self, flush=True)
+        #print("Entering CPU Environment: ", self, flush=True)
         Locals.push_context(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting CPU Environment: ", self, flush=True)
+        #print("Exiting CPU Environment: ", self, flush=True)
         Locals.pop_context()
         return False
 
@@ -807,14 +807,14 @@ class GPUEnvironment(TerminalEnvironment):
 
 
     def __enter__(self):
-        print("Entering GPU Environment: ", self, flush=True)
+        #print("Entering GPU Environment: ", self, flush=True)
         Locals.push_context(self)
         self.active_stream = self.stream_list[0]
         ret_stream = self.active_stream.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting GPU Environment: ", self, flush=True)
+        #print("Exiting GPU Environment: ", self, flush=True)
         ret = False
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
         Locals.pop_context()

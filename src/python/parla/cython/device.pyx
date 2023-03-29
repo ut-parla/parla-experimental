@@ -3,7 +3,7 @@
 ################################################################################
 
 from parla.common.globals import _Locals as Locals
-from parla.common.globals import cupy
+from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType
 
 from abc import ABCMeta, abstractmethod
@@ -13,7 +13,6 @@ from collections import defaultdict
 import os 
 from enum import IntEnum
 
-CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
 
 cdef class CyDevice:
     """
@@ -85,7 +84,8 @@ class PyDevice:
     def __init__(self, dev_type, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
-        self._device = self 
+        self._device = self
+        self._device_id = dev_id
 
     def __dealloc__(self):
         del self._cy_device
@@ -153,6 +153,10 @@ class PyDevice:
     def __str__(self):
         return repr(self)
 
+    @property
+    def device_id(self):
+        return self._device_id
+
 
 """
 Device instances in Python manage resource status.
@@ -166,9 +170,13 @@ class PyCUDADevice(PyDevice):
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
-        if CUPY_ENABLED:
-            self._device = cupy.cuda.Device(dev_id)
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
+
+    @property
+    def device(self):
+        if CUPY_ENABLED:
+            self._device = cupy.cuda.Device(self._device_id)
+        return self._device
 
 
 class PyCPUDevice(PyDevice):
@@ -305,10 +313,12 @@ class Stream:
         return self.__repr__()
 
     def __enter__(self):
-        print("Entering Stream: ", self, flush=True)
+        #print("Entering Stream: ", self, flush=True)
+        pass
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("Exiting Stream: ", self, flush=True)
+        #print("Exiting Stream: ", self, flush=True)
+        pass
 
     @property
     def device(self):
@@ -349,23 +359,22 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        print("Entering Stream: ", self, flush=True)
+        #print("Entering Stream: ", self, flush=True)
 
         #Set the device to the stream's device.
         self._device.__enter__()
-        print('1', flush=True)
+        
         #Set the stream to the current stream.
         self._stream.__enter__()
-        print('2', flush=True)
+
 
         Locals.push_stream(self)
 
-        print('3', flush=True)
 
         return self 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print("Exiting Stream: ", self, flush=True)
+        #print("Exiting Stream: ", self, flush=True)
 
         ret_stream = False
         ret_device = False

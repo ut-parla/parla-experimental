@@ -88,6 +88,7 @@ class StreamPool:
 
         for device in self._device_list:
             self._pool[device] = []
+            
             with device.device as d:
                 for i in range(self._per_device):
                     self._pool[device].append(StreamClass(device=d))

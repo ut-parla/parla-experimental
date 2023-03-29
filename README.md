@@ -6,9 +6,11 @@ Repository for refactoring Parla to a C++ runtime to avoid GIL during scheduling
 
 Requires: 
 - psutil, cython, scikit-build, Python>=3.9, nvtx (python module)
+- CuPy>=9.2 (for GPU support)
 - A C++ compiler that supports C++20 float atomics
 - An internet connection. I don't know how to make scikit-build stop building in its own venv. 
 
+Note: Ensure that the Cupy version and your CUDA Toolkit are compatible with each other and the architecture of your machine.
 
 Can be built with:
 ```
