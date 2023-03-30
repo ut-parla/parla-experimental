@@ -27,6 +27,15 @@ cdef class CyDevice:
     cpdef int get_global_id(self):
         return self._cpp_device.get_global_id()
 
+    cpdef long long int query_resource(self, int resource_type):
+        return self._cpp_device.query_resource(<Resource> resource_type)
+
+    cpdef long long int query_reserved_resource(self, int resource_type):
+        return self._cpp_device.query_reserved_resource(<Resource> resource_type)
+
+    cpdef long long int query_mapped_resource(self, int resource_type):
+        return self._cpp_device.query_mapped_resource(<Resource> resource_type)
+
 
 cdef class CyCUDADevice(CyDevice):
     """
@@ -113,6 +122,15 @@ class PyDevice:
 
     def get_cy_device(self):
         return self._cy_device
+
+    def query_resource(self, res_type):
+        return self._cy_device.query_resource(res_type)
+
+    def query_reserved_resource(self, res_type):
+        return self._cy_device.query_reserved_resource(res_type)
+
+    def query_mapped_resource(self, res_type):
+        return self._cy_device.query_mapped_resource(res_type)
 
     @property
     def device(self):
@@ -367,9 +385,7 @@ class CupyStream(Stream):
         #Set the stream to the current stream.
         self._stream.__enter__()
 
-
         Locals.push_stream(self)
-
 
         return self 
 

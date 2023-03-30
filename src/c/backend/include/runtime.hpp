@@ -19,6 +19,7 @@ using namespace std::chrono_literals;
 #include "containers.hpp"
 #include "device_manager.hpp"
 #include "parray.hpp"
+#include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
 
@@ -247,7 +248,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them */
   std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
   /* TODO(hc): will be removed */
-  std::vector<int> parray_dev_list;
+  std::vector<DevID_t> parray_dev_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -840,9 +841,31 @@ public:
    * dispatched to a hardware queue or are complete */
   int get_num_ready_tasks();
 
-  /* Get number of noitified workers*/
+  /* Get number of noitified workers */
   int get_num_notified_workers() {
     return this->workers.get_num_notified_workers();
+  }
+
+  /* Get a PArray tracker */
+  PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
+
+  /* Reserve a PArray in a device */
+  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+    Device *device =
+        this->device_manager_->get_device_by_global_id(global_dev_id);
+    this->parray_tracker_.reserve_parray(*parray, device);
+  }
+
+  /* Release a PArray in a device */
+  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+    Device *device =
+        this->device_manager_->get_device_by_global_id(global_dev_id);
+    this->parray_tracker_.release_parray(*parray, device);
+  }
+
+  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
+    return this->parray_tracker_.get_parray_state(global_dev_idx,
+                                                  parray_parent_id);
   }
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
@@ -850,9 +873,13 @@ public:
   void spawn_wait();
 
 protected:
-  /// This manager manages all device instances in C++.
+  /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
+
+  /// It manages the current/planned distribution of PArrays across devices.
+  /// Parla task mapping policy considers locality of PArrays through this.
+  PArrayTracker parray_tracker_;
 };
 
 #endif // PARLA_BACKEND_HPP
