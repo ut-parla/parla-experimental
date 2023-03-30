@@ -50,6 +50,9 @@ void Mapper::run(SchedulerPhase *next_phase) {
     std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
             placement_req_options.get_placement_req_opts_ref();
+    const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+        &parray_list = task->parray_list;
+    const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
     // A set of chosen devices to a task.
     Score_t best_score{0};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
@@ -66,7 +69,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
         Score_t score{0};
         bool is_req_available = policy_->calc_score_mdevplacement(
-            task, mdev_reqs, *this, &mdev_reqs_vec, &score);
+            task, mdev_reqs, *this, &mdev_reqs_vec, &score,
+            parray_list, parray_dev_list);
         if (!is_req_available) {
           continue;
         }
@@ -86,7 +90,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
             std::dynamic_pointer_cast<DeviceRequirement>(base_req);
         Score_t score{0};
         bool is_req_available =
-            policy_->calc_score_devplacement(task, dev_req, *this, &score);
+            policy_->calc_score_devplacement(task, dev_req, *this, &score,
+                parray_list);
         if (!is_req_available) {
           continue;
         }
@@ -103,7 +108,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
         Score_t chosen_dev_score{0};
         bool is_req_available = policy_->calc_score_archplacement(
-            task, arch_req, *this, chosen_dev_req, &chosen_dev_score);
+            task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
+            parray_list);
         if (!is_req_available) {
           continue;
         }

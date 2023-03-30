@@ -2,6 +2,7 @@
 #define PARLA_POLICY_HPP
 
 #include "device.hpp"
+#include "parray_tracker.hpp"
 #include "runtime.hpp"
 
 #include <memory>
@@ -12,8 +13,8 @@ class Mapper;
 
 class MappingPolicy {
 public:
-  MappingPolicy(DeviceManager *device_manager)
-      : device_manager_(device_manager) {}
+  MappingPolicy(DeviceManager *device_manager, PArrayTracker *parray_tracker)
+      : device_manager_(device_manager), parray_tracker_(parray_tracker) {}
 
   /// Calculate a score of the device placement requirement.
   /// This function calculates a score of a device based on the current
@@ -31,7 +32,9 @@ public:
   virtual bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      const Mapper &mapper, Score_t *score) = 0;
+      const Mapper &mapper, Score_t *score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list) = 0;
 
   /// Calculate a score of the architecture placement requirement.
   /// This function first iterates devices of the architecture, and calculates
@@ -54,7 +57,9 @@ public:
   virtual bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
-      Score_t *chosen_dev_score) = 0;
+      Score_t *chosen_dev_score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list) = 0;
 
   /// Calculate a score of the multi-device placement that users passed.
   /// The placement requirement could contain multiple device or/and
@@ -77,10 +82,14 @@ public:
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
       const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
-      Score_t *average_score) = 0;
+      Score_t *average_score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list,
+      const std::vector<DevID_t> &parray_dev_list) = 0;
 
 protected:
   DeviceManager *device_manager_;
+  PArrayTracker *parray_tracker_;
 };
 
 class LocalityLoadBalancingMappingPolicy : public MappingPolicy {
@@ -90,18 +99,25 @@ public:
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      const Mapper &mapper, Score_t *score) override;
+      const Mapper &mapper, Score_t *score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
-      Score_t *chosen_dev_score) override;
+      Score_t *chosen_dev_score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list) override;
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
       const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
-      Score_t *average_score) override;
+      Score_t *average_score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list,
+      const std::vector<DevID_t> &parray_dev_list) override;
 };
 
 #endif
