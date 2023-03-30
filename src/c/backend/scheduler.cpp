@@ -293,11 +293,24 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     task->set_state(Task::COMPLETED);
   }
 
-  // PArrays could be evicted even during task barrier continuation.
-  // However, these PArrays will be allocated and tracked
-  // again after the task restarts.
-  for (size_t i = 0; i < task->parray_list.size(); ++i) {
-    DevID_t dev_id = task->assigned_devices[i]->get_global_id();
+  // TODO: for runahead, we need to do this AFTER the task body is complete
+  //      Need to add back to the pool after notify_dependents
+  worker->remove_task();
+
+  // Release all resources for this task on all devices
+  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+    Device *device = task->assigned_devices[i];
+    DevID_t dev_id = device->get_global_id();
+
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+
+    device_pool.increase<ResourceCategory::All>(task_pool);
+
+    // PArrays could be evicted even during task barrier continuation.
+    // However, these PArrays will be allocated and tracked
+    // again after the task restarts.
     for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
       parray::InnerPArray *parray = task->parray_list[i][j].first;
       parray->decr_num_active_tasks(dev_id);
@@ -305,20 +318,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
       // but when it is EVICTED, it will check the number of referneces
       // and will be released if that is 0.
     }
-  }
-
-  // TODO: for runahead, we need to do this AFTER the task body is complete
-  //      Need to add back to the pool after notify_dependents
-  worker->remove_task();
-
-  // Release all resources for this task on all devices
-  for (Device *device : task->assigned_devices) {
-
-    ResourcePool_t &device_pool = device->get_reserved_pool();
-    ResourcePool_t &task_pool =
-        task->device_constraints[device->get_global_id()];
-
-    device_pool.increase<ResourceCategory::All>(task_pool);
   }
 
   if (state == Task::RUNNING) {
