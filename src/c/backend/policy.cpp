@@ -6,8 +6,9 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
     const Mapper &mapper, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) {
+              &parray_list) {
   const Device &device = *(dev_placement_req->device());
+  DevID_t global_dev_id = device.get_global_id();
   // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
   // Check device resource availability.
@@ -19,7 +20,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   size_t local_data = 0, nonlocal_data = 0;
   for (size_t i = 0; i < parray_list.size(); ++i) {
     InnerPArray *parray = parray_list[i].first;
-    if (parray_tracker_->get_parray_state(device.get_global_id(), parray->parent_id)) {
+    if (parray_tracker_->get_parray_state(global_dev_id, parray->parent_id)) {
       local_data += parray->get_size();
     } else {
       nonlocal_data += parray->get_size();
@@ -85,7 +86,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) {
+            &parray_list) {
   Score_t best_score{0};
   std::shared_ptr<DeviceRequirement> best_device_req{nullptr};
   uint32_t i{0};
@@ -120,9 +121,9 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     const Mapper &mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score,
-    const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list,
-    const std::vector<DevID_t> &parray_dev_list) {
+    const std::vector<
+        std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+          &parray_list) {
   *average_score = 0;
   const std::vector<std::shared_ptr<SinglePlacementRequirementBase>>
       &placement_reqs_vec = mdev_placement_req->get_placement_reqs_ref();
@@ -135,30 +136,16 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     std::shared_ptr<DeviceRequirement> dev_req{nullptr};
     Score_t score{0};
     bool is_member_device_available{true};
-    // TODO(hc): will be replaced with xpy
-    std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-        dev_parray_list;
-    if (parray_dev_list.size() > did) {
-      DevID_t parray_device_idx = parray_dev_list[did];
-      InnerPArray *parray = parray_list[parray_device_idx].first;
-      AccessMode access_mode = parray_list[parray_device_idx].second;
-      // If the PArray is not specified from @spawn,
-      // ignore it.
-      if (parray != nullptr) {
-        dev_parray_list.emplace_back(parray_list[parray_device_idx]);
-      }
-    }
-
     if (placement_req->is_dev_req()) {
       dev_req = std::dynamic_pointer_cast<DeviceRequirement>(placement_req);
       is_member_device_available =
           this->calc_score_devplacement(task, dev_req, mapper, &score,
-              dev_parray_list);
+              parray_list[did]);
     } else if (placement_req->is_arch_req()) {
       ArchitectureRequirement *arch_req =
           dynamic_cast<ArchitectureRequirement *>(placement_req.get());
       is_member_device_available = this->calc_score_archplacement(
-          task, arch_req, mapper, dev_req, &score, dev_parray_list);
+          task, arch_req, mapper, dev_req, &score, parray_list[did]);
     }
     assert(dev_req != nullptr);
     (*member_device_reqs)[did] = dev_req;

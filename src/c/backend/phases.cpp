@@ -50,9 +50,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
     std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
             placement_req_options.get_placement_req_opts_ref();
-    const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
-    const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
     // A set of chosen devices to a task.
     Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
@@ -70,7 +69,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         Score_t score{0};
         bool is_req_available = policy_->calc_score_mdevplacement(
             task, mdev_reqs, *this, &mdev_reqs_vec, &score,
-            parray_list, parray_dev_list);
+            parray_list);
         if (!is_req_available) {
           continue;
         }
@@ -85,7 +84,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         Score_t score{0};
         bool is_req_available =
             policy_->calc_score_devplacement(task, dev_req, *this, &score,
-                parray_list);
+                parray_list[0]);
         if (!is_req_available) {
           continue;
         }
@@ -103,7 +102,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         Score_t chosen_dev_score{0};
         bool is_req_available = policy_->calc_score_archplacement(
             task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
-            parray_list);
+            parray_list[0]);
         if (!is_req_available) {
           continue;
         }
@@ -121,27 +120,26 @@ void Mapper::run(SchedulerPhase *next_phase) {
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
     } else {
+      std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> *parray_list =
+          &(task->parray_list);
       for (size_t i = 0; i < chosen_devices.size(); ++i) {
         assert(chosen_devices[i] != nullptr);
         Device *chosen_device = chosen_devices[i]->device();
+        DevID_t global_dev_id = chosen_device->get_global_id();
         task->assigned_devices.push_back(chosen_device);
         task->device_constraints.insert(
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
         this->atomic_incr_num_mapped_tasks_device(
             chosen_device->get_global_id());
-      }
-
-      // TODO(hc): temporarily use manual device index of a PArray
-      //           to track its state.
-      std::vector<std::pair<parray::InnerPArray *, AccessMode>> *parray_list =
-          &(task->parray_list);
-      const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
-      for (size_t i = 0; i < parray_dev_list.size(); ++i) {
-        Device *target_device = chosen_devices[parray_dev_list[i]]->device();
-        parray::InnerPArray *parray = (*parray_list)[i].first;
-        this->scheduler->get_parray_tracker()->reserve_parray(*parray,
-                                                              target_device);
-        parray->incr_num_active_tasks(target_device->get_global_id());
+        std::cout << global_dev_id << " is reserved..\n";
+        for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
+          std::cout << "\t >> " << global_dev_id << "'s array\n";
+          parray::InnerPArray *parray = (*parray_list)[i][j].first;
+          this->scheduler->get_parray_tracker()->reserve_parray(
+              *parray, chosen_device);
+          parray->incr_num_active_tasks(global_dev_id);
+        }
+        task->parray_index_mapping[i] = global_dev_id;
       }
 
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
@@ -224,65 +222,60 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
 
 void MemoryReserver::create_datamove_tasks(InnerTask *task) {
   // Get a list of the parrays the current task holds.
-  const std::vector<std::pair<parray::InnerPArray *, AccessMode>> &parray_list =
-      task->parray_list;
-
-  const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
-
+  const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+      &parray_list = task->parray_list;
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
   for (size_t i = 0; i < parray_list.size(); ++i) {
-    // Create a data movement task for each PArray.
-    parray::InnerPArray *parray = parray_list[i].first;
-    AccessMode access_mode = parray_list[i].second;
-    InnerDataTask *datamove_task = new InnerDataTask(
-        // TODO(hc): id should be updated!
-        task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
-        parray_dev_list[i]);
-    auto &parray_task_list = parray->get_task_list_ref();
-    // Find dependency intersection between compute and data movement tasks.
+    for (size_t j = 0; j < parray_list[i].size(); ++j) {
+      // Create a data movement task for each PArray.
+      parray::InnerPArray *parray = parray_list[i][j].first;
+      AccessMode access_mode = parray_list[i][j].second;
+      DevID_t target_dev_global_id = task->parray_index_mapping[i];
+      std::cout << "target device id:" << target_dev_global_id << "\n";
+      InnerDataTask *datamove_task = new InnerDataTask(
+          // TODO(hc): id should be updated!
+          task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
+          target_dev_global_id);
+      auto &parray_task_list = parray->get_task_list_ref();
+      // Find dependency intersection between compute and data movement tasks.
 
-    // TODO(hc): This is not the complete implementation.
-    //           We will use a concurrent map for parray's
-    //           task list as an optimization.
+      // TODO(hc): This is not the complete implementation.
+      //           We will use a concurrent map for parray's
+      //           task list as an optimization.
 
-    std::vector<void *> compute_task_dependencies = task->get_dependencies();
-    std::vector<InnerTask *> data_task_dependencies;
-    for (size_t j = 0; j < compute_task_dependencies.size(); ++j) {
-      InnerTask *parray_dependency =
-          static_cast<InnerTask *>(compute_task_dependencies[j]);
-
-      // COMMENT(wlr): This is already filtered in add_deps
-      //  if (parray_dependency->get_state() == Task::COMPLETED) {
-      //    continue;
-      //  }
-
-      // The task list in PArray is currently thread safe since
-      // we do not remove tasks from the list but just keep even completed
-      // task as its implementation is easier.
-      // TODO(hc): If this list becomes too long to degrade our performance,
-      //           we will need to think about how to remove completed
-      //           tasks from this list. In this case, we need a lock.
-      // parray_task_list.lock();
-      for (size_t k = 0; k < parray_task_list.size_unsafe(); ++k) {
-        if (parray_task_list.at_unsafe(k)->id == parray_dependency->id) {
-          data_task_dependencies.push_back(parray_dependency);
+      std::vector<void *> compute_task_dependencies = task->get_dependencies();
+      std::vector<InnerTask *> data_task_dependencies;
+      for (size_t k = 0; k < compute_task_dependencies.size(); ++k) {
+        InnerTask *parray_dependency =
+            static_cast<InnerTask *>(compute_task_dependencies[k]);
+        // The task list in PArray is currently thread safe since
+        // we do not remove tasks from the list but just keep even completed
+        // task as its implementation is easier.
+        // TODO(hc): If this list becomes too long to degrade our performance,
+        //           we will need to think about how to remove completed
+        //           tasks from this list. In this case, we need a lock.
+        // parray_task_list.lock();
+        for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
+          if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
+            data_task_dependencies.push_back(parray_dependency);
+          }
         }
+        // parray_task_list.unlock();
       }
-      // parray_task_list.unlock();
-    }
 
-    // TODO(hc): pass false to add_dependencies() as optimization.
-    datamove_task->add_dependencies(data_task_dependencies, true);
-    // Copy assigned devices to a compute task to a data movement task.
-    // TODO(hc): When we support xpy, it should be devices corresponding
-    //           to placements of the local partition.
-    datamove_task->add_assigned_device(
-        task->get_assigned_devices()[parray_dev_list[i]]);
-    data_tasks.push_back(datamove_task);
-    // Add the created data movement task to a reserved task queue.
-    this->scheduler->increase_num_active_tasks();
-    this->reserved_tasks_buffer.push_back(datamove_task);
+      // TODO(hc): pass false to add_dependencies() as optimization.
+      datamove_task->add_dependencies(data_task_dependencies, true);
+      // Copy assigned devices to a compute task to a data movement task.
+      // TODO(hc): When we support xpy, it should be devices corresponding
+      //           to placements of the local partition.
+      datamove_task->add_assigned_device(
+          task->get_assigned_devices()[i]);
+      data_tasks.push_back(datamove_task);
+      // Add the created data movement task to a reserved task queue.
+      this->scheduler->increase_num_active_tasks();
+      this->reserved_tasks_buffer.push_back(datamove_task);
+    }
   }
   // Create dependencies between data move task and compute tasks.
   task->add_dependencies(data_tasks, true);

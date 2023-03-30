@@ -296,15 +296,14 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // PArrays could be evicted even during task barrier continuation.
   // However, these PArrays will be allocated and tracked
   // again after the task restarts.
-  for (size_t i = 0; i < task->parray_list.size(); ++i) {
-    parray::InnerPArray *parray = task->parray_list[i].first;
-    DevID_t target_dev_id = task->parray_dev_list[i];
-    Device *target_device = task->assigned_devices[target_dev_id];
-    DevID_t global_dev_id = target_device->get_global_id();
-    parray->decr_num_active_tasks(global_dev_id);
-    // This PArray is not released from the PArray tracker here,
-    // but when it is EVICTED, it will check the number of referneces
-    // and will be released if that is 0.
+  for (size_t dev_id = 0; dev_id < task->parray_list.size(); ++dev_id) {
+    for (size_t j = 0; j < task->parray_list[dev_id].size(); ++j) {
+      parray::InnerPArray *parray = task->parray_list[dev_id][j].first;
+      parray->decr_num_active_tasks(dev_id);
+      // This PArray is not released from the PArray tracker here,
+      // but when it is EVICTED, it will check the number of referneces
+      // and will be released if that is 0.
+    }
   }
 
   // TODO: for runahead, we need to do this AFTER the task body is complete

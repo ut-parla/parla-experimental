@@ -34,7 +34,7 @@ public:
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       const Mapper &mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) = 0;
+              &parray_list) = 0;
 
   /// Calculate a score of the architecture placement requirement.
   /// This function first iterates devices of the architecture, and calculates
@@ -59,7 +59,7 @@ public:
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) = 0;
+              &parray_list) = 0;
 
   /// Calculate a score of the multi-device placement that users passed.
   /// The placement requirement could contain multiple device or/and
@@ -83,9 +83,9 @@ public:
       const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
-      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list,
-      const std::vector<DevID_t> &parray_dev_list) = 0;
+      const std::vector<
+          std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+              &parray_list) = 0;
 
 protected:
   DeviceManager *device_manager_;
@@ -101,23 +101,23 @@ public:
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       const Mapper &mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) override;
+              &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list) override;
+              &parray_list) override;
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
       const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
-      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-          &parray_list,
-      const std::vector<DevID_t> &parray_dev_list) override;
+      const std::vector<
+          std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+              &parray_list) override;
 };
 
 #endif
