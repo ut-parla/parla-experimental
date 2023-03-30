@@ -429,6 +429,10 @@ void InnerTask::end_multidev_req_addition() {
   req_addition_mode_ = SingleDevAdd;
 }
 
+bool InnerTask::is_data_task() {
+  return this->has_data.load(std::memory_order_relaxed);
+}
+
 void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }
 
 AccessMode InnerDataTask::get_access_mode() { return this->access_mode_; }

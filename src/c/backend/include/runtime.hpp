@@ -469,6 +469,9 @@ public:
     return placement_req_options_;
   }
 
+  /* Return True if an instance is a data movement task */
+  bool is_data_task();
+
 protected:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
