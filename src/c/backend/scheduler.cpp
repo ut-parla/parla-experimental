@@ -296,9 +296,10 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // PArrays could be evicted even during task barrier continuation.
   // However, these PArrays will be allocated and tracked
   // again after the task restarts.
-  for (size_t dev_id = 0; dev_id < task->parray_list.size(); ++dev_id) {
-    for (size_t j = 0; j < task->parray_list[dev_id].size(); ++j) {
-      parray::InnerPArray *parray = task->parray_list[dev_id][j].first;
+  for (size_t i = 0; i < task->parray_list.size(); ++i) {
+    DevID_t dev_id = task->parray_index_mapping[i];
+    for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
+      parray::InnerPArray *parray = task->parray_list[i][j].first;
       parray->decr_num_active_tasks(dev_id);
       // This PArray is not released from the PArray tracker here,
       // but when it is EVICTED, it will check the number of referneces

@@ -50,7 +50,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
     std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
             placement_req_options.get_placement_req_opts_ref();
-    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+    std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
     // A set of chosen devices to a task.
     Score_t best_score{-1};
@@ -131,9 +131,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
         this->atomic_incr_num_mapped_tasks_device(
             chosen_device->get_global_id());
-        std::cout << global_dev_id << " is reserved..\n";
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
-          std::cout << "\t >> " << global_dev_id << "'s array\n";
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(
               *parray, chosen_device);
@@ -231,12 +229,10 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       // Create a data movement task for each PArray.
       parray::InnerPArray *parray = parray_list[i][j].first;
       AccessMode access_mode = parray_list[i][j].second;
-      DevID_t target_dev_global_id = task->parray_index_mapping[i];
-      std::cout << "target device id:" << target_dev_global_id << "\n";
       InnerDataTask *datamove_task = new InnerDataTask(
           // TODO(hc): id should be updated!
           task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
-          target_dev_global_id);
+          i);
       auto &parray_task_list = parray->get_task_list_ref();
       // Find dependency intersection between compute and data movement tasks.
 
