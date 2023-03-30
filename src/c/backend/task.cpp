@@ -210,7 +210,8 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode, int dev_id) {
+void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode,
+                           int dev_id) {
   AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
   parray->add_task(this);
   this->parray_list.emplace_back(std::make_pair(parray, test_access_mode));
@@ -234,7 +235,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
 
     auto task = this->dependents.get_unsafe(i);
-    Task::StatusFlags status = task->notify(new_state);
+    Task::StatusFlags status = task->notify(new_state, this->has_data.load());
 
     // std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
@@ -342,6 +343,10 @@ std::vector<Device *> &InnerTask::get_assigned_devices() {
 
 void InnerTask::copy_assigned_devices(const std::vector<Device *> &others) {
   this->assigned_devices = others;
+}
+
+void InnerTask::add_assigned_device(Device *device) {
+  this->assigned_devices.push_back(device);
 }
 
 Task::State InnerTask::set_state(Task::State state) {
