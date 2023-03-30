@@ -9,14 +9,13 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
           &parray_list) {
   const Device &device = *(dev_placement_req->device());
   // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
-  // std::cout << " ** Device Score Calculation\n";
 
   // Check device resource availability.
   if (!device.check_resource_availability(dev_placement_req.get())) {
     return false;
   }
 
-  // TODO(hc): Data locality calculation.
+  // PArray locality.
   size_t local_data = 0, nonlocal_data = 0;
   for (size_t i = 0; i < parray_list.size(); ++i) {
     InnerPArray *parray = parray_list[i].first;
@@ -27,6 +26,8 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     }
   }
 
+#if 0
+  // TODO(hc): This metric is duplicated with data locality.
   // Check how many dependencies are mapped to the device candidate
   // being checked.
   // Note that this only considers dependencies specified in a task
@@ -47,8 +48,12 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   //           << "s dependencies have been mapped to device " <<
   //           device.get_name()
   //           << "\n";
+#endif
 
-  /// Calculate device load balancing.
+  // TODO(hc): memory load; but let me postpone this implementation because
+  //           it may require nested for loops.
+
+  // Calculate device load balancing.
   size_t total_num_mapped_tasks = mapper.atomic_load_total_num_mapped_tasks();
   size_t num_tasks_to_device =
       mapper.atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
@@ -58,16 +63,15 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
         num_tasks_to_device / double(total_num_mapped_tasks);
   }
 
-  // std::cout << "Device " << device.get_name()
-  //           << "'s num_tasks: " << num_tasks_to_device
-  //           << " (Total num of mapped tasks:" << total_num_mapped_tasks
-  //           << ") and load: " << normalizd_device_load << "\n";
-
-
-  *score = (30.0 * local_data - 30.0 * nonlocal_data - normalizd_device_load);
+  *score = (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
+  // If the score is less than 0, sets to 0. As the default value of the best score
+  // is -1, the device giving a score 0 can be chosen.
+  *score = (*score < 0)? 0 : *score;
 
   std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-    " for task "<< task->get_name() << "\n";
+    " for task "<< task->get_name() << " local data: " << local_data <<
+    " non local data:" << nonlocal_data << " normalized device load:" <<
+    normalizd_device_load << "\n";
   // std::cout << "\t[Device Requirement in device Requirement]\n"
   //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
   //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
@@ -134,7 +138,16 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     // TODO(hc): will be replaced with xpy
     std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         dev_parray_list;
-    dev_parray_list.emplace_back(parray_list[parray_dev_list[did]]);
+    if (parray_dev_list.size() > did) {
+      DevID_t parray_device_idx = parray_dev_list[did];
+      InnerPArray *parray = parray_list[parray_device_idx].first;
+      AccessMode access_mode = parray_list[parray_device_idx].second;
+      // If the PArray is not specified from @spawn,
+      // ignore it.
+      if (parray != nullptr) {
+        dev_parray_list.emplace_back(parray_list[parray_device_idx]);
+      }
+    }
 
     if (placement_req->is_dev_req()) {
       dev_req = std::dynamic_pointer_cast<DeviceRequirement>(placement_req);

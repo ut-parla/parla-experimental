@@ -54,7 +54,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         &parray_list = task->parray_list;
     const std::vector<DevID_t> &parray_dev_list = task->parray_dev_list;
     // A set of chosen devices to a task.
-    Score_t best_score{0};
+    Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
     // Iterate all placement requirements passed by users and calculate
@@ -74,12 +74,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
         if (!is_req_available) {
           continue;
         }
-        // std::cout << "Chosen device from multi-device requirements\n";
-        // std::cout << "Score:" << score << "\n";
-        // for (size_t i = 0; i < mdev_reqs_vec.size(); ++i) {
-        //  std::cout << "\t>>" << mdev_reqs_vec[i] <<
-        //}
-
         if (best_score <= score) {
           best_score = score;
           chosen_devices.swap(mdev_reqs_vec);
