@@ -249,8 +249,6 @@ public:
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> parray_list;
-  /* A mapping from a global device id to a parray device index from @spawn */
-  std::vector<DevID_t> parray_index_mapping;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);

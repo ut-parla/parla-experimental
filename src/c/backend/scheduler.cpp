@@ -297,7 +297,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   // However, these PArrays will be allocated and tracked
   // again after the task restarts.
   for (size_t i = 0; i < task->parray_list.size(); ++i) {
-    DevID_t dev_id = task->parray_index_mapping[i];
+    DevID_t dev_id = task->assigned_devices[i]->get_global_id();
     for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
       parray::InnerPArray *parray = task->parray_list[i][j].first;
       parray->decr_num_active_tasks(dev_id);

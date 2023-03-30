@@ -37,7 +37,6 @@ void InnerTask::set_scheduler(InnerScheduler *scheduler) {
   this->scheduler = scheduler;
   size_t num_devices = this->scheduler->get_device_manager()->get_num_devices();
   this->parray_list.resize(num_devices);
-  this->parray_index_mapping.resize(num_devices);
 }
 
 void InnerTask::set_name(std::string name) {

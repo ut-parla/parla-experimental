@@ -137,7 +137,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
               *parray, chosen_device);
           parray->incr_num_active_tasks(global_dev_id);
         }
-        task->parray_index_mapping[i] = global_dev_id;
       }
 
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
