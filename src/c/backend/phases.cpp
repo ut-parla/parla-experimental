@@ -251,9 +251,12 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     for (size_t j = 0; j < compute_task_dependencies.size(); ++j) {
       InnerTask *parray_dependency =
           static_cast<InnerTask *>(compute_task_dependencies[j]);
-      if (parray_dependency->get_state() == Task::COMPLETED) {
-        continue;
-      }
+
+      // COMMENT(wlr): This is already filtered in add_deps
+      //  if (parray_dependency->get_state() == Task::COMPLETED) {
+      //    continue;
+      //  }
+
       // The task list in PArray is currently thread safe since
       // we do not remove tasks from the list but just keep even completed
       // task as its implementation is easier.
@@ -270,18 +273,19 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     }
 
     // TODO(hc): pass false to add_dependencies() as optimization.
-    datamove_task->add_dependencies(data_task_dependencies);
+    datamove_task->add_dependencies(data_task_dependencies, true);
     // Copy assigned devices to a compute task to a data movement task.
     // TODO(hc): When we support xpy, it should be devices corresponding
     //           to placements of the local partition.
-    datamove_task->copy_assigned_devices(task->get_assigned_devices());
+    datamove_task->add_assigned_device(
+        task->get_assigned_devices()[parray_dev_list[i]]);
     data_tasks.push_back(datamove_task);
     // Add the created data movement task to a reserved task queue.
-    this->reserved_tasks_buffer.push_back(datamove_task);
     this->scheduler->increase_num_active_tasks();
+    this->reserved_tasks_buffer.push_back(datamove_task);
   }
   // Create dependencies between data move task and compute tasks.
-  task->add_dependencies(data_tasks);
+  task->add_dependencies(data_tasks, true);
 }
 
 void MemoryReserver::run(SchedulerPhase *next_phase) {

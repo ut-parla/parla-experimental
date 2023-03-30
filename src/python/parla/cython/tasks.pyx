@@ -519,7 +519,7 @@ class DataMovementTask(Task):
                                    write_flag)
         """
 #self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
-        target_dev = self.assigned_devices[self.dev_id]
+        target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
         self.parray._auto_move(parray_id, write_flag)
