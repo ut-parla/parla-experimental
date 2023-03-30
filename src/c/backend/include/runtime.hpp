@@ -237,8 +237,8 @@ public:
   /*Resource Requirements for each assigned device*/
   std::unordered_map<int, ResourcePool_t> device_constraints;
 
-  /* Task has data to be moved */
-  std::atomic<bool> has_data{false};
+  /* Task is data movement task */
+  std::atomic<bool> is_data{false};
 
   /* Task has processed data into data tasks (if any exists). Defaults to true
    * if none exist. */
@@ -498,7 +498,7 @@ public:
                 AccessMode access_mode, int dev_id)
       : parray_(parray), access_mode_(access_mode), dev_id_(dev_id),
         InnerTask(name, id, nullptr) {
-    this->has_data = true;
+    this->is_data = true;
     // Data tasks are created after persistent resource reservation.
     // Therefore its start state is always RESERVED.
     this->set_state(Task::RESERVED);

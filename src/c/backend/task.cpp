@@ -235,7 +235,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
 
     auto task = this->dependents.get_unsafe(i);
-    Task::StatusFlags status = task->notify(new_state, this->has_data.load());
+    Task::StatusFlags status = task->notify(new_state, this->is_data.load());
 
     // std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
