@@ -86,7 +86,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-            &parray_list) {
+            &parray_list, std::vector<bool> *is_dev_assigned) {
   Score_t best_score{0};
   std::shared_ptr<DeviceRequirement> best_device_req{nullptr};
   uint32_t i{0};
@@ -97,6 +97,14 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
   for (std::shared_ptr<DeviceRequirement> dev_req :
        arch_placement_req->GetDeviceRequirementOptions()) {
     Score_t score{0};
+    DevID_t dev_global_id = dev_req->device()->get_global_id();
+    if (is_dev_assigned != nullptr &&
+            (*is_dev_assigned)[dev_global_id] == true) {
+      // If this architecture placement is the member of a
+      // multi-device task and this visiting device is already chosen
+      // as one of the placements, skip it.
+      continue;
+    }
     bool is_dev_available =
         this->calc_score_devplacement(task, dev_req, mapper, &score,
             parray_list);
@@ -128,6 +136,11 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
   const std::vector<std::shared_ptr<SinglePlacementRequirementBase>>
       &placement_reqs_vec = mdev_placement_req->get_placement_reqs_ref();
   member_device_reqs->resize(placement_reqs_vec.size());
+  // Task mapper does not allow to map a multi-device task to the same device
+  // multiple times. This vector marks an assigned device and filter it
+  // out at the next device decision.
+  std::vector<bool> is_dev_assigned(
+      this->device_manager_->get_num_devices<DeviceType::All>(), false);
   // Iterate requirements of the devices specified in multi-device placement.
   // All of the member devices should be available.
   for (DevID_t did = 0; did < placement_reqs_vec.size(); ++did) {
@@ -135,17 +148,28 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
         placement_reqs_vec[did];
     std::shared_ptr<DeviceRequirement> dev_req{nullptr};
     Score_t score{0};
-    bool is_member_device_available{true};
+    bool is_member_device_available{false};
     if (placement_req->is_dev_req()) {
       dev_req = std::dynamic_pointer_cast<DeviceRequirement>(placement_req);
-      is_member_device_available =
-          this->calc_score_devplacement(task, dev_req, mapper, &score,
-              parray_list[did]);
+      DevID_t dev_global_id = dev_req->device()->get_global_id();
+      if (!is_dev_assigned[dev_global_id]) {
+        is_member_device_available =
+            this->calc_score_devplacement(task, dev_req, mapper, &score,
+                parray_list[did]);
+        if (is_member_device_available) {
+          is_dev_assigned[dev_global_id] = true;
+        }
+      }
     } else if (placement_req->is_arch_req()) {
       ArchitectureRequirement *arch_req =
           dynamic_cast<ArchitectureRequirement *>(placement_req.get());
       is_member_device_available = this->calc_score_archplacement(
-          task, arch_req, mapper, dev_req, &score, parray_list[did]);
+          task, arch_req, mapper, dev_req, &score, parray_list[did],
+          &is_dev_assigned);
+      if (is_member_device_available) {
+        DevID_t dev_global_id = dev_req->device()->get_global_id();
+        is_dev_assigned[dev_global_id] = true;
+      }
     }
     assert(dev_req != nullptr);
     (*member_device_reqs)[did] = dev_req;

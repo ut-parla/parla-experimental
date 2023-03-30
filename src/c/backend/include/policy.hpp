@@ -59,7 +59,7 @@ public:
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list) = 0;
+              &parray_list, std::vector<bool> *is_dev_assigned = nullptr) = 0;
 
   /// Calculate a score of the multi-device placement that users passed.
   /// The placement requirement could contain multiple device or/and
@@ -108,7 +108,8 @@ public:
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list) override;
+              &parray_list,
+      std::vector<bool> *is_dev_assigned = nullptr) override;
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,

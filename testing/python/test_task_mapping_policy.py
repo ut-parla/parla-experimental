@@ -92,18 +92,15 @@ def test_task_mapping_policy():
 
             # Input should be slices before they are write back  
 
-            # TODO(hc): this part? 
-            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3)), (cuda, cuda)])
+            # Multi-device placements consisting of the same devices are never chosen.
+            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3)), (cuda(0), cuda(0))])
             def t10():
                 devs = get_current_devices()
-                print(devs)
-#assert devs[0]().get_global_id() == 1 or devs[0]().get_global_id() == 2 or devs[0]().get_global_id() == 3
-#assert devs[1]().get_global_id() == 1 or devs[1]().get_global_id() == 2 or devs[1]().get_global_id() == 3
-
+                assert devs[0]().get_global_id() == 1 or devs[0]().get_global_id() == 2 or devs[0]().get_global_id() == 4
+                assert not devs[1]().get_global_id() == 1 and (devs[1]().get_global_id() == 4)
             await ts
 
-            '''
-            @spawn(ts[11], placement=[(cuda(1), cuda(0)), (cuda(0), cuda(3)), (cuda(1), cuda(3))], inout=[(c, 0), (c, 1)], dependencies=[ts[10]])
+            @spawn(ts[11], placement=[(cuda(1), cuda(0)), (cuda(0), cuda(3)), (cuda(1), cuda(3))], inout=[(c, 0), (c[0:1], 1)], dependencies=[ts[10]])
             def t11():
                 devs = get_current_devices()
                 assert devs[0]().get_global_id() == 2
@@ -112,13 +109,12 @@ def test_task_mapping_policy():
             # after this, c slice is evicted from cuda(2). 
             await ts
 
-            @spawn(ts[12], placement=[(cuda(0), cuda(1)), (cuda(0), cuda(2))], inout=[(c, 0), (c, 1)])
+            @spawn(ts[12], placement=[(cuda(0), cuda(1)), (cuda(0), cuda(2))], output=[(c, 0), (c, 1)])
             def t12():
                 devs = get_current_devices()
                 assert devs[0]().get_global_id() == 1
                 assert devs[1]().get_global_id() == 2
 
-            '''
 
 if __name__ == "__main__":
     test_task_mapping_policy()

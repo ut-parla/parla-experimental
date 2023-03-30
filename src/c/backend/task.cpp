@@ -430,7 +430,7 @@ void InnerTask::end_multidev_req_addition() {
 }
 
 bool InnerTask::is_data_task() {
-  return this->has_data.load(std::memory_order_relaxed);
+  return this->is_data.load(std::memory_order_relaxed);
 }
 
 void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }
