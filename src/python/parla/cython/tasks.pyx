@@ -522,7 +522,7 @@ class DataMovementTask(Task):
         parray_id = device_manager.globalid_to_parrayid(global_id)
         self.parray._auto_move(parray_id, write_flag)
         print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
-        print(self, "STATUS: ", self.parray.print_overview())
+        #print(self, "STATUS: ", self.parray.print_overview())
         return TaskCompleted(0)
 
 ######

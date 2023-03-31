@@ -179,7 +179,7 @@ def cholesky_blocked_inplace(a, block_size):
             stream = cp.cuda.get_current_stream()
             stream.synchronize()
 
-            print(f"==POTRF: ({j}) - Requires rw({j},{j}) Locations: ", dblock.device.id, a[j][j].device.id, flush=True)
+            print(f"==POTRF: ({j}) - Requires rw({j},{j}) Locations: ", dblock.device.id, a[j][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
             a[j][j].array[:] = dblock
             stream.synchronize()
             print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
@@ -204,7 +204,7 @@ def cholesky_blocked_inplace(a, block_size):
                     out = update(rhs1, rhs2, out)
                     stream.synchronize()
                     
-                    print(f"==GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k}) Locations", out.device.id, rhs1.device.id, rhs2.device.id, a[i][j].array.device.id, flush=True)
+                    print(f"==GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k}) Locations", out.device.id, rhs1.device.id, rhs2.device.id, a[i][j].array.device.id, cp.cuda.runtime.getDevice(), flush=True)
                     a[i][j].array[:] = out
                     stream.synchronize()
                     print(f"-GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", get_current_devices(), flush=True)
@@ -218,14 +218,14 @@ def cholesky_blocked_inplace(a, block_size):
 
             @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
             def t4():
-                print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", get_current_devices(), flush=True)
+                print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", get_current_devices(), cp.cuda.runtime.getDevice(), flush=True)
                 factor = a[j][j].array
                 panel = a[i][j].array
 
                 out = ltriang_solve(factor, panel)
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
-                print(f"==TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j}) Locations", factor.device.id, panel.device.id, out.device.id, a[i][j].device.id, flush=True)
+                print(f"==TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j}) Locations", factor.device.id, panel.device.id, out.device.id, a[i][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
                 a[i][j].array[:] = out
                 stream.synchronize()
                 print(f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)

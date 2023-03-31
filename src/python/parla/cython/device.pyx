@@ -377,20 +377,23 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        print("Entering Stream: ", self, flush=True)
+        print("Entering Stream: ", self, Locals.task, flush=True)
 
         #Set the device to the stream's device.
         self._device.__enter__()
+
         
         #Set the stream to the current stream.
         self._stream.__enter__()
+
+        print("Checking set device on stream: ", self, Locals.task, cupy.cuda.runtime.getDevice(), flush=True)
 
         Locals.push_stream(self)
 
         return self 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print("Exiting Stream: ", self, flush=True)
+        print("Exiting Stream: ", self, Locals.task, flush=True)
 
         ret_stream = False
         ret_device = False
