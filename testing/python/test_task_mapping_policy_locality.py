@@ -102,7 +102,7 @@ def test_task_mapping_policy():
             # Input should be slices before they are write back  
 
             # Multi-device placements consisting of the same devices are never chosen.
-            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3))], inout=[(c,0), (c,1)], dependencies=[ts[9]])
+            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3))], input=[(c,0), (c,1)])
             def t10():
                 print("t10 start\n", flush=True)
                 devs = get_current_devices()

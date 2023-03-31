@@ -223,6 +223,9 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       &parray_list = task->parray_list;
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
+  // It tracks dependencies transfered to data move task.
+  // Not transferred dependencies are again added to the compute task.
+  std::vector<bool> transferred_depedencies(task->get_dependencies().size(), false);
   for (size_t i = 0; i < parray_list.size(); ++i) {
     for (size_t j = 0; j < parray_list[i].size(); ++j) {
       // Create a data movement task for each PArray.
@@ -250,7 +253,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
           if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
-            std::cout << parray_dependency->get_name() << " is added to " << datamove_task->get_name() << "\n";
+            transferred_depedencies[k] = true;
           }
         }
       }
@@ -265,8 +268,15 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       data_tasks.push_back(datamove_task);
       // Add the created data movement task to a reserved task queue.
       this->scheduler->increase_num_active_tasks();
-      std::cout << this->scheduler->get_num_active_tasks() << " <------------\n";
       this->reserved_tasks_buffer.push_back(datamove_task);
+    }
+  }
+
+  // Add dependencies that are not transferred to data move tasks and so
+  // the compute task can maintain them as dependencies.
+  for (size_t i = 0; i < task->get_dependencies().size(); ++i) {
+    if (transferred_depedencies[i] == false) {
+      data_tasks.push_back(static_cast<InnerTask *>(task->get_dependencies()[i]));
     }
   }
   // Create dependencies between data move task and compute tasks.
@@ -319,7 +329,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 
     // Possibly enqueue this task
     bool enqueue_flag =
-        (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
+        reserved_task->num_blocking_dependencies.fetch_sub(1);
     if (enqueue_flag) {
       reserved_task->set_status(Task::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
@@ -390,19 +400,14 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     has_task = num_tasks > 0;
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
-      if (task == nullptr) {
-        throw std::runtime_error("RuntimeReserver::run: task is nullptr");
-      }
       bool has_resources = check_resources(task);
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
           InnerTask *task = this->runnable_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
-
           // Decrease Resources
           this->reserve_resources(task);
-
           launcher->enqueue(task, worker);
           this->status.increase(RuntimeReserverState::Success);
         } else {
@@ -435,7 +440,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   worker->assign_task(task);
 
   // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-  //           << std::endl;
+  //          << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
