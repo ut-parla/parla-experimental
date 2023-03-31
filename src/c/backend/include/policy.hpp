@@ -27,7 +27,8 @@ public:
   /// @param task Target task for task mapping.
   /// @param dev_placement_req Resource requirement of the device.
   /// @param mapper Mapper instance to get mapping information.
-  /// @param chosen_dev_score A pointer of a score of the device.
+  /// @param score A pointer of a score of the device.
+  /// @param parray_list A list of PArray instances used by the target task
   /// @return True if a device is available
   virtual bool calc_score_devplacement(
       InnerTask *task,
@@ -53,6 +54,10 @@ public:
   ///                       this function chooses a device and updates its
   ///                       pointer to the device requirement.
   /// @param chosen_dev_score A pointer of a score of the chosen device.
+  /// @param parray_list A list of PArray instances used by the target task
+  /// @param is_dev_assigned Multi-device task is not allowed to be assigned
+  ///                        to duplicated devices. This vector marks
+  ///                        assigned devices and avoid that case.
   /// @return True if any device in the architecture is available
   virtual bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
@@ -77,6 +82,7 @@ public:
   /// @param member_device_reqs A vector of the resource requirement of the
   ///                           member device.
   /// @param chosen_dev_score A pointer of a score of the multiple devices.
+  /// @param parray_list A list of PArray instances used by the target task
   /// @return True if all devices in the multi-device placement are available.
   virtual bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
