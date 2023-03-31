@@ -329,7 +329,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 
     // Possibly enqueue this task
     bool enqueue_flag =
-        reserved_task->num_blocking_dependencies.fetch_sub(1) == 1;
+        (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
     if (enqueue_flag) {
       reserved_task->set_status(Task::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
