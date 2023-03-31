@@ -2,8 +2,6 @@
 A naive implementation of blocked Cholesky using Numba kernels on CPUs.
 """
 
-import sys
-from scipy import linalg
 from parla.common.parray import asarray_batch
 from cupy.cuda import device
 from cupy.cuda import cublas
@@ -12,10 +10,9 @@ from parla import Parla, TaskSpace, spawn
 
 from parla.cython.device_manager import cpu
 from parla.cython.device_manager import cuda as gpu
+from parla.common.globals import get_current_devices
 
 import time
-import math
-from numba import jit, float64
 import numpy as np
 import random
 import argparse
@@ -64,8 +61,8 @@ num_tests = args.trials
 loc = gpu
 
 save_file = True
-check_nan = False
-check_error = False
+check_nan = True
+check_error = True
 time_zeros = False  # Set to true if comparing with Dask.
 
 loc = gpu
@@ -145,56 +142,59 @@ def cholesky_blocked_inplace(a, block_size):
     for j in range(len(a)):
         for k in range(j):
             # Inter-block GEMM
-            mem = 8*block_size**2
 
             loc_syrk = gpu
             if fixed:
-                loc_syrk = gpu(j % ngpus)
+                loc_syrk = gpu(j % ngpus)[{'vcus': 1000}]
 
-            @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], input=[a[j][k]], inout=[a[j][j]], placement=loc_syrk, memory=mem)
+            @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], input=[(a[j][k], 0)], inout=[(a[j][j], 0)], placement=[loc_syrk])
             def t1():
-                # print(f"+SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
+                print(f"+SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", get_current_devices(), flush=True)
                 out = a[j][j].array
                 rhs = a[j][k].array
                 out = update(rhs, rhs, out)
 
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
-                a[j][j].update(out)
+
+                print(f"==SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", out.device.id, rhs.device.id, a[j][j].array.device.id, flush=True)
+                a[j][j].array[:] = out
                 stream.synchronize()
-                # print(f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
+                print(f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
 
         # Cholesky on block
-        mem = 8*block_size**2
 
         loc_potrf = gpu
         if fixed:
-            loc_potrf = gpu(j % ngpus)
+            loc_potrf = gpu(j % ngpus)[{'vcus': 1000}]
 
-        @spawn(subcholesky[j], [gemm1[j, 0:j]], inout=[a[j][j]], placement=loc_potrf, memory=mem)
+
+        @spawn(subcholesky[j], [gemm1[j, 0:j]], inout=[(a[j][j], 0)], placement=[loc_potrf])
         def t2():
-            # print(f"+POTRF: ({j}) - Requires rw({j},{j})", flush=True)
+            print(f"+POTRF: ({j}) - Requires rw({j},{j})", get_current_devices(), flush=True)
             dblock = a[j][j].array
 
             dblock = cholesky(dblock)
 
             stream = cp.cuda.get_current_stream()
             stream.synchronize()
-            a[j][j].update(dblock)
+
+            print(f"==POTRF: ({j}) - Requires rw({j},{j}) Locations: ", dblock.device.id, a[j][j].device.id, flush=True)
+            a[j][j].array[:] = dblock
             stream.synchronize()
-            # print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
+            print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
         for i in range(j+1, len(a)):
             for k in range(j):
                 # Inter-block GEMM
-                mem = 8*block_size**2
 
                 loc_gemm = gpu
                 if fixed:
-                    loc_gemm = gpu(i % ngpus)
+                    loc_gemm = gpu(i % ngpus)[{'vcus': 1000}]
 
-                @spawn(gemm2[i, j, k], [solve[j, k], solve[i, k], gemm2[i, j, 0:k]], inout=[a[i][j]], input=[a[i][k], a[j][k]], placement=loc_gemm, memory=mem)
+
+                @spawn(gemm2[i, j, k], [solve[j, k], solve[i, k], gemm2[i, j, 0:k]], inout=[(a[i][j], 0)], input=[(a[i][k], 0), (a[j][k], 0)], placement=[loc_gemm])
                 def t3():
-                    # print(f"+GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", flush=True)
+                    print(f"+GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", get_current_devices(), flush=True)
                     out = a[i][j].array
                     rhs1 = a[i][k].array
                     rhs2 = a[j][k].array
@@ -203,29 +203,32 @@ def cholesky_blocked_inplace(a, block_size):
 
                     out = update(rhs1, rhs2, out)
                     stream.synchronize()
-                    a[i][j].update(out)
+                    
+                    print(f"==GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k}) Locations", out.device.id, rhs1.device.id, rhs2.device.id, a[i][j].array.device.id, flush=True)
+                    a[i][j].array[:] = out
                     stream.synchronize()
-                    # print(f"-GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", flush=True)
+                    print(f"-GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", get_current_devices(), flush=True)
 
             # Triangular solve
-            mem = 8*2*block_size**2
 
             loc_trsm = gpu
             if fixed:
-                loc_trsm = gpu(i % ngpus)
+                loc_trsm = gpu(i % ngpus)[{'vcus': 1000}]
 
-            @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[a[i][j]], input=[a[j][j]], placement=loc_trsm, memory=mem)
+
+            @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
             def t4():
-                # print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
+                print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", get_current_devices(), flush=True)
                 factor = a[j][j].array
                 panel = a[i][j].array
 
                 out = ltriang_solve(factor, panel)
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
-                a[i][j].update(out)
+                print(f"==TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j}) Locations", factor.device.id, panel.device.id, out.device.id, a[i][j].device.id, flush=True)
+                a[i][j].array[:] = out
                 stream.synchronize()
-                # print(f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
+                print(f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
 
     return subcholesky[len(a) - 1]
 
@@ -280,10 +283,10 @@ def main():
                 rs = TaskSpace("Reset")
                 for i in range(n//block_size):
                     for j in range(n//block_size):
-                        @spawn(taskid=rs[i, j], placement=gpu(i % n_gpus), inout=[ap_parray[i][j]])
+                        @spawn(rs[i, j], placement=gpu(i % n_gpus), inout=[(ap_parray[i][j], 0)])
                         def reset():
-                            ap_parray[i][j].update(cp.asarray(
-                                a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F'))
+                            ap_parray[i][j].array[:] = cp.asarray(
+                                a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F')
                             cp.cuda.stream.get_current_stream().synchronize()
 
                 await rs
@@ -300,8 +303,10 @@ def main():
             end = time.perf_counter()
 
             ts = TaskSpace("CopyBack")
+            plist = flatten(ap_parray)
+            plist = [(p, 0) for p in plist]
 
-            @spawn(taskid=ts[0], placement=cpu, input=flatten(ap_parray))
+            @spawn(ts[0], placement=cpu, input=plist)
             def copy_back():
                 for i in range(n//block_size):
                     for j in range(n//block_size):
@@ -317,12 +322,12 @@ def main():
                 zerofy_start = 0
                 zerofy_end = 0
 
-            print(f"Time:", (end - start) + (zerofy_end - zerofy_start))
+            print("Time:", (end - start) + (zerofy_end - zerofy_start))
 
             print("--------")
             # Check result
             print("Is NAN: ", np.isnan(np.sum(ap)))
-            if (np.isnan(np.sum(ap))) == True:
+            if np.isnan(np.sum(ap)) is True:
                 print(ap)
 
             if check_error:

@@ -377,7 +377,7 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        #print("Entering Stream: ", self, flush=True)
+        print("Entering Stream: ", self, flush=True)
 
         #Set the device to the stream's device.
         self._device.__enter__()
@@ -390,7 +390,7 @@ class CupyStream(Stream):
         return self 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        #print("Exiting Stream: ", self, flush=True)
+        print("Exiting Stream: ", self, flush=True)
 
         ret_stream = False
         ret_device = False
