@@ -70,6 +70,9 @@ public:
   /// Return the parent id of the current instance.
   uint64_t get_parray_parentid();
 
+  /// Return a pointer of the parent PArray.
+  InnerPArray *get_parent_parray();
+
 private:
   uint64_t _size; // number of bytes consumed by each copy of the array/subarray
   InnerPArray *_parent_parray;

@@ -212,11 +212,13 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode,
+void InnerTask::add_parray(parray::InnerPArray *parray, int am,
                            int dev_id) {
-  AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
-  parray->add_task(this);
-  this->parray_list[dev_id].emplace_back(std::make_pair(parray, test_access_mode));
+  AccessMode access_mode = static_cast<AccessMode>(am);
+  if (access_mode != AccessMode::IN) {
+    parray->get_parent_parray()->add_task(this);
+  }
+  this->parray_list[dev_id].emplace_back(std::make_pair(parray, access_mode));
 }
 
 void InnerTask::notify_dependents(TaskStateList &buffer,

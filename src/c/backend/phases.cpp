@@ -232,7 +232,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
           // TODO(hc): id should be updated!
           task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
           i);
-      auto &parray_task_list = parray->get_task_list_ref();
+      auto &parray_task_list = parray->get_parent_parray()->get_task_list_ref();
       // Find dependency intersection between compute and data movement tasks.
 
       // TODO(hc): This is not the complete implementation.
@@ -247,16 +247,11 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         // The task list in PArray is currently thread safe since
         // we do not remove tasks from the list but just keep even completed
         // task as its implementation is easier.
-        // TODO(hc): If this list becomes too long to degrade our performance,
-        //           we will need to think about how to remove completed
-        //           tasks from this list. In this case, we need a lock.
-        // parray_task_list.lock();
         for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
           if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
           }
         }
-        // parray_task_list.unlock();
       }
 
       // TODO(hc): pass false to add_dependencies() as optimization.
@@ -272,6 +267,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       this->reserved_tasks_buffer.push_back(datamove_task);
     }
   }
+
   // Create dependencies between data move task and compute tasks.
   task->add_dependencies(data_tasks, true);
 }
@@ -393,19 +389,14 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     has_task = num_tasks > 0;
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
-      if (task == nullptr) {
-        throw std::runtime_error("RuntimeReserver::run: task is nullptr");
-      }
       bool has_resources = check_resources(task);
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
           InnerTask *task = this->runnable_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
-
           // Decrease Resources
           this->reserve_resources(task);
-
           launcher->enqueue(task, worker);
           this->status.increase(RuntimeReserverState::Success);
         } else {
@@ -438,7 +429,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   worker->assign_task(task);
 
   // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-  //           << std::endl;
+  //          << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
