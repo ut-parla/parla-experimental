@@ -232,7 +232,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
           // TODO(hc): id should be updated!
           task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
           i);
-      auto &parray_task_list = parray->get_task_list_ref();
+      auto &parray_task_list = parray->get_parent_parray()->get_task_list_ref();
       // Find dependency intersection between compute and data movement tasks.
 
       // TODO(hc): This is not the complete implementation.
@@ -247,16 +247,12 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         // The task list in PArray is currently thread safe since
         // we do not remove tasks from the list but just keep even completed
         // task as its implementation is easier.
-        // TODO(hc): If this list becomes too long to degrade our performance,
-        //           we will need to think about how to remove completed
-        //           tasks from this list. In this case, we need a lock.
-        // parray_task_list.lock();
         for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
           if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
+            std::cout << parray_dependency->get_name() << " is added to " << datamove_task->get_name() << "\n";
           }
         }
-        // parray_task_list.unlock();
       }
 
       // TODO(hc): pass false to add_dependencies() as optimization.
@@ -269,6 +265,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       data_tasks.push_back(datamove_task);
       // Add the created data movement task to a reserved task queue.
       this->scheduler->increase_num_active_tasks();
+      std::cout << this->scheduler->get_num_active_tasks() << " <------------\n";
       this->reserved_tasks_buffer.push_back(datamove_task);
     }
   }
