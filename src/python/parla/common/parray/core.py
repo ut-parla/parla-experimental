@@ -178,7 +178,7 @@ class PArray:
         else:
             # assume GPU here, won't check isinstance(device, PyCUDADevice)
             # to avoid import gpu context, which is slow to setup.
-            return device().device.id  # device.device should be a cupy.cuda.Device object
+            return device.device.id  # device.device should be a cupy.cuda.Device object
 
     # Public API:
 
@@ -490,7 +490,7 @@ class PArray:
         Note: should not be called within multi-device task since that is ambigous
         """
         if has_environment():
-            return get_current_devices()[0]
+            return get_current_devices()[0].get_parla_device()
         return None
 
     def _auto_move(self, device_id: int = None, do_write: bool = False) -> None:
