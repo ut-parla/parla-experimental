@@ -35,6 +35,8 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task)
 
 void InnerTask::set_scheduler(InnerScheduler *scheduler) {
   this->scheduler = scheduler;
+  size_t num_devices = this->scheduler->get_device_manager()->get_num_devices();
+  this->parray_list.resize(num_devices);
 }
 
 void InnerTask::set_name(std::string name) {
@@ -214,8 +216,7 @@ void InnerTask::add_parray(parray::InnerPArray *parray, int access_mode,
                            int dev_id) {
   AccessMode test_access_mode = static_cast<AccessMode>(access_mode);
   parray->add_task(this);
-  this->parray_list.emplace_back(std::make_pair(parray, test_access_mode));
-  this->parray_dev_list.emplace_back(dev_id);
+  this->parray_list[dev_id].emplace_back(std::make_pair(parray, test_access_mode));
 }
 
 void InnerTask::notify_dependents(TaskStateList &buffer,
@@ -426,6 +427,10 @@ void InnerTask::end_multidev_req_addition() {
   assert(tmp_multdev_reqs_ != nullptr);
   placement_req_options_.append_placement_req_opt(std::move(tmp_multdev_reqs_));
   req_addition_mode_ = SingleDevAdd;
+}
+
+bool InnerTask::is_data_task() {
+  return this->is_data.load(std::memory_order_relaxed);
 }
 
 void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }

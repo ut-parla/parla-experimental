@@ -39,7 +39,7 @@ void InnerWorker::assign_task(InnerTask *task) {
 void InnerWorker::get_task(InnerTask **task, bool *is_data_task) {
   this->scheduler->decrease_num_notified_workers();
   *task = this->task;
-  *is_data_task = this->task->has_data.load(std::memory_order_relaxed);
+  *is_data_task = this->task->is_data_task();
 }
 
 void InnerWorker::remove_task() {
@@ -135,7 +135,8 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
 
   // Mapping policy
   std::shared_ptr<LocalityLoadBalancingMappingPolicy> mapping_policy =
-      std::make_shared<LocalityLoadBalancingMappingPolicy>(device_manager);
+      std::make_shared<LocalityLoadBalancingMappingPolicy>(
+          device_manager, &this->parray_tracker_);
 
   // Initialize the phases
   this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
@@ -292,32 +293,32 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     task->set_state(Task::COMPLETED);
   }
 
-  // PArrays could be evicted even during task barrier continuation.
-  // However, these PArrays will be allocated and tracked
-  // again after the task restarts.
-  for (size_t i = 0; i < task->parray_list.size(); ++i) {
-    parray::InnerPArray *parray = task->parray_list[i].first;
-    DevID_t target_dev_id = task->parray_dev_list[i];
-    Device *target_device = task->assigned_devices[target_dev_id];
-    DevID_t global_dev_id = target_device->get_global_id();
-    parray->decr_num_active_tasks(global_dev_id);
-    // This PArray is not released from the PArray tracker here,
-    // but when it is EVICTED, it will check the number of referneces
-    // and will be released if that is 0.
-  }
-
   // TODO: for runahead, we need to do this AFTER the task body is complete
   //      Need to add back to the pool after notify_dependents
   worker->remove_task();
 
   // Release all resources for this task on all devices
-  for (Device *device : task->assigned_devices) {
-
+  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+    Device *device = task->assigned_devices[i];
+    DevID_t dev_id = device->get_global_id();
     ResourcePool_t &device_pool = device->get_reserved_pool();
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
 
     device_pool.increase<ResourceCategory::All>(task_pool);
+
+    // PArrays could be evicted even during task barrier continuation.
+    // However, these PArrays will be allocated and tracked
+    // again after the task restarts.
+    if (!task->is_data_task()) {
+      for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
+        parray::InnerPArray *parray = task->parray_list[i][j].first;
+        parray->decr_num_active_tasks(dev_id);
+        // This PArray is not released from the PArray tracker here,
+        // but when it is EVICTED, it will check the number of referneces
+        // and will be released if that is 0.
+      }
+    }
   }
 
   if (state == Task::RUNNING) {

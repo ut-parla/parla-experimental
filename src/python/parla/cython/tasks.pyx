@@ -372,21 +372,18 @@ class Task:
     def add_dataflow(self, dataflow):
         if dataflow is not None:
             for in_parray_tpl in dataflow.input:
-                print("input:", in_parray_tpl)
                 in_parray = in_parray_tpl[0]
                 in_parray_devid = in_parray_tpl[1]
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.IN, in_parray_devid)
             for out_parray_tpl in dataflow.output:
-                print("output:", out_parray_tpl)
                 out_parray = out_parray_tpl[0]
                 out_parray_devid = out_parray_tpl[1]
                 cy_parray = out_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.OUT, out_parray_devid)
             for inout_parray_tpl in dataflow.inout:
-                print("inout:", inout_parray_tpl)
                 inout_parray = inout_parray_tpl[0]
                 inout_parray_devid = inout_parray_tpl[1]
                 cy_parray = inout_parray.cy_parray
@@ -511,7 +508,6 @@ class DataMovementTask(Task):
     def _execute_task(self):
         write_flag = True if self.access_mode != AccessMode.IN else False
         device_manager = self.scheduler.device_manager
-        print(self.name, " starts its body")
         """
         for device in self.assigned_devices:
             global_device_id = device.get_global_id()
@@ -523,6 +519,7 @@ class DataMovementTask(Task):
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
         self.parray._auto_move(parray_id, write_flag)
+        print("Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         return TaskCompleted(0)
 
 ######

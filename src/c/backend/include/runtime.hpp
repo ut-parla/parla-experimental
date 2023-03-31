@@ -245,10 +245,10 @@ public:
    * if none exist. */
   std::atomic<bool> processed_data{true};
 
-  /* A list of a pair of PArray instances and access modes to them */
-  std::vector<std::pair<parray::InnerPArray *, AccessMode>> parray_list;
-  /* TODO(hc): will be removed */
-  std::vector<DevID_t> parray_dev_list;
+  /* A list of a pair of PArray instances and access modes to them.
+     The first dimension index is for a device id specified in @spawn.
+     The second index space is for PArrays. */
+  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -468,6 +468,9 @@ public:
   PlacementRequirementCollections &get_placement_req_options() {
     return placement_req_options_;
   }
+
+  /* Return True if an instance is a data movement task */
+  bool is_data_task();
 
 protected:
   /*
@@ -868,6 +871,10 @@ public:
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
   void spawn_wait();
+
+  DeviceManager *get_device_manager() {
+    return this->device_manager_;
+  }
 
 protected:
   /// It manages all device instances in C++.
