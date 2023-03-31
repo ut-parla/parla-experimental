@@ -223,9 +223,6 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       &parray_list = task->parray_list;
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
-  // It tracks dependencies transfered to data move task.
-  // Not transferred dependencies are again added to the compute task.
-  std::vector<bool> transferred_depedencies(task->get_dependencies().size(), false);
   for (size_t i = 0; i < parray_list.size(); ++i) {
     for (size_t j = 0; j < parray_list[i].size(); ++j) {
       // Create a data movement task for each PArray.
@@ -253,7 +250,6 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
           if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
-            transferred_depedencies[k] = true;
           }
         }
       }
@@ -272,13 +268,6 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
     }
   }
 
-  // Add dependencies that are not transferred to data move tasks and so
-  // the compute task can maintain them as dependencies.
-  for (size_t i = 0; i < task->get_dependencies().size(); ++i) {
-    if (transferred_depedencies[i] == false) {
-      data_tasks.push_back(static_cast<InnerTask *>(task->get_dependencies()[i]));
-    }
-  }
   // Create dependencies between data move task and compute tasks.
   task->add_dependencies(data_tasks, true);
 }
