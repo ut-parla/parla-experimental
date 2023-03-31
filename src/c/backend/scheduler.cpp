@@ -288,7 +288,6 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     // We also need to decrease the number of active tasks
     // If this is the last active task, the scheduler is stopped
     this->decrease_num_active_tasks();
-    std::cout << this->get_num_active_tasks() << " <-------- decreased\n";
 
     // TODO: Move this when we do runahead
     task->set_state(Task::COMPLETED);
