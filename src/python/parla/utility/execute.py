@@ -65,7 +65,7 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
-        placement_set = (-1,)  # list(task.task_runtime.keys())
+        placement_set = (0,)  # list(task.task_runtime.keys())
 
         # TODO: This needs rework with Device support
         runtime_info = task.task_runtime[placement_set]
@@ -348,9 +348,11 @@ class GraphContext(object):
             self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
+        print(self.tmpfilepath, flush=True)
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
+            print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
