@@ -24,7 +24,7 @@ from parla.common.globals import get_current_devices, get_current_stream
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
-from parla import gpu_sleep_nogil
+from parla.cython.sleep import gpu_sleep
 import numpy as np
 
 from fractions import Fraction
@@ -36,6 +36,20 @@ def make_parrays(data_list):
     for i, data in enumerate(data_list):
         l.append(asarray(data))
     return l
+
+
+class GPUInfo():
+
+    #approximate average on frontera RTX
+#cycles_per_second = 1919820866.3481758
+    cycles_per_second = 867404498.3008006
+#cycles_per_second = 47994628114801.04
+
+    def update(self, cycles):
+        self.cycles_per_second = cycles
+
+    def get(self):
+        return self.cycles_per_second
 
 
 class GPUInfo():
@@ -130,16 +144,22 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
 
+<<<<<<< HEAD
     return None
 
 
 @synthetic_kernel.variant(gpu)
 def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+=======
+@specialize
+def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+>>>>>>> Add gpu sleep; need compiler flag
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
+    print("CPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
@@ -157,6 +177,40 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     for i in range(gil_accesses):
 #gpu_bsleep_nogil(dev_id, ticks, stream)
         free_sleep(free_time)
+        lock_sleep(gil_time)
+
+    if config.verbose:
+        task_internal_end_t = time.perf_counter()
+        task_internal_duration = task_internal_end_t - task_internal_start_t
+        return task_internal_duration
+
+    return None
+
+
+@synthetic_kernel.variant(gpu)
+def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+    """
+    A simple synthetic kernel that simulates a task that takes a given amount of time
+    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
+    the total time given.
+    """
+    print("GPU variant is called.", flush=True)
+    if config.verbose:
+        task_internal_start_t = time.perf_counter()
+
+    # Simulate task work
+    kernel_time = total_time / gil_accesses
+    free_time = kernel_time * (1 - gil_fraction)
+    gil_time = kernel_time * gil_fraction
+
+    gpu_info = GPUInfo()
+    cycles_per_second = gpu_info.get()
+    dev_id = get_current_devices()[0]
+    stream = get_current_stream()
+    ticks = int((total_time/(10**6))*cycles_per_second)
+
+    for i in range(gil_accesses):
+        gpu_sleep(dev_id, ticks, stream)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -207,6 +261,7 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
+<<<<<<< HEAD
         #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #      " placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
@@ -377,6 +432,9 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
         '''
+=======
+        print("Placement:", placement_set)
+>>>>>>> Add gpu sleep; need compiler flag
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
