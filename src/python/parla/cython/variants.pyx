@@ -1,5 +1,6 @@
 import functools 
-from  parla.common.globals import _Locals as Locals 
+from parla.common.globals import _Locals as Locals 
+from parla.cython.device import PyArchitecture
 
 class VariantDefinitionError(ValueError):
     """
@@ -29,7 +30,8 @@ class _VariantFunction(object):
 
         def variant(f):
             for t in spec_list:
-                self._variants[t] = f
+                assert isinstance(t, PyArchitecture)
+                self._variants[t.id] = f
             return f
         
         variant.__name__ = "{}.variant".format(self._default.__name__)
@@ -48,13 +50,15 @@ class _VariantFunction(object):
         if len(local_devices) == 0:
             return self._default(*args, **kwargs)
 
-        #Construct a architecture specialization key from the local devices.
+        # Construct a architecture specialization key from the local devices.
         spec_key = tuple([d.architecture for d in local_devices])
+        # If a single architecture variant type, it needs a single id, not a tuple.
+        spec_key = spec_key[0] if len(spec_key) == 1 else spec_key
 
-        #Get the variant for the current specialization key.
+        # Get the variant for the current specialization key.
         variant_f = self.get_variant(spec_key)
 
-        #Call the variant.
+        # Call the variant.
         return variant_f(*args, **kwargs)
 
 
