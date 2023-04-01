@@ -27,7 +27,6 @@ class MemoryOperation:
     SWITCH_DEVICE_FLAG = 101  # if the flag is set, it means dst is not the current device
     LOAD_SUBARRAY = 102       # if the flag is set, it means a subarray of src should be loaded
     ENSURE_IS_COMPLETE = 103  # if the flag is set, check data will also check if the data is complete
-    NO_MARK_AS_READY = 104    # if the flag is set, the operation won't mark the data as ready after completed
 
     def __init__(self, inst: int = NOOP, dst: int = -1, src: int = -1, flag: int = []):
         self.inst = inst
@@ -248,7 +247,6 @@ class Coherence:
             operations.append(MemoryOperation.evict(device_id))
             
             # copy from owner
-            # skip_src_checking is NOT required since owner will be ready after the above write back operaton
             operations.append(MemoryOperation.load(device_id, self.owner))
 
             self._is_complete[device_id] = True
