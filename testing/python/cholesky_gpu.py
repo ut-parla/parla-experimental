@@ -9,7 +9,7 @@ import cupy as cp
 from parla import Parla, TaskSpace, spawn
 
 from parla.cython.device_manager import cpu
-from parla.cython.device_manager import cuda as gpu
+from parla.cython.device_manager import gpu 
 from parla.common.globals import get_current_devices
 
 import time

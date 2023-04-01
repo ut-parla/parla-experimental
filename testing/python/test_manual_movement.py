@@ -1,6 +1,6 @@
 import os
 from parla import Parla, spawn, TaskSpace
-from parla.cython.device_manager import cpu, cuda
+from parla.cython.device_manager import cpu, gpu
 import numpy as np
 from parla.common.globals import get_current_context, cupy, DeviceType, CUPY_ENABLED
 from parla.common.array import clone_here, copy
@@ -8,7 +8,6 @@ from pytest import mark
 import pytest
 
 cp = cupy
-gpu = cuda
 
 if CUPY_ENABLED:
     num_gpus = cp.cuda.runtime.getDeviceCount()

@@ -12,6 +12,9 @@ cdef extern from "include/device.hpp" nogil:
         All "DeviceType::All"
         CPU "DeviceType::CPU"
         CUDA "DeviceType::CUDA"
+        # TODO(hc): For now, we only support CUDA gpu devices.
+        # Laster, it would be extended to more gpu types
+        # like for AMD
         
     cdef cppclass Device:
         Device(string, int, long, long, void*) except +

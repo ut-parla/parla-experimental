@@ -40,7 +40,6 @@ from parla.cython import device, device_manager
 DeviceResourceRequirement = device.DeviceResourceRequirement 
 cpu = device_manager.cpu
 
-PyInvalidDevice = device.PyInvalidDevice
 
 class TaskState(object, metaclass=ABCMeta):
     __slots__ = []
@@ -417,10 +416,6 @@ class Task:
         for req in device_reqs:
             if isinstance(req, DeviceResourceRequirement):
                 # Single device.
-                if isinstance(req.device, PyInvalidDevice):
-                    # If the specified device does not exist
-                    # in the current system, replace it with cpu.
-                    req.device = cpu(0)
                 self.inner_task.add_device_req(
                     req.device.get_cy_device(),
                     req.res_req.memory_sz, req.res_req.num_vcus)
@@ -428,10 +423,6 @@ class Task:
                 # Single architecture
                 self.inner_task.begin_arch_req_addition()
                 for member in req:
-                    if isinstance(member, PyInvalidDevice): 
-                        # If the specified device does not exist
-                        # in the current system, replace it with cpu.
-                        member = cpu(0)
                     self.inner_task.add_device_req(
                         member.device.get_cy_device(),
                         member.res_req.memory_sz, member.res_req.num_vcus)
