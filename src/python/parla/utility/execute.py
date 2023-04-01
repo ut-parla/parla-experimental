@@ -18,10 +18,27 @@ import time
 from parla import Parla, spawn, TaskSpace
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
+from parla.common.globals import get_current_devices, get_current_stream
 from parla.cython.device_manager import cpu, gpu
+from parla.cython.variants import specialize
+from parla.cython.sleep import gpu_sleep
 import numpy as np
 
 from fractions import Fraction
+
+
+class GPUInfo():
+
+    #approximate average on frontera RTX
+#cycles_per_second = 1919820866.3481758
+    cycles_per_second = 867404498.3008006
+#cycles_per_second = 47994628114801.04
+
+    def update(self, cycles):
+        self.cycles_per_second = cycles
+
+    def get(self):
+        return self.cycles_per_second
 
 
 def get_placement_set_from(ps_str_set):
@@ -48,12 +65,14 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float) -> Dict[i
     pass
 
 
+@specialize
 def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
+    print("CPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
@@ -64,6 +83,40 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
 
     for i in range(gil_accesses):
         free_sleep(free_time)
+        lock_sleep(gil_time)
+
+    if config.verbose:
+        task_internal_end_t = time.perf_counter()
+        task_internal_duration = task_internal_end_t - task_internal_start_t
+        return task_internal_duration
+
+    return None
+
+
+@synthetic_kernel.variant(gpu)
+def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+    """
+    A simple synthetic kernel that simulates a task that takes a given amount of time
+    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
+    the total time given.
+    """
+    print("GPU variant is called.", flush=True)
+    if config.verbose:
+        task_internal_start_t = time.perf_counter()
+
+    # Simulate task work
+    kernel_time = total_time / gil_accesses
+    free_time = kernel_time * (1 - gil_fraction)
+    gil_time = kernel_time * gil_fraction
+
+    gpu_info = GPUInfo()
+    cycles_per_second = gpu_info.get()
+    dev_id = get_current_devices()[0]
+    stream = get_current_stream()
+    ticks = int((total_time/(10**6))*cycles_per_second)
+
+    for i in range(gil_accesses):
+        gpu_sleep(dev_id, ticks, stream)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -114,6 +167,7 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
+        print("Placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
@@ -373,11 +427,11 @@ class GraphContext(object):
             self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
-        print(self.tmpfilepath, flush=True)
+#print(self.tmpfilepath, flush=True)
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
-            print(graph)
+#print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
