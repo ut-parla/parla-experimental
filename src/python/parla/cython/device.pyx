@@ -175,6 +175,10 @@ class PyDevice:
     def device_id(self):
         return self._device_id
 
+    @property
+    def id(self):
+        return self._device_id
+
 
 """
 Device instances in Python manage resource status.
@@ -322,6 +326,7 @@ PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceRe
 class Stream:
     def __init__(self, device=None, stream=None, non_blocking=True):
         self._device = device
+        self._device_id = device.device.id
         self._stream = stream
 
     def __repr__(self):
@@ -362,13 +367,16 @@ class CupyStream(Stream):
 
         if device is None:
             self._device = cupy.cuda.Device()
+            self._device_id = self._device.id
         else:
             self._device = device
+            self._device_id = device.device.id
 
-        if stream is None:
-            self._stream = cupy.cuda.Stream(non_blocking=non_blocking)
-        else:
-            self._stream = stream
+        with cupy.cuda.Device(self._device_id) as d:
+            if stream is None:
+                self._stream = cupy.cuda.Stream(non_blocking=non_blocking)
+            else:
+                self._stream = stream
 
     def __repr__(self):
         return f"Stream({self._device}, {self._stream})"
@@ -377,23 +385,23 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        print("Entering Stream: ", self, Locals.task, flush=True)
+        #print("Entering Stream: ", self, Locals.task, self._device_id, flush=True)
 
         #Set the device to the stream's device.
-        self._device.__enter__()
+        self.active_device = cupy.cuda.Device(self._device_id)
+
+        self.active_device.__enter__()
+        #self._device.__enter__()
 
         
         #Set the stream to the current stream.
         self._stream.__enter__()
-
-        print("Checking set device on stream: ", self, Locals.task, cupy.cuda.runtime.getDevice(), flush=True)
 
         Locals.push_stream(self)
 
         return self 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print("Exiting Stream: ", self, Locals.task, flush=True)
 
         ret_stream = False
         ret_device = False
@@ -402,7 +410,7 @@ class CupyStream(Stream):
         ret_stream = self._stream.__exit__(exc_type, exc_value, traceback)
 
         #Restore the device to the previous device.
-        ret_device = self._device.__exit__(exc_type, exc_value, traceback)
+        ret_device = self.active_device.__exit__(exc_type, exc_value, traceback)
             
         Locals.pop_stream()
         return ret_stream and ret_device
