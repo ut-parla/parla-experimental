@@ -13,7 +13,6 @@ VCU_BASELINE=1000
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
-PyInvalidDevice = device.PyInvalidDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
@@ -249,10 +248,6 @@ class PyDeviceManager:
 
     def construct_single_device_requirements(self, dev, res_req = None):
         res_req_ = res_req if res_req is not None else DeviceResource()
-        if isinstance(dev, PyInvalidDevice):
-            # If the specified device does not exist
-            # in the current system, replace it with CPU.
-            dev = cpu(0)
         return DeviceResourceRequirement(dev, res_req_)
 
     def construct_single_architecture_requirements(self, arch, res_req = None):
