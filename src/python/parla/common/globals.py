@@ -69,10 +69,21 @@ class Locals(threading.local):
 
     def __init__(self):
         super(Locals, self).__init__()
+        self._task_stack = LocalStack()
         self._context_stack = LocalStack()
         self._stream_stack = LocalStack()
         self._scheduler_stack = LocalStack()
         self._index = 0
+
+    def push_task(self, task):
+        self._task_stack.push(task)
+
+    def pop_task(self):
+        return self._task_stack.pop()
+
+    @property
+    def task(self):
+        return self._task_stack.current 
 
     def push_context(self, context):
         self._context_stack.push(context)

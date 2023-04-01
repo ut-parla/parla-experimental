@@ -331,6 +331,8 @@ class Task:
             tb = traceback.format_exc()
             task_state = TaskException(e, tb)
 
+            print(self, "Exception: ", e, tb, flush=True)
+
             if isinstance(e, KeyboardInterrupt):
                 print("You pressed Ctrl+C! In a Task!", flush=True)
                 raise e
@@ -520,7 +522,8 @@ class DataMovementTask(Task):
         parray_id = device_manager.globalid_to_parrayid(global_id)
         print("Attempt to Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         self.parray._auto_move(parray_id, write_flag)
-        print("Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
+        print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
+        #print(self, "STATUS: ", self.parray.print_overview())
         return TaskCompleted(0)
 
 ######

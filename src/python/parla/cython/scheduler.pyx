@@ -175,15 +175,19 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         parla_devices = active_task.get_assigned_devices()
                         device_context = create_env(parla_devices)
-                    
+                        
 
                         core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
+                        Locals.push_task(active_task)
+
                         with device_context as env:
                             active_task.run()
+
+                        Locals.pop_task()
 
                         #print(active_task.name, " is done")
 

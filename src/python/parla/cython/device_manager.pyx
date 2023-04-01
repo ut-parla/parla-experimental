@@ -78,12 +78,12 @@ class PrintableFrozenSet(frozenset):
 
 class StreamPool:
 
-    def __init__(self, device_list, per_device=4):
+    def __init__(self, device_list, per_device=8):
 
         if CUPY_ENABLED:
-            StreamClass = CupyStream 
+            self.StreamClass = CupyStream 
         else:
-            StreamClass = Stream
+            self.StreamClass = Stream
 
         self._device_list = device_list
         self._per_device = per_device
@@ -94,12 +94,14 @@ class StreamPool:
             
             with device.device as d:
                 for i in range(self._per_device):
-                    self._pool[device].append(StreamClass(device=d))
+                    self._pool[device].append(self.StreamClass(device=device))
 
     def get_stream(self, device):
         if len(self._pool[device]) == 0:
             #Create a new stream if the pool is empty.
-            return Stream(device=device)
+            new_stream = self.StreamClass(device=device)
+            return new_stream
+
         return self._pool[device].pop()
 
     def return_stream(self, stream):

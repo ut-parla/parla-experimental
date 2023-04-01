@@ -69,10 +69,10 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   // is -1, the device giving a score 0 can be chosen.
   *score = (*score < 0)? 0 : *score;
 
-  std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-    " for task "<< task->get_name() << " local data: " << local_data <<
-    " non local data:" << nonlocal_data << " normalized device load:" <<
-    normalizd_device_load << "\n";
+  // std::cout << "Device " << device.get_name() << "'s score: " << *score <<
+  //   " for task "<< task->get_name() << " local data: " << local_data <<
+  //   " non local data:" << nonlocal_data << " normalized device load:" <<
+  //   normalizd_device_load << "\n";
   // std::cout << "\t[Device Requirement in device Requirement]\n"
   //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
   //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
