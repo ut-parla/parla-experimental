@@ -284,9 +284,7 @@ class PyArchitecture(metaclass=ABCMeta):
         return type(self).__name__
 
     def __mul__(self, num_archs: int):
-        arch_ps = []
-        for i in range(0, num_archs):
-            arch_ps.append(self)
+        arch_ps = [self for i in range(0, num_archs)]
         return tuple(arch_ps)
 
  
