@@ -78,7 +78,7 @@ class PrintableFrozenSet(frozenset):
 
 class StreamPool:
 
-    def __init__(self, device_list, per_device=100):
+    def __init__(self, device_list, per_device=8):
 
         if CUPY_ENABLED:
             self.StreamClass = CupyStream 
