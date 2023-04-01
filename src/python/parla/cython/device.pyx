@@ -283,6 +283,12 @@ class PyArchitecture(metaclass=ABCMeta):
     def __repr__(self):
         return type(self).__name__
 
+    def __mul__(self, num_archs: int):
+        arch_ps = []
+        for i in range(0, num_archs):
+            arch_ps.append(self)
+        return tuple(arch_ps)
+
  
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):
