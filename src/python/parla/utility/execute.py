@@ -18,10 +18,31 @@ import time
 from parla import Parla, spawn, TaskSpace
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
+from parla.cython.device_manager import cpu, gpu
 import numpy as np
 
 from fractions import Fraction
 
+
+def get_placement_set_from(ps_str_set):
+    ps_set = []
+    for ps_str in ps_str_set[0]:
+        dev_type = DeviceType(ps_str)
+        if dev_type == DeviceType.ANY_GPU_DEVICE:
+            ps_set.append(gpu)
+        elif dev_type == DeviceType.CPU_DEVICE:
+            ps_set.append(cpu)
+        elif dev_type == DeviceType.GPU_0:
+            ps_set.append(gpu(0))
+        elif dev_type == DeviceType.GPU_1:
+            ps_set.append(gpu(1))
+        elif dev_type == DeviceType.GPU_2:
+            ps_set.append(gpu(2))
+        elif dev_type == DeviceType.GPU_3:
+            ps_set.append(gpu(3))
+        else:
+            raise ValueError("Does not support this placement:", dev_type)
+    return tuple(ps_set)
 
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float) -> Dict[int, np.ndarray]:
     pass
@@ -65,10 +86,14 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
-        placement_set = (0,)  # list(task.task_runtime.keys())
+        placement_key = task.task_runtime.keys()
+        placement_set_str = list(placement_key)
+        placement_set = get_placement_set_from(placement_set_str)
 
         # TODO: This needs rework with Device support
-        runtime_info = task.task_runtime[placement_set]
+        # TODO(hc): This assumes that this task is a single task
+        #           and does not have multiple placement options. 
+        runtime_info = task.task_runtime[placement_set_str[0]]
 
         # Task Constraints
         device_fraction = runtime_info.device_fraction
@@ -89,7 +114,7 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction)
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
