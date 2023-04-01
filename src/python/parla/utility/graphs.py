@@ -157,7 +157,7 @@ class TaskConfigs:
 
         device_id = tuple(int(d) for d in device_id)
 
-        # print(device_id)
+        print("device id:", device_id, flush=True)
 
         self.configurations[device_id] = TaskConfig
 
