@@ -2,7 +2,7 @@ import pytest
 
 from parla import Parla, spawn, TaskSpace, parray
 from parla.common.parray.coherence import Coherence
-from parla.cython.device_manager import cpu, cuda
+from parla.cython.device_manager import cpu, gpu
 import numpy as np
 
 def test_parray_creation():
@@ -35,7 +35,7 @@ def test_parray_task():
 
             ts = TaskSpace("CopyBack")
 
-            @spawn(ts[1], placement=cuda(1))
+            @spawn(ts[1], placement=gpu(1))
             def check_array_write():
                 b._auto_move(1, do_write = True)
                 assert b[0,0] == 1
@@ -57,7 +57,7 @@ def test_parray_task():
 
             A = a[0:2]
             B = a[2]
-            @spawn(ts[2], dependencies=[ts[1]], placement=cuda(0))
+            @spawn(ts[2], dependencies=[ts[1]], placement=gpu(0))
             def check_array_slicing():
                 A._auto_move(0, do_write = True)
                 B._auto_move(0, do_write = True)

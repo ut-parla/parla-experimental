@@ -26,9 +26,8 @@ CUPY_ENABLED = device.CUPY_ENABLED
 # Architecture declaration.
 # To use these in the placement of @spawn,
 # declare these as global variables.
-cuda = PyCUDAArchitecture()
+gpu = PyCUDAArchitecture()
 cpu = PyCPUArchitecture()
-
 
 
 cdef class CyDeviceManager:
@@ -128,30 +127,33 @@ class PyDeviceManager:
 
     def __init__(self, dev_config = None):
         self.cy_device_manager = CyDeviceManager()
-        # TODO(hc): I don't know a better way to register architecture.
-        # TODO(wlr): I made this a dict so that device manager doesn't have to have all arch types.
+        # Stores architectures to a dict so that device manager doesn't have
+        # to have all arch types.
         self.py_registered_archs = {}
         self.registered_devices = []
 
-        # TODO(hc): pack those config. to a data class.
         # Initialize Devices
         if dev_config == None or dev_config == "":
             self.register_cpu_devices()
-            self.register_cuda_devices_cupy()
+            self.register_cupy_gpu_devices()
         else:
             self.parse_config_and_register_devices(dev_config)
         self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
-        self.stream_pool = StreamPool(cuda.devices)
+        self.stream_pool = StreamPool(gpu.devices)
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
             for dev in arch.devices:
                 del dev
 
-    # TODO(hc): this postfix *_cupy() looks confusing.
-    def register_cuda_devices_cupy(self):
+    def register_cupy_gpu_devices(self):
+        """
+        This function adds cupy GPU devices.
+        """
+        # TODO(hc): Later, it will extend a GPU architecture type, like ones
+        #           from AMD.
         if cupy is not None:
             try:
                 num_of_gpus = cupy.cuda.runtime.getDeviceCount()
@@ -161,14 +163,14 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
-            self.py_registered_archs[cuda] = cuda
+            self.py_registered_archs[gpu] = gpu
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
                                             # in bytes.
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
-                cuda.add_device(py_cuda_device)
+                gpu.add_device(py_cuda_device)
                 self.registered_devices.append(py_cuda_device)
         else:
             # It is possible that the current system does not have CUDA devices.
@@ -176,11 +178,11 @@ class PyDeviceManager:
             # To handle this case, we add a CPU device as the CUDA architecture
             # type (So, Parla assumes that the target system must be equipped
             # with at least one CPU core).
-            self.register_cpu_devices(cuda)
+            self.register_cpu_devices(gpu)
 
     def register_cpu_devices(self, register_to_cuda: bool = False):
         if register_to_cuda:
-            cuda.add_device(cpu(0))
+            gpu.add_device(cpu(0))
             self.registered_devices.append(cpu(0))
         else:
             # Get the number of usable CPUs from this process.
@@ -223,14 +225,14 @@ class PyDeviceManager:
                 self.registered_devices(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
-                self.py_registered_archs[cuda] = cuda
+                self.py_registered_archs[gpu] = gpu
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(gpu_num_devices == len(gpu_mem_sizes)) 
                 for dev_id in range(gpu_num_devices):
                     py_cuda_device = PyCUDADevice(dev_id, \
                                                   gpu_mem_sizes[dev_id], \
                                                   VCU_BASELINE)
-                    cuda.add_device(py_cuda_device)
+                    gpu.add_device(py_cuda_device)
                     self.registered_devices.append(py_cuda_device)
 
     def get_all_devices(self):
