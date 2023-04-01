@@ -132,7 +132,6 @@ def reduction_scaling(state):
             total_data_width=6250, levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
 
         with GraphContext(config, name="reduction") as g:
-
             logpath = g.tmplogpath
 
             run_config = RunConfig(

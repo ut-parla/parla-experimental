@@ -663,7 +663,6 @@ class GraphContext(object):
             self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
-#print(self.tmpfilepath, flush=True)
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
