@@ -65,4 +65,11 @@ void *InnerPArray::get_py_parray() { return this->_py_parray; }
 
 uint64_t InnerPArray::get_parray_parentid() { return this->parent_id; }
 
+InnerPArray *InnerPArray::get_parent_parray() {
+  if (this->_parent_parray == nullptr) {
+    return this;
+  }
+  return this->_parent_parray;
+}
+
 } // namespace parray
