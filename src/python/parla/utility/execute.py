@@ -189,7 +189,6 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
-    print("GPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
