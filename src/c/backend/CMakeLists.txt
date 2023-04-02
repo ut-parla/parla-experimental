@@ -12,7 +12,7 @@ else()
     file(GLOB BACKEND_SRC ${BACKEND_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/impl_none/*.cpp)
 endif(PARLA_ENABLE_CUDA)
 
-add_library(backend STATIC ${BACKEND_SRC})
+add_library(backend SHARED ${BACKEND_SRC})
 
 if(PARLA_ENABLE_NVTX)
     message(STATUS "Enabling NVTX support.")
@@ -30,6 +30,7 @@ if(PARLA_ENABLE_CUDA)
     set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(backend PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(backend PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
     target_include_directories(backend PUBLIC ${CUDAToolkit_INCLUDE_DIRS})

@@ -48,24 +48,6 @@ enum AccessMode {
   INOUT = 2
 };
 
-// Busy sleep for a given number of microseconds
-inline void cpu_busy_sleep(unsigned int micro) {
-  // compute_range r("sleep::busy", nvtx3::rgb{0, 127, 127});
-  // int count = 0;
-  auto block = std::chrono::microseconds(micro);
-  auto time_start = std::chrono::high_resolution_clock::now();
-
-  auto now = std::chrono::high_resolution_clock::now();
-  auto elapsed =
-      std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
-
-  do {
-    now = std::chrono::high_resolution_clock::now();
-    elapsed =
-        std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
-  } while (elapsed.count() < micro);
-}
-
 // Forward declaration of python callbacks
 
 /* Python function to assign a task to a worker */
@@ -248,7 +230,8 @@ public:
   /* A list of a pair of PArray instances and access modes to them.
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
-  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> parray_list;
+  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+      parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -872,9 +855,7 @@ public:
    * threads can start*/
   void spawn_wait();
 
-  DeviceManager *get_device_manager() {
-    return this->device_manager_;
-  }
+  DeviceManager *get_device_manager() { return this->device_manager_; }
 
 protected:
   /// It manages all device instances in C++.
