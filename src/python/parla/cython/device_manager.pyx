@@ -282,13 +282,13 @@ class PyDeviceManager:
                 
                 for dev_id in range(num_of_gpus):
 
-                    #if num_real_devices > 0:
-                    py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus, \
-                                                gpu_mem_sizes[dev_id], \
-                                                VCU_BASELINE)
+                    if self.num_real_gpus > 0:
+                        py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus, \
+                                                    gpu_mem_sizes[dev_id], \
+                                                    VCU_BASELINE)
                     
-                    #else:
-                    #    py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
+                    else:
+                        py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
 
                     gpu.add_device(py_cuda_device)
                     self.registered_devices.append(py_cuda_device)
