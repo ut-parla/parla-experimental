@@ -264,9 +264,9 @@ public:
   InnerTask *pop() {
     // std::cout << "PhaseManager::pop" << std::endl;
     int idx = (this->last_device_idx) % this->ndevices;
-    // std::cout << "Popping from DeviceQueue " << idx << std::endl;
+    std::cout << "Popping from DeviceQueue " << idx << std::endl;
     InnerTask *task = this->device_queues[idx]->pop();
-    // std::cout << "Popped task: " << task->get_name() << std::endl;
+    std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
   }
