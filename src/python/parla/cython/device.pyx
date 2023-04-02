@@ -197,7 +197,7 @@ class PyCUDADevice(PyDevice):
     @property
     def device(self):
         if CUPY_ENABLED:
-            self._device = cupy.cuda.Device(self._device_id)
+            self._device = cupy.cuda.Device(self.device_id)
         return self._device
 
 
