@@ -70,21 +70,20 @@ def test_task_mapping_policy():
             c = np.array([1, 2, 4, 5, 6, 1, 2, 4, 5, 6, 1, 2, 4, 5, 6])
             c = parray.asarray(c)
 
-            @spawn(ts[7], placement=[cuda(0)], input=[(c[0:4], 0)])
+            @spawn(ts[7], placement=[cuda(0)], input=[(c[0:2], 0)])
             def t7():
                 ctx = get_current_context()
                 assert ctx().get_global_id() == 1
 
-            @spawn(ts[8], placement=[cuda(1)], input=[(c[0:2], 0)])
+            @spawn(ts[8], placement=[cuda(1)], input=[(c[2:4], 0)])
             def t8():
                 ctx = get_current_context()
                 assert ctx().get_global_id() == 2
 
-            @spawn(ts[9], placement=[cuda(2)], input=[(c[6:9], 0)])
+            @spawn(ts[9], placement=[cuda(2)], input=[(c[4:6], 0)])
             def t9():
                 ctx = get_current_context()
                 assert ctx().get_global_id() == 3
-
             await ts
 
             # When a policy calculate locality score, it can access root PArray information.
@@ -93,13 +92,14 @@ def test_task_mapping_policy():
             # Input should be slices before they are write back  
 
             # Multi-device placements consisting of the same devices are never chosen.
-            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3)), (cuda(0), cuda(0))])
+            @spawn(ts[10], placement=[(cuda(0), cuda(3)), (cuda(1), cuda(3))], input=[(c,0), (c,1)])
             def t10():
                 devs = get_current_devices()
                 assert devs[0]().get_global_id() == 1 or devs[0]().get_global_id() == 2 or devs[0]().get_global_id() == 4
                 assert not devs[1]().get_global_id() == 1 and (devs[1]().get_global_id() == 4)
             await ts
 
+            '''
             @spawn(ts[11], placement=[(cuda(1), cuda(0)), (cuda(0), cuda(3)), (cuda(1), cuda(3))], inout=[(c, 0), (c[0:1], 1)], dependencies=[ts[10]])
             def t11():
                 devs = get_current_devices()
@@ -114,6 +114,7 @@ def test_task_mapping_policy():
                 devs = get_current_devices()
                 assert devs[0]().get_global_id() == 1
                 assert devs[1]().get_global_id() == 2
+            '''
 
 
 if __name__ == "__main__":

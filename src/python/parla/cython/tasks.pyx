@@ -520,6 +520,7 @@ class DataMovementTask(Task):
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
+        print("Attempt to Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
