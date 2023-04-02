@@ -242,7 +242,7 @@ public:
         if (task != nullptr) {
           // std::cout << "Not null." << std::endl;
           std::cout << "Found task: " << task->get_name() << std::endl;
-          this->last_device_idx = current_idx++;
+          this->last_device_idx = ++current_idx;
           return task;
         }
       }
@@ -263,7 +263,7 @@ public:
    **/
   InnerTask *pop() {
     // std::cout << "PhaseManager::pop" << std::endl;
-    int idx = (this->last_device_idx) % this->ndevices;
+    int idx = (this->last_device_idx - 1) % this->ndevices;
     std::cout << "Popping from DeviceQueue " << idx << std::endl;
     InnerTask *task = this->device_queues[idx]->pop();
     std::cout << "Popped task: " << task->get_name() << std::endl;
