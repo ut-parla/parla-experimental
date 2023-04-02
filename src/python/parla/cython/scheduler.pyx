@@ -134,9 +134,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
             gpu_arch = device_manager.py_registered_archs[DeviceType.CUDA]
             ngpus = len(gpu_arch)
 
-            for gpu in range(ngpus):
+            for index in range(ngpus):
                 # Trigger cuBLAS/etc. initialization for this GPU in this thread.
-                with cupy.cuda.Device(gpu.index) as device:
+                with cupy.cuda.Device(index) as device:
+                    print("Doing warmup for GPU", index, flush=True)
                     a = cupy.asarray([2.])
                     cupy.cuda.get_current_stream().synchronize()
                     with cupy.cuda.Stream(False, True) as stream:
