@@ -58,9 +58,8 @@ def serial_scaling(state):
         state.set_iteration_time(timing.mean)
 
 
-@benchmark.register(name="IndependentScaling")
-@benchmark.option.dense_range(1, 4)
-#@benchmark.option.args_product([(1, 2, 4), (1, 2), (False, True)])
+#@benchmark.register(name="IndependentScaling")
+@benchmark.option.args_product([(1, 2, 4, 8), (1, 2)]) # TODO(hc): will add data pattern too
 def independent_scaling(state):
     while state:
         max_time = 10

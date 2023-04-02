@@ -24,7 +24,7 @@ from parla.common.globals import get_current_devices, get_current_stream
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
-from parla.cython.sleep import gpu_sleep
+from parla import gpu_sleep_nogil
 import numpy as np
 
 from fractions import Fraction
@@ -144,16 +144,11 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
 
-<<<<<<< HEAD
     return None
 
 
 @synthetic_kernel.variant(gpu)
 def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
-=======
-@specialize
-def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
->>>>>>> Add gpu sleep; need compiler flag
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
@@ -210,7 +205,8 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     ticks = int((total_time/(10**6))*cycles_per_second)
 
     for i in range(gil_accesses):
-        gpu_sleep(dev_id, ticks, stream)
+#gpu_bsleep_nogil(dev_id, ticks, stream)
+        free_sleep(free_time)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -261,7 +257,6 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-<<<<<<< HEAD
         #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #      " placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
@@ -432,9 +427,6 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
         '''
-=======
-        print("Placement:", placement_set)
->>>>>>> Add gpu sleep; need compiler flag
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
