@@ -2,14 +2,11 @@
 A naive implementation of blocked Cholesky using Numba kernels on CPUs.
 """
 from parla import Parla, TaskSpace, spawn
-import math
-from numba import jit, void, float64
 import time
 from scipy import linalg
 import numpy as np
 import os
 import mkl
-import argparse
 import random
 
 t = 1
@@ -74,7 +71,7 @@ def cholesky_blocked_inplace(a, load=1):
     subcholesky = TaskSpace("subcholesky")  # Cholesky on block
     gemm = TaskSpace("gemm")        # Inter-block GEMM
     solve = TaskSpace("solve")        # Triangular solve
-    zerofy = TaskSpace("zerofy")
+    TaskSpace("zerofy")
 
     for j in range(len(a)):
         for k in range(j):
@@ -137,7 +134,7 @@ def run(matrix='chol_1000.npy', block_size=250, n=1000, check_error=True, check_
             a = np.load(matrix)
             print("Loaded matrix from file. Shape=", a.shape)
             n = a.shape[0]
-        except Exception as e:
+        except Exception:
             print("Generating matrix of size: ", n)
             # Construct input data
             a = np.random.rand(n, n)
