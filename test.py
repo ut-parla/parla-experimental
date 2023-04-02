@@ -1,7 +1,7 @@
 import argparse
 
 from parla import Parla, spawn, TaskSpace, sleep_nogil, parray
-from parla.cython.device_manager import cpu, cuda
+from parla.cython.device_manager import cpu, gpu
 from parla.common.globals import get_current_devices
 import numpy as np
 # from sleep.core import bsleep
@@ -31,10 +31,10 @@ def main(T):
         print("-HELLO OUTER 0", flush=True)
 
     """
-# @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], cuda[{"vcus":1, "memory":20}])])
-    @spawn(T[0], placement=[(cpu[{"vcus": 20, "memory": 40000}], cuda[{"vcus": 1, "memory": 20}]), (cpu(0), cuda(1)[{"vcus": 10, "memory": 2000}])], \
+# @spawn(T[0], placement=[(cpu[{"vcus":20, "memory":40000}], gpu[{"vcus":1, "memory":20}])])
+    @spawn(T[0], placement=[(cpu[{"vcus": 20, "memory": 40000}], gpu[{"vcus": 1, "memory": 20}]), (cpu(0), gpu(1)[{"vcus": 10, "memory": 2000}])], \
           input=[(a, 0), (b, 1)], output=[(c, 0)], inout=[(d, 1)])
-# @spawn(T[0], placement=[(cuda[{"vcus":20, "memory":40000}])])
+# @spawn(T[0], placement=[(gpu[{"vcus":20, "memory":40000}])])
     def task1():
         print("+HELLO OUTER 0", flush=True)
         bsleep(1000)
@@ -56,7 +56,7 @@ def main(T):
         print("- d:", d._array._buffer)
 
 
-    @spawn(T[2], placement=[(cuda(1), cuda(2))], vcus=0, input=[(a, 0), (b, 1)])
+    @spawn(T[2], placement=[(gpu(1), gpu(2))], vcus=0, input=[(a, 0), (b, 1)])
     def task3():
         print("+HELLO OUTER 2", flush=True)
         bsleep(1000)

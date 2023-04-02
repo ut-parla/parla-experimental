@@ -367,8 +367,9 @@ class PArray:
             device_id = self._current_device_index
 
         # update protocol and get operation
-        operations = self._coherence.read(device_id, self._slices_hash) # locks involve
-        self._process_operations(operations, slices) # condition variable involve
+        with self._coherence._lock:  # locks involve
+            operations = self._coherence.read(device_id, self._slices_hash)
+            self._process_operations(operations, slices)
 
     def _coherence_write(self, device_id: int = None, slices: SlicesType = None) -> None:
         """Tell the coherence protocol a write happened on a device.
@@ -387,8 +388,9 @@ class PArray:
             device_id = self._current_device_index
 
         # update protocol and get operation
-        operations = self._coherence.write(device_id, self._slices_hash) # locks involve
-        self._process_operations(operations, slices) # condition variable involve
+        with self._coherence._lock:  # locks involve
+            operations = self._coherence.write(device_id, self._slices_hash) 
+            self._process_operations(operations, slices)
 
     # Device management methods:
 
@@ -400,39 +402,19 @@ class PArray:
         for op in operations:
             if op.inst == MemoryOperation.NOOP:
                 pass  # do nothing
-            elif op.inst == MemoryOperation.CHECK_DATA:
-                if not self._coherence.data_is_ready(op.src):  # if data is not ready, wait
-                    with self._coherence_cv[op.src]:
-                        while not self._coherence.data_is_ready(op.src):
-                            self._coherence_cv[op.src].wait()
             elif op.inst == MemoryOperation.LOAD:
-                with self._coherence_cv[op.dst]:  # hold the CV when moving data
+                if MemoryOperation.LOAD_SUBARRAY in op.flag:
+                    self._array.set_slices_mapping(op.dst, slices)  # build slices mapping first
 
-                    # if the flag is set, skip this checking
-                    if MemoryOperation.SKIP_SRC_CHECK not in op.flag:
-                        with self._coherence_cv[op.src]:  # wait on src until it is ready
-                            while not self._coherence.data_is_ready(op.src):
-                                self._coherence_cv[op.src].wait()
+                # check flag to see if dst is current device
+                dst_is_current_device = op.flag != MemoryOperation.SWITCH_DEVICE_FLAG
 
-                    if MemoryOperation.LOAD_SUBARRAY in op.flag:
-                        self._array.set_slices_mapping(op.dst, slices)  # build slices mapping first
+                # copy data
+                self._array.copy_data_between_device(op.dst, op.src, dst_is_current_device)
 
-                    # check flag to see if dst is current device
-                    dst_is_current_device = op.flag != MemoryOperation.SWITCH_DEVICE_FLAG
-
-                    # copy data
-                    self._array.copy_data_between_device(op.dst, op.src, dst_is_current_device)
-
-                    # sync stream before set it as ready, so asyc call is ensured to be done
-                    if num_gpu > 0:
-                        cupy.cuda.stream.get_current_stream().synchronize()
-
-                    # data is ready now
-                    if MemoryOperation.LOAD_SUBARRAY in op.flag:
-                        self._coherence.set_data_as_ready(op.dst, self._slices_hash)  # mark it as done
-                    else:
-                         self._coherence.set_data_as_ready(op.dst)
-                    self._coherence_cv[op.dst].notify_all()  # let other threads know the data is ready
+                # sync stream before set it as ready, so asyc call is ensured to be done
+                if num_gpu > 0:
+                    cupy.cuda.stream.get_current_stream().synchronize()
             elif op.inst == MemoryOperation.EVICT:
                 scheduler = get_scheduler()
                 src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(op.src)
@@ -440,9 +422,7 @@ class PArray:
                     # If none of visible tasks will refer this PArray, release
                     # this PArray instance of the source device from the PArray tracker.
                     scheduler.release_parray(self._cy_parray, src_global_dev_id)
-                self._array.clear(op.src)  # decrement the reference counter, relying on GC to free the memory
-                if MemoryOperation.NO_MARK_AS_READY not in op.flag:
-                    self._coherence.set_data_as_ready(op.src, None)  # mark it as done
+                self._array.clear(op.src)  # decrement the reference counter, relying on GC to free the memor
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError("PArray gets an error from coherence protocol")
             else:

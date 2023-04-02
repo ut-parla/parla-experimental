@@ -3,8 +3,7 @@ from parla import Parla, spawn
 from parla import TaskSpace
 from parla import specialize
 from parla.utility.execute import timeout
-from parla.cython.device_manager import cpu, cuda
-gpu = cuda
+from parla.cython.device_manager import cpu, gpu
 
 
 @specialize
