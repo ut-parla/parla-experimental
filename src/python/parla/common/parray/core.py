@@ -48,7 +48,7 @@ class PArray:
     # the wrapper class of C++ PArrayState class, which store the exist and valid state
     _cyparray_state: CyPArrayState
 
-    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "unnamed") -> None:
+    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "NA") -> None:
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents
