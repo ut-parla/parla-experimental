@@ -11,7 +11,7 @@ from parla.cython import device
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import get_stream_pool, get_scheduler
 from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import AccessMode
+from parla.common.globals import AccessMode, Storage
 
 from parla.common.parray.core import PArray
 
@@ -230,7 +230,9 @@ class Task:
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         self.id = id(self)
 
-        
+        #TODO(wlr): Should this be a stack for continuation tasks?
+        self._environment = None
+
         self.taskspace = taskspace
         self.idx = idx
 
@@ -271,8 +273,15 @@ class Task:
 
     def get_name(self):
         return self.name
-        
 
+    @property
+    def environment(self):
+        return self._environment
+
+    @environment.setter
+    def environment(self, env):
+        self._environment = env
+        
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None):
         self.dependencies = dependencies
         self.constraints = constraints
@@ -545,6 +554,8 @@ class TaskEnvironment:
 
     def __init__(self, environment_list, blocking=False):
 
+        self._store = Storage()
+
         self.device_dict = defaultdict(list)
 
         self.env_list = []
@@ -553,19 +564,44 @@ class TaskEnvironment:
         self.blocking = blocking
         self._device = None
 
-        for env in environment_list:
-            for dev in env.device_dict:
-                self.device_dict[dev] += env.device_dict[dev]
+        self.device_list = []
+        self._global_device_ids = set()
 
+        for env in environment_list:
+            for dev in env.devices:
+                self.device_list.append(dev)
+                self.device_dict[dev.architecture].append(dev)
+
+            self._global_device_ids  = self._global_device_ids.union(env.global_ids)
             self.env_list.append(env)
+
+    @property
+    def global_ids(self):
+        """
+        Return the global Parla device ids of the devices in this environment.
+        """
+        return self._global_device_ids
+
+    @property
+    def gpu_ids(self):
+        """
+        Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
+        """
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
 
     def get_parla_device(self):
+        """
+        Returns the Parla device associated with this environment.
+        """
         return self._device
 
     def get_library_device(self):
+        """
+        Returns the library device associated with this environment. (e.g. cupy.cuda.Device)
+        """
         return self._device.device
 
     @property
@@ -577,7 +613,17 @@ class TaskEnvironment:
 
     @property
     def stream(self):
+        """
+        Returns the Parla stream associated with this environment.
+        """
         return self.streams[0]
+
+    @property
+    def cupy_stream(self):
+        """
+        Returns the cupy stream associated with this environment.
+        """
+        return self.stream.stream
 
     def loop(self, envlist=None):
         if envlist is None:
@@ -650,6 +696,17 @@ class TaskEnvironment:
         
         return create_env(self.env_list[index])
 
+
+    def store(self, key, value):
+        self._store.store(key, value)
+
+    def retrieve(self, key):
+        return self._store.retrieve(key)
+
+    @property
+    def storage(self):
+        return self._store
+
     def __len__(self):
         return len(self.env_list)
 
@@ -662,6 +719,15 @@ class TaskEnvironment:
         for stream in self.stream_list:
             stream.synchronize()
             stream_pool.return_stream(stream)
+
+    def __contains__(self, obj):
+        #TODO(wlr): Add optional support for CuPy device 
+        if isinstance(obj, PyDevice):
+            return obj in self.device_list
+        elif isinstance(obj, TaskEnvironment):
+            return obj.global_ids.issubset(self.global_ids)
+        else:
+            raise TypeError("The comparison is not supported. (Supported Types: TaskEnvironment)")
 
     def parfor(self, envlist=None):
 
@@ -713,6 +779,8 @@ class TerminalEnvironment(TaskEnvironment):
         self._device = device
         self._arch_type = device.architecture
         self.is_terminal = True
+
+        self._global_device_ids = {device.global_id}
 
     def __repr__(self):
         return f"TerminalEnvironment({self._device})"

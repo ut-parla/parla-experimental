@@ -221,7 +221,7 @@ class PyDeviceManager:
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
                 cpu.add_device(py_cpu_device)
-                self.registered_devices(py_cpu_device)
+                self.registered_devices.append(py_cpu_device)
             gpu_num_devices = parsed_configs["GPU"]["num_devices"]
             if gpu_num_devices > 0:
                 self.py_registered_archs[gpu] = gpu
