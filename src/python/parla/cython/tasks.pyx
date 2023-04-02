@@ -780,7 +780,7 @@ class TerminalEnvironment(TaskEnvironment):
         self._arch_type = device.architecture
         self.is_terminal = True
 
-        self._global_device_ids = {device.global_id}
+        self._global_device_ids = {device.get_global_id()}
 
     def __repr__(self):
         return f"TerminalEnvironment({self._device})"
