@@ -668,7 +668,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             else:
                 read_dependency = " "
                 write_dependency = f"{global_idx}"
-            device_id = int(3 + j // segment) % num_gpus
+            device_id = (int(3 + j // segment) - 1) % num_gpus
             pre_configuration_string = f"{{ {device_id} : "
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
