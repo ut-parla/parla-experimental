@@ -225,6 +225,7 @@ class PArray:
 
         Note: should be called within the current task context
         Note: data should be put in OUT/INOUT fields of spawn
+        Note: should not call this over an sliced array
         """
         this_device = self._current_device_index
 
@@ -257,9 +258,13 @@ class PArray:
 
         # update size
         self.nbytes = array.nbytes
-
+        self.subarray_nbytes = self.nbytes
+        self._cy_parray.set_size(self.nbytes)
+        
+        self._slices = []
+        
         # reset coherence
-        self._coherence = Coherence(this_device, num_gpu)
+        self._coherence.reset(this_device)
 
         # update shape
         self._array.shape = array.shape
