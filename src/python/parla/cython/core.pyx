@@ -109,6 +109,19 @@ cpdef cpu_bsleep_nogil(unsigned int microseconds):
     with nogil:
         cpu_busy_sleep(microseconds)
 
+cpdef gpu_bsleep_gil(dev, t, stream):
+    cdef int c_dev = dev
+    cdef unsigned long c_t = t
+    cdef uintptr_t c_stream = stream.ptr
+    gpu_busy_sleep(c_dev, c_t, c_stream)
+
+cpdef gpu_bsleep_nogil(dev, t, stream):
+    cdef int c_dev = dev
+    cdef unsigned long c_t = t
+    cdef uintptr_t c_stream = stream.ptr
+    with nogil:
+        gpu_busy_sleep(c_dev, c_t, c_stream)
+
 # Define callbacks for C++ to call back into Python
 
 cdef void callback_launch(void* python_scheduler, void* python_task, void*

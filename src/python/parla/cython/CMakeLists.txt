@@ -2,6 +2,11 @@
 set(CYTHON_FLAGS "${CYTHON_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
+if (PARLA_ENABLE_CUDA)
+    find_package(CUDAToolkit REQUIRED)
+    #set(CYTHON_FLAGS "${CYTHON_FLAGS} -DPARLA_ENABLE_CUDA")
+endif()
+
 #add_compile_options("-fsanitize=address")
 
 add_cython_target(core core.pyx CXX PY3)
@@ -12,7 +17,6 @@ add_cython_target(device_manager device_manager.pyx CXX PY3)
 add_cython_target(cyparray_state cyparray_state.pyx CXX PY3)
 add_cython_target(cyparray cyparray.pyx CXX PY3)
 add_cython_target(variants variants.pyx CXX PY3)
-add_cython_target(sleep sleep.pyx CXX PY3)
 
 add_library(core MODULE ${core})
 add_library(tasks MODULE ${tasks})
@@ -22,7 +26,6 @@ add_library(device_manager MODULE ${device_manager})
 add_library(cyparray_state MODULE ${cyparray_state})
 add_library(cyparray MODULE ${cyparray})
 add_library(variants MODULE ${variants})
-add_library(sleep MODULE ${sleep})
 
 
 
@@ -37,9 +40,10 @@ install(TARGETS device_manager LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAG
 install(TARGETS cyparray_state LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 install(TARGETS cyparray LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 install(TARGETS variants LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS sleep LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
+
+
 
 target_link_libraries(core ${PYTHON_LIBRARIES})
 target_link_libraries(core backend)
@@ -48,6 +52,10 @@ target_include_directories(core PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/inclu
 target_include_directories(core PUBLIC ${NumPy_INCLUDE_DIRS})
 target_include_directories(core PUBLIC ${PYTHON_INCLUDE_DIRS})
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+if(PARLA_ENABLE_CUDA)
+target_link_libraries(core CUDA::cudart CUDA::cublas CUDA::nvToolsExt CUDA::cublasLt)
+endif(PARLA_ENABLE_CUDA)
+
 
 target_link_libraries(tasks ${PYTHON_LIBRARIES})
 target_link_libraries(tasks backend)
@@ -96,6 +104,7 @@ target_include_directories(cyparray PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/i
 target_include_directories(cyparray PUBLIC ${NumPy_INCLUDE_DIRS})
 target_include_directories(cyparray PUBLIC ${PYTHON_INCLUDE_DIRS})
 target_include_directories(cyparray PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(variants ${PYTHON_LIBRARIES})
 target_link_libraries(variants backend)
 target_include_directories(variants PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
@@ -104,13 +113,6 @@ target_include_directories(variants PUBLIC ${NumPy_INCLUDE_DIRS})
 target_include_directories(variants PUBLIC ${PYTHON_INCLUDE_DIRS})
 target_include_directories(variants PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(sleep ${PYTHON_LIBRARIES})
-target_link_libraries(sleep backend)
-target_include_directories(sleep PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(sleep PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(sleep PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(sleep PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(sleep PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 python_extension_module(core)
 python_extension_module(tasks)
@@ -120,4 +122,3 @@ python_extension_module(device_manager)
 python_extension_module(cyparray_state)
 python_extension_module(cyparray)
 python_extension_module(variants)
-python_extension_module(sleep)

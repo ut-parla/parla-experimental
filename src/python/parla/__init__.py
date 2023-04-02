@@ -17,6 +17,9 @@ specialize = variants.specialize
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
 
+gpu_sleep_gil = core.gpu_bsleep_gil
+gpu_sleep_nogil = core.gpu_bsleep_nogil
+
 TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 

@@ -9,11 +9,13 @@ option(PARLA_DEBUG "Enables all debugging flags" ON)
 
 option(PARLA_ENABLE_LOGGING "Enable binlog logging" OFF)
 option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" OFF)
+option(PARLA_ENABLE_NVTX "Enable compilation for CUDA architectures" OFF)
 
 message(STATUS "PARLA_BUILD_TESTS: " ${PARLA_BUILD_TESTS})
 message(STATUS "PARLA_DEBUG: " ${PARLA_DEBUG})
 message(STATUS "PARLA_ENABLE_LOGGING: " ${PARLA_ENABLE_LOGGING})
 message(STATUS "PARLA_ENABLE_NVTX: " ${PARLA_ENABLE_NVTX})
+message(STATUS "PARLA_ENABLE_CUDA: " ${PARLA_ENABLE_CUDA})
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 include(CTest)
@@ -37,6 +39,11 @@ endif(PARLA_DEBUG)
 if(PARLA_ENABLE_NVTX)
     set(NVTX_INCLUDE ${3RD_PARTY_DIR}/nvtx/c/include)
 endif(PARLA_ENABLE_NVTX)
+
+if(PARLA_ENABLE_CUDA)
+    enable_language(CUDA)
+    find_package(CUDAToolkit REQUIRED)
+endif(PARLA_ENABLE_CUDA)
 
 if(PARLA_ENABLE_LOGGING)
     #TODO: figure out binlog cmake support
