@@ -68,8 +68,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
         Score_t score{0};
         bool is_req_available = policy_->calc_score_mdevplacement(
-            task, mdev_reqs, *this, &mdev_reqs_vec, &score,
-            parray_list);
+            task, mdev_reqs, *this, &mdev_reqs_vec, &score, parray_list);
         if (!is_req_available) {
           continue;
         }
@@ -82,9 +81,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::shared_ptr<DeviceRequirement> dev_req =
             std::dynamic_pointer_cast<DeviceRequirement>(base_req);
         Score_t score{0};
-        bool is_req_available =
-            policy_->calc_score_devplacement(task, dev_req, *this, &score,
-                parray_list[0]);
+        bool is_req_available = policy_->calc_score_devplacement(
+            task, dev_req, *this, &score, parray_list[0]);
         if (!is_req_available) {
           continue;
         }
@@ -120,8 +118,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
     } else {
-      std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> *parray_list =
-          &(task->parray_list);
+      std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+          *parray_list = &(task->parray_list);
       for (size_t i = 0; i < chosen_devices.size(); ++i) {
         assert(chosen_devices[i] != nullptr);
         Device *chosen_device = chosen_devices[i]->device();
@@ -133,8 +131,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
             chosen_device->get_global_id());
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
-          this->scheduler->get_parray_tracker()->reserve_parray(
-              *parray, chosen_device);
+          this->scheduler->get_parray_tracker()->reserve_parray(*parray,
+                                                                chosen_device);
           parray->incr_num_active_tasks(global_dev_id);
         }
       }
@@ -223,6 +221,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       &parray_list = task->parray_list;
   std::string task_base_name = task->get_name();
   std::vector<InnerTask *> data_tasks;
+  data_tasks.reserve(parray_list.size());
+
   for (size_t i = 0; i < parray_list.size(); ++i) {
     for (size_t j = 0; j < parray_list[i].size(); ++j) {
       // Create a data movement task for each PArray.
@@ -259,8 +259,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       // Copy assigned devices to a compute task to a data movement task.
       // TODO(hc): When we support xpy, it should be devices corresponding
       //           to placements of the local partition.
-      datamove_task->add_assigned_device(
-          task->get_assigned_devices()[i]);
+      datamove_task->add_assigned_device(task->get_assigned_devices()[i]);
       data_tasks.push_back(datamove_task);
       // Add the created data movement task to a reserved task queue.
       this->scheduler->increase_num_active_tasks();
@@ -274,6 +273,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
+
+  std::cout << "MemoryReserver::run" << std::endl;
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
@@ -375,6 +376,8 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
 
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
+
+  std::cout << "RuntimeReserver::run" << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
