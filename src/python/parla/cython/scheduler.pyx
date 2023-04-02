@@ -119,7 +119,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
         #Add the worker to the scheduler pool of all workers (not yet active)
         scheduler.inner_scheduler.add_worker(self.inner_worker)
 
-    def __start__(self, initialize=True):
+    def start(self, initialize=True):
         super(ControllableThread, self).start()
 
         self._initialize()

@@ -8,7 +8,7 @@ from .cython import device_manager
 from .cython import device
 from .cython import variants
 from .common.spawn import spawn
-#from .common import parray
+from .common import parray
 
 specialize = variants.specialize
 
