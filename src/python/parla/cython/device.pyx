@@ -287,6 +287,9 @@ class PyArchitecture(metaclass=ABCMeta):
         arch_ps = [self for i in range(0, num_archs)]
         return tuple(arch_ps)
 
+    def __len__(self):
+        return len(self._devices)
+
  
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):

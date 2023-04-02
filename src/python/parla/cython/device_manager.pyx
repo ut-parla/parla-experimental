@@ -116,6 +116,10 @@ class StreamPool:
         return f"StreamPool({self.__summarize__()})"
 
 
+#TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
+#TODO(wlr):  - Provide a way to iterate over these real device ids
+           
+
 class PyDeviceManager:
     """
     A device manager manages device objects and provides their information.
