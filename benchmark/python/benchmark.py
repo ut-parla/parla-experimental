@@ -3,6 +3,7 @@ import google_benchmark as benchmark
 
 from parla.utility.graphs import DeviceType, TaskConfig, TaskConfigs
 from parla.utility.graphs import IndependentConfig, SerialConfig, ReductionConfig, RunConfig
+from parla.utility.graphs import DataInitType
 from parla.utility.graphs import read_pgraph, parse_blog
 from parla.utility.graphs import shuffle_tasks
 
@@ -24,8 +25,8 @@ def serial_scaling(state):
         task_configs.add(DeviceType.CPU_DEVICE, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
 
-        config = SerialConfig(
-            steps=n, chains=concurrent_tasks, task_config=task_configs)
+        config = SerialConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
+            total_data_width=6250, steps=n, chains=concurrent_tasks, task_config=task_configs)
 
         with GraphContext(config, name="serial") as g:
 
@@ -62,7 +63,8 @@ def independent_scaling(state):
         task_configs = TaskConfigs()
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-        config = IndependentConfig(task_count=n, task_config=task_configs, use_gpus=use_gpus)
+        config = IndependentConfig(data_pattern=DataInitType.INDEPENDENT_DATA,
+            total_data_width=6250, task_count=n, task_config=task_configs, use_gpus=use_gpus)
         with GraphContext(config, name="independent") as g:
 
             logpath = g.tmplogpath
@@ -98,7 +100,9 @@ def reduction_scaling(state):
         task_configs = TaskConfigs()
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-        config = ReductionConfig(levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
+        config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
+            total_data_width=6250, levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
+
         with GraphContext(config, name="reduction") as g:
 
             logpath = g.tmplogpath

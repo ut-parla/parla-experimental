@@ -100,7 +100,6 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
-    print("GPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
@@ -168,7 +167,6 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        print("Placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:

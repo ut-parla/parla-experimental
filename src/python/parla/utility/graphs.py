@@ -160,8 +160,6 @@ class TaskConfigs:
 
         device_id = tuple(int(d) for d in device_id)
 
-        print("device id:", device_id, flush=True)
-
         self.configurations[device_id] = TaskConfig
 
     def remove(self, device_id):
@@ -177,6 +175,8 @@ class GraphConfig:
     use_gpus: bool = False
     fixed_placement: bool = False
     data_pattern: int = DataInitType.NO_DATA
+    total_data_width: int = 2**23
+    data_partitions: int = 1
 
 
 @dataclass
@@ -280,11 +280,10 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
 
         # Read the initial data configuration
         data_info = lines.pop(0)
-        data_info = data_info.split(',')
-        # print(data_info)
+        data_info = data_info.split('|')
         idx = 0
         for data in data_info:
-            info = data.strip().strip("{}").strip().split(":")
+            info = data.strip().strip("()").strip().split(",")
             size = int(info[0].strip())
             location = int(info[1].strip())
             data_config[idx] = DataInfo(idx, size, location)
@@ -572,10 +571,21 @@ def generate_serial_graph(config: SerialConfig) -> str:
 
     graph = ""
 
+    data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = "{1 , -1}\n"
+    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        config.data_partitions = 1 
+        single_data_block_size = (config.total_data_width // config.data_partitions)
+        for i in range(config.data_partitions):
+            data_config_string += f"{single_data_block_size , -1}"
+            if i+1 < config.data_partitions:
+                data_config_string += f" | "
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        raise NotImplementedError("[Serial] Data patterns not implemented")
     else:
-        raise NotImplementedError("Data patterns not implemented")
+        raise ValueError(f"[Serial] Not supported data configuration: {config.data_pattern}")
+    data_config_string += "\n";
 
     if task_config is None:
         raise ValueError("Task config must be specified")
@@ -591,9 +601,11 @@ def generate_serial_graph(config: SerialConfig) -> str:
             configuration_string += ", "
 
     graph += data_config_string
-    for i in range(config.steps):
-
-        for j in range(config.chains):
+    for i in range(config.steps): # height
+        inout_data_index = i
+        if config.data_pattern == DataInitType.OVERLAPPED_DATA:
+            inout_data_index = 0
+        for j in range(config.chains): # width
             dependency_string = ""
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
@@ -603,7 +615,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
                 if k < dependency_limit:
                     dependency_string += " : "
 
-            graph += f"{i, j} |  {configuration_string} | {dependency_string} | \n"
+            graph += f"{i, j} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
 
     return graph
 
@@ -614,15 +626,23 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
 
     graph = ""
 
-    if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
-    else:
-        raise NotImplementedError("Data patterns not implemented")
-
     if task_config is None:
         raise ValueError("Task config must be specified")
 
+    data_config_string = ""
+    if config.data_pattern == DataInitType.NO_DATA:
+        data_config_string = "{1 : -1}\n"
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        raise NotImplementedError("[Reduction] Data patterns not implemented")
+    else:
+        single_data_block_size = config.total_data_width
+        for i in range(config.branch_factor**config.levels):
+            if i > 0:
+                data_config_string += " | "
+            data_config_string += f"{single_data_block_size, -1}"
+    data_config_string += "\n"
     graph += data_config_string
+
     post_configuration_string = ""
 
     # TODO(hc): when this was designed, we considered multidevice placement.
@@ -633,7 +653,6 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
         last_flag = 1 if device_id == list(
             configurations.keys())[-1] else 0
 
-#post_configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
         post_configuration_string += f"{task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
 
         if last_flag == 0:
@@ -676,16 +695,28 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
         reverse_level += 1    
     return graph
 
-
-
 def generate_independent_graph(config: IndependentConfig) -> str:
     task_config = config.task_config
     configurations = task_config.configurations
 
     graph = ""
 
+    data_config_string = ""
+    # TODO(hc): for now, assume that data allocation starts from cpu.
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = f"{1 , -1}"
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        single_data_block_size = config.total_data_width
+        config.data_partitions = 64
+        for i in range(config.data_partitions):
+            data_config_string += f"{single_data_block_size , -1}"
+            if i+1 < config.data_partitions:
+                data_config_string += f" | "
+    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        raise NotImplementedError("[Independent] Data patterns not implemented")
+    else:
+        raise ValueError("[Independent] Data patterns not implemented")
+    data_config_string += "\n"
 
     if task_config is None:
         raise ValueError("Task config must be specified")
@@ -702,7 +733,8 @@ def generate_independent_graph(config: IndependentConfig) -> str:
 
     graph += data_config_string
     for i in range(config.task_count):
-        graph += f"{i} |  {configuration_string} | | \n"
+        read_data_block = i % config.data_partitions
+        graph += f"{i} |  {configuration_string} | | {read_data_block} : :\n"
 
     return graph
 
