@@ -48,10 +48,7 @@ class PArray:
     # the wrapper class of C++ PArrayState class, which store the exist and valid state
     _cyparray_state: CyPArrayState
 
-    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = None) -> None:
-
-        self._name = name
-
+    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "unnamed") -> None:
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents
@@ -59,13 +56,13 @@ class PArray:
             self._coherence = parent._coherence
             self._cyparray_state = parent._cyparray_state
 
-            # self._name = parent._name + "::subarray::" + str(slices)
-            self._name = parent._name + "::subarray"
-
             # _slices is a list so subarray of subarray works
             self._slices = parent._slices.copy()  # copy parent's slices list
             # add current slices to the end
             self._slices.append(slices)
+
+            # self._name = parent._name + "::subarray::" + str(slices)
+            self._name = parent._name + "::subarray::" + str(self._slices)
 
             # inherit parent's condition variables
             self._coherence_cv = parent._coherence_cv
@@ -116,6 +113,8 @@ class PArray:
             self.subarray_nbytes = self.nbytes  # no subarray
 
             self.parent = self
+
+            self._name = name
 
         # record the size in Cython PArray
         scheduler = get_scheduler()
@@ -282,6 +281,7 @@ class PArray:
 
         print(f"---Overview of PArray\n"
               f"ID: {self.ID}, "
+              f"Name: {self._name}, "
               f"Parent_ID: {self.parent_ID if self.ID != self.parent_ID else None}, "
               f"Slice: {self._slices[0] if self.ID != self.parent_ID else None}, "
               f"Bytes: {self.subarray_nbytes}, "

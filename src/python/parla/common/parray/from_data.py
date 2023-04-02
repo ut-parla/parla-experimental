@@ -7,7 +7,7 @@ except ImportError:
     cupy = numpy  # work around of cupy.ndarray
 
 
-def array(object, dtype=None, copy=True, order='K', subok=False, ndmin=0, like=None, on_gpu=False, name: str = None):
+def array(object, dtype=None, copy=True, order='K', subok=False, ndmin=0, like=None, on_gpu=False, name: str = "unnamed"):
     """
     Create a Parla array on the specific device (CPU by default).
 
@@ -70,7 +70,7 @@ def array(object, dtype=None, copy=True, order='K', subok=False, ndmin=0, like=N
     return parray
 
 
-def asarray(a, dtype=None, order=None, like=None, on_gpu=False, name: str = None):
+def asarray(a, dtype=None, order=None, like=None, on_gpu=False, name: str = "unnamed"):
     """Converts an object to Parla array.
 
     This is equivalent to :class:``array(a, dtype, on_gpu, copy=False)``.
