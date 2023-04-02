@@ -200,7 +200,7 @@ class TreeConfig(GraphConfig):
     """
     Used to configure the generation of a tree synthetic task graph.
     """
-    levels: int = 1  # Number of levels in the tree
+    levels: int = 8  # Number of levels in the tree
     branch_factor: int = 2  # Number of children per node
 
 
@@ -603,6 +603,76 @@ def generate_serial_graph(config: SerialConfig) -> str:
             graph += f"{i, j} |  {configuration_string} | {dependency_string} | \n"
 
     return graph
+
+
+def generate_reduction_graph(config: TreeConfig) -> str:
+    task_config = config.task_config
+    configurations = task_config.configurations
+
+    graph = ""
+
+    if config.data_pattern == DataInitType.NO_DATA:
+        data_config_string = "{1 : -1}\n"
+    else:
+        raise NotImplementedError("Data patterns not implemented")
+
+    if task_config is None:
+        raise ValueError("Task config must be specified")
+
+    graph += data_config_string
+    post_configuration_string = ""
+
+    # TODO(hc): when this was designed, we considered multidevice placement.
+    #           but for now, we only consider a single device placement and so,  
+    #           follow the old generator's graph generation rule.
+
+    for device_id, task_config in configurations.items():
+        last_flag = 1 if device_id == list(
+            configurations.keys())[-1] else 0
+
+#post_configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+        post_configuration_string += f"{task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+
+        if last_flag == 0:
+            post_configuration_string += ", "
+
+    reverse_level = 0
+    global_idx = 0
+    for i in range(config.levels, -1, -1):
+        total_tasks_in_level = config.branch_factor ** i
+        subtree = total_tasks_in_level / 4
+        for j in range(total_tasks_in_level):
+            if reverse_level > 0:
+                dependency_string  = " "
+                for k in range(config.branch_factor):
+                    dependency_string += f"{reverse_level-1, config.branch_factor*j + k}"
+                    if k+1 < config.branch_factor:
+                        dependency_string += " : "
+            else:
+                dependency_string = " "
+
+
+            if reverse_level > 0:
+                l = 0
+                read_dependency = " "
+                targets = [config.branch_factor**(reverse_level-1)]
+                for k in targets:
+                    read_dependency += f"{(config.branch_factor**(reverse_level))*j+k}"
+                    l += 1
+                    if l < len(targets):
+                        read_dependency += " , "
+                write_dependency = f"{config.branch_factor**(reverse_level)*j}"
+            else:
+                read_dependency = " "
+                write_dependency = f"{global_idx}"
+            device_id = int(3 + j // subtree)
+            pre_configuration_string = f"{{ {device_id} : "
+            configuration_string = pre_configuration_string + post_configuration_string
+            graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
+            global_idx += 1
+        reverse_level += 1    
+    return graph
+
 
 
 def generate_independent_graph(config: IndependentConfig) -> str:

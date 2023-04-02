@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from .threads import Propagate
 
 from .graphs import LogState, DeviceType, MovementType, DataInitType, TaskID, TaskRuntimeInfo, TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample
-from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig
-from .graphs import generate_serial_graph, generate_independent_graph, shuffle_tasks
+from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig, TreeConfig
+from .graphs import generate_serial_graph, generate_independent_graph, generate_reduction_graph, shuffle_tasks
 from .graphs import read_pgraph, parse_blog
 
 import os
@@ -21,7 +21,7 @@ from parla import sleep_nogil as free_sleep
 from parla.common.globals import get_current_devices, get_current_stream
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
-from parla.cython.sleep import gpu_sleep
+from parla import gpu_sleep_nogil
 import numpy as np
 
 from fractions import Fraction
@@ -116,7 +116,8 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     ticks = int((total_time/(10**6))*cycles_per_second)
 
     for i in range(gil_accesses):
-        gpu_sleep(dev_id, ticks, stream)
+#gpu_bsleep_nogil(dev_id, ticks, stream)
+        free_sleep(free_time)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -417,6 +418,8 @@ class GraphContext(object):
             self.graph_function = generate_serial_graph
         elif isinstance(config, IndependentConfig):
             self.graph_function = generate_independent_graph
+        elif isinstance(config, TreeConfig):
+            self.graph_function = generate_reduction_graph
 
     def __enter__(self):
 
@@ -431,7 +434,7 @@ class GraphContext(object):
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
-#print(graph)
+            print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
