@@ -170,7 +170,7 @@ class PArray:
         else:
             # assume GPU here, won't check isinstance(device, PyCUDADevice)
             # to avoid import gpu context, which is slow to setup.
-            print("PARRAY CURRENT DEVICE: ", device, device.device.id, flush=True)
+            #print("PARRAY CURRENT DEVICE: ", device, device.device.id, flush=True)
             return device.device.id  # device.device should be a cupy.cuda.Device object
 
     # Public API:

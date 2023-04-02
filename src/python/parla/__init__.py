@@ -8,9 +8,7 @@ from .cython import device_manager
 from .cython import device
 from .cython import variants
 from .common.spawn import spawn
-from .common.globals import Locals
-from .common import containers
-from .common import parray
+#from .common import parray
 
 specialize = variants.specialize
 
@@ -90,7 +88,7 @@ class Parla:
                 self.interrupted = True
 
             signal.signal(self.sig, handler)
-        except ValueError as e:
+        except ValueError:
             # This happens if Parla is not running in the main thread.
             self.handle_interrupt = False
         finally:
@@ -112,7 +110,7 @@ class Parla:
         try:
             if self.handle_interrupt:
                 signal.signal(self.sig, self.original_handler)
-        except ValueError as e:
+        except ValueError:
             # This happens if Parla is not running in the main thread.
             pass
         finally:
