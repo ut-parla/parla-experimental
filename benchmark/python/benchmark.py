@@ -2,7 +2,7 @@ import time
 import google_benchmark as benchmark
 
 from parla.utility.graphs import DeviceType, TaskConfig, TaskConfigs
-from parla.utility.graphs import IndependentConfig, SerialConfig, TreeConfig, RunConfig
+from parla.utility.graphs import IndependentConfig, SerialConfig, ReductionConfig, RunConfig
 from parla.utility.graphs import read_pgraph, parse_blog
 from parla.utility.graphs import shuffle_tasks
 
@@ -98,7 +98,7 @@ def reduction_scaling(state):
         task_configs = TaskConfigs()
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-        config = TreeConfig(levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
+        config = ReductionConfig(levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
         with GraphContext(config, name="reduction") as g:
 
             logpath = g.tmplogpath

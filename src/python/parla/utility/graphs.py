@@ -15,6 +15,9 @@ from collections import defaultdict
 
 # Synthetic Graphs ENUMS
 
+# Assume that a system has 4 gpus.
+num_gpus = 4
+
 
 class DeviceType(IntEnum):
     """
@@ -196,9 +199,9 @@ class SerialConfig(GraphConfig):
 
 
 @dataclass
-class TreeConfig(GraphConfig):
+class ReductionConfig(GraphConfig):
     """
-    Used to configure the generation of a tree synthetic task graph.
+    Used to configure the generation of a reduction synthetic task graph.
     """
     levels: int = 8  # Number of levels in the tree
     branch_factor: int = 2  # Number of children per node
@@ -605,7 +608,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
     return graph
 
 
-def generate_reduction_graph(config: TreeConfig) -> str:
+def generate_reduction_graph(config: ReductionConfig) -> str:
     task_config = config.task_config
     configurations = task_config.configurations
 
@@ -640,7 +643,7 @@ def generate_reduction_graph(config: TreeConfig) -> str:
     global_idx = 0
     for i in range(config.levels, -1, -1):
         total_tasks_in_level = config.branch_factor ** i
-        subtree = total_tasks_in_level / 4
+        segment = total_tasks_in_level / 4
         for j in range(total_tasks_in_level):
             if reverse_level > 0:
                 dependency_string  = " "
@@ -665,7 +668,7 @@ def generate_reduction_graph(config: TreeConfig) -> str:
             else:
                 read_dependency = " "
                 write_dependency = f"{global_idx}"
-            device_id = int(3 + j // subtree)
+            device_id = int(3 + j // segment) % num_gpus
             pre_configuration_string = f"{{ {device_id} : "
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
