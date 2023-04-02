@@ -160,8 +160,7 @@ def cholesky_blocked_inplace(a, block_size):
                 # print(f"==SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", out.device.id, rhs.device.id, a[j][j].array.device.id, flush=True)
                 a[j][j].array[:] = out
                 stream.synchronize()
-                print(
-                    f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
+                #print(f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
 
         # Cholesky on block
 
@@ -182,7 +181,7 @@ def cholesky_blocked_inplace(a, block_size):
             # print(f"==POTRF: ({j}) - Requires rw({j},{j}) Locations: ", dblock.device.id, a[j][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
             a[j][j].array[:] = dblock
             stream.synchronize()
-            print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
+            #print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
         for i in range(j+1, len(a)):
             for k in range(j):
                 # Inter-block GEMM
@@ -215,7 +214,6 @@ def cholesky_blocked_inplace(a, block_size):
                 loc_trsm = gpu(i % ngpus)[{'vcus': 0}]
 
             @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
-            @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
             def t4():
                 # print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", get_current_devices(), cp.cuda.runtime.getDevice(), flush=True)
                 factor = a[j][j].array
@@ -227,8 +225,7 @@ def cholesky_blocked_inplace(a, block_size):
                 # print(f"==TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j}) Locations", factor.device.id, panel.device.id, out.device.id, a[i][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
                 a[i][j].array[:] = out
                 stream.synchronize()
-                print(
-                    f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
+                #print(f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
 
     return subcholesky[len(a) - 1]
 
