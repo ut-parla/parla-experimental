@@ -314,9 +314,12 @@ class Task:
     @environment.setter
     def environment(self, env):
         self._environment = env
+
+    def handle_runahead_dependencies(self):
+        self.inner_task.handle_runahead_dependencies()
         
 
-    def handle_synchronization(self):
+    def py_handle_runahead_dependencies(self):
         print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
         assert(self.env is not None)
 

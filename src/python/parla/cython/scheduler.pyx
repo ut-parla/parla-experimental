@@ -212,16 +212,19 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         #Save device_context with task object
                         #comment(wlr): This replaces the old enviornment (for continuation tasks)
+                        print("Setting enviornment for task", active_task, flush=True)
                         active_task.enviornment = device_context
+
 
                         #Pass streams and event pointers to c++ task
                         #(only saves initial runtime ones, TODO(wlr): save user ones after body returns)
                         device_context.write_to_task(active_task)
+                        print("Wrote enviornment to task", active_task, flush=True)
 
                         #handle event wait in C++ (good if num_dependencies large)
-                        active_task.inner_task.handle_runahead_dependencies()
+                        #active_task.handle_runahead_dependencies()
                         #handle event wait in python 
-                        #active_task.py_handle_runahead_dependencies() 
+                        active_task.py_handle_runahead_dependencies() 
 
                         print("Running Task", active_task, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
@@ -269,12 +272,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     
                         print("Cleaning up Task", active_task, flush=True)
                         #Handle synchronization in C++
-                        self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         
                         #Handle synchronization in Python (for debugging, works!)
-                        #self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                        #device_context.synchronize(events=True)
-                        #self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        device_context.synchronize(events=True)
+                        self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         print("Finished Cleaning up Task", active_task, flush=True)
 
                         nvtx.pop_range(domain="Python Runtime")

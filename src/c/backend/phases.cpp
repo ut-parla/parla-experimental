@@ -27,7 +27,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "Mapper::run" << std::endl;
+  // std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
