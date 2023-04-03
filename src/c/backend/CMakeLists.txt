@@ -22,7 +22,7 @@ endif(PARLA_ENABLE_NVTX)
 
 if(PARLA_ENABLE_LOGGING)
     message(STATUS "Enabling logging support.")
-    target_link_libraries(backend binlog::headers)
+    target_link_libraries(backend PUBLIC binlog::headers)
     target_compile_definitions(backend PUBLIC PARLA_ENABLE_LOGGING)
 endif(PARLA_ENABLE_LOGGING)
 
