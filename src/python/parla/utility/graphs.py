@@ -30,6 +30,7 @@ class DeviceType(IntEnum):
     GPU_1 = 2
     GPU_2 = 3
     GPU_3 = 4
+    USER_CHOSEN_DEVICE = 5
 
 
 class LogState(IntEnum):
@@ -595,7 +596,9 @@ def generate_serial_graph(config: SerialConfig) -> str:
     for device_id, task_config in configurations.items():
         last_flag = 1 if device_id == list(
             configurations.keys())[-1] else 0
-
+        if config.fixed_placement:
+            device_id = DeviceType.GPU_0
+        # Othrewise, expect any cpu or any gpu.
         configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
 
         if last_flag == 0:
@@ -688,7 +691,9 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             else:
                 read_dependency = " "
                 write_dependency = f"{global_idx}"
-            device_id = (int(3 + j // segment) - 1) % num_gpus
+            device_id = 1
+            if config.fixed_placement:
+                device_id = int(DeviceType.USER_CHOSEN_DEVICE + j // segment)
             pre_configuration_string = f"{{ {device_id} : "
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
@@ -723,21 +728,19 @@ def generate_independent_graph(config: IndependentConfig) -> str:
     if task_config is None:
         raise ValueError("Task config must be specified")
 
-    configuration_string = ""
-    for device_id, task_config in configurations.items():
-        last_flag = 1 if device_id == list(
-            configurations.keys())[-1] else 0
-
-        configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
-
-        if last_flag == 0:
-            configuration_string += ", "
-
     graph += data_config_string
     for i in range(config.task_count):
         read_data_block = i % config.data_partitions
+        configuration_string = ""
+        for device_id, task_config in configurations.items():
+            last_flag = 1 if device_id == list(
+                configurations.keys())[-1] else 0
+            if config.fixed_placement:
+                device_id = int(DeviceType.USER_CHOSEN_DEVICE + i % 4)
+            configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+            if last_flag == 0:
+                configuration_string += ", "
         graph += f"{i} |  {configuration_string} | | {read_data_block} : :\n"
-
     return graph
 
 

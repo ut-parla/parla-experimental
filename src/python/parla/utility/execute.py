@@ -55,7 +55,7 @@ class GPUInfo():
 def get_placement_set_from(ps_str_set):
     ps_set = []
     for ps_str in ps_str_set[0]:
-        dev_type = DeviceType(ps_str)
+        dev_type = int(ps_str)
         if dev_type == DeviceType.ANY_GPU_DEVICE:
             ps_set.append(gpu)
         elif dev_type == DeviceType.CPU_DEVICE:
@@ -68,6 +68,10 @@ def get_placement_set_from(ps_str_set):
             ps_set.append(gpu(2))
         elif dev_type == DeviceType.GPU_3:
             ps_set.append(gpu(3))
+        elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
+            # TODO(hc): just assume that we have 4 gpus.
+            gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % 4
+            ps_set.append(gpu(gpu_idx))
         else:
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
@@ -96,8 +100,10 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
         if len(data_list) > 0:
             assert isinstance(data_list[0], PArray)
 
+    '''
     if len(data_list) > 0:
         print("[validation] Generated data type:", type(data_list[0]))
+    '''
     return data_list
 
 @specialize
@@ -107,7 +113,6 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
-    print("CPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
@@ -202,6 +207,8 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
+        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+        #      " placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
@@ -248,10 +255,12 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
             write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
 
+        """
         print("RW data list:", rw_data_list)
         print("R data list:", read_data_list)
         print("W data list:", write_data_list)
         print("Data list:", data_list)
+        """
 
         # Construct data blocks.
         INOUT = [] if len(rw_data_list) == 0 else [(data_list[d], 0) for d in rw_data_list]
@@ -282,7 +291,11 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
+        #print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
+        """
+        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+            " placement:", placement_set)
+        """
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
         async def task_func():
@@ -330,10 +343,12 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
             write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
 
+        """
         print("RW data list:", rw_data_list)
         print("R data list:", read_data_list)
         print("W data list:", write_data_list)
         print("Data list:", data_list)
+        """
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
@@ -358,7 +373,10 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
-
+        '''
+        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+            " placement:", placement_set)
+        '''
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
@@ -400,13 +418,13 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
     for task, details in tasks.items():
         #print("task:", task, ", details:", details)
         if run_config.movement_type == MovementType.NO_MOVEMENT:
-            print("No data movement")
+            #print("No data movement")
             create_task_no_data(details, taskspaces, config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
-            print("Eager data movement")
+            #print("Eager data movement")
             create_task_eager_data(details, taskspaces, config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
-            print("Lazy data movement")
+            #print("Lazy data movement")
             create_task_lazy_data(details, taskspaces, config=run_config, data_list=data_list)
 
     spawn_end_t = time.perf_counter()
@@ -653,6 +671,7 @@ class GraphContext(object):
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
+#print("graph:", self.graph)
 
         return self
 

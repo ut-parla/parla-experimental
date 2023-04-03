@@ -11,23 +11,28 @@ from parla.utility.graphs import MovementType
 from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time
 from parla.utility.execute import GraphContext
 
-#movement_type = MovementType.LAZY_MOVEMENT
-movement_type = MovementType.EAGER_MOVEMENT
+movement_type = MovementType.LAZY_MOVEMENT
+#movement_type = MovementType.EAGER_MOVEMENT
 data_scale = 1
 
-#@benchmark.register(name="SerialScaling")
-@benchmark.option.range_multiplier(2)
-@benchmark.option.range(1, 8)
+@benchmark.register(name="SerialScaling")
+@benchmark.option.args_product([(1, 2, 4, 8), (1, 2)]) # TODO(hc): will add data pattern too
 def serial_scaling(state):
     while state:
         max_time = 10
         task_time = 1000
         n = 1000
+        use_gpus = True if state.range(1) == 1 else False
+        print("GPU mode:", use_gpus)
+        device_type = DeviceType.USER_CHOSEN_DEVICE
+        cost = 1.0
         concurrent_tasks = state.range(0)
-        cost = 1.0 / concurrent_tasks
+        if not use_gpus:
+            cost = 1.0 / concurrent_tasks
+            device_type = DeviceType.CPU_DEVICE
 
         task_configs = TaskConfigs()
-        task_configs.add(DeviceType.CPU_DEVICE, TaskConfig(
+        task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
 
         config = SerialConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
@@ -58,8 +63,8 @@ def independent_scaling(state):
         task_time = 1000
         n = 1000
         use_gpus = True if state.range(1) else False
+        print("GPU mode:", use_gpus)
         device_type = DeviceType.ANY_GPU_DEVICE
-#device_type = DeviceType.CPU_DEVICE
         cost = 1.0
         if not use_gpus:
             concurrent_tasks = state.range(0)
@@ -89,16 +94,16 @@ def independent_scaling(state):
         state.set_iteration_time(timing.mean)
 
 
-@benchmark.register(name="ReductionScaling")
+#@benchmark.register(name="ReductionScaling")
 @benchmark.option.args_product([(1, 2, 4, 8), (1, 2)]) # TODO(hc): will add data pattern too
 def reduction_scaling(state):
     while state:
-        max_time = 10
+        max_time = 100
         task_time = 1000
         n = 1000
-        use_gpus = True if state.range(1) else False
-        device_type = DeviceType.ANY_GPU_DEVICE
-#device_type = DeviceType.CPU_DEVICE
+        use_gpus = True if state.range(1) == 1 else False
+        print("GPU mode:", use_gpus)
+        device_type = DeviceType.USER_CHOSEN_DEVICE
         cost = 1.0
         if not use_gpus:
             concurrent_tasks = state.range(0)
@@ -110,6 +115,7 @@ def reduction_scaling(state):
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
         config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
+            fixed_placement=True,
             total_data_width=6250, levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
 
         with GraphContext(config, name="reduction") as g:
