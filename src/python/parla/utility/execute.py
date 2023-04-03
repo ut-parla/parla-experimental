@@ -14,10 +14,12 @@ import os
 import tempfile
 from enum import Enum
 import time
+import itertools
 
 from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
+from parla.common.array import clone_here
 from parla.common.globals import get_current_devices, get_current_stream
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
@@ -299,6 +301,97 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         return
 
 
+def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
+
+    try:
+        # Task ID
+        task_idx = task.task_id.task_idx
+        taskspace = taskspaces[task.task_id.taskspace]
+
+        # Dependency Info
+        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
+                        for dep in task.task_dependencies]
+
+        # Valid Placement Set
+        placement_key = task.task_runtime.keys()
+        placement_set_str = list(placement_key)
+        placement_set = get_placement_set_from(placement_set_str)
+
+        # In/out/inout data information
+        # read: list, write: list, read_write: list
+        data_information = task.data_dependencies
+        read_data_list = data_information.read
+        write_data_list = data_information.write
+        rw_data_list = data_information.read_write
+
+        # Remove duplicated data blocks between in/out and inout
+        if len(read_data_list) > 0 and len(rw_data_list) > 0:
+            read_data_list = list(set(read_data_list).difference(set(rw_data_list)))
+        if len(write_data_list) > 0 and len(rw_data_list) > 0:
+            write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
+
+        print("RW data list:", rw_data_list)
+        print("R data list:", read_data_list)
+        print("W data list:", write_data_list)
+        print("Data list:", data_list)
+
+        # TODO: This needs rework with Device support
+        # TODO(hc): This assumes that this task is a single task
+        #           and does not have multiple placement options. 
+        runtime_info = task.task_runtime[placement_set_str[0]]
+
+        # Task Constraints
+        device_fraction = runtime_info.device_fraction
+        if config.device_fraction is not None:
+            device_fraction = config.device_fraction
+
+        # Task Work
+        total_time = runtime_info.task_time
+        gil_accesses = runtime_info.gil_accesses
+        gil_fraction = runtime_info.gil_fraction
+
+        if config.task_time is not None:
+            total_time = config.task_time
+
+        if config.gil_accesses is not None:
+            gil_accesses = config.gil_accesses
+
+        if config.gil_fraction is not None:
+            gil_fraction = config.gil_fraction
+
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        async def task_func():
+            if config.verbose:
+                print(f"+{task.task_id} Running", flush=True)
+
+            local_data = dict()
+
+            for d in itertools.chain(read_data_list, rw_data_list):
+                data = data_list[d]
+                where = -1 if isinstance(data, np.ndarray) else data.device.id
+                local_data[d] = clone_here(data)
+                old = None
+                if config.do_check:
+                    old = np.copy(data[0,1])
+                    local_data[d][0,1] = -old
+                if config.verbose:
+                    print(f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>", flush=True)
+
+            elapsed = synthetic_kernel(total_time, gil_fraction,
+                                       gil_accesses, config=config)
+
+            for d in itertools.chain(write_data_list, rw_data_list):
+                data_list[d] = local_data[d]
+
+            if config.verbose:
+                print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
+
+    except Exception as e:
+        print(f"Failed creating Task {task.task_id}: {e}", flush=True)
+    finally:
+        return
+
+
 def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
     spawn_start_t = time.perf_counter()
@@ -312,6 +405,9 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
             print("Eager data movement")
             create_task_eager_data(details, taskspaces, config=run_config, data_list=data_list)
+        elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
+            print("Lazy data movement")
+            create_task_lazy_data(details, taskspaces, config=run_config, data_list=data_list)
 
     spawn_end_t = time.perf_counter()
 

@@ -229,6 +229,7 @@ class RunConfig:
     gil_accesses: int = None
     movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
     logfile: str = "testing.blog"  # The log file location
+    do_check: bool = False  # If this is true, validate configuration/execution
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')
