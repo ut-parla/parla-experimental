@@ -9,6 +9,15 @@ except ImportError:
     CUPY_ENABLED = False
 
 
+class SynchronizationType(IntEnum):
+    """
+    This class declares the type (if any) of runeahead synchronization
+    """
+    NONE = 0
+    BLOCKING = 1
+    NON_BLOCKING = 2
+
+
 class DeviceType(IntEnum):
     """
     This class declares device types.

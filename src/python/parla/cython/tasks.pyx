@@ -320,7 +320,7 @@ class Task:
         print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
         assert(self.env is not None)
 
-        if self.runahead == SyncType.NONE or self.runahead == SyncType.USER:
+        if self.runahead == SyncType.NONE:
             return
         elif self.runahead == SyncType.BLOCKING or isinstance(self.env, CPUEnvironment):
             sync_events = self.env.synchronize_events
