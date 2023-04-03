@@ -212,8 +212,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         #Save device_context with task object
                         #comment(wlr): This replaces the old enviornment (for continuation tasks)
-                        print("Setting enviornment for task", active_task, flush=True)
-                        active_task.enviornment = device_context
+                        print("Setting environment for task", active_task, flush=True)
+                        active_task.environment = device_context
 
 
                         #Pass streams and event pointers to c++ task
