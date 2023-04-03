@@ -321,14 +321,14 @@ class Task:
 
     def py_handle_runahead_dependencies(self):
         print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
-        assert(self.env is not None)
+        assert(self.environment is not None)
 
         if self.runahead == SyncType.NONE:
             return
         elif self.runahead == SyncType.BLOCKING or isinstance(self.env, CPUEnvironment):
-            sync_events = self.env.synchronize_events
+            sync_events = self.environment.synchronize_events
         elif self.runahead == SyncType.NON_BLOCKING:
-            sync_events = self.env.wait_events
+            sync_events = self.environment.wait_events
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
@@ -338,7 +338,7 @@ class Task:
         for task in dependencies:
             assert(isinstance(task, Task))
 
-            task_env = task.env
+            task_env = task.environment
             assert(task_env is not None)
             if isinstance(task_env, CPUEnvironment):
                 continue
