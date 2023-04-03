@@ -116,6 +116,10 @@ class StreamPool:
         return f"StreamPool({self.__summarize__()})"
 
 
+#TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
+#TODO(wlr):  - Provide a way to iterate over these real device ids
+           
+
 class PyDeviceManager:
     """
     A device manager manages device objects and provides their information.
@@ -131,13 +135,21 @@ class PyDeviceManager:
         self.py_registered_archs = {}
         self.registered_devices = []
 
+        if CUPY_ENABLED:
+            try:
+                self.num_real_gpus = cupy.cuda.runtime.getDeviceCount()
+            except cupy.cuda.runtime.CUDARuntimeError:
+                self.num_real_gpus = 0
+        else:
+            self.num_real_gpus = 0
+
         # Initialize Devices
         if dev_config == None or dev_config == "":
             self.register_cpu_devices()
             self.register_cupy_gpu_devices()
         else:
             self.parse_config_and_register_devices(dev_config)
-        self.register_devices_to_cpp()
+        #self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
         self.stream_pool = StreamPool(gpu.devices)
@@ -163,35 +175,65 @@ class PyDeviceManager:
 
         if num_of_gpus > 0:
             self.py_registered_archs[gpu] = gpu
+
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info # tuple of free and total memory
                                             # in bytes.
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
+
+                #Add device to the architecture
                 gpu.add_device(py_cuda_device)
+
+                #Add device to the device manager (list of devices)
                 self.registered_devices.append(py_cuda_device)
-        else:
-            # It is possible that the current system does not have CUDA devices.
-            # But users can still specify `cuda` to task placement.
-            # To handle this case, we add a CPU device as the CUDA architecture
-            # type (So, Parla assumes that the target system must be equipped
-            # with at least one CPU core).
-            self.register_cpu_devices(gpu)
+
+                #Register device to the C++ runtime
+                cy_device = py_cuda_device.get_cy_device()
+                self.cy_device_manager.register_device(cy_device)
+
+        #comment(wlr): Removing this path because it can lead to confusing runtime errors with envs.
+        #else:
+        #    # It is possible that the current system does not have CUDA devices.
+        #    # But users can still specify `gpu` to task placement.
+        #    # To handle this case, we add a CPU device as the CUDA architecture
+        #    # type (So, Parla assumes that the target system must be equipped
+        #    # with at least one CPU core).
+        #    self.register_cpu_devices(gpu)
 
     def register_cpu_devices(self, register_to_cuda: bool = False):
-        if register_to_cuda:
-            gpu.add_device(cpu(0))
-            self.registered_devices.append(cpu(0))
+        #if register_to_cuda:
+        #    gpu.add_device(cpu(0))
+        #    self.registered_devices.append(cpu(0))
+        #    cy_device = cpu(0).get_cy_device()
+        #    self.cy_device_manager.register_device(cy_device)
+        #else:
+        # Get the number of usable CPUs from this process.
+        # This might not be equal to the number of CPUs in the system.
+
+        num_cores = os.getenv("PARLA_NUM_CORES")
+        if num_cores:
+            num_cores = int(num_cores)
         else:
-            # Get the number of usable CPUs from this process.
-            # This might not be equal to the number of CPUs in the system.
             num_cores = len(os.sched_getaffinity(0))
+        if num_cores == 0:
+            raise RuntimeError("No CPU cores available for Parla.")
+
+
+        mem_sz = os.getenv("PARLA_CPU_MEM")
+        if mem_sz:
+            mem_sz = int(mem_sz)
+        else:
             mem_sz = long(psutil.virtual_memory().total)
-            py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
-            self.py_registered_archs[cpu] = cpu
-            cpu.add_device(py_cpu_device)
-            self.registered_devices.append(py_cpu_device)
+        
+        py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
+        self.py_registered_archs[cpu] = cpu
+        cpu.add_device(py_cpu_device)
+        self.registered_devices.append(py_cpu_device)
+        cy_device = py_cpu_device.get_cy_device()
+        self.cy_device_manager.register_device(cy_device)
+        
 
     def register_devices_to_cpp(self):
         """
@@ -211,6 +253,12 @@ class PyDeviceManager:
     def get_cy_device_manager(self):
         return self.cy_device_manager
 
+    def get_num_gpus(self):
+        return len(self.py_registered_archs[gpu].devices)
+
+    def get_num_cpus(self):
+        return len(self.py_registered_archs[cpu].devices)
+
     def parse_config_and_register_devices(self, yaml_config):
         with open(yaml_config, "r") as f:
             parsed_configs = yaml.safe_load(f)
@@ -222,17 +270,29 @@ class PyDeviceManager:
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
                 cpu.add_device(py_cpu_device)
                 self.registered_devices.append(py_cpu_device)
-            gpu_num_devices = parsed_configs["GPU"]["num_devices"]
-            if gpu_num_devices > 0:
+                cy_device = py_cpu_device.get_cy_device()
+                self.cy_device_manager.register_device(cy_device)
+
+            num_of_gpus = parsed_configs["GPU"]["num_devices"]
+            if num_of_gpus > 0:
                 self.py_registered_archs[gpu] = gpu
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
-                assert(gpu_num_devices == len(gpu_mem_sizes)) 
-                for dev_id in range(gpu_num_devices):
-                    py_cuda_device = PyCUDADevice(dev_id, \
-                                                  gpu_mem_sizes[dev_id], \
-                                                  VCU_BASELINE)
+                assert(num_of_gpus == len(gpu_mem_sizes)) 
+                
+                for dev_id in range(num_of_gpus):
+
+                    if self.num_real_gpus > 0:
+                        py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus, \
+                                                    gpu_mem_sizes[dev_id], \
+                                                    VCU_BASELINE)
+                    
+                    else:
+                        py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
+
                     gpu.add_device(py_cuda_device)
                     self.registered_devices.append(py_cuda_device)
+                    cy_device = py_cuda_device.get_cy_device()
+                    self.cy_device_manager.register_device(cy_device)
 
     def get_all_devices(self):
         return self.registered_devices

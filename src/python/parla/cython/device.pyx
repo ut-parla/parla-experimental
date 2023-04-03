@@ -197,7 +197,7 @@ class PyCUDADevice(PyDevice):
     @property
     def device(self):
         if CUPY_ENABLED:
-            self._device = cupy.cuda.Device(self._device_id)
+            self._device = cupy.cuda.Device(self.device_id)
         return self._device
 
 
@@ -286,6 +286,9 @@ class PyArchitecture(metaclass=ABCMeta):
     def __mul__(self, num_archs: int):
         arch_ps = [self for i in range(0, num_archs)]
         return tuple(arch_ps)
+
+    def __len__(self):
+        return len(self._devices)
 
  
 class PyCUDAArchitecture(PyArchitecture):

@@ -19,9 +19,9 @@ def main(T):
     c = np.array([[2, 3, 5, 6, 7], [2, 3, 5, 6, 7], [2, 3, 5, 6, 7], [2, 3, 5, 6, 7]])
     d = np.array([[2, 3, 5, 6, 7], [2, 3, 5, 6, 7], [2, 3, 5, 6, 7], [2, 3, 5, 6, 7]])
     a = parray.asarray(a)
-    b = parray.asarray(b)
-    c = parray.asarray(c)
-    d = parray.asarray(d)
+    b = parray.asarray(b, name='b')
+    c = parray.asarray(c, name='c')
+    d = parray.asarray(d, name='d')
 
     """
     @spawn(T[0])

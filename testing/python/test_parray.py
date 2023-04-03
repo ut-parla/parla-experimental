@@ -19,13 +19,12 @@ def test_parray_task():
     with Parla():
         @spawn(placement=cpu)
         def main():
-            n = 2
             np.random.seed(10)
             # Construct input data
             a = np.array([[1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6]])
             b = np.array([[1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6]])
-            a = parray.asarray(a)
-            b = parray.asarray(a)
+            a = parray.asarray(a, name="A")
+            b = parray.asarray(b, name="B")
 
             # C++ test: parray parent id check
             c = b[0:10]
@@ -35,9 +34,14 @@ def test_parray_task():
 
             ts = TaskSpace("CopyBack")
 
-            @spawn(ts[1], placement=gpu(1))
+            assert a._current_device_index == -1
+            assert a._array._buffer[1] is None
+            assert a._array._buffer[-1] is not None
+            assert a._coherence._local_states[1] == Coherence.INVALID
+            assert a._coherence._local_states[-1] == Coherence.MODIFIED
+
+            @spawn(ts[1], placement=gpu(1), output=[(b,0)])
             def check_array_write():
-                b._auto_move(1, do_write = True)
                 assert b[0,0] == 1
                 assert b._current_device_index == 1
                 b.print_overview()
@@ -49,18 +53,8 @@ def test_parray_task():
                 assert b._coherence._local_states[-1] == Coherence.INVALID
                 assert b._coherence._local_states[1] == Coherence.MODIFIED
 
-                assert a._current_device_index == 1
-                assert a._array._buffer[1] is None
-                assert a._array._buffer[-1] is not None
-                assert a._coherence._local_states[1] == Coherence.INVALID
-                assert a._coherence._local_states[-1] == Coherence.MODIFIED
-
-            A = a[0:2]
-            B = a[2]
-            @spawn(ts[2], dependencies=[ts[1]], placement=gpu(0))
+            @spawn(ts[2], dependencies=[ts[1]], placement=gpu(0), output=[(a[0:2],0), (a[2],0)])
             def check_array_slicing():
-                A._auto_move(0, do_write = True)
-                B._auto_move(0, do_write = True)
                 assert a[1,0] == 1
                 assert a._current_device_index == 0
                 a[0:2].print_overview()
@@ -73,9 +67,8 @@ def test_parray_task():
                 assert a._coherence._local_states[-1] == Coherence.INVALID
                 assert isinstance(a._coherence._local_states[0], dict)
 
-            @spawn(ts[3], dependencies=[ts[2]], placement=cpu)
+            @spawn(ts[3], dependencies=[ts[2]], placement=cpu, output=[(a,0)])
             def check_array_write_back():
-                a._auto_move(-1, do_write = True)
                 assert a[1,1] == 0
                 assert a._current_device_index == -1
                 a.print_overview()
@@ -84,6 +77,14 @@ def test_parray_task():
                 assert a._array._buffer[0] is None
                 assert a._coherence._local_states[-1] == Coherence.MODIFIED
                 assert a._coherence._local_states[0] == Coherence.INVALID
+
+            @spawn(ts[4], dependencies=[ts[3]], placement=gpu(1), inout=[(a,0)])
+            def check_array_update():
+                a.update(np.array([1,2,3,4]))  # here np array are converted to cupy array
+
+                assert len(a) == 4
+                assert a[-1] == 4
+                assert a._coherence.owner == 1
 
 if __name__=="__main__":
     test_parray_creation()

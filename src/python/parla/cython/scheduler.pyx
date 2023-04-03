@@ -4,6 +4,8 @@ import threading
 from collections import deque, namedtuple, defaultdict
 import inspect 
 
+from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
+
 import traceback
 import sys
 
@@ -116,6 +118,38 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
         #Add the worker to the scheduler pool of all workers (not yet active)
         scheduler.inner_scheduler.add_worker(self.inner_worker)
+
+    def start(self, initialize=True):
+        super(ControllableThread, self).start()
+
+        self._initialize()
+
+    def _initialize(self):
+        device_manager = self.scheduler.device_manager
+
+        #comment(wlr): wow, it is non-trivial to get the set of active cuda devices in the scheduler.
+        #TODO(wlr): Fix this in device_manager (see todo there)
+
+        if CUPY_ENABLED:
+            gpu_arch = device_manager.py_registered_archs[DeviceType.CUDA]
+            ngpus = len(gpu_arch)
+
+            for index in range(ngpus):
+                # Trigger cuBLAS/etc. initialization for this GPU in this thread.
+                with cupy.cuda.Device(index % device_manager.num_real_gpus) as device:
+                    print("Doing warmup for GPU", index, flush=True)
+                    a = cupy.asarray([2.])
+                    cupy.cuda.get_current_stream().synchronize()
+                    with cupy.cuda.Stream(False, True) as stream:
+                        cupy.asnumpy(cupy.sqrt(a))
+                        device.cublas_handle
+                        device.cusolver_handle
+                        device.cusolver_sp_handle
+                        device.cusparse_handle
+                        stream.synchronize()
+                        device.synchronize()
+
+
 
     @property
     def scheduler(self):
