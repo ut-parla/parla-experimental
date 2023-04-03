@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <cuda_runtime_api.h>
 #include <utility.hpp>
 
 // __device__ void gpu_sleep_0_bak(volatile clock_t *d_o, clock_t clock_count) {
@@ -37,4 +39,34 @@ void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr) {
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
   gpu_sleep_1<<<1, 1, device, stream>>>(cycles);
+}
+
+Event::synchronize() {
+  cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
+  cudaEventSynchronize(event);
+}
+
+Event::wait(uintptr_t stream) {
+  cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
+  cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
+
+  // The 0 is for the flags.
+  // 0 means that the event will be waited on in the default manner.
+  // 1 has to do with CUDA graphs.
+  cudaStreamWaitEvent(stream, event, 0);
+}
+
+Stream::synchronize() {
+  cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
+  cudaStreamSynchronize(stream);
+}
+
+Stream::wait(uintptr_t event) {
+  cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
+  cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
+
+  // The 0 is for the flags.
+  // 0 means that the event will be waited on in the default manner.
+  // 1 has to do with CUDA graphs.
+  cudaStreamWaitEvent(stream, event, 0);
 }

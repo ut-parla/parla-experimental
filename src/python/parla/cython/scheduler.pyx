@@ -200,7 +200,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task.instantiate(self.task_attrs, self.scheduler)
                     nvtx.pop_range(domain="Python Runtime")
 
-                    #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
+                    print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
                     self.status = "Running"
 
@@ -210,23 +210,37 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         parla_devices = active_task.get_assigned_devices()
                         device_context = create_env(parla_devices)
 
+                        #Save device_context with task object
                         #comment(wlr): This replaces the old enviornment (for continuation tasks)
                         active_task.enviornment = device_context
-                        
 
-                        core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                        #Pass streams and event pointers to c++ task
+                        #(only saves initial runtime ones, TODO(wlr): save user ones after body returns)
+                        device_context.write_to_task(active_task)
 
-                        #print("Running Task", self.index, active_task.taskid.full_name, flush=True)
+                        #handle event wait in C++ (good if num_dependencies large)
+                        device_context.handle_runahead_dependencies()
+                        #handle event wait in python 
+                        #active_task.py_handle_runahead_dependencies() 
+
+                        print("Running Task", active_task, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
+                        #Push the task to the thread local stack
                         Locals.push_task(active_task)
 
                         with device_context as env:
+                            
+                            core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                            #Run the task body (this may complete the task or return a continuation)
+                            #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
                             active_task.run()
 
+                        #Pop the task from the thread local stack
                         Locals.pop_task()
 
-                        #print(active_task.name, " is done")
+                        #Log events on all 'task default' streams
+                        device_context.record_events()
 
                         nvtx.pop_range(domain="Python Runtime")
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
@@ -235,7 +249,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         final_state  = active_task.state
 
-                        #TODO: Add better exception handling
+                        #TODO(wlr): Add better exception handling
                         if isinstance(final_state, tasks.TaskException):
                             raise TaskBodyException(active_task.state.exception)
 
@@ -253,7 +267,16 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskCompleted):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
+                        print("Cleaning up Task", active_task, flush=True)
+                        #Handle synchronization in C++
                         self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        
+                        #Handle synchronization in Python (for debugging, works!)
+                        #self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #device_context.synchronize(events=True)
+                        #self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        print("Finished Cleaning up Task", active_task, flush=True)
+
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
@@ -366,6 +389,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Scheduler: Stopped", flush=True)
 
     def spawn_task(self, task):
+        print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
 
     
@@ -446,9 +470,9 @@ def _task_callback(task, body):
                 result = None
                 if e.args:
                     (result,) = e.args
-                return tasks.TaskCompleted(result)
+                return tasks.TaskRunahead(result)
         else:
             result = body()
-            return tasks.TaskCompleted(result)
+            return tasks.TaskRunahead(result)
     finally:
         pass

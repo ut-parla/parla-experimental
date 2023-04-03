@@ -28,6 +28,8 @@ endif(PARLA_ENABLE_LOGGING)
 
 if(PARLA_ENABLE_CUDA)
     set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(backend PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(backend PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
     target_include_directories(backend PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
@@ -49,9 +51,7 @@ endif(PARLA_ENABLE_CUDA)
 
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 set_target_properties(backend PROPERTIES PUBLIC_HEADER "${BACKEND_HDR_INCLUDE}")
-set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 #${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/lib/
 

@@ -19,6 +19,7 @@ cdef extern from "include/device.hpp" nogil:
     cdef cppclass Device:
         Device(string, int, long, long, void*) except +
         int get_id() except +
+        int get_global_id() except +
         string get_name() except +
         long get_memory_size() except +
         long get_num_vcus() except +

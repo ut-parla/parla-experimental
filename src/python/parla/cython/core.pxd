@@ -76,6 +76,16 @@ cdef extern from "include/runtime.hpp" nogil:
         void begin_multidev_req_addition()
         void end_multidev_req_addition()
 
+        void add_event(void* event) except + 
+        void add_stream(void* stream) except +
+
+        void reset_events_streams() except +
+        void handle_runahead_dependencies() except +
+        void synchronize_events()   except +
+
+
+        
+
 
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
@@ -126,6 +136,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)
         void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
 
         int get_num_active_tasks()
         void increase_num_active_tasks()

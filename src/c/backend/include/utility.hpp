@@ -37,4 +37,30 @@ inline void cpu_busy_sleep(unsigned int micro) {
   } while (elapsed.count() < micro);
 }
 
+class Event {
+public:
+  uintptr_t event_ptr;
+
+  Event() = default;
+  Event(uintptr_t event) : event_ptr(event) {}
+
+  uintptr_t get_event() { return event_ptr; }
+  void set_event(uintptr_t event) { this->event_ptr = event; }
+  void synchronize();
+  void wait(uintptr_t stream);
+};
+
+class Stream {
+public:
+  uintptr_t stream_ptr;
+
+  Stream() = default;
+  Stream(uintptr_t stream) : stream_ptr(stream) {}
+
+  uintptr_t get_stream() { return stream_ptr; }
+  void set_stream(uintptr_t stream) { this->stream_ptr = stream; }
+  void synchronize();
+  void wait(uintptr_t event);
+};
+
 #endif // PARLA_CUDA_UTILITY_H

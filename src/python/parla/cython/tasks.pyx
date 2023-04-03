@@ -14,6 +14,7 @@ from parla.common.globals import DeviceType as PyDeviceType
 from parla.common.globals import AccessMode, Storage
 
 from parla.common.parray.core import PArray
+from parla.common.globals import SynchronizationType as SyncType 
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -160,12 +161,33 @@ class TaskRunning(TaskState):
         else:
             return "Functionless task"
 
+
+class TaskRunahead(TaskState):
+    """
+    This state specifies that a task is executing in a stream but the body has completed.
+    """
+    __slots__ = ["return_value"]
+
+    def __init__(self, ret):
+        self.return_value = ret
+
+    @property
+    def value(self):
+        return 6
+
+    @property
+    def is_terminal(self):
+        return False
+
+    def __repr__(self):
+        return "TaskRunahead({})".format(self.return_value)
+
 class TaskCompleted(TaskState):
     __slots__ = ["return_value"]
 
     @property
     def value(self):
-        return 6
+        return 7
 
     def __init__(self, ret):
         self.return_value = ret
@@ -183,7 +205,7 @@ class TaskException(TaskState):
 
     @property
     def value(self):
-        return 7
+        return 8
 
     @property
     def is_terminal(self):
@@ -239,6 +261,8 @@ class Task:
         self.state = state
         self.scheduler = scheduler
 
+        self.runahead = SyncType.NONE
+
         if isinstance(self.taskspace, TaskSpace):
             self.name = self.unpack_name()
         elif name is None:
@@ -249,6 +273,15 @@ class Task:
 
         self.inner_task = core.PyInnerTask(self.id, self)
         self.update_name()
+        self._env = None
+
+    @property
+    def env(self):
+        return self._env
+
+    @env.setter
+    def env(self, v):
+        self._env = v
 
     def unpack_name(self):
 
@@ -282,9 +315,39 @@ class Task:
     def environment(self, env):
         self._environment = env
         
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None):
+
+    def handle_synchronization(self):
+        print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
+        assert(self.env is not None)
+
+        if self.runahead == SyncType.NONE or self.runahead == SyncType.USER:
+            return
+        elif self.runahead == SyncType.BLOCKING or isinstance(self.env, CPUEnvironment):
+            sync_events = self.env.synchronize_events
+        elif self.runahead == SyncType.NON_BLOCKING:
+            sync_events = self.env.wait_events
+        else:
+            raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
+
+        dependencies = self.get_dependencies()
+        print("Dependencies: {}".format(dependencies), flush=True)
+
+        for task in dependencies:
+            assert(isinstance(task, Task))
+
+            task_env = task.env
+            assert(task_env is not None)
+            if isinstance(task_env, CPUEnvironment):
+                continue
+
+            sync_events(task_env)
+
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None, runahead=SyncType.BLOCKING):
+
         self.dependencies = dependencies
         self.constraints = constraints
+        self.priority = priority
+        self.runahead = runahead
 
         self.add_constraints(constraints)
         self.add_dependencies(dependencies)
@@ -326,14 +389,9 @@ class Task:
         try:
             #assert(self._state, TaskRunning)
 
-            #TODO: Load the environment
-            #TODO: Get the events
-
             task_state = self._execute_task()
 
-            #TODO: Record & Sync Events
-
-            task_state = task_state or TaskCompleted(None)
+            task_state = task_state or TaskRunahead(None)
 
         except Exception as e:
             tb = traceback.format_exc()
@@ -455,13 +513,19 @@ class Task:
     def add_constraints(self, constraints):
         self.inner_task.add_constraints(constraints)
 
+    def add_stream(self, stream):
+        self.inner_task.add_stream(stream)
+
+    def add_event(self, event):
+        self.inner_task.add_event(event)
+
 
 class ComputeTask(Task):
 
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
 
-    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0):
+    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0, runahead=SyncType.NONE):
         #Holds the original function
         self.base_function = function
 
@@ -474,7 +538,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow)
+        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow, runahead=runahead)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -566,6 +630,8 @@ class TaskEnvironment:
 
         self.device_list = []
         self._global_device_ids = set()
+        self.event_dict = {}
+        self.event_dict['default'] = None
 
         for env in environment_list:
             for dev in env.devices:
@@ -638,13 +704,8 @@ class TaskEnvironment:
         return self.device_dict[arch]
 
     def get_all_devices(self):
-        return sum(self.device_dict.values(), [])
-
-    def get_terminal_environments(self, arch):
-        return self.terminal_dict[arch]
-
-    def get_all_terminal_environments(self):
-        return sum(self.terminal_dict.values(), [])
+        #return sum(self.device_dict.values(), [])
+        return self.device_list
 
     @property
     def contexts(self):
@@ -653,7 +714,9 @@ class TaskEnvironment:
     @property
     def devices(self):
         #TODO: Improve this
-        return self.get_all_devices()
+        devices = self.get_all_devices()
+        print(f"Devices: {devices}")
+        return devices
     
     @property
     def device(self):
@@ -662,14 +725,25 @@ class TaskEnvironment:
     def get_cupy_devices(self):
         return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
 
-    def synchronize(self):
+    def synchronize(self, events=False, tags=['default'], return_to_pool=True):
         print(f"Sychronizing {self}..", flush=True)
+
         if self.is_terminal:
-            for stream in self.stream_list:
-                stream.synchronize()
+            if events:
+                for tag in tags:
+                    print("SELF: ", self, f"Synchronizing on event {tag}..", flush=True)
+                    self.synchronize_event(tag=tag)
+            else:
+                for stream in self.stream_list:
+                    stream.synchronize()
+
+            if return_to_pool:
+                stream_pool = get_stream_pool()
+                for stream in self.stream_list:
+                    stream_pool.return_stream(stream)
         else:
             for env in self.env_list:
-                env.synchronize()
+                env.synchronize(events=events, tags=tags)
 
     def __enter__(self):
         #print("Entering environment:", self.env_list, flush=True)
@@ -771,11 +845,87 @@ class TaskEnvironment:
             return wrapper()
         return deco
 
+    def __contains__(self, obj):
+        if isinstance(obj, PyDevice):
+            return obj.global_id in self._global_device_ids
+        elif isinstance(obj, TaskEnvironment):
+            return obj.global_ids.issubset(self._global_device_ids)
+        else:
+            raise TypeError("Invalid type for __contains__")
+
+
+    def wait_events(self, env, tags=['default']):
+        """
+        Wait for tagged events in the given environment on all streams in this environment.
+        """
+
+        print("Waiting for events", env, tags, flush=True)
+
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for device in env.devices:
+            for stream in device.streams:
+                for tag in tags:
+                    print("++Waiting for event", device, stream, tag, flush=True)
+                    device.wait_event(stream=stream, tag=tag)
+
+    def synchronize_events(self, env, tags=['default']):
+        """
+        Synchronize tagged events in the given environment on all streams in this environment.
+        """
+
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for device in env.devices:
+            for stream in device.streams:
+                for tag in tags:
+                    print("++Synchronizing event", device, stream, tag, flush=True)
+                    device.synchronize_event(tag=tag)
+    
+    def record_events(self, tags=['default']):
+        """
+        Record tagged events on all streams in this environment.
+        """
+
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for device in self.devices:
+            for stream in device.streams:
+                for tag in tags:
+                    print("--Recording event", device, stream, tag, flush=True)
+                    device.record_event(stream=stream, tag=tag)
+
+    def create_events(self, tags=['default']):
+        """
+        Create tagged events on all devices in this environment.
+        """
+
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for device in self.devices:
+            for tag in tags:
+                device.create_event(tag=tag)
+
+    def write_to_task(self, task):
+
+        for device in self.devices:
+            device.write_to_task(task)
+
+    def write_streams_to_task(self, task):
+            
+        for device in self.devices:
+            device.write_streams_to_task(task)
+      
 
 class TerminalEnvironment(TaskEnvironment):
     def  __init__(self,  device, blocking=False):
         super(TerminalEnvironment, self).__init__([], blocking=blocking)
         self.device_dict[device.architecture].append(self)
+        self.device_list.append(self)
         self._device = device
         self._arch_type = device.architecture
         self.is_terminal = True
@@ -824,6 +974,85 @@ class TerminalEnvironment(TaskEnvironment):
         else:
             raise IndexError("TerminalEnvironment only has one device.")
 
+    def record_event(self, stream=None, tag='default'):
+        """
+        Record a CUDA event on the current stream. 
+        """
+
+        if stream is None:
+            stream = Locals.stream 
+        
+        if tag not in self.event_dict:
+            raise RuntimeError("Event must be created before recording.")
+
+        event = self.event_dict[tag]
+        if event is not None:
+            event.record(stream)
+
+    def synchronize_event(self, tag='default'):
+        """
+        Synchronize host thread to the tagged CUDA event (sleep or waiting). 
+        """
+
+        if tag not in self.event_dict:
+            raise RuntimeError("Event must be created before synchronizing.")
+
+        event = self.event_dict[tag]
+
+        if event is not None:
+            event.synchronize()
+
+    def wait_event(self, stream=None, tag='default'):
+        """
+        Submit a cross-stream wait on the tagged CUDA event to the current stream. 
+        All further work submitted on the current stream will wait until the tagged event is recorded.
+        """
+        if tag not in self.event_dict:
+            raise RuntimeError("Event must be created before waiting.")
+
+        event = self.event_dict[tag]
+
+        if event is not None:
+            stream.wait_event(stream)
+
+    def create_event(self, stream=None, tag='default'):
+        """
+        Create a CUDA event on the current stream.  It can be used for synchronization or cross-stream waiting.
+        It is not recorded by default at creation.
+        """
+        if stream is None:
+            stream = Locals.stream
+        self.event_dict[tag] = stream.create_event()
+
+    def write_to_task(self, task):
+        """
+        Store stream and event pointers in C++ task
+        """
+        for stream in self.streams:
+            task.add_stream(stream)
+        
+        #for event in self.event_dict.values():
+        #    task.add_event(event)
+        task.add_event(self.event_dict['default'])
+
+    def write_streams_to_task(self, task):
+        """
+        Store stream pointers in C++ task
+        """
+        for stream in self.streams:
+            task.add_stream(stream)
+
+    def write_events_to_task(self, task):
+        """
+        Store event pointers in C++ task
+        """
+        #for event in self.event_dict.values():
+                #    task.add_event(event)
+        task.add_event(self.event_dict['default'])
+        
+
+        
+
     
 class CPUEnvironment(TerminalEnvironment):
 
@@ -861,6 +1090,9 @@ class GPUEnvironment(TerminalEnvironment):
         stream_pool = get_stream_pool()
         stream = stream_pool.get_stream(device=device)
         self.stream_list.append(stream)
+
+        self.event_dict['default'] = stream.create_event()
+
 
     def __repr__(self):
         return f"GPUEnvironment({self._device})"
