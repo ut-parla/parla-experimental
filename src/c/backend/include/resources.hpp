@@ -130,8 +130,8 @@ public:
     } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
         const int idx = static_cast<int>(non_persistent_resources[i]);
-        // std::cout << "check_greater_runtime: " << this->resources[idx].load()
-        //           << " " << other.resources[idx].load() << std::endl;
+        //std::cout << "check_greater_runtime: " << this->resources[idx].load()
+        //          << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }

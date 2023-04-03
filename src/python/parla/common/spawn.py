@@ -51,14 +51,20 @@ def setup_constraints(placement, vcus, memory):
 
     config_placement = []
 
-    if not isinstance(placement, tuple) or not isinstance(placement, list):
+    if not (isinstance(placement, tuple) or isinstance(placement, list)):
         placement = (placement,)
+
+    print("STarting iter: ", placement)
 
     for p in placement:
 
+        print("Internal: ", p)
+
         if isinstance(p, tuple):
-            place = (arch[{'vcus': vcus, 'memory': memory}]
-                     for arch in p)
+            place = [arch[{'vcus': vcus, 'memory': memory}]
+                     for arch in p]
+            print("List: ", place)
+            place = tuple(place)
         else:
             place = p[{'vcus': vcus, 'memory': memory}]
 
@@ -99,8 +105,7 @@ def spawn(task=None,
         nonlocal task
         nonlocal placement
 
-        if not isinstance(vcus, int):
-            vcus = convert_to_internal_vcus(vcus)
+        vcus = convert_to_internal_vcus(vcus)
 
         if inspect.iscoroutine(body):
             separated_body = body
