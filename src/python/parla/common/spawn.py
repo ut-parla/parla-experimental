@@ -82,6 +82,7 @@ def spawn(task=None,
         nonlocal dependencies
         nonlocal task
         nonlocal placement
+        nonlocal runahead
 
         if not isinstance(vcus, int):
             # Default behavior the same as Parla 0.2.

@@ -261,7 +261,7 @@ class Task:
         self.state = state
         self.scheduler = scheduler
 
-        self.runahead = SyncType.NONE
+        self.runahead = SyncType.BLOCKING
 
         if isinstance(self.taskspace, TaskSpace):
             self.name = self.unpack_name()
@@ -528,7 +528,7 @@ class ComputeTask(Task):
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
 
-    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0, runahead=SyncType.NONE):
+    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
         #Holds the original function
         self.base_function = function
 
@@ -565,7 +565,7 @@ class DataMovementTask(Task):
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
-    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler):
+    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
         self.name = attrs.name
         self.parray = attrs.parray
         self.access_mode = attrs.access_mode
@@ -573,6 +573,7 @@ class DataMovementTask(Task):
         self.scheduler = scheduler
         self.inner_task.set_c_task(attrs.c_attrs)
         self.dev_id = attrs.dev_id
+        self.runahead = runahead
 
     def _execute_task(self):
         write_flag = True if self.access_mode != AccessMode.IN else False
@@ -591,7 +592,7 @@ class DataMovementTask(Task):
         self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
-        return TaskCompleted(0)
+        return TaskRunahead(0)
 
 ######
 # Task Environment
@@ -729,7 +730,7 @@ class TaskEnvironment:
         return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
 
     def synchronize(self, events=False, tags=['default'], return_to_pool=True):
-        print(f"Sychronizing {self}..", flush=True)
+        print(f"Synchronizing {self}..", flush=True)
 
         if self.is_terminal:
             if events:
@@ -738,6 +739,7 @@ class TaskEnvironment:
                     self.synchronize_event(tag=tag)
             else:
                 for stream in self.stream_list:
+                    print("SELF: ", self, f"Synchronizong on stream {stream}", flush=True)
                     stream.synchronize()
 
             if return_to_pool:
@@ -746,6 +748,7 @@ class TaskEnvironment:
                     stream_pool.return_stream(stream)
         else:
             for env in self.env_list:
+                print("Non terminal: Recursing", flush=True)
                 env.synchronize(events=events, tags=tags)
 
     def __enter__(self):
@@ -990,6 +993,7 @@ class TerminalEnvironment(TaskEnvironment):
 
         event = self.event_dict[tag]
         if event is not None:
+            print("TEST RECORD: ", event, stream.stream)
             event.record(stream.stream)
 
     def synchronize_event(self, tag='default'):
@@ -1003,6 +1007,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
+            print("TEST EVENT SYNC: ", event, flush=True)
             event.synchronize()
 
     def wait_event(self, stream=None, tag='default'):
@@ -1016,7 +1021,8 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            stream.wait_event(stream.stream)
+            print("TEST WAIT EVENT: ", stream, event)
+            stream.wait_event(event)
 
     def create_event(self, stream=None, tag='default'):
         """
@@ -1032,7 +1038,7 @@ class TerminalEnvironment(TaskEnvironment):
         Store stream and event pointers in C++ task
         """
         for stream in self.streams:
-            task.add_stream(stream)
+            task.add_stream(stream.stream)
         
         #for event in self.event_dict.values():
         #    task.add_event(event)
@@ -1043,7 +1049,7 @@ class TerminalEnvironment(TaskEnvironment):
         Store stream pointers in C++ task
         """
         for stream in self.streams:
-            task.add_stream(stream)
+            task.add_stream(stream.stream)
 
     def write_events_to_task(self, task):
         """

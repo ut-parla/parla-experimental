@@ -276,6 +276,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         
                         #Handle synchronization in Python (for debugging, works!)
                         self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+
+                        print("Device Context Sync: ", active_task, flush=True)
                         device_context.synchronize(events=True)
                         self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         print("Finished Cleaning up Task", active_task, flush=True)

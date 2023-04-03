@@ -449,7 +449,10 @@ class CupyStream(Stream):
         self._stream.synchronize()
 
     def create_event(self):
-        return cupy.cuda.Event(block=True, disable_timing=True, interprocess=False)
+        active_device = cupy.cuda.Device(self._device_id)
+        with active_device:
+            new_event = cupy.cuda.Event(block=True, disable_timing=True, interprocess=False)
+        return new_event
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):
