@@ -105,7 +105,7 @@ enum SynchronizationType {
   NON_BLOCKING = 2,
   // User defined synchronization
   USER = 3
-}
+};
 
 class StatusFlags {
 public:
