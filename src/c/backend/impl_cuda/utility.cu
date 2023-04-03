@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <cuda_runtime_api.h>
-#include <utility.hpp>
+#include <gpu_utility.hpp>
 
 // __device__ void gpu_sleep_0_bak(volatile clock_t *d_o, clock_t clock_count) {
 //   clock_t start = clock();
