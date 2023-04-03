@@ -59,15 +59,16 @@ def serial_scaling(state):
 
 
 @benchmark.register(name="IndependentScaling")
-@benchmark.option.dense_range(1, 4)
+#@benchmark.option.dense_range(1, 4)
 #@benchmark.option.args_product([(1, 2, 4), (1, 2), (False, True)])
+@benchmark.option.args_product([(1, 2, 4), (1, 2)])
 def independent_scaling(state):
     while state:
-        max_time = 10
+        max_time = 50
         task_time = 16000
         n = 300
-        #use_gpus = True if state.range(1) else False
-        use_gpus = True
+        use_gpus = True if state.range(1) else False
+        #use_gpus = True
         #print("GPU mode:", use_gpus)
         device_type = DeviceType.ANY_GPU_DEVICE
         cost = 1.0
@@ -83,7 +84,7 @@ def independent_scaling(state):
         task_configs = TaskConfigs()
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-        config = IndependentConfig(data_pattern=DataInitType.INDEPENDENT_DATA,
+        config = IndependentConfig(data_pattern=DataInitType.NO_DATA,
             total_data_width=6250, task_count=n, task_config=task_configs, use_gpus=use_gpus,
             fixed_placement=task_placement_mode)
         with GraphContext(config, name="independent") as g:
