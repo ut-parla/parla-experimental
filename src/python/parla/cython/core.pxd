@@ -76,8 +76,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void begin_multidev_req_addition()
         void end_multidev_req_addition()
 
-        void add_event(void* event) except + 
-        void add_stream(void* stream) except +
+        void add_event(uintptr_t event) except + 
+        void add_stream(uintptr_t stream) except +
 
         void reset_events_streams() except +
         void handle_runahead_dependencies() except +

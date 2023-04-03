@@ -340,23 +340,19 @@ cdef class PyInnerTask:
         
     cpdef add_stream(self, py_stream):
         cdef uintptr_t i_stream 
-        cdef void* c_stream 
         cdef InnerTask* c_self = self.c_task
 
         if isinstance(py_stream, cupy.cuda.Stream):
             i_stream = <uintptr_t> py_stream.ptr
-            c_stream = <void*> i_stream
-            c_self.add_stream(c_stream)
+            c_self.add_stream(i_stream)
 
     cpdef add_event(self, py_event):
         cdef uintptr_t i_event 
-        cdef void* c_event 
         cdef InnerTask* c_self = self.c_task
 
         if isinstance(py_event, cupy.cuda.Event):
             i_event = <uintptr_t> py_event.ptr
-            c_event = <void*> i_event
-            c_self.add_event(c_event)
+            c_self.add_event(i_event)
 
     cpdef reset_events_streams(self):
         cdef InnerTask* c_self = self.c_task

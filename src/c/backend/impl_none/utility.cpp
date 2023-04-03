@@ -1,14 +1,10 @@
-#include <utility.hpp>
+#include <gpu_utility.hpp>
 
 void gpu_busy_sleep(const int device, const unsigned long t,
                     uintptr_t stream_ptr) {
   printf("gpu_busy_sleep() is not implemented for this backend.\n");
 }
 
-Event::synchronize() {}
-
-Event::wait(uintptr_t stream) {}
-
-Stream::synchronize() {}
-
-Stream::wait(uintptr_t event) {}
+void event_synchronize(uintptr_t event_ptr){};
+void event_wait(uintptr_t event_ptr, uintptr_t stream_ptr){};
+void stream_synchronize(uintptr_t stream_ptr){};

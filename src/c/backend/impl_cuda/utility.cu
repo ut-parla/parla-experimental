@@ -41,12 +41,11 @@ void gpu_busy_sleep(const int device, const unsigned long cycles,
   gpu_sleep_1<<<1, 1, device, stream>>>(cycles);
 }
 
-Event::synchronize() {
+void event_synchronize(uintptr_t event_ptr) {
   cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
   cudaEventSynchronize(event);
 }
-
-Event::wait(uintptr_t stream) {
+void event_wait(uintptr_t event_ptr, uintptr_t stream_ptr) {
   cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
 
@@ -54,19 +53,9 @@ Event::wait(uintptr_t stream) {
   // 0 means that the event will be waited on in the default manner.
   // 1 has to do with CUDA graphs.
   cudaStreamWaitEvent(stream, event, 0);
-}
+};
 
-Stream::synchronize() {
+void stream_synchronize(uintptr_t stream_ptr) {
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
   cudaStreamSynchronize(stream);
-}
-
-Stream::wait(uintptr_t event) {
-  cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
-  cudaEvent_t event = reinterpret_cast<cudaEvent_t>(event_ptr);
-
-  // The 0 is for the flags.
-  // 0 means that the event will be waited on in the default manner.
-  // 1 has to do with CUDA graphs.
-  cudaStreamWaitEvent(stream, event, 0);
-}
+};

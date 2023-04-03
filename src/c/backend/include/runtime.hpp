@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 
@@ -40,8 +41,7 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
 
-using StreamList = ProtectedVector<Stream>;
-using EventList = ProtectedVector<Event>;
+using PointerList = ProtectedVector<uintptr_t>;
 
 /* Access mode to a PArray. */
 enum AccessMode {
@@ -436,17 +436,17 @@ public:
     this->events.lock();
     size_t num_events = this->events.size();
     for (size_t i = 0; i < num_events; i++) {
-      Event &event = this->events[i];
-      event.synchronize();
+      uintptr_t event_ptr = this->events[i];
+      event_synchronize(event_ptr);
     }
     this->events.unlock();
   }
 
   /*handle_runahead_dependencies*/
   void handle_runahead_dependencies() {
-    if (this->sync_type == Task::SyncType::BLOCKING) {
+    if (this->sync_type == Task::BLOCKING) {
       this->synchronize_dependency_events();
-    } else if (this->sync_type == Task::SyncType::NON_BLOCKING) {
+    } else if (this->sync_type == Task::NON_BLOCKING) {
       this->wait_dependency_events();
     }
   }
@@ -456,7 +456,7 @@ public:
     this->dependencies.lock();
     size_t num_dependencies = this->dependencies.size();
     for (size_t i = 0; i < num_dependencies; i++) {
-      InnerTask *dependency = this->dependencies.unsafe_at(i);
+      InnerTask *dependency = this->dependencies.at_unsafe(i);
       dependency->synchronize_events();
     }
     this->dependencies.unlock();
@@ -469,18 +469,18 @@ public:
     this->dependencies.lock();
     size_t num_dependencies = this->dependencies.size();
     for (size_t i = 0; i < num_dependencies; i++) {
-      InnerTask *dependency = this->dependencies.unsafe_at(i);
+      InnerTask *dependency = this->dependencies.at_unsafe(i);
       auto &dependency_events = dependency->events;
       dependency_events.lock();
       size_t num_events = dependency_events.size();
       for (size_t j = 0; j < num_events; j++) {
-        Event &event = dependency_events[j];
+        uintptr_t event_ptr = dependency_events.at_unsafe(j);
 
         // Wait on the event on all of our streams
         this->streams.lock();
         for (size_t k = 0; k < this->streams.size(); k++) {
-          Stream &stream = this->streams[k];
-          event.wait(stream);
+          uintptr_t stream_ptr = this->streams.at_unsafe(k);
+          event_wait(event_ptr, stream_ptr);
         }
         this->streams.unlock();
       }
