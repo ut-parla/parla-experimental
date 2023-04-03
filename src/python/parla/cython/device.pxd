@@ -24,7 +24,6 @@ cdef extern from "include/device.hpp" nogil:
         long get_memory_size() except +
         long get_num_vcus() except +
         void *get_py_device() except +
-        int get_global_id() except +
         long long int query_resource(Resource) except +
         long long int query_reserved_resource(Resource) except +
         long long int query_mapped_resource(Resource) except +
