@@ -667,7 +667,7 @@ class GraphContext(object):
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
-            print(graph)
+            #print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
