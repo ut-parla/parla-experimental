@@ -300,6 +300,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
   // Clear all assigned streams from the task
   task->streams.clear();
   this->launcher->num_running_tasks--;
+  worker->remove_task();
 
   if (state == Task::RUNNING) {
     task->reset();
