@@ -219,7 +219,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         device_context.write_to_task(active_task)
 
                         #handle event wait in C++ (good if num_dependencies large)
-                        device_context.handle_runahead_dependencies()
+                        active_task.inner_task.handle_runahead_dependencies()
                         #handle event wait in python 
                         #active_task.py_handle_runahead_dependencies() 
 

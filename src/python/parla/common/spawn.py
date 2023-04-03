@@ -124,7 +124,7 @@ def spawn(task=None,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
                          constraints=vcus,
-                         dataflow=dataflow
+                         dataflow=dataflow,
                          runahead=runahead
                          )
 
