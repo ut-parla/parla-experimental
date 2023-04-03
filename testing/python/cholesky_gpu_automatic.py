@@ -158,9 +158,10 @@ def cholesky_blocked_inplace(a, block_size):
                 stream.synchronize()
 
                 # print(f"==SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", out.device.id, rhs.device.id, a[j][j].array.device.id, flush=True)
-                a[j][j].array[:] = out
+                # a[j][j].update(out)
                 stream.synchronize()
-                #print(f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
+                # print(
+                #    f"-SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", flush=True)
 
         # Cholesky on block
 
@@ -179,9 +180,9 @@ def cholesky_blocked_inplace(a, block_size):
             stream.synchronize()
 
             # print(f"==POTRF: ({j}) - Requires rw({j},{j}) Locations: ", dblock.device.id, a[j][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
-            a[j][j].array[:] = dblock
+            # a[j][j].update(dblock)
             stream.synchronize()
-            #print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
+            # print(f"-POTRF: ({j}) - Requires rw({j},{j})", flush=True)
         for i in range(j+1, len(a)):
             for k in range(j):
                 # Inter-block GEMM
@@ -203,7 +204,7 @@ def cholesky_blocked_inplace(a, block_size):
                     stream.synchronize()
 
                     # print(f"==GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k}) Locations", out.device.id, rhs1.device.id, rhs2.device.id, a[i][j].array.device.id, cp.cuda.runtime.getDevice(), flush=True)
-                    a[i][j].array[:] = out
+                    # a[i][j].update(out)
                     stream.synchronize()
                     # print(f"-GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", get_current_devices(), flush=True)
 
@@ -223,9 +224,11 @@ def cholesky_blocked_inplace(a, block_size):
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
                 # print(f"==TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j}) Locations", factor.device.id, panel.device.id, out.device.id, a[i][j].device.id, cp.cuda.runtime.getDevice(), flush=True)
+                # a[i][j].update(out)
                 a[i][j].array[:] = out
                 stream.synchronize()
-                #print(f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
+                # print(
+                #    f"-TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", flush=True)
 
     return subcholesky[len(a) - 1]
 

@@ -45,9 +45,10 @@ class PArray:
     _slices: List[SlicesType]
     _coherence_cv: Dict[int, threading.Condition]
     _cy_parray: CyPArray  # the wrapper class of C++ PArray class, which store the size and id
-    _cyparray_state: CyPArrayState  # the wrapper class of C++ PArrayState class, which store the exist and valid state
+    # the wrapper class of C++ PArrayState class, which store the exist and valid state
+    _cyparray_state: CyPArrayState
 
-    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None) -> None:
+    def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "NA") -> None:
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents
@@ -60,6 +61,9 @@ class PArray:
             # add current slices to the end
             self._slices.append(slices)
 
+            # self._name = parent._name + "::subarray::" + str(slices)
+            self._name = parent._name + "::subarray::" + str(self._slices)
+
             # inherit parent's condition variables
             self._coherence_cv = parent._coherence_cv
 
@@ -71,7 +75,7 @@ class PArray:
             self.parent_ID = parent.ID
             # use a prime number to avoid collision
             # modulo over uint64 to make it compatible with C++ end
-            self.ID = (parent.ID * 31 + self._slices_hash) % UINT64_LIMIT  
+            self.ID = (parent.ID * 31 + self._slices_hash) % UINT64_LIMIT
 
             self.nbytes = parent.nbytes          # the bytes used by the complete array
             self.subarray_nbytes = array.nbytes  # the bytes used by this subarray
@@ -87,13 +91,15 @@ class PArray:
             location = self._array.set_complete_array(array)
 
             # coherence protocol for managing data among multi device
-            self._coherence = Coherence(location, num_gpu, self._cyparray_state)
+            self._coherence = Coherence(
+                location, num_gpu, self._cyparray_state)
 
             # no slices since it is a new array rather than a subarray
             self._slices = []
 
             # a condition variable to acquire when moving data on the device
-            self._coherence_cv = {n:threading.Condition() for n in range(num_gpu)}
+            self._coherence_cv = {n: threading.Condition()
+                                  for n in range(num_gpu)}
             self._coherence_cv[CPU_INDEX] = threading.Condition()
 
             # there is no slices
@@ -108,18 +114,29 @@ class PArray:
 
             self.parent = self
 
+            self._name = name
+
         # record the size in Cython PArray
         scheduler = get_scheduler()
         num_devices = len(scheduler.device_manager.get_all_devices())
-        self._cy_parray = CyPArray(self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
+        self._cy_parray = CyPArray(
+            self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
-        target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
+        target_dev_id = - \
+            1 if isinstance(array, numpy.ndarray) else array.device.id
         if (target_dev_id >= 0):
             assert isinstance(array, cupy.ndarray)
-        target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(target_dev_id)
+        target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
+            target_dev_id)
         scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
 
     # Properties:
+
+    @property
+    def name(self):
+        if self._name is None:
+            return "PArray::"+str(self.ID)
+        return self._name
 
     @property
     def cy_parray(self):
@@ -136,15 +153,17 @@ class PArray:
         """
         if self._slices:  # so this is a sub-parray object
             # index into origin array by saved slices
-            ret = self._array.get_by_global_slices(self._current_device_index, self._slices[0])
+            ret = self._array.get_by_global_slices(
+                self._current_device_index, self._slices[0])
             for s in self._slices[1:]:
                 ret = ret[s]
             return ret
         else:  # this is a complete copy
             ret = self._array.get(self._current_device_index)
 
-            if isinstance(ret, list): # get a subarray instead
-                raise IndexError("Current device doesn't have a complete copy of this array")
+            if isinstance(ret, list):  # get a subarray instead
+                raise IndexError(
+                    "Current device doesn't have a complete copy of this array")
             return ret
 
     @property
@@ -174,22 +193,25 @@ class PArray:
 
     # Public API:
 
-    def nbytes_at(self, device_id:int):
+    def nbytes_at(self, device_id: int):
         """ An estimate of bytes used in `device_id` after data is moved there.
         It is neither lower bound nor upper bound.
         """
         if self._slices:
-            if isinstance(self._coherence._local_states[device_id], dict): # there are subarrays no this device
-                if self._slices_hash in self._coherence._local_states[device_id].keys():  # this subarray is already there
+            # there are subarrays no this device
+            if isinstance(self._coherence._local_states[device_id], dict):
+                # this subarray is already there
+                if self._slices_hash in self._coherence._local_states[device_id].keys():
                     return self._array.nbytes_at(device_id)
                 else:  # the subarray will be moved to there
-                    return self._array.nbytes_at(device_id) + self.subarray_nbytes  # add the incoming subarray size
-            else: # there is a complete copy on this device, no need to prepare subarray
+                    # add the incoming subarray size
+                    return self._array.nbytes_at(device_id) + self.subarray_nbytes
+            else:  # there is a complete copy on this device, no need to prepare subarray
                 return self.nbytes
         else:
-            return self.nbytes   
+            return self.nbytes
 
-    def exists_on_device(self, device_id:int):
+    def exists_on_device(self, device_id: int):
         return (self._array._buffer[device_id] is not None)
 
     def update(self, array) -> None:
@@ -202,6 +224,7 @@ class PArray:
 
         Note: should be called within the current task context
         Note: data should be put in OUT/INOUT fields of spawn
+        Note: should not call this over an sliced array
         """
         this_device = self._current_device_index
 
@@ -218,24 +241,29 @@ class PArray:
         if isinstance(array, numpy.ndarray):
             if this_device != CPU_INDEX:  # CPU to GPU
                 self._array.set(this_device, cupy.asarray(array))
-            else: # data already in CPU
+            else:  # data already in CPU
                 self._array.set(this_device, array)
         else:
-            if this_device == CPU_INDEX: # GPU to CPU
+            if this_device == CPU_INDEX:  # GPU to CPU
                 self._array.set(this_device, cupy.asnumpy(array))
-            else: # GPU to GPU
-                if int(array.device) == this_device: # data already in this device
+            else:  # GPU to GPU
+                if int(array.device) == this_device:  # data already in this device
                     self._array.set(this_device, array)
                 else:  # GPU to GPU
                     dst_data = cupy.empty_like(array)
-                    dst_data.data.copy_from_device_async(array.data, array.nbytes)
+                    dst_data.data.copy_from_device_async(
+                        array.data, array.nbytes)
                     self._array.set(this_device, dst_data)
 
         # update size
         self.nbytes = array.nbytes
-
+        self.subarray_nbytes = self.nbytes
+        self._cy_parray.set_size(self.nbytes)
+        
+        self._slices = []
+        
         # reset coherence
-        self._coherence = Coherence(this_device, num_gpu)
+        self._coherence.reset(this_device)
 
         # update shape
         self._array.shape = array.shape
@@ -253,6 +281,7 @@ class PArray:
 
         print(f"---Overview of PArray\n"
               f"ID: {self.ID}, "
+              f"Name: {self._name}, "
               f"Parent_ID: {self.parent_ID if self.ID != self.parent_ID else None}, "
               f"Slice: {self._slices[0] if self.ID != self.parent_ID else None}, "
               f"Bytes: {self.subarray_nbytes}, "
@@ -263,11 +292,13 @@ class PArray:
             else:
                 device_name = f"GPU {device_id}"
             print(f"At {device_name}: ", end="")
-            
+
             if isinstance(state, dict):
-                print(f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices")
+                print(
+                    f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices")
                 for slice, slice_id in zip(self._array._indices_map[device_id], range(len(self._array._indices_map[device_id]))):
-                    print(f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}")
+                    print(
+                        f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}")
             else:
                 print(f"state: {state_str_map[state]}")
         print("---End of Overview")
@@ -278,13 +309,15 @@ class PArray:
         if self._slices:  # resolve saved slices first
             ret = self.array[slices]
         else:
-            ret = self._array.get_by_global_slices(self._current_device_index, slices)
+            ret = self._array.get_by_global_slices(
+                self._current_device_index, slices)
 
         # ndarray.__getitem__() may return a ndarray
         if ret is None:
             # when current device has no copy (could happen when a slice annotation is needed at @spawn)
             # get ret from owner, so it could have an estimation of the number of bytes used
-            ret = self._array.get_by_global_slices(self._coherence.owner, slices)
+            ret = self._array.get_by_global_slices(
+                self._coherence.owner, slices)
             return PArray(ret, parent=self, slices=slices)
         elif isinstance(ret, numpy.ndarray):
             return PArray(ret, parent=self, slices=slices)
@@ -315,7 +348,8 @@ class PArray:
         if self._slices:  # resolve saved slices first
             self.array.__setitem__(slices, value)
         else:
-            self._array.set_by_global_slices(self._current_device_index, slices, value)
+            self._array.set_by_global_slices(
+                self._current_device_index, slices, value)
 
     def evict_all(self) -> None:
         """
@@ -346,7 +380,6 @@ class PArray:
         with self._coherence_cv[device_id]:
             operations = self._coherence.evict(device_id, keep_one_copy)
             self._process_operations(operations)
-
 
     # Coherence update operations:
 
@@ -389,7 +422,7 @@ class PArray:
 
         # update protocol and get operation
         with self._coherence._lock:  # locks involve
-            operations = self._coherence.write(device_id, self._slices_hash) 
+            operations = self._coherence.write(device_id, self._slices_hash)
             self._process_operations(operations, slices)
 
     # Device management methods:
@@ -404,27 +437,33 @@ class PArray:
                 pass  # do nothing
             elif op.inst == MemoryOperation.LOAD:
                 if MemoryOperation.LOAD_SUBARRAY in op.flag:
-                    self._array.set_slices_mapping(op.dst, slices)  # build slices mapping first
+                    # build slices mapping first
+                    self._array.set_slices_mapping(op.dst, slices)
 
                 # check flag to see if dst is current device
                 dst_is_current_device = op.flag != MemoryOperation.SWITCH_DEVICE_FLAG
 
                 # copy data
-                self._array.copy_data_between_device(op.dst, op.src, dst_is_current_device)
+                self._array.copy_data_between_device(
+                    op.dst, op.src, dst_is_current_device)
 
                 # sync stream before set it as ready, so asyc call is ensured to be done
                 if num_gpu > 0:
                     cupy.cuda.stream.get_current_stream().synchronize()
             elif op.inst == MemoryOperation.EVICT:
                 scheduler = get_scheduler()
-                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(op.src)
+                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
+                    op.src)
                 if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
                     # If none of visible tasks will refer this PArray, release
                     # this PArray instance of the source device from the PArray tracker.
-                    scheduler.release_parray(self._cy_parray, src_global_dev_id)
-                self._array.clear(op.src)  # decrement the reference counter, relying on GC to free the memor
+                    scheduler.release_parray(
+                        self._cy_parray, src_global_dev_id)
+                # decrement the reference counter, relying on GC to free the memor
+                self._array.clear(op.src)
             elif op.inst == MemoryOperation.ERROR:
-                raise RuntimeError("PArray gets an error from coherence protocol")
+                raise RuntimeError(
+                    "PArray gets an error from coherence protocol")
             else:
                 raise RuntimeError(f"PArray gets invalid memory operation from coherence protocol, "
                                    f"detail: opcode {op.inst}, dst {op.dst}, src {op.src}")
@@ -530,7 +569,6 @@ class PArray:
             return x.array.__ge__(y.array)
         else:
             return x.array.__ge__(y)
-
 
     # Truth value of an array (bool):
 
@@ -834,7 +872,6 @@ class PArray:
 
     def get_parray_parentid_from_cpp(self):
         return self._cy_parray.get_parray_parentid()
-
 
     def get_num_active_tasks(self, global_dev_id):
         return self._cy_parray.get_num_active_tasks(global_dev_id)

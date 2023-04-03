@@ -118,6 +118,23 @@ class Coherence:
         self._cyparray_state = cyparray_state
         self._cyparray_state.set_valid_on_device(init_owner, True)
 
+    def reset(self, new_owner: int):
+        """
+        Reset the coherence state to only `new_owner` has a valid modified copy
+        """
+        for device_id in self._local_states.keys():
+            self._local_states[device_id] = self.INVALID
+            self._versions[device_id] = None
+            self._is_complete[device_id] = None
+        
+        self._local_states[new_owner] = self.MODIFIED
+        self.owner = new_owner
+        self._versions[new_owner] = 0
+        self._is_complete[new_owner] = True
+        self._latest_version = 0
+
+        self._cyparray_state.set_valid_on_device(new_owner, True)
+
     def _owner_is_latest(self) -> bool:
         """True if owner's has latest version"""
         return self._versions[self.owner] == self._latest_version
