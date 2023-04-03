@@ -105,7 +105,6 @@ def spawn(task=None,
         nonlocal task
         nonlocal placement
 
-        vcus = convert_to_internal_vcus(vcus)
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -132,9 +131,12 @@ def spawn(task=None,
         # TODO(wlr): The configuration input needs refactoring.
         #            The configuration dictionary should be easily mutable.
         #            For now I just assume the two settings are incompatible.
-        if vcus is not None:
+        if placement is not None and vcus is not None:
+            vcus = convert_to_internal_vcus(vcus)
             placement = setup_constraints(placement, vcus, memory)
             print("Placement: ", placement)
+        else:
+            vcus = 0
 
         placement = placement if placement is not None else [
             arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]

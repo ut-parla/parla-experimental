@@ -12,6 +12,9 @@ VCU_BASELINE = 1000
 
 
 def convert_to_internal_vcus(vcus) -> int:
+    if vcus is None:
+        return None
+
     # Default behavior the same as Parla 0.2.
     if vcus <= 1:
         vcus = int(vcus * VCU_BASELINE)
