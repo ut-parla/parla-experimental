@@ -187,13 +187,13 @@ public:
   InnerScheduler *scheduler = nullptr;
 
   /*Container for Events*/
-  EventList events;
+  PointerList events;
 
   /*Synchronization Type */
   Task::SynchronizationType sync_type = Task::BLOCKING;
 
   /*Container for Streams*/
-  StreamList streams;
+  PointerList streams;
 
   /*Task monitor*/
   std::mutex mtx;
