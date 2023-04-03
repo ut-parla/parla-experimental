@@ -17,7 +17,7 @@ cdef extern from "include/resources.hpp" nogil:
         MEMORY = 0,
         VCUS = 1,
 
-cdef extern from "include/utility.hpp" nogil:
+cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds)
     void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr)
