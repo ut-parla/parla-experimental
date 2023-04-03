@@ -288,7 +288,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         break
 
         except Exception as e:
-            print("Exception in Worker Thread", e, flush=True)
+            tb = traceback.format_exc()
+            print("Exception in Worker Thread ", self, ": ", e, tb, flush=True)
+
             self.scheduler.exception_stack.append(e)
             self.scheduler.stop()
 
