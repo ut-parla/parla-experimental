@@ -1,7 +1,7 @@
 import argparse
 
 from parla import Parla, spawn, TaskSpace, sleep_nogil, parray
-from parla.cython.device_manager import cuda
+from parla.cython.device_manager import gpu as cuda
 from parla.common.globals import get_current_devices
 import numpy as np
 # from sleep.core import bsleep
@@ -24,21 +24,21 @@ def main(T):
     d = parray.asarray(d)
 
 
-    for i in range(10):
-        @spawn(T[1+10*i], placement=[(cuda(0))])
+    for i in range(1):
+        @spawn(T[1+10*i], placement=[(cuda(0), cuda(1))], vcus=1)
         def task1():
             print("+HELLO OUTER 0", flush=True)
             bsleep(1000)
             print("-HELLO OUTER 0", get_current_devices(), cp.cuda.runtime.getDevice(), flush=True)
 
-        @spawn(T[2+10*i], placement=[(cuda(1))])
+        @spawn(T[2+10*i], placement=[(cuda(1))], vcus=1)
         def task2():
             print("+HELLO OUTER 1", flush=True)
             bsleep(1000)
             print("-HELLO OUTER 1", get_current_devices(), cp.cuda.runtime.getDevice(), flush=True)
 
 
-        @spawn(T[3+10*i], placement=[(cuda(2))])
+        @spawn(T[3+10*i], placement=[cuda], vcus=1)
         def task3():
             print("+HELLO OUTER 2", flush=True)
             bsleep(1000)
