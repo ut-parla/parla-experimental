@@ -46,6 +46,27 @@ def _make_cell(val):
     return closure.__closure__[0]
 
 
+# TODO(wlr): This is horribly hacked and missed a lot of cases.
+def setup_constraints(placement, vcus, memory):
+
+    config_placement = []
+
+    if not isinstance(placement, tuple) or not isinstance(placement, list):
+        placement = (placement,)
+
+    for p in placement:
+
+        if isinstance(p, tuple):
+            place = (arch[{'vcus': vcus, 'memory': memory}]
+                     for arch in p)
+        else:
+            place = p[{'vcus': vcus, 'memory': memory}]
+
+        config_placement.append(place)
+
+    return config_placement
+
+
 # @profile
 def spawn(task=None,
           dependencies=[],
@@ -107,9 +128,7 @@ def spawn(task=None,
         #            The configuration dictionary should be easily mutable.
         #            For now I just assume the two settings are incompatible.
         if vcus is not None:
-            placement = [place[{'vcus': vcus, 'memory': memory}]
-                         for place in placement if place is not None]
-
+            placement = setup_constraints(placement, vcus, memory)
             print("Placement: ", placement)
 
         placement = placement if placement is not None else [
