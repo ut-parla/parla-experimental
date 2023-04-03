@@ -37,21 +37,6 @@ def make_parrays(data_list):
         l.append(asarray(data))
     return l
 
-
-class GPUInfo():
-
-    #approximate average on frontera RTX
-#cycles_per_second = 1919820866.3481758
-    cycles_per_second = 867404498.3008006
-#cycles_per_second = 47994628114801.04
-
-    def update(self, cycles):
-        self.cycles_per_second = cycles
-
-    def get(self):
-        return self.cycles_per_second
-
-
 class GPUInfo():
 
     #approximate average on frontera RTX
@@ -457,7 +442,6 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         print(f"Failed creating Task {task.task_id}: {e}", flush=True)
     finally:
         return
-
 
 def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
