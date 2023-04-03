@@ -289,7 +289,7 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
             data_config[idx] = DataInfo(idx, size, location)
             idx += 1
 
-        # print("Data Config", data_config)
+        #print("Data Config", data_config)
         # Read the task graph
         for line in lines:
 
@@ -380,7 +380,7 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
 
                     for i in range(len(types)):
                         if check[i]:
-                            data = types[i].strip().split(",")
+                            data = types[i].strip().split(":")
                             if not data[0].isspace():
                                 task_data[i] = [0 for _ in range(len(data))]
 
@@ -694,6 +694,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             global_idx += 1
         reverse_level += 1    
     return graph
+
 
 def generate_independent_graph(config: IndependentConfig) -> str:
     task_config = config.task_config

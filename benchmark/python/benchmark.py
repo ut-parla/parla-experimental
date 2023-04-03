@@ -6,9 +6,14 @@ from parla.utility.graphs import IndependentConfig, SerialConfig, ReductionConfi
 from parla.utility.graphs import DataInitType
 from parla.utility.graphs import read_pgraph, parse_blog
 from parla.utility.graphs import shuffle_tasks
+from parla.utility.graphs import MovementType
 
 from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time
 from parla.utility.execute import GraphContext
+
+#movement_type = MovementType.LAZY_MOVEMENT
+movement_type = MovementType.EAGER_MOVEMENT
+data_scale = 1
 
 #@benchmark.register(name="SerialScaling")
 @benchmark.option.range_multiplier(2)
@@ -36,7 +41,9 @@ def serial_scaling(state):
                 outer_iterations=1,
                 inner_iterations=1,
                 verbose=False,
-                logfile=logpath)
+                logfile=logpath,
+                movement_type=movement_type,
+                data_scale=data_scale)
 
             timing = g.run(run_config, max_time=max_time)
 
@@ -73,7 +80,9 @@ def independent_scaling(state):
                 outer_iterations=1,
                 inner_iterations=1,
                 verbose=False,
-                logfile=logpath)
+                logfile=logpath,
+                movement_type=movement_type,
+                data_scale=data_scale)
 
             timing = g.run(run_config, max_time=max_time)
 
@@ -111,7 +120,9 @@ def reduction_scaling(state):
                 outer_iterations=1,
                 inner_iterations=1,
                 verbose=False,
-                logfile=logpath)
+                logfile=logpath,
+                movement_type=movement_type,
+                data_scale=data_scale)
 
             timing = g.run(run_config, max_time=max_time)
 
