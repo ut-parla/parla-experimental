@@ -443,6 +443,7 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
     finally:
         return
 
+
 def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
     spawn_start_t = time.perf_counter()
