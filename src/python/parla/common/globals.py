@@ -40,6 +40,46 @@ class AccessMode(IntEnum):
     INOUT = 2
 
 
+class Storage():
+
+    # This is literally just a dictionary wrapper.
+    # It's here to make it easier to swap out the storage implementation later or error handling.
+    # Not sure if necessary, but it's here for now.
+
+    def __init__(self):
+        self._store = {}
+
+    def store(self, key, value):
+        self._store[key] = value
+
+    def retrieve(self, key):
+        return self._store[key]
+
+    def clear(self):
+        self._store = {}
+
+    def __repr__(self):
+        return str(self._store)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __contains__(self, key):
+        return key in self._store
+
+    def __getitem__(self, key):
+        return self._store[key]
+
+
+# TODO(wlr): Move this to the scheduler context.
+_GlobalStorage = Storage()
+
+
+class LocalStorage(threading.local, Storage):
+    def __init__(self):
+        super(LocalStorage, self).__init__()
+
+
 class LocalStack(threading.local):
 
     def __init__(self):
@@ -73,6 +113,7 @@ class Locals(threading.local):
         self._context_stack = LocalStack()
         self._stream_stack = LocalStack()
         self._scheduler_stack = LocalStack()
+        self._store = LocalStorage()
         self._index = 0
 
     def push_task(self, task):
@@ -83,7 +124,7 @@ class Locals(threading.local):
 
     @property
     def task(self):
-        return self._task_stack.current 
+        return self._task_stack.current
 
     def push_context(self, context):
         self._context_stack.push(context)
@@ -130,6 +171,16 @@ class Locals(threading.local):
     @index.setter
     def index(self, value):
         self._index = value
+
+    def store(self, key, value):
+        self._store.store(key, value)
+
+    def retrieve(self, key):
+        return self._store.retrieve(key)
+
+    @property
+    def storage(self):
+        return self._store
 
 
 _Locals = Locals()

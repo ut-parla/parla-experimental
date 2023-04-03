@@ -336,7 +336,6 @@ cdef class PyInnerTask:
     cpdef set_c_task(self, CyDataMovementTaskAttributes c_attrs):
         self.c_task = c_attrs.get_c_task()
 
-
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
 
