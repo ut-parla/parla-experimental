@@ -1,3 +1,4 @@
+from parla.common.globals import convert_to_internal_vcus, VCU_BASELINE
 from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
@@ -27,7 +28,6 @@ nvtx.initialize()
 
 Resources = core.Resources
 
-VCU_BASELINE = device_manager.VCU_BASELINE
 
 # @profile
 
@@ -57,7 +57,7 @@ def spawn(task=None,
                                       Any, None]] = None,
           # TODO(hc): This should be PArray, not Any.
           input: List[Tuple[PArray, int]] = None, output: List[Tuple[PArray, int]] = None,
-          inout: List[Tuple[PArray, int]] = None, vcus=1000, memory=0):
+          inout: List[Tuple[PArray, int]] = None, vcus=None, memory=0):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -79,12 +79,7 @@ def spawn(task=None,
         nonlocal placement
 
         if not isinstance(vcus, int):
-            # Default behavior the same as Parla 0.2.
-            if vcus <= 1:
-                vcus = int(vcus * VCU_BASELINE)
-            else:
-                # Only large values for ease of testing
-                vcus = int(vcus)
+            vcus = convert_to_internal_vcus(vcus)
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -107,13 +102,23 @@ def spawn(task=None,
         # Get a set of candidate devices for a task.
         # If none of the placement is passed, make
         # all devices candidate.
+
+        # TODO(wlr): The configuration input needs refactoring.
+        #            The configuration dictionary should be easily mutable.
+        #            For now I just assume the two settings are incompatible.
+        if vcus is not None:
+            placement = [place[{'vcus': vcus, 'memory': memory}]
+                         for place in placement if place is not None]
+
+            print("Placement: ", placement)
+
         placement = placement if placement is not None else [
             arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
 
         device_reqs = scheduler.get_device_reqs_from_placement(placement)
         task.set_device_reqs(device_reqs)
 
-        dataflow = Dataflow(input, output, inout) 
+        dataflow = Dataflow(input, output, inout)
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,
                          args=(separated_body,),

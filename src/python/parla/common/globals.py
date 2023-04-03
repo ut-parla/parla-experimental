@@ -8,6 +8,19 @@ except ImportError:
     cupy = None
     CUPY_ENABLED = False
 
+VCU_BASELINE = 1000
+
+
+def convert_to_internal_vcus(vcus) -> int:
+    # Default behavior the same as Parla 0.2.
+    if vcus <= 1:
+        vcus = int(vcus * VCU_BASELINE)
+    else:
+        # Only large values for ease of testing
+        vcus = int(vcus)
+
+    return vcus
+
 
 class DeviceType(IntEnum):
     """
@@ -83,7 +96,7 @@ class Locals(threading.local):
 
     @property
     def task(self):
-        return self._task_stack.current 
+        return self._task_stack.current
 
     def push_context(self, context):
         self._context_stack.push(context)
