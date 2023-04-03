@@ -63,7 +63,7 @@ loc = gpu
 
 save_file = True
 check_nan = True
-check_error = False
+check_error = True
 time_zeros = False  # Set to true if comparing with Dask.
 
 loc = gpu
@@ -139,7 +139,7 @@ def cholesky_blocked_inplace(a, block_size):
     subcholesky = TaskSpace("subcholesky")  # Cholesky on block
     gemm2 = TaskSpace("gemm2")        # Inter-block GEMM
     solve = TaskSpace("solve")        # Triangular solve
-
+    #print("A", a, flush=True)
     for j in range(len(a)):
         for k in range(j):
             # Inter-block GEMM
@@ -148,7 +148,7 @@ def cholesky_blocked_inplace(a, block_size):
             if fixed:
                 loc_syrk = gpu(j % ngpus)[{'vcus': 0}]
 
-            @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], input=[(a[j][k], 0)], inout=[(a[j][j], 0)], placement=[loc_syrk])
+            @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], placement=[loc_syrk])
             def t1():
                 # print(f"+SYRK: ({j}, {k}) - Requires rw({j},{j})  r({j}, {k})", get_current_devices(), flush=True)
                 out = clone_here(a[j][j])
@@ -169,7 +169,7 @@ def cholesky_blocked_inplace(a, block_size):
         if fixed:
             loc_potrf = gpu(j % ngpus)[{'vcus': 0}]
 
-        @spawn(subcholesky[j], [gemm1[j, 0:j]], inout=[(a[j][j], 0)], placement=[loc_potrf])
+        @spawn(subcholesky[j], [gemm1[j, 0:j]], placement=[loc_potrf])
         def t2():
             # print(f"+POTRF: ({j}) - Requires rw({j},{j})", get_current_devices(), flush=True)
             dblock = clone_here(a[j][j])
@@ -191,7 +191,7 @@ def cholesky_blocked_inplace(a, block_size):
                 if fixed:
                     loc_gemm = gpu(i % ngpus)[{'vcus': 0}]
 
-                @spawn(gemm2[i, j, k], [solve[j, k], solve[i, k], gemm2[i, j, 0:k]], inout=[(a[i][j], 0)], input=[(a[i][k], 0), (a[j][k], 0)], placement=[loc_gemm])
+                @spawn(gemm2[i, j, k], [solve[j, k], solve[i, k], gemm2[i, j, 0:k]], placement=[loc_gemm])
                 def t3():
                     # print(f"+GEMM: ({i}, {j}, {k}) - Requires rw({i},{j}), r({i}, {k}), r({j}, {k})", get_current_devices(), flush=True)
                     out = clone_here(a[i][j])
@@ -215,11 +215,11 @@ def cholesky_blocked_inplace(a, block_size):
             if fixed:
                 loc_trsm = gpu(i % ngpus)[{'vcus': 0}]
 
-            @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
+            @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], placement=[loc_trsm])
             def t4():
                 # print(f"+TRSM: ({i}, {j}) - Requires rw({i},{j}), r({j}, {j})", get_current_devices(), cp.cuda.runtime.getDevice(), flush=True)
-                factor = a[j][j].array
-                panel = a[i][j].array
+                factor = clone_here(a[j][j])
+                panel = clone_here(a[i][j])
 
                 out = ltriang_solve(factor, panel)
                 stream = cp.cuda.get_current_stream()
@@ -271,6 +271,7 @@ def main():
             mempool.free_all_blocks()
 
             if k == 0:
+                print("FIRST ITER")
                 ap_list = list()
                 for i in range(n//block_size):
                     ap_list.append(list())
@@ -279,14 +280,13 @@ def main():
                             ap_list[i].append(cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F'))
                             cp.cuda.Device().synchronize()
-                ap_parray = asarray_batch(ap_list)
             else:
                 rs = TaskSpace("Reset")
                 for i in range(n//block_size):
                     for j in range(n//block_size):
-                        @spawn(rs[i, j], placement=gpu(i % n_gpus), inout=[(ap_parray[i][j], 0)])
+                        @spawn(rs[i, j], placement=gpu(i % n_gpus))
                         def reset():
-                            ap_parray[i][j].array[:] = cp.asarray(
+                            ap_list[i][j] = cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F')
                             cp.cuda.stream.get_current_stream().synchronize()
 
@@ -297,22 +297,20 @@ def main():
             start = time.perf_counter()
 
             # Call Parla Cholesky result and wait for completion
-            await cholesky_blocked_inplace(ap_parray, block_size)
+            await cholesky_blocked_inplace(ap_list, block_size)
             # print(ap_parray)
 
             # print(ap)
             end = time.perf_counter()
 
             ts = TaskSpace("CopyBack")
-            plist = flatten(ap_parray)
-            plist = [(p, 0) for p in plist]
 
-            @spawn(ts[0], placement=cpu, input=plist)
+            @spawn(ts[0], placement=cpu)
             def copy_back():
                 for i in range(n//block_size):
                     for j in range(n//block_size):
                         ap[i*block_size:(i+1)*block_size, j*block_size:(j+1)
-                           * block_size] = ap_parray[i][j].array
+                           * block_size] = cp.asnumpy(ap_list[i][j])
             await ts
 
             if time_zeros:
