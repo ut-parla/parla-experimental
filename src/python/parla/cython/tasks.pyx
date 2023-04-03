@@ -990,7 +990,7 @@ class TerminalEnvironment(TaskEnvironment):
 
         event = self.event_dict[tag]
         if event is not None:
-            event.record(stream)
+            event.record(stream.stream)
 
     def synchronize_event(self, tag='default'):
         """
@@ -1016,7 +1016,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            stream.wait_event(stream)
+            stream.wait_event(stream.stream)
 
     def create_event(self, stream=None, tag='default'):
         """
