@@ -234,14 +234,15 @@ public:
         current_idx = i % ndevices;
 
         // Try to get a non-waiting task
-        // std::cout << "Trying DeviceQueue " << current_idx << " Device: "
-        //<< this->device_queues[current_idx]->get_device()->get_name()
-        //<< std::endl;
+        //std::cout << "Trying DeviceQueue " << current_idx << " Device: "
+        //          << this->device_queues[current_idx]->get_device()->get_name()
+        //          << std::endl;
+
         InnerTask *task = this->device_queues[current_idx]->front();
         if (task != nullptr) {
           // std::cout << "Not null." << std::endl;
-          // std::cout << "Found task: " << task->get_name() << std::endl;
-          this->last_device_idx = current_idx++;
+          //std::cout << "Found task: " << task->get_name() << std::endl;
+          this->last_device_idx = ++current_idx;
           return task;
         }
       }
@@ -262,10 +263,10 @@ public:
    **/
   InnerTask *pop() {
     // std::cout << "PhaseManager::pop" << std::endl;
-    int idx = (this->last_device_idx) % this->ndevices;
-    // std::cout << "Popping from DeviceQueue " << idx << std::endl;
+    int idx = (this->last_device_idx - 1) % this->ndevices;
+    //std::cout << "Popping from DeviceQueue " << idx << std::endl;
     InnerTask *task = this->device_queues[idx]->pop();
-    // std::cout << "Popped task: " << task->get_name() << std::endl;
+    //std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
   }
