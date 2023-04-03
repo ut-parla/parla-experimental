@@ -120,34 +120,6 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    for i in range(gil_accesses):
-        free_sleep(free_time)
-        lock_sleep(gil_time)
-
-    if config.verbose:
-        task_internal_end_t = time.perf_counter()
-        task_internal_duration = task_internal_end_t - task_internal_start_t
-        return task_internal_duration
-
-    return None
-
-
-@synthetic_kernel.variant(gpu)
-def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
-    """
-    A simple synthetic kernel that simulates a task that takes a given amount of time
-    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
-    the total time given.
-    """
-    print("CPU variant is called.", flush=True)
-    if config.verbose:
-        task_internal_start_t = time.perf_counter()
-
-    # Simulate task work
-    kernel_time = total_time / gil_accesses
-    free_time = kernel_time * (1 - gil_fraction)
-    gil_time = kernel_time * gil_fraction
-
     gpu_info = GPUInfo()
     cycles_per_second = gpu_info.get()
     dev_id = get_current_devices()[0]

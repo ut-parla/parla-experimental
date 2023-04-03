@@ -15,20 +15,18 @@ movement_type = MovementType.LAZY_MOVEMENT
 #movement_type = MovementType.EAGER_MOVEMENT
 data_scale = 1
 
-#@benchmark.register(name="SerialScaling")
-@benchmark.option.args_product([(1, 2, 4), (1, 2), (False, True)])
+@benchmark.register(name="SerialScaling")
+@benchmark.option.args_product([(1, 2, 4, 8), (1, 2)]) # TODO(hc): will add data pattern too
 def serial_scaling(state):
     while state:
         max_time = 10
-        task_time = 16000
-        n = 300
+        task_time = 1000
+        n = 1000
         use_gpus = True if state.range(1) == 1 else False
         print("GPU mode:", use_gpus)
         device_type = DeviceType.USER_CHOSEN_DEVICE
         cost = 1.0
         concurrent_tasks = state.range(0)
-        task_placement_mode = state.range(2)
-        
         if not use_gpus:
             cost = 1.0 / concurrent_tasks
             device_type = DeviceType.CPU_DEVICE
@@ -63,11 +61,10 @@ def serial_scaling(state):
 def independent_scaling(state):
     while state:
         max_time = 10
-        task_time = 16000
-        n = 300
-        #use_gpus = True if state.range(1) else False
-        use_gpus = True
-        #print("GPU mode:", use_gpus)
+        task_time = 1000
+        n = 1000
+        use_gpus = True if state.range(1) else False
+        print("GPU mode:", use_gpus)
         device_type = DeviceType.ANY_GPU_DEVICE
         cost = 1.0
         if not use_gpus:
@@ -103,16 +100,14 @@ def independent_scaling(state):
 
 
 #@benchmark.register(name="ReductionScaling")
-#@benchmark.option.args_product([(1, 2, 4), (1), (True)])
-#@benchmark.option.range_multiplier(2)
-#@benchmark.option.range(1, 4)
+@benchmark.option.args_product([(1, 2, 4, 8), (1, 2)]) # TODO(hc): will add data pattern too
 def reduction_scaling(state):
     while state:
         max_time = 100
-        task_time = 16000
-        #use_gpus = True if state.range(1) == 1 else False
-        use_gpus = True
-        #print("GPU mode:", use_gpus)
+        task_time = 1000
+        n = 1000
+        use_gpus = True if state.range(1) == 1 else False
+        print("GPU mode:", use_gpus)
         device_type = DeviceType.USER_CHOSEN_DEVICE
         cost = 1.0
         if not use_gpus:
@@ -127,7 +122,7 @@ def reduction_scaling(state):
         task_configs.add(device_type, TaskConfig(
             task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
         config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
-            fixed_placement=task_placement_mode,
+            fixed_placement=True,
             total_data_width=6250, levels=8, branch_factor=2, task_config=task_configs, use_gpus=use_gpus)
 
         with GraphContext(config, name="reduction") as g:
