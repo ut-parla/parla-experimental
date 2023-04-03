@@ -273,7 +273,6 @@ class PyDeviceManager:
                 cy_device = py_cpu_device.get_cy_device()
                 self.cy_device_manager.register_device(cy_device)
 
-
             num_of_gpus = parsed_configs["GPU"]["num_devices"]
             if num_of_gpus > 0:
                 self.py_registered_archs[gpu] = gpu
