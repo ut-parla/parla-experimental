@@ -9,6 +9,8 @@ from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
 import threading
 from enum import IntEnum, auto
+from parla.common.globals import cupy
+from libc.stdint cimport uintptr_t
 
 #Resource Types
 #TODO: Python ENUM
@@ -109,6 +111,19 @@ cpdef cpu_bsleep_nogil(unsigned int microseconds):
     with nogil:
         cpu_busy_sleep(microseconds)
 
+cpdef gpu_bsleep_gil(dev, t, stream):
+    cdef int c_dev = dev
+    cdef unsigned long c_t = t
+    cdef uintptr_t c_stream = stream.ptr
+    gpu_busy_sleep(c_dev, c_t, c_stream)
+
+cpdef gpu_bsleep_nogil(dev, t, stream):
+    cdef int c_dev = dev
+    cdef unsigned long c_t = t
+    cdef uintptr_t c_stream = stream.ptr
+    with nogil:
+        gpu_busy_sleep(c_dev, c_t, c_stream)
+
 # Define callbacks for C++ to call back into Python
 
 cdef void callback_launch(void* python_scheduler, void* python_task, void*
@@ -151,6 +166,10 @@ cdef class PyInnerTask:
 
         _c_task.set_id(idx)
         _c_task.set_py_task(<void *> python_task)
+
+    cpdef set_py_task(self, python_task):
+        cdef InnerTask* _c_task = self.c_task
+        _c_task.set_py_task(<void*> python_task)
 
     cpdef update_name(self, string name):
         cdef InnerTask* _c_task = self.c_task
@@ -322,6 +341,39 @@ cdef class PyInnerTask:
 
     cpdef set_c_task(self, CyDataMovementTaskAttributes c_attrs):
         self.c_task = c_attrs.get_c_task()
+        
+    cpdef add_stream(self, py_stream):
+        cdef uintptr_t i_stream 
+        cdef InnerTask* c_self = self.c_task
+
+        if isinstance(py_stream, cupy.cuda.Stream):
+            i_stream = <uintptr_t> py_stream.ptr
+            c_self.add_stream(i_stream)
+
+    cpdef add_event(self, py_event):
+        cdef uintptr_t i_event 
+        cdef InnerTask* c_self = self.c_task
+
+        if isinstance(py_event, cupy.cuda.Event):
+            i_event = <uintptr_t> py_event.ptr
+            c_self.add_event(i_event)
+
+    cpdef reset_events_streams(self):
+        cdef InnerTask* c_self = self.c_task
+        c_self.reset_events_streams()
+
+    cpdef handle_runahead_dependencies(self, int sync_type):
+        cdef InnerTask* c_self = self.c_task
+        cdef int c_sync_type = sync_type
+        with nogil:
+            c_self.handle_runahead_dependencies(c_sync_type)
+
+    cpdef synchronize_events(self):
+        cdef InnerTask* c_self = self.c_task
+        with nogil:
+            c_self.synchronize_events()
+        
+
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -474,12 +526,27 @@ cdef class PyInnerScheduler:
         cdef InnerWorker* c_worker = worker.inner_worker
         c_self.enqueue_worker(c_worker)
 
+    #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
         with nogil:
             c_self.task_cleanup(c_worker, c_task, state)
+
+    cpdef task_cleanup_presync(self, PyInnerWorker worker, PyInnerTask task, int state):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        cdef InnerWorker* c_worker = worker.inner_worker
+        cdef InnerTask* c_task = task.c_task
+        with nogil:
+            c_self.task_cleanup_presync(c_worker, c_task, state)
+
+    cpdef task_cleanup_postsync(self, PyInnerWorker worker, PyInnerTask task, int state):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        cdef InnerWorker* c_worker = worker.inner_worker
+        cdef InnerTask* c_task = task.c_task
+        with nogil:
+            c_self.task_cleanup_postsync(c_worker, c_task, state)
 
     cpdef get_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler

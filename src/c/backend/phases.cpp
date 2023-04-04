@@ -28,6 +28,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
+  // std::cout << "Mapper::run" << std::endl;
+
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
   // TODO: Refactor this so its readable without as many nested conditionals
@@ -504,6 +506,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
+
+  //std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);

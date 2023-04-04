@@ -21,6 +21,9 @@ def main():
     if env_enable_nvtx := os.getenv("PARLA_ENABLE_NVTX"):
         cmake_args.append(f"-DPARLA_ENABLE_NVTX={env_enable_nvtx}")
 
+    if env_enable_cuda := os.getenv("PARLA_ENABLE_CUDA"):
+        cmake_args.append(f"-DPARLA_ENABLE_CUDA={env_enable_cuda}")
+
     package_list = find_namespace_packages(where='src/python/')
     print("Found packages:", package_list)
 
