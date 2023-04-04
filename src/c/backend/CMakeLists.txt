@@ -26,8 +26,10 @@ if(PARLA_ENABLE_LOGGING)
     target_compile_definitions(backend PUBLIC PARLA_ENABLE_LOGGING)
 endif(PARLA_ENABLE_LOGGING)
 
+set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 if(PARLA_ENABLE_CUDA)
-    set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    
     set_target_properties(backend PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(backend PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})

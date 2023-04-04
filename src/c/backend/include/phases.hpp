@@ -217,6 +217,7 @@ public:
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
+  size_t get_count();
   size_t get_compute_count();
   size_t get_movement_count();
   PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {

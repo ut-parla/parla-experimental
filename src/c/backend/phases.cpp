@@ -8,6 +8,7 @@
 #include "include/runtime.hpp"
 #include <algorithm>
 #include <random>
+#include <utility>
 
 /**************************/
 // Mapper Implementation
@@ -263,7 +264,9 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       datamove_task->add_assigned_device(device);
 
       datamove_task->device_constraints.emplace(
-          {device->get_global_id(), {0, 0, 1}});
+          std::piecewise_construct,
+          std::forward_as_tuple(device->get_global_id()),
+          std::forward_as_tuple(0, 0, 1));
 
       data_tasks.push_back(datamove_task);
       // Add the created data movement task to a reserved task queue.
@@ -359,6 +362,11 @@ size_t RuntimeReserver::get_compute_count() {
 
 size_t RuntimeReserver::get_movement_count() {
   size_t count = this->movement_tasks->size();
+  return count;
+}
+
+size_t RuntimeReserver::get_count() {
+  size_t count = this->get_compute_count() + this->get_movement_count();
   return count;
 }
 
