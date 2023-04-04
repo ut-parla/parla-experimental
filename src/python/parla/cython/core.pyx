@@ -245,7 +245,6 @@ cdef class PyInnerTask:
         dependencies = []
         for i in range(num_deps):
             c_dependency = <InnerTask*> c_dependencies[i]
-            print("converting to python task: ")
             py_dependency = <PyInnerTask> c_dependency.get_py_task()
             dependencies.append(py_dependency)
 

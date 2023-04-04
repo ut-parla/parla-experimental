@@ -375,6 +375,9 @@ class Stream:
     def create_event(self):
         return None
 
+    def wait_event(self):
+        pass
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
@@ -453,6 +456,9 @@ class CupyStream(Stream):
         with active_device:
             new_event = cupy.cuda.Event(block=True, disable_timing=True, interprocess=False)
         return new_event
+
+    def wait_event(self, event):
+        self._stream.wait_event(event)
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):

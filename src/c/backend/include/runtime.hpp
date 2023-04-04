@@ -465,15 +465,19 @@ public:
   // dependencies will have ran their task bodies (can assume no more
   // modifications)
   void wait_dependency_events() {
+
+    std::cout << "Setting wait triggers for dependencies of " << this->get_name() << std::endl;
+
     // For each dependency, wait on all of its events on all of our streams
     size_t num_dependencies = this->dependencies.size_unsafe();
     for (size_t i = 0; i < num_dependencies; i++) {
       InnerTask *dependency = this->dependencies.at_unsafe(i);
       auto &dependency_events = dependency->events;
+
+      std::cout << "Waiting for event from dependency: " << dependency->get_name() << std::endl;
       size_t num_events = dependency_events.size_unsafe();
       for (size_t j = 0; j < num_events; j++) {
         uintptr_t event_ptr = dependency_events.at_unsafe(j);
-
         // Wait on the event on all of our streams
         size_t num_streams = this->streams.size_unsafe();
         for (size_t k = 0; k < num_streams; k++) {
