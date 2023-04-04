@@ -9,7 +9,11 @@ except ImportError:
     CUPY_ENABLED = False
 
 
-USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == 1)
+USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "0") == "1")
+
+print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
+print("CUPY_ENABLED: ", CUPY_ENABLED)
+
 _global_data_tasks = {}
 
 class SynchronizationType(IntEnum):

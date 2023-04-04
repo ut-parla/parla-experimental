@@ -190,7 +190,7 @@ public:
   PointerList events;
 
   /*Synchronization Type */
-  Task::SynchronizationType sync_type = Task::BLOCKING;
+  Task::SynchronizationType sync_type = Task::NON_BLOCKING;
 
   /*Container for Streams*/
   PointerList streams;

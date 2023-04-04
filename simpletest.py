@@ -1,13 +1,13 @@
 import argparse
 
-from parla import Parla, spawn, TaskSpace, sleep_nogil, parray, gpu_sleep_nogil
-from parla.cython.device_manager import cpu, gpu
+from parla import Parla, spawn, TaskSpace, parray, gpu_sleep_nogil
+from parla.cython.device_manager import gpu
 from parla.common.globals import get_current_devices
 import numpy as np
 # from sleep.core import bsleep
 
 bsleep = gpu_sleep_nogil
-CYCLES = 1000000000
+CYCLES = 10000000000
 
 
 parser = argparse.ArgumentParser()
@@ -20,9 +20,11 @@ def main(T):
                  [1, 2, 4, 5, 6], [1, 2, 4, 5, 6]])
     a = parray.asarray(a, name='A')
 
-    @spawn(T[0], placement=[gpu(0), gpu(1)])
+    @spawn(T[0], placement=[(gpu(0), gpu(1))])
     def task1():
         devices = get_current_devices()
+
+        print(T[0], "running on ", devices)
 
         for device in devices:
             with device:
@@ -36,9 +38,9 @@ def main(T):
 
         for device in devices:
             with device:
-                print("+ 1 HELLO INNER", flush=True)
+                print("+ 0 HELLO INNER", flush=True)
                 bsleep(device.gpu_id, CYCLES, device.stream.stream)
-                print("- 1 HELLO INNER", flush=True)
+                print("- 0 HELLO INNER", flush=True)
 
 
 if __name__ == "__main__":
