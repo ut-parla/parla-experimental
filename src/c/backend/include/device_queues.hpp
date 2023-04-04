@@ -177,7 +177,6 @@ public:
                   << device->get_name() << std::endl;
       }
 
-      this->num_tasks.load(0);
       this->last_device_idx = 0;
     }
 
