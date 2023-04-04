@@ -126,8 +126,8 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     cycles_per_second = gpu_info.get()
     dev_id = get_current_devices()[0]
     stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
 
+    print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         free_sleep(free_time)
         lock_sleep(gil_time)
@@ -163,6 +163,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
 
+    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
         lock_sleep(gil_time)
