@@ -350,6 +350,7 @@ public:
     this->num_unmapped_dependencies.store(1);
     this->num_unreserved_dependencies.store(1);
     this->assigned_devices.clear();
+    //this->reset_events_streams();
   }
 
   /* Return whether the task is ready to run */
@@ -433,62 +434,56 @@ public:
 
   /* Synchronize self */
   void synchronize_events() {
-    this->events.lock();
-    size_t num_events = this->events.size();
+    size_t num_events = this->events.size_unsafe();
     std::cout << "Synchronizing on events: " << num_events << std::endl;
     for (size_t i = 0; i < num_events; i++) {
-      uintptr_t event_ptr = this->events[i];
+      uintptr_t event_ptr = this->events.at_unsafe(i);
       event_synchronize(event_ptr);
     }
-    this->events.unlock();
   }
 
   /*handle_runahead_dependencies*/
   void handle_runahead_dependencies() {
     if (this->sync_type == Task::BLOCKING) {
+      std::cout << "blocking for deps" << this->get_name() << std::endl;
       this->synchronize_dependency_events();
     } else if (this->sync_type == Task::NON_BLOCKING) {
+      std::cout << "waiting for deps" << this->get_name() << std::endl;
       this->wait_dependency_events();
     }
   }
 
   /*Synchronize dependencies*/
   void synchronize_dependency_events() {
-    this->dependencies.lock();
-    size_t num_dependencies = this->dependencies.size();
+    size_t num_dependencies = this->dependencies.size_unsafe();
     for (size_t i = 0; i < num_dependencies; i++) {
       InnerTask *dependency = this->dependencies.at_unsafe(i);
       dependency->synchronize_events();
     }
-    this->dependencies.unlock();
   }
 
   /*Wait dependencies*/
   // TODO(wlr): This locking is overkill. Some of these aren't even necessary.
+  // Comment(wlr): Removing all locks. By the time this executes all dependencies will have ran their task bodies (can assume no more modifications)
   void wait_dependency_events() {
     // For each dependency, wait on all of its events on all of our streams
-    this->dependencies.lock();
-    size_t num_dependencies = this->dependencies.size();
+    size_t num_dependencies = this->dependencies.size_unsafe();
     for (size_t i = 0; i < num_dependencies; i++) {
       InnerTask *dependency = this->dependencies.at_unsafe(i);
       auto &dependency_events = dependency->events;
-      dependency_events.lock();
-      size_t num_events = dependency_events.size();
+      size_t num_events = dependency_events.size_unsafe();
       for (size_t j = 0; j < num_events; j++) {
         uintptr_t event_ptr = dependency_events.at_unsafe(j);
 	
         // Wait on the event on all of our streams
-        this->streams.lock();
-	std::cout << "Synchronizing this event on stream: " << this->streams.size() << std::endl;
-        for (size_t k = 0; k < this->streams.size(); k++) {
+	size_t num_streams = this->streams.size_unsafe();
+	std::cout << "Synchronizing this event on stream: " << num_streams << std::endl;
+        for (size_t k = 0; k < num_streams; k++) {
           uintptr_t stream_ptr = this->streams.at_unsafe(k);
           event_wait(event_ptr, stream_ptr);
         }
-        this->streams.unlock();
       }
-      dependency_events.unlock();
     }
-    this->dependencies.unlock();
   }
 
   /* Get python task */
