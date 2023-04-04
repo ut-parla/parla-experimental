@@ -15,6 +15,9 @@ from collections import defaultdict
 
 # Synthetic Graphs ENUMS
 
+# Assume that a system has 4 gpus.
+num_gpus = 4
+
 
 class DeviceType(IntEnum):
     """
@@ -27,6 +30,7 @@ class DeviceType(IntEnum):
     GPU_1 = 2
     GPU_2 = 3
     GPU_3 = 4
+    USER_CHOSEN_DEVICE = 5
 
 
 class LogState(IntEnum):
@@ -157,8 +161,6 @@ class TaskConfigs:
 
         device_id = tuple(int(d) for d in device_id)
 
-        # print(device_id)
-
         self.configurations[device_id] = TaskConfig
 
     def remove(self, device_id):
@@ -171,9 +173,11 @@ class GraphConfig:
     Configures information about generating the synthetic task graph.
     """
     task_config: TaskConfigs = None
-    use_gpus: bool = False
     fixed_placement: bool = False
     data_pattern: int = DataInitType.NO_DATA
+    total_data_width: int = 2**23
+    data_partitions: int = 1
+    num_gpus: int = 4
 
 
 @dataclass
@@ -196,11 +200,11 @@ class SerialConfig(GraphConfig):
 
 
 @dataclass
-class TreeConfig(GraphConfig):
+class ReductionConfig(GraphConfig):
     """
-    Used to configure the generation of a tree synthetic task graph.
+    Used to configure the generation of a reduction synthetic task graph.
     """
-    levels: int = 1  # Number of levels in the tree
+    levels: int = 8  # Number of levels in the tree
     branch_factor: int = 2  # Number of children per node
 
 
@@ -226,6 +230,8 @@ class RunConfig:
     gil_accesses: int = None
     movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
     logfile: str = "testing.blog"  # The log file location
+    do_check: bool = False  # If this is true, validate configuration/execution
+    num_gpus: int = 4 # TODO(hc): it is duplicated with GrpahConfig.
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')
@@ -277,17 +283,16 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
 
         # Read the initial data configuration
         data_info = lines.pop(0)
-        data_info = data_info.split(',')
-        # print(data_info)
+        data_info = data_info.split('|')
         idx = 0
         for data in data_info:
-            info = data.strip().strip("{}").strip().split(":")
+            info = data.strip().strip("()").strip().split(",")
             size = int(info[0].strip())
             location = int(info[1].strip())
             data_config[idx] = DataInfo(idx, size, location)
             idx += 1
 
-        # print("Data Config", data_config)
+        #print("Data Config", data_config)
         # Read the task graph
         for line in lines:
 
@@ -443,6 +448,12 @@ def get_task_properties(line: str):
             prop_name, prop_value = prop.strip().split(':')
             properties[prop_name] = prop_value.strip()
 
+        # If ".dm." is in the task name, ignore it since
+        # this is a data movement task.
+        # TODO(hc): we may need to verify data movemnt task too.
+        if ".dm." in properties['name']:
+            continue
+
         properties['name'] = convert_task_id(
             properties['name'], properties['instance'])
 
@@ -482,6 +493,11 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         if line_type == LogState.START_TASK:
             start_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
             task_properties = task_properties[0]
 
             task_start_times[task_properties['name']] = start_time
@@ -505,6 +521,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.COMPLETED_TASK:
             end_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             task_properties = task_properties[0]
 
             current_name = task_properties['name']
@@ -517,6 +539,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
 
         elif line_type == LogState.NOTIFY_DEPENDENTS:
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             notifying_task = task_properties[0]
             current_name = notifying_task['name']
             current_state = notifying_task['get_state']
@@ -533,6 +561,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.ASSIGNED_TASK:
             assigned_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             task_properties = task_properties[0]
 
             current_name = task_properties['name']
@@ -544,6 +578,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
 
         elif line_type == LogState.ADDING_DEPENDENCIES:
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             current_task = task_properties[0]['name']
             current_dependencies = []
 
@@ -569,10 +609,21 @@ def generate_serial_graph(config: SerialConfig) -> str:
 
     graph = ""
 
+    data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = "{1 , -1}\n"
+    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        config.data_partitions = 1 
+        single_data_block_size = (config.total_data_width // config.data_partitions)
+        for i in range(config.data_partitions):
+            data_config_string += f"{single_data_block_size , -1}"
+            if i+1 < config.data_partitions:
+                data_config_string += f" | "
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        raise NotImplementedError("[Serial] Data patterns not implemented")
     else:
-        raise NotImplementedError("Data patterns not implemented")
+        raise ValueError(f"[Serial] Not supported data configuration: {config.data_pattern}")
+    data_config_string += "\n";
 
     if task_config is None:
         raise ValueError("Task config must be specified")
@@ -581,16 +632,20 @@ def generate_serial_graph(config: SerialConfig) -> str:
     for device_id, task_config in configurations.items():
         last_flag = 1 if device_id == list(
             configurations.keys())[-1] else 0
-
+        if config.fixed_placement:
+            device_id = DeviceType.GPU_0
+        # Othrewise, expect any cpu or any gpu.
         configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
 
         if last_flag == 0:
             configuration_string += ", "
 
     graph += data_config_string
-    for i in range(config.steps):
-
-        for j in range(config.chains):
+    for i in range(config.steps): # height
+        inout_data_index = i
+        if config.data_pattern == DataInitType.OVERLAPPED_DATA:
+            inout_data_index = 0
+        for j in range(config.chains): # width
             dependency_string = ""
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
@@ -600,37 +655,136 @@ def generate_serial_graph(config: SerialConfig) -> str:
                 if k < dependency_limit:
                     dependency_string += " : "
 
-            graph += f"{i, j} |  {configuration_string} | {dependency_string} | \n"
+            graph += f"{i, j} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
 
+    return graph
+
+
+def generate_reduction_graph(config: ReductionConfig) -> str:
+    task_config = config.task_config
+    num_gpus = config.num_gpus
+    configurations = task_config.configurations
+
+    graph = ""
+
+    if task_config is None:
+        raise ValueError("Task config must be specified")
+
+    data_config_string = ""
+    if config.data_pattern == DataInitType.NO_DATA:
+        data_config_string = "{1 : -1}\n"
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        raise NotImplementedError("[Reduction] Data patterns not implemented")
+    else:
+        single_data_block_size = config.total_data_width
+        for i in range(config.branch_factor**config.levels):
+            if i > 0:
+                data_config_string += " | "
+            data_config_string += f"{single_data_block_size, -1}"
+    data_config_string += "\n"
+    graph += data_config_string
+
+    post_configuration_string = ""
+
+    # TODO(hc): when this was designed, we considered multidevice placement.
+    #           but for now, we only consider a single device placement and so,  
+    #           follow the old generator's graph generation rule.
+
+    device_id = DeviceType.ANY_GPU_DEVICE
+    for config_device_id, task_config in configurations.items():
+        last_flag = 1 if config_device_id == list(
+            configurations.keys())[-1] else 0
+
+        post_configuration_string += f"{task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+        # TODO(hc): This should be refined.
+        #           If users did not set "fixed", then it should be any cpu or gpu.
+        device_id = config_device_id[-1]
+
+        if last_flag == 0:
+            post_configuration_string += ", "
+
+    reverse_level = 0
+    global_idx = 0
+    for i in range(config.levels, -1, -1):
+        total_tasks_in_level = config.branch_factor ** i
+        segment = total_tasks_in_level / num_gpus
+        for j in range(total_tasks_in_level):
+            if reverse_level > 0:
+                dependency_string  = " "
+                for k in range(config.branch_factor):
+                    dependency_string += f"{reverse_level-1, config.branch_factor*j + k}"
+                    if k+1 < config.branch_factor:
+                        dependency_string += " : "
+            else:
+                dependency_string = " "
+
+
+            if reverse_level > 0:
+                l = 0
+                read_dependency = " "
+                targets = [config.branch_factor**(reverse_level-1)]
+                for k in targets:
+                    read_dependency += f"{(config.branch_factor**(reverse_level))*j+k}"
+                    l += 1
+                    if l < len(targets):
+                        read_dependency += " , "
+                write_dependency = f"{config.branch_factor**(reverse_level)*j}"
+            else:
+                read_dependency = " "
+                write_dependency = f"{global_idx}"
+            if config.fixed_placement:
+                # USER_CHOSEN_DEVICE acts as an offset.
+                device_id = int(DeviceType.USER_CHOSEN_DEVICE + j // segment)
+            else:
+                assert device_id == DeviceType.CPU_DEVICE or device_id == DeviceType.ANY_GPU_DEVICE
+            pre_configuration_string = f"{{ {device_id} : "
+            configuration_string = pre_configuration_string + post_configuration_string
+            graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
+            global_idx += 1
+        reverse_level += 1    
     return graph
 
 
 def generate_independent_graph(config: IndependentConfig) -> str:
     task_config = config.task_config
     configurations = task_config.configurations
+    num_gpus = config.num_gpus
 
     graph = ""
 
+    data_config_string = ""
+    # TODO(hc): for now, assume that data allocation starts from cpu.
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = f"{1 , -1}"
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+        single_data_block_size = config.total_data_width
+        config.data_partitions = 64
+        for i in range(config.data_partitions):
+            data_config_string += f"{single_data_block_size , -1}"
+            if i+1 < config.data_partitions:
+                data_config_string += f" | "
+    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        raise NotImplementedError("[Independent] Data patterns not implemented")
+    else:
+        raise ValueError("[Independent] Data patterns not implemented")
+    data_config_string += "\n"
 
     if task_config is None:
         raise ValueError("Task config must be specified")
 
-    configuration_string = ""
-    for device_id, task_config in configurations.items():
-        last_flag = 1 if device_id == list(
-            configurations.keys())[-1] else 0
-
-        configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
-
-        if last_flag == 0:
-            configuration_string += ", "
-
     graph += data_config_string
     for i in range(config.task_count):
-        graph += f"{i} |  {configuration_string} | | \n"
-
+        read_data_block = i % config.data_partitions
+        configuration_string = ""
+        for device_id, task_config in configurations.items():
+            last_flag = 1 if device_id == list(
+                configurations.keys())[-1] else 0
+            if config.fixed_placement:
+                device_id = int(DeviceType.USER_CHOSEN_DEVICE + i % num_gpus)
+            configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+            if last_flag == 0:
+                configuration_string += ", "
+        graph += f"{i} |  {configuration_string} | | {read_data_block} : :\n"
     return graph
 
 
