@@ -173,11 +173,11 @@ class GraphConfig:
     Configures information about generating the synthetic task graph.
     """
     task_config: TaskConfigs = None
-    use_gpus: bool = False
     fixed_placement: bool = False
     data_pattern: int = DataInitType.NO_DATA
     total_data_width: int = 2**23
     data_partitions: int = 1
+    num_gpus: int = 4
 
 
 @dataclass
@@ -231,6 +231,7 @@ class RunConfig:
     movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
     logfile: str = "testing.blog"  # The log file location
     do_check: bool = False  # If this is true, validate configuration/execution
+    num_gpus: int = 4 # TODO(hc): it is duplicated with GrpahConfig.
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')
@@ -705,6 +706,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
 def generate_independent_graph(config: IndependentConfig) -> str:
     task_config = config.task_config
     configurations = task_config.configurations
+    num_gpus = config.num_gpus
 
     graph = ""
 
@@ -736,7 +738,7 @@ def generate_independent_graph(config: IndependentConfig) -> str:
             last_flag = 1 if device_id == list(
                 configurations.keys())[-1] else 0
             if config.fixed_placement:
-                device_id = int(DeviceType.USER_CHOSEN_DEVICE + i % 4)
+                device_id = int(DeviceType.USER_CHOSEN_DEVICE + i % num_gpus)
             configuration_string += f"{{ {device_id} : {task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
             if last_flag == 0:
                 configuration_string += ", "

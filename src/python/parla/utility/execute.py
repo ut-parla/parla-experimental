@@ -25,6 +25,7 @@ from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla import gpu_sleep_nogil
+from parla.cython.core import gpu_bsleep_nogil
 import numpy as np
 
 from fractions import Fraction
@@ -40,8 +41,8 @@ def make_parrays(data_list):
 class GPUInfo():
 
     #approximate average on frontera RTX
-#cycles_per_second = 1919820866.3481758
-    cycles_per_second = 867404498.3008006
+    cycles_per_second = 1919820866.3481758
+    #cycles_per_second = 867404498.3008006
 #cycles_per_second = 47994628114801.04
 
     def update(self, cycles):
@@ -51,7 +52,7 @@ class GPUInfo():
         return self.cycles_per_second
 
 
-def get_placement_set_from(ps_str_set):
+def get_placement_set_from(ps_str_set, num_gpus):
     ps_set = []
     for ps_str in ps_str_set[0]:
         dev_type = int(ps_str)
@@ -69,7 +70,7 @@ def get_placement_set_from(ps_str_set):
             ps_set.append(gpu(3))
         elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
             # TODO(hc): just assume that we have 4 gpus.
-            gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % 4
+            gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
             ps_set.append(gpu(gpu_idx))
         else:
             raise ValueError("Does not support this placement:", dev_type)
@@ -157,12 +158,13 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     gpu_info = GPUInfo()
     cycles_per_second = gpu_info.get()
     dev_id = get_current_devices()[0]
-    stream = get_current_stream()
+    parla_cuda_stream = get_current_stream()
     ticks = int((total_time/(10**6))*cycles_per_second)
 
+    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
+
     for i in range(gil_accesses):
-#gpu_bsleep_nogil(dev_id, ticks, stream)
-        free_sleep(free_time)
+        gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -173,7 +175,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     return None
 
 
-def create_task_no_data(task, taskspaces, config=None, data=None):
+def create_task_no_data(task, taskspaces, config, data=None):
 
     try:
         # Task ID
@@ -185,9 +187,10 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
+        num_gpus = config.num_gpus
         placement_key = task.task_runtime.keys()
         placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str)
+        placement_set = get_placement_set_from(placement_set_str, num_gpus)
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
@@ -244,9 +247,10 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
+        num_gpus = config.num_gpus
         placement_key = task.task_runtime.keys()
         placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str)
+        placement_set = get_placement_set_from(placement_set_str, num_gpus)
 
         # In/out/inout data information
         # read: list, write: list, read_write: list
@@ -332,9 +336,10 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
+        num_gpus = config.num_gpus
         placement_key = task.task_runtime.keys()
         placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str)
+        placement_set = get_placement_set_from(placement_set_str, num_gpus)
 
         # In/out/inout data information
         # read: list, write: list, read_write: list
@@ -379,10 +384,8 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
-        '''
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
-        '''
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
