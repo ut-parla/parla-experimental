@@ -301,7 +301,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
-                        if final_state == tasks.TaskRunahead:
+                        if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
 
                         active_task.state = final_state
