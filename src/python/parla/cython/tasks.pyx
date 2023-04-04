@@ -696,7 +696,7 @@ class TaskEnvironment:
         """
         return self._device.device
 
-    def has(device_type):
+    def has(self, device_type):
         """
         Returns True if this environment has a device of the given type.
         """
