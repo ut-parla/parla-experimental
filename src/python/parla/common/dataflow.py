@@ -89,7 +89,7 @@ class Dataflow:
                         for parray in parray_list:
                             if isinstance(parray, PArray):
                                 # Skip CuPy or NumPy arrays.
-                                _out.element((i, parray))
+                                _out.append((parray, i))
                 else:
                     raise TypeError("IN/OUT/INOUT should be either a tuple of PArray",
                                     "and its partition number or CrossPyArray")
