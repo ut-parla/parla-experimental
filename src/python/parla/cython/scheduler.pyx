@@ -300,7 +300,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
-                        final_stae = tasks.TaskCompleted(TaskRunahead.result)
+                        final_state = tasks.TaskCompleted(final_state.return_value)
                         active_task.state = final_state
                         core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
