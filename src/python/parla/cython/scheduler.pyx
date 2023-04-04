@@ -200,11 +200,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
                         self.task.instantiate(self.task_attrs, self.scheduler)
-                        if USE_PYTHON_RUNAHEAD:
+                        #if USE_PYTHON_RUNAHEAD:
                             #This is a back up for testing
                             #Need to keep the python object alive
                             #Currently this is never cleaned up
-                            _global_data_tasks[id(self.task)] = self.task
+                        #comment(wlr): Need this is all cases currently. FIXME: Add stream/event creation in C++ so python isn't the owner.
+                        _global_data_tasks[id(self.task)] = self.task
 
                     nvtx.pop_range(domain="Python Runtime")
 
