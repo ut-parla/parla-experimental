@@ -10,17 +10,21 @@ from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
+from libc.stdint cimport uintptr_t
 
 cdef extern from "include/resources.hpp" nogil:
     cdef enum Resource:
         MEMORY = 0,
         VCUS = 1,
 
+cdef extern from "include/utility.hpp" nogil:
+    void cpu_busy_sleep(unsigned int microseconds)
+    void gpu_busy_sleep(const int device, const unsigned long cycles,
+                    uintptr_t stream_ptr)
+
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
-
-    void cpu_busy_sleep(unsigned int microseconds)
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
