@@ -383,7 +383,7 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
 
                     for i in range(len(types)):
                         if check[i]:
-                            data = types[i].strip().split(":")
+                            data = types[i].strip().split(",")
                             if not data[0].isspace():
                                 task_data[i] = [0 for _ in range(len(data))]
 

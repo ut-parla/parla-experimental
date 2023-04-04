@@ -54,12 +54,14 @@ class GPUInfo():
 
 def get_placement_set_from(ps_str_set, num_gpus):
     ps_set = []
+    # TODO(hc): This assumes a single device task.
     for ps_str in ps_str_set[0]:
         dev_type = int(ps_str)
         if dev_type == DeviceType.ANY_GPU_DEVICE:
             ps_set.append(gpu)
         elif dev_type == DeviceType.CPU_DEVICE:
             ps_set.append(cpu)
+        # TODO(hc): just assume that system has 4 gpus.
         elif dev_type == DeviceType.GPU_0:
             ps_set.append(gpu(0))
         elif dev_type == DeviceType.GPU_1:
@@ -69,7 +71,6 @@ def get_placement_set_from(ps_str_set, num_gpus):
         elif dev_type == DeviceType.GPU_3:
             ps_set.append(gpu(3))
         elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
-            # TODO(hc): just assume that we have 4 gpus.
             gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
             ps_set.append(gpu(gpu_idx))
         else:
@@ -216,8 +217,11 @@ def create_task_no_data(task, taskspaces, config, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-        #      " placement:", placement_set)
+        '''
+        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+              " placement:", placement_set)
+        '''
+
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
@@ -307,6 +311,7 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
             " placement:", placement_set)
         """
 
+        # TODO(hc): Add data checking.
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
         async def task_func():
             if config.verbose:
@@ -384,8 +389,10 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
+        '''
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
+        '''
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:

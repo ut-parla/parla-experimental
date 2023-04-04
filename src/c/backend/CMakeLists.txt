@@ -11,7 +11,7 @@ else()
     file(GLOB BACKEND_SRC ${BACKEND_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/impl_none/*.cpp)
 endif(PARLA_ENABLE_CUDA)
 
-add_library(backend SHARED ${BACKEND_SRC})
+add_library(backend STATIC ${BACKEND_SRC})
 
 if(PARLA_ENABLE_NVTX)
     message(STATUS "Enabling NVTX support.")
