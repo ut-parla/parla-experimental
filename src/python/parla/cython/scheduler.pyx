@@ -299,6 +299,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
+                        final_stae = tasks.TaskCompleted(TaskRunahead.result)
+                        active_task.state = final_state
+                        core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
