@@ -6,6 +6,7 @@ from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
 from parla.common.globals import SynchronizationType as SyncType
+from parla.common.globals import default_sync
 
 import inspect
 
@@ -61,7 +62,7 @@ def spawn(task=None,
           inout: List[Tuple[PArray, int]] = None,
           vcus=1000,
           memory=0,
-          runahead=SyncType.NON_BLOCKING
+          runahead=default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
