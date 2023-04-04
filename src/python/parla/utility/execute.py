@@ -90,7 +90,7 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
         elif data_location > DeviceType.ANY_GPU_DEVICE:
             import cupy as cp
             with cp.cuda.Device(data_location - 1) as device:
-                data = np.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
+                data = cp.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
                 device.synchronize()
                 data_list.append(data)
         else:
@@ -216,8 +216,10 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
+        '''
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
               " placement:", placement_set)
+        '''
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
