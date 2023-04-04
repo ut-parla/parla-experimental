@@ -13,7 +13,6 @@ from collections import defaultdict
 import os 
 from enum import IntEnum
 
-
 cdef class CyDevice:
     """
     A bridge between pure Python and C++ device objects.
@@ -96,6 +95,9 @@ class PyDevice:
         self._device = self
         self._device_id = dev_id
 
+        self._device = self 
+        self._global_id = None 
+
     def __dealloc__(self):
         del self._cy_device
 
@@ -105,6 +107,22 @@ class PyDevice:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
         #print(f"Exited device, {self.get_name()}, context", flush=True)
+
+    @property
+    def id(self):
+        return self._dev_id 
+    
+    @id.setter
+    def id(self, new_id):
+        self._dev_id = new_id
+
+    @property
+    def global_id(self):
+        return self._global_id
+    
+    @global_id.setter
+    def global_id(self, new_id):
+        self._global_id = new_id
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
@@ -352,7 +370,13 @@ class Stream:
         return self._stream
 
     def synchronize(self):
-        print("Synchronizing stream", flush=True)
+        pass
+
+    def create_event(self):
+        return None
+
+    def wait_event(self):
+        pass
 
 class CupyStream(Stream):
 
@@ -424,8 +448,17 @@ class CupyStream(Stream):
         return self._stream
 
     def synchronize(self):
-        print("Synchronizing stream", flush=True)
+        #print("Synchronizing stream", flush=True)
         self._stream.synchronize()
+
+    def create_event(self):
+        active_device = cupy.cuda.Device(self._device_id)
+        with active_device:
+            new_event = cupy.cuda.Event(block=True, disable_timing=True, interprocess=False)
+        return new_event
+
+    def wait_event(self, event):
+        self._stream.wait_event(event)
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):

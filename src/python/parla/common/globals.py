@@ -9,6 +9,37 @@ except ImportError:
     CUPY_ENABLED = False
 
 
+USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
+PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
+
+print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
+print("CUPY_ENABLED: ", CUPY_ENABLED)
+
+_global_data_tasks = {}
+
+
+class SynchronizationType(IntEnum):
+    """
+    This class declares the type (if any) of runeahead synchronization
+    """
+    NONE = 0
+    BLOCKING = 1
+    NON_BLOCKING = 2
+    USER = 3
+
+
+SYNC_FLAG = os.getenv("PARLA_DEFAULT_SYNC", "0")
+
+if SYNC_FLAG == "0":
+    default_sync = SynchronizationType.NONE
+elif SYNC_FLAG == "1":
+    default_sync = SynchronizationType.BLOCKING
+else:
+    default_sync = SynchronizationType.NON_BLOCKING
+
+print("DEFAULT SYNC: ", default_sync)
+
+
 class DeviceType(IntEnum):
     """
     This class declares device types.

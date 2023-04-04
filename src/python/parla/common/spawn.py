@@ -5,6 +5,8 @@ from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
+from parla.common.globals import SynchronizationType as SyncType
+from parla.common.globals import default_sync
 
 import inspect
 
@@ -49,15 +51,19 @@ def _make_cell(val):
 # @profile
 def spawn(task=None,
           dependencies=[],
-          # TODO(hc): Do we support TaskID? (IIRC, it will be removed?)
           # This collection does not contain Union anymore, which was used by the
           # old Parla, since we now allow support {arch, arch, arch} placement
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
           # TODO(hc): This should be PArray, not Any.
-          input: List[Tuple[PArray, int]] = None, output: List[Tuple[PArray, int]] = None,
-          inout: List[Tuple[PArray, int]] = None, vcus=1000, memory=0):
+          input: List[Tuple[PArray, int]] = None,
+          output: List[Tuple[PArray, int]] = None,
+          inout: List[Tuple[PArray, int]] = None,
+          vcus=1000,
+          memory=0,
+          runahead=default_sync
+          ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
     scheduler = get_scheduler_context().scheduler
@@ -77,6 +83,7 @@ def spawn(task=None,
         nonlocal dependencies
         nonlocal task
         nonlocal placement
+        nonlocal runahead
 
         if not isinstance(vcus, int):
             # Default behavior the same as Parla 0.2.
@@ -113,13 +120,15 @@ def spawn(task=None,
         device_reqs = scheduler.get_device_reqs_from_placement(placement)
         task.set_device_reqs(device_reqs)
 
-        dataflow = Dataflow(input, output, inout) 
+        dataflow = Dataflow(input, output, inout)
         task.set_scheduler(scheduler)
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
                          constraints=vcus,
-                         dataflow=dataflow)
+                         dataflow=dataflow,
+                         runahead=runahead
+                         )
 
         scheduler.spawn_task(task)
         # scheduler.run_scheduler()

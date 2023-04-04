@@ -241,61 +241,37 @@ void InnerScheduler::enqueue_worker(InnerWorker *worker) {
   this->workers.enqueue_worker(worker);
 }
 
-void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
-                                  int state) {
-  NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
+                                          int state) {
+  NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
 
-  // TODO: Rethink this. Need to split and have better state names
-
-  // std::cout << "Task Cleanup: " << task->name << " " << state << std::endl;
-
-  /* Task::States are: spawned, mapped, reserved, ready, running, complete */
-
-  // This will be called by EVERY thread that finishes a task
-  // Everything in here needs to be thread safe
-
-  // TODO: for runahead, we need to do this AFTER the task body is complete
-  //      Need to add back to the pool after notify_dependents
-  //      Movin this below but leaving my original placement here for now
-  // this->resources->increase(task->resources);
-  // this->launcher->num_running_tasks--;
-  // this->workers.enqueue_worker(worker);
-
-  // std::cout << "Task Cleanup: " << task->name << " " << state << std::endl;
-
-  this->launcher->num_running_tasks--;
+  //std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
+  //          << std::endl;
 
   // std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
-    // When a task completes we need to notify all of its dependents
-    // and enqueue them if they are ready
 
-    // std::cout << "Task Complete: " << task->name << std::endl;
-
-    // Reset all runtime counters and state of the continuation task.
+    // Notify dependents that they can be scheduled
     auto &enqueue_buffer = worker->enqueue_buffer;
     task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {
       this->enqueue_tasks(enqueue_buffer);
       enqueue_buffer.clear();
     }
+  }
+}
 
-    // TODO: Wait on CUDA events here for runahead
-    // TODO: Should probably split this into two functions here
-    //      Then they can be called separately in Python
+void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
+                                           int state) {
+  NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
 
-    // We also need to decrease the number of active tasks
-    // If this is the last active task, the scheduler is stopped
+  //std::cout << "Task Cleanup Post Sync" << std::endl;
+
+  if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();
-
-    // TODO: Move this when we do runahead
     task->set_state(Task::COMPLETED);
   }
-
-  // TODO: for runahead, we need to do this AFTER the task body is complete
-  //      Need to add back to the pool after notify_dependents
-  worker->remove_task();
 
   // Release all resources for this task on all devices
   for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
@@ -321,20 +297,28 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     }
   }
 
+  // Clear all assigned streams from the task
+  task->streams.clear();
+  this->launcher->num_running_tasks--;
+  worker->remove_task();
+
   if (state == Task::RUNNING) {
-    // std::cout << "Task Continuation (C++) " << task->name << " " << state
-    //          << std::endl;
-    //  Do continuation handling
-    //  TODO:
-    //   - make sure state ids match
-    //   - add and process dependencies
-    //   - if true, enqueue task
     task->reset();
     auto status = task->process_dependencies();
     this->enqueue_task(task, status);
   }
 
   this->enqueue_worker(worker);
+}
+
+void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
+                                  int state) {
+  NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+
+  task_cleanup_presync(worker, task, state);
+  // synchronize task enviornment
+  task->synchronize_events();
+  task_cleanup_postsync(worker, task, state);
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }

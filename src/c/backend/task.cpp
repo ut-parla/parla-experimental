@@ -316,7 +316,6 @@ std::vector<void *> InnerTask::get_dependencies() {
   for (size_t i = 0; i < this->dependencies.size_unsafe(); i++) {
     dependency_list.push_back(this->dependencies.get_unsafe(i));
   }
-
   this->dependencies.unlock();
   return dependency_list;
 }

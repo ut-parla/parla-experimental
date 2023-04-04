@@ -37,4 +37,8 @@ inline void cpu_busy_sleep(unsigned int micro) {
   } while (elapsed.count() < micro);
 }
 
+void event_synchronize(uintptr_t event_ptr);
+void event_wait(uintptr_t event_ptr, uintptr_t stream_ptr);
+void stream_synchronize(uintptr_t stream_ptr);
+
 #endif // PARLA_CUDA_UTILITY_H
