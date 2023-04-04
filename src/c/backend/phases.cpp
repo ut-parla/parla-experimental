@@ -262,7 +262,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       auto device = task->get_assigned_devices()[i];
       datamove_task->add_assigned_device(device);
 
-      datamove_task->device_constraints.insert(
+      datamove_task->device_constraints.emplace(
           {device->get_global_id(), {0, 0, 1}});
 
       data_tasks.push_back(datamove_task);

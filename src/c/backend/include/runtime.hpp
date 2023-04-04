@@ -20,7 +20,6 @@ using namespace std::chrono_literals;
 #include "containers.hpp"
 
 #include "device_manager.hpp"
-#include "gpu_utility.hpp"
 #include "parray.hpp"
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
