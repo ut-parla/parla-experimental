@@ -50,7 +50,7 @@ globally. For now we assume all devices have the same resource sets in all
 phases.
 
 */
-inline constexpr std::array resource_names = {"memory"sv, "vcu"sv, "ce"sv};
+inline constexpr std::array resource_names = {"memory"sv, "vcu"sv, "copy"sv};
 // inline std::unordered_map<std::string, Resource> resource_map = {
 //     {resource_names[Resource::MEMORY], Resource::MEMORY},
 //     {resource_names[Resource::VCU], Resource::VCU}};
@@ -202,6 +202,9 @@ public:
   inline void increase(const ResourcePool &other) {
     if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
+        std::cout << "increase resource: " << resource_names[i] << " "
+                  << this->resources[i].load() << " "
+                  << other.resources[i].load() << std::endl;
         this->resources[i].fetch_add(other.resources[i].load());
       }
     } else if constexpr (category == ResourceCategory::Persistent) {
@@ -217,8 +220,6 @@ public:
     } else if constexpr (category == ResourceCategory::Movement) {
       for (auto i = 0; i < movement_resources.size(); i++) {
         const int idx = static_cast<int>(movement_resources[i]);
-        std::cout << "increase_movement: " << this->resources[idx].load() << " "
-                  << other.resources[idx].load() << std::endl;
         this->resources[idx].fetch_add(other.resources[idx].load());
       }
     }
