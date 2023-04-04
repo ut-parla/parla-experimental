@@ -1,5 +1,5 @@
 import argparse
-
+import time
 from parla import Parla, spawn, TaskSpace, parray, gpu_sleep_nogil
 from parla.cython.device_manager import gpu
 from parla.common.globals import get_current_devices
@@ -32,7 +32,7 @@ def main(T):
                 bsleep(device.gpu_id, CYCLES, device.stream.stream)
                 print("- 1 HELLO INNER", flush=True)
 
-    @spawn(T[1], dependencies=[T[0]], placement=[gpu(2)])
+    @spawn(T[1], dependencies=[T[0]], placement=[gpu(2)], runahead=2)
     def task2():
         devices = get_current_devices()
 
