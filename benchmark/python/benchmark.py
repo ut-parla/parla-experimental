@@ -20,7 +20,7 @@ num_gpus = int(sys.argv[1])
 fixedp = True
 if sys.argv[2] == "fixed-placement":
     fixedp = True
-elif sys.argv[2] == "automatic":
+elif sys.argv[2] == "policy":
     fixedp = False
  
 movement_type = MovementType.LAZY_MOVEMENT
