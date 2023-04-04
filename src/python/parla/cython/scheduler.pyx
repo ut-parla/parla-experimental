@@ -224,6 +224,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         with device_context as env:
                             active_task.run()
 
+                        device_context.finalize()
+
                         Locals.pop_task()
 
                         #print(active_task.name, " is done")

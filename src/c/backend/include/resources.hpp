@@ -14,12 +14,17 @@ using namespace std::literals::string_view_literals; // Enables sv suffix only
 
 using Resource_t = int64_t;
 
-enum class Resource { Memory = 0, VCU = 1, MAX = 2 };
+// FIXME: Limiting copies should be the property of a topology object not a
+// resource pool. It is shared between devices. Need to get the source at
+// runtime.
+
+enum class Resource { Memory = 0, VCU = 1, Copy = 2, MAX = 3 };
 enum class ResourceCategory {
   All = 0,
   Persistent = 1,
   NonPersistent = 2,
-  MAX = 3
+  Movement = 3,
+  MAX = 4
 };
 
 // TODO(wlr): ResourcePool should have template specializations on the device
@@ -45,7 +50,7 @@ globally. For now we assume all devices have the same resource sets in all
 phases.
 
 */
-inline constexpr std::array resource_names = {"memory"sv, "vcu"sv};
+inline constexpr std::array resource_names = {"memory"sv, "vcu"sv, "ce"sv};
 // inline std::unordered_map<std::string, Resource> resource_map = {
 //     {resource_names[Resource::MEMORY], Resource::MEMORY},
 //     {resource_names[Resource::VCU], Resource::VCU}};
@@ -54,6 +59,7 @@ inline constexpr std::array<Resource, 1> persistent_resources = {
     Resource::Memory};
 inline constexpr std::array<Resource, 1> non_persistent_resources = {
     Resource::VCU};
+inline constexpr std::array<Resource, 1> movement_resources = {Resource::Copy};
 
 /**
  * @brief A pool of resources, allows for comparisons and updates of current
@@ -76,6 +82,12 @@ public:
       //  std::cout << this->resources[i].load() << std::endl;
       //}
   };
+
+  ResourcePool(V memory, V vcu, V copy) {
+    this->resources[static_cast<int>(Resource::Memory)].exchange(memory);
+    this->resources[static_cast<int>(Resource::VCU)].exchange(vcu);
+    this->resources[static_cast<int>(Resource::Copy)].exchange(copy);
+  }
 
   ResourcePool(std::vector<Resource> &resource_list, std::vector<V> &values) {
     for (auto i = 0; i < resource_list.size(); i++) {
@@ -137,6 +149,14 @@ public:
         }
       }
       return true;
+    } else if constexpr (category == ResourceCategory::Movement) {
+      for (auto i = 0; i < movement_resources.size(); i++) {
+        const int idx = static_cast<int>(movement_resources[i]);
+        if (this->resources[idx].load() < other.resources[idx].load()) {
+          return false;
+        }
+      }
+      return true;
     }
   };
 
@@ -165,6 +185,14 @@ public:
         }
       }
       return true;
+    } else if constexpr (category == ResourceCategory::Movement) {
+      for (auto i = 0; i > movement_resources.size(); i++) {
+        const int idx = static_cast<int>(movement_resources[i]);
+        if (this->resources[idx].load() <= other.resources[idx].load()) {
+          return false;
+        }
+      }
+      return true;
     }
   };
 
@@ -184,6 +212,11 @@ public:
         const int idx = static_cast<int>(non_persistent_resources[i]);
         this->resources[idx].fetch_add(other.resources[idx].load());
       }
+    } else if constexpr (category == ResourceCategory::Movement) {
+      for (auto i = 0; i < movement_resources.size(); i++) {
+        const int idx = static_cast<int>(movement_resources[i]);
+        this->resources[idx].fetch_add(other.resources[idx].load());
+      }
     }
   };
 
@@ -201,6 +234,16 @@ public:
     } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
         const int idx = static_cast<int>(non_persistent_resources[i]);
+        this->resources[idx].fetch_sub(other.resources[idx].load());
+      }
+    } else if constexpr (category == ResourceCategory::Movement) {
+      for (auto i = 0; i < movement_resources.size(); i++) {
+        const int idx = static_cast<int>(movement_resources[i]);
+        this->resources[idx].fetch_sub(other.resources[idx].load());
+      }
+    } else if constexpr (category == ResourceCategory::Movement) {
+      for (auto i = 0; i < movement_resources.size(); i++) {
+        const int idx = static_cast<int>(movement_resources[i]);
         this->resources[idx].fetch_sub(other.resources[idx].load());
       }
     }

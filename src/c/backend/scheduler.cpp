@@ -305,6 +305,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
 
+    // TODO(wlr): This needs to be changed to not release PARRAY resources
     device_pool.increase<ResourceCategory::All>(task_pool);
 
     // PArrays could be evicted even during task barrier continuation.
