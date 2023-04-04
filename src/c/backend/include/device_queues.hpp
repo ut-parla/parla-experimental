@@ -174,8 +174,8 @@ public:
 
       for (Device *device : device_manager->get_devices(dev_type)) {
         this->device_queues.emplace_back(new DeviceQueue<category>(device));
-        std::cout << "Initialized DeviceQueue for Device: "
-                  << device->get_name() << std::endl;
+        // std::cout << "Initialized DeviceQueue for Device: "
+        //           << device->get_name() << std::endl;
       }
 
       this->last_device_idx = 0;
