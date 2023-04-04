@@ -17,11 +17,20 @@ cdef extern from "include/resources.hpp" nogil:
         MEMORY = 0,
         VCUS = 1,
 
+<<<<<<< HEAD
 cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds)
     void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr)
 
+||||||| b78459e
+=======
+cdef extern from "include/utility.hpp" nogil:
+    void cpu_busy_sleep(unsigned int microseconds)
+    void gpu_busy_sleep(const int device, const unsigned long cycles,
+                    uintptr_t stream_ptr)
+
+>>>>>>> main
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
