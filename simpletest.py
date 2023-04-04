@@ -38,9 +38,13 @@ def main(T):
 
         for device in devices:
             with device:
+                t_start = time.perf_counter()
                 print("+ 0 HELLO INNER", flush=True)
                 bsleep(device.gpu_id, CYCLES, device.stream.stream)
+                device.stream.synchronize()
                 print("- 0 HELLO INNER", flush=True)
+                t_end = time.perf_counter()
+                print("Time elapsed: ", t_end - t_start, flush=True)
 
 
 if __name__ == "__main__":

@@ -363,13 +363,16 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         c_self.reset_events_streams()
 
-    cpdef handle_runahead_dependencies(self):
+    cpdef handle_runahead_dependencies(self, int sync_type):
         cdef InnerTask* c_self = self.c_task
-        c_self.handle_runahead_dependencies()
+        cdef int c_sync_type = sync_type
+        with nogil:
+            c_self.handle_runahead_dependencies(c_sync_type)
 
     cpdef synchronize_events(self):
         cdef InnerTask* c_self = self.c_task
-        c_self.synchronize_events()
+        with nogil:
+            c_self.synchronize_events()
         
 
 

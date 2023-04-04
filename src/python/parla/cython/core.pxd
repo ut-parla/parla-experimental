@@ -80,7 +80,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void add_stream(uintptr_t stream) except +
 
         void reset_events_streams() except +
-        void handle_runahead_dependencies() except +
+        void handle_runahead_dependencies(int sync_type) except +
         void synchronize_events()   except +
 
 

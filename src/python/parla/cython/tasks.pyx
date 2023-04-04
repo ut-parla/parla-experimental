@@ -316,7 +316,18 @@ class Task:
         self._environment = env
 
     def handle_runahead_dependencies(self):
-        self.inner_task.handle_runahead_dependencies()
+
+        if self.runahead == SyncType.NONE:
+            return
+
+        sync_type = self.runahead
+
+        env = self.environment
+
+        if env.has(DeviceType.CPU):
+            sync_type = SyncType.BLOCKING
+
+        self.inner_task.handle_runahead_dependencies(int(sync_type))
         
 
     def py_handle_runahead_dependencies(self):
@@ -684,6 +695,12 @@ class TaskEnvironment:
         Returns the library device associated with this environment. (e.g. cupy.cuda.Device)
         """
         return self._device.device
+
+    def has(device_type):
+        """
+        Returns True if this environment has a device of the given type.
+        """
+        return device_type in self.device_dict
 
     @property
     def streams(self):
