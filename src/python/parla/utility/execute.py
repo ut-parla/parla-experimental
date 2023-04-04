@@ -176,7 +176,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     return None
 
 
-def create_task_no_data(task, taskspaces, config, data=None):
+def create_task_no_data(task, taskspaces, config, data_list=None):
 
     try:
         # Task ID
@@ -217,10 +217,8 @@ def create_task_no_data(task, taskspaces, config, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        '''
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
               " placement:", placement_set)
-        '''
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
@@ -686,7 +684,6 @@ class GraphContext(object):
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
-#print("graph:", self.graph)
 
         return self
 
