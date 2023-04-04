@@ -58,6 +58,8 @@ def spawn(task=None,
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
+          # TODO(hc): this will be refined to support multi-dimensional CrossPy
+          #           support
           input: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           output: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           inout: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
