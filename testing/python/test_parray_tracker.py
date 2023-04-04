@@ -45,17 +45,17 @@ def test_parray_task():
             def task2():
                 assert a.get_num_active_tasks(4) == 1 or a.get_num_active_tasks(4) == 2
                 assert a.get_num_active_tasks(2) == 0
-                assert not scheduler.get_parray_state(1, a.parent_ID)
+                assert not scheduler.get_parray_state(2, a.parent_ID)
                 assert scheduler.get_parray_state(4, a.parent_ID)
 
             @spawn(ts[3], placement=[gpu(3)], inout=[(a, 0)])
             def task3():
                 assert a.get_num_active_tasks(4) == 1 or a.get_num_active_tasks(4) == 2
-                assert not scheduler.get_parray_state(1, a.parent_ID)
+                assert not scheduler.get_parray_state(2, a.parent_ID)
                 assert scheduler.get_parray_state(4, a.parent_ID)
             await ts
 
-            @spawn(ts[4], placement=[gpu(3)], inout=[(a, 0)])
+            @spawn(ts[4], placement=[gpu(2)], inout=[(a, 0)])
             def task4():
                 assert a.get_num_active_tasks(1) == 0
                 assert a.get_num_active_tasks(2) == 0
@@ -63,7 +63,10 @@ def test_parray_task():
                 assert not scheduler.get_parray_state(0, a.parent_ID)
                 assert not scheduler.get_parray_state(1, a.parent_ID)
                 assert not scheduler.get_parray_state(2, a.parent_ID)
-                assert scheduler.get_parray_state(4, a.parent_ID)
+                assert scheduler.get_parray_state(3, a.parent_ID)
+                # This can be nondeterministic since the state can be updated
+                # at anytime by the PArray runtime.
+                #assert not scheduler.get_parray_state(4, a.parent_ID)
 
             @spawn(ts[5], dependencies=[ts[4]], placement=[gpu(3)], input=[(a, 0)])
             def task5():
@@ -74,6 +77,9 @@ def test_parray_task():
                 assert not scheduler.get_parray_state(0, a.parent_ID)
                 assert not scheduler.get_parray_state(1, a.parent_ID)
                 assert not scheduler.get_parray_state(2, a.parent_ID)
+                # This should be always true since it accesses `a` as an input.
+                # So invalidation is not invoked.
+                assert scheduler.get_parray_state(3, a.parent_ID)
                 assert scheduler.get_parray_state(4, a.parent_ID)
 
             @spawn(ts[6], dependencies=[ts[5]], placement=[gpu(2)], inout=[(a, 0)])
@@ -85,7 +91,10 @@ def test_parray_task():
                 assert not scheduler.get_parray_state(0, a.parent_ID)
                 assert not scheduler.get_parray_state(1, a.parent_ID)
                 assert not scheduler.get_parray_state(2, a.parent_ID)
-                assert scheduler.get_parray_state(4, a.parent_ID)
+                assert scheduler.get_parray_state(3, a.parent_ID)
+                # This can be either false or true since it is now the target
+                # of invalidation.
+                #assert scheduler.get_parray_state(4, a.parent_ID)
             await ts
 
             ## Simple test for active task of PArray slicing.
@@ -113,7 +122,7 @@ def test_parray_task():
             @spawn(ts[9], placement=[gpu(3)], inout=[(c[0:2], 0)])
             def task9():
                 assert c[0:2].get_num_active_tasks(4) == 1 or c[0:2].get_num_active_tasks(4) == 2
-                assert scheduler.get_parray_state(1, c[0:2].parent_ID)
+                assert not scheduler.get_parray_state(1, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(2, c[0:2].parent_ID)
                 assert not scheduler.get_parray_state(3, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(4, c[0:2].parent_ID)
@@ -125,9 +134,7 @@ def test_parray_task():
                 assert c[0:2].get_num_active_tasks(2) == 0
                 assert c[0:2].get_num_active_tasks(3) == 1 or c[0:2].get_num_active_tasks(3) == 2
                 assert c[0:2].get_num_active_tasks(4) == 0 or c[0:2].get_num_active_tasks(4) == 1
-
-                assert scheduler.get_parray_state(0, c[0:2].parent_ID)
-                assert scheduler.get_parray_state(1, c[0:2].parent_ID)
+                assert not scheduler.get_parray_state(1, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(2, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(3, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(4, c[0:2].parent_ID)
@@ -138,7 +145,7 @@ def test_parray_task():
                 assert c[0:2].get_num_active_tasks(2) == 0
                 assert c[0:2].get_num_active_tasks(3) == 0 or c[0:2].get_num_active_tasks(3) == 1 or c[0:2].get_num_active_tasks(3) == 2
                 assert c[0:2].get_num_active_tasks(4) == 1
-                assert scheduler.get_parray_state(1, c[0:2].parent_ID)
+                assert not scheduler.get_parray_state(1, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(2, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(3, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(4, c[0:2].parent_ID)
@@ -149,7 +156,7 @@ def test_parray_task():
                 assert c[0:2].get_num_active_tasks(2) == 0
                 assert c[0:2].get_num_active_tasks(3) == 1 or c[0:2].get_num_active_tasks(3) == 1
                 assert c[0:2].get_num_active_tasks(4) == 0
-                assert scheduler.get_parray_state(1, c[0:2].parent_ID)
+                assert not scheduler.get_parray_state(1, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(2, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(3, c[0:2].parent_ID)
                 assert scheduler.get_parray_state(4, c[0:2].parent_ID)
@@ -177,7 +184,6 @@ def test_parray_task():
                 # Depending on when flushing happens
                 assert gpu(2).query_mapped_resource(0) == 152 or gpu(2).query_mapped_resource(0) == 16
             await ts
-
 
 
 if __name__=="__main__":

@@ -1,3 +1,5 @@
+from crosspy import CrossPyArray
+
 from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
@@ -56,10 +58,11 @@ def spawn(task=None,
           # to map a task to three devices.
           placement: Collection[Union[Collection[PlacementSource],
                                       Any, None]] = None,
-          # TODO(hc): This should be PArray, not Any.
-          input: List[Tuple[PArray, int]] = None,
-          output: List[Tuple[PArray, int]] = None,
-          inout: List[Tuple[PArray, int]] = None,
+          # TODO(hc): this will be refined to support multi-dimensional CrossPy
+          #           support
+          input: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
+          output: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
+          inout: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           vcus=1000,
           memory=0,
           runahead=default_sync
