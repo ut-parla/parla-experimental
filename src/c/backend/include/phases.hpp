@@ -210,8 +210,11 @@ public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     // std::cout << "RuntimeReserver created" << std::endl;
+    // FIXME: This leaks memory. Need to add deconstructor.
     this->runnable_tasks =
         new PhaseManager<ResourceCategory::NonPersistent>(devices);
+    this->movement_tasks =
+        new PhaseManager<ResourceCategory::Movement>(devices);
   }
 
   void enqueue(InnerTask *task);
