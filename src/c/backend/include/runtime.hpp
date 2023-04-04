@@ -435,7 +435,6 @@ public:
   /* Synchronize self */
   void synchronize_events() {
     size_t num_events = this->events.size_unsafe();
-    std::cout << "Synchronizing on events: " << num_events << std::endl;
     for (size_t i = 0; i < num_events; i++) {
       uintptr_t event_ptr = this->events.at_unsafe(i);
       event_synchronize(event_ptr);
@@ -445,10 +444,8 @@ public:
   /*handle_runahead_dependencies*/
   void handle_runahead_dependencies(int sync_type) {
     if (sync_type == Task::BLOCKING) {
-      std::cout << "blocking for deps" << this->get_name() << std::endl;
       this->synchronize_dependency_events();
     } else if (sync_type == Task::NON_BLOCKING) {
-      std::cout << "waiting for deps" << this->get_name() << std::endl;
       this->wait_dependency_events();
     }
   }
@@ -479,8 +476,6 @@ public:
 
         // Wait on the event on all of our streams
         size_t num_streams = this->streams.size_unsafe();
-        std::cout << "Synchronizing this event on stream: " << num_streams
-                  << std::endl;
         for (size_t k = 0; k < num_streams; k++) {
           uintptr_t stream_ptr = this->streams.at_unsafe(k);
           event_wait(event_ptr, stream_ptr);

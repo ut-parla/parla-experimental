@@ -246,7 +246,7 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
   NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
 
-  std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
+  //std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
             << std::endl;
 
   // std::cout << "Task state: " << state << std::endl;
@@ -266,7 +266,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
                                            int state) {
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
 
-  std::cout << "Task Cleanup Post Sync" << std::endl;
+  //std::cout << "Task Cleanup Post Sync" << std::endl;
 
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();

@@ -61,7 +61,7 @@ def spawn(task=None,
           inout: List[Tuple[PArray, int]] = None,
           vcus=1000,
           memory=0,
-          runahead=SyncType.BLOCKING
+          runahead=SyncType.NON_BLOCKING
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 

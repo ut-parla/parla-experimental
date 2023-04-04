@@ -209,7 +209,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                     nvtx.pop_range(domain="Python Runtime")
 
-                    print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
+                    #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
                     self.status = "Running"
 
@@ -221,25 +221,22 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         #Save device_context with task object
                         #comment(wlr): This replaces the old enviornment (for continuation tasks)
-                        print("Setting environment for task", active_task, flush=True)
+                        #print("Setting environment for task", active_task, flush=True)
                         active_task.environment = device_context
 
 
                         #Pass streams and event pointers to c++ task
                         #(only saves initial runtime ones, TODO(wlr): save any user ones after body returns)
                         device_context.write_to_task(active_task)
-                        print("Wrote enviornment to task", active_task, flush=True)
+                        #print("Wrote enviornment to task", active_task, flush=True)
 
                         #handle event wait in python 
-                        print("HANDLING RUNAHEAD DEPENDENCIES", active_task, flush=True)
-
                         if USE_PYTHON_RUNAHEAD:
                             active_task.py_handle_runahead_dependencies() 
                         else:
                             #handle event wait in C++ (good if num_dependencies large)
                             active_task.handle_runahead_dependencies()
 
-                        print("Running Task", active_task, flush=True)
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
                         #Push the task to the thread local stack
@@ -283,7 +280,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskCompleted):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
-                        print("Cleaning up Task", active_task, flush=True)
+                        #print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
@@ -410,7 +407,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Scheduler: Stopped", flush=True)
 
     def spawn_task(self, task):
-        print("Scheduler: Spawning Task", task, flush=True)
+        #print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
 
     

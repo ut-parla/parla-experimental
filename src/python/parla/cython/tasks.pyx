@@ -331,7 +331,7 @@ class Task:
         
 
     def py_handle_runahead_dependencies(self):
-        print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
+        #print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
         assert(self.environment is not None)
 
         if self.runahead == SyncType.NONE:
@@ -343,11 +343,11 @@ class Task:
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
-        print("Trying to get dependencies: ", self.name)
+        #print("Trying to get dependencies: ", self.name)
 
         dependencies = self.get_dependencies()
 
-        print("Dependencies: {}".format(dependencies), flush=True)
+        #print("Dependencies: {}".format(dependencies), flush=True)
 
         for task in dependencies:
             assert(isinstance(task, Task))
@@ -747,7 +747,7 @@ class TaskEnvironment:
     def devices(self):
         #TODO: Improve this
         devices = self.get_all_devices()
-        print(f"Devices: {devices}")
+        #print(f"Devices: {devices}")
         return devices
     
     @property
@@ -758,16 +758,16 @@ class TaskEnvironment:
         return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
 
     def synchronize(self, events=False, tags=['default'], return_to_pool=True):
-        print(f"Synchronizing {self}..", flush=True)
+        #print(f"Synchronizing {self}..", flush=True)
 
         if self.is_terminal:
             if events:
                 for tag in tags:
-                    print("SELF: ", self, f"Synchronizing on event {tag}..", flush=True)
+                    #print("SELF: ", self, f"Synchronizing on event {tag}..", flush=True)
                     self.synchronize_event(tag=tag)
             else:
                 for stream in self.stream_list:
-                    print("SELF: ", self, f"Synchronizong on stream {stream}", flush=True)
+                    #print("SELF: ", self, f"Synchronizong on stream {stream}", flush=True)
                     stream.synchronize()
 
             if return_to_pool:
@@ -776,7 +776,7 @@ class TaskEnvironment:
                     stream_pool.return_stream(stream)
         else:
             for env in self.env_list:
-                print("Non terminal: Recursing", flush=True)
+                #print("Non terminal: Recursing", flush=True)
                 env.synchronize(events=events, tags=tags)
 
     def __enter__(self):
@@ -893,7 +893,7 @@ class TaskEnvironment:
         Wait for tagged events in the given environment on all streams in this environment.
         """
 
-        print("Waiting for events", env, tags, flush=True)
+        #print("Waiting for events", env, tags, flush=True)
 
         if not isinstance(tags, list):
             tags = [tags]
@@ -901,7 +901,7 @@ class TaskEnvironment:
         for device in env.devices:
             for stream in device.streams:
                 for tag in tags:
-                    print("++Waiting for event", device, stream, tag, flush=True)
+                    #print("++Waiting for event", device, stream, tag, flush=True)
                     device.wait_event(stream=stream, tag=tag)
 
     def synchronize_events(self, env, tags=['default']):
@@ -915,7 +915,7 @@ class TaskEnvironment:
         for device in env.devices:
             for stream in device.streams:
                 for tag in tags:
-                    print("++Synchronizing event", device, stream, tag, flush=True)
+                    #print("++Synchronizing event", device, stream, tag, flush=True)
                     device.synchronize_event(tag=tag)
     
     def record_events(self, tags=['default']):
@@ -929,7 +929,7 @@ class TaskEnvironment:
         for device in self.devices:
             for stream in device.streams:
                 for tag in tags:
-                    print("--Recording event", device, stream, tag, flush=True)
+                    #print("--Recording event", device, stream, tag, flush=True)
                     device.record_event(stream=stream, tag=tag)
 
     def create_events(self, tags=['default']):
@@ -1021,7 +1021,7 @@ class TerminalEnvironment(TaskEnvironment):
 
         event = self.event_dict[tag]
         if event is not None:
-            print("TEST RECORD: ", event, stream.stream)
+            #print("TEST RECORD: ", event, stream.stream)
             event.record(stream.stream)
 
     def synchronize_event(self, tag='default'):
@@ -1035,7 +1035,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            print("TEST EVENT SYNC: ", event, flush=True)
+            #print("TEST EVENT SYNC: ", event, flush=True)
             event.synchronize()
 
     def wait_event(self, stream=None, tag='default'):
@@ -1049,7 +1049,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            print("TEST WAIT EVENT: ", stream, event)
+            #print("TEST WAIT EVENT: ", stream, event)
             stream.wait_event(event)
 
     def create_event(self, stream=None, tag='default'):
