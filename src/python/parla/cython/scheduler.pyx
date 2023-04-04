@@ -282,6 +282,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     
                         #print("Cleaning up Task", active_task, flush=True)
 
+                        #FIXME: This can be cleaned up and hidden from this function with a better interface...
                         if active_task.runahead == SyncType.NONE:
                             device_context.finalize()
                         
@@ -300,7 +301,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
-                        final_state = tasks.TaskCompleted(final_state.return_value)
+                        if final_state == tasks.TaskRunahead:
+                            final_state = tasks.TaskCompleted(final_state.return_value)
+
                         active_task.state = final_state
                         core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
