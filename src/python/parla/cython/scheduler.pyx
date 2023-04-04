@@ -282,13 +282,13 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     
                         #print("Cleaning up Task", active_task, flush=True)
 
-                        if self.runahead == SyncType.NONE:
+                        if active_task.runahead == SyncType.NONE:
                             device_context.finalize()
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
                             self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            if self.runahead != SyncType.NONE:
+                            if active_task.runahead != SyncType.NONE:
                                 device_context.synchronize(events=True)
                             self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
@@ -297,7 +297,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         #print("Finished Cleaning up Task", active_task, flush=True)
 
-                        if self.runahead != SyncType.NONE:
+                        if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
                         nvtx.pop_range(domain="Python Runtime")
