@@ -439,9 +439,11 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   // std::unique_lock<std::mutex> lock(this->mtx);
 
   // Try to launch as many compute tasks as possible
+  int fail_count = 0;
+  int max_fail = this->runnable_tasks->get_num_devices() * 2;
   bool has_task = true;
   int num_tasks = 0;
-  while (has_task) {
+  while (has_task && (fail_count < max_fail)) {
     num_tasks = this->get_compute_count();
     has_task = num_tasks > 0;
     if (has_task) {
@@ -458,15 +460,18 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           this->status.increase(RuntimeReserverState::Success);
         } else {
           this->status.increase(RuntimeReserverState::NoWorker);
-          break; // No more workers available
+          fail_count++; // += max_fail;
+          break;        // No more workers available
         }
       } else {
         this->status.increase(RuntimeReserverState::NoResource);
+        fail_count++;
         break; // No more resources available
       }
     } else {
       this->status.increase(RuntimeReserverState::NoTask);
-      break; // No more tasks available
+      fail_count++; //+= max_fail;
+      break;        // No more tasks available
     }
   }
 

@@ -152,8 +152,9 @@ public:
     } else if constexpr (category == ResourceCategory::Movement) {
       for (auto i = 0; i < movement_resources.size(); i++) {
         const int idx = static_cast<int>(movement_resources[i]);
-        std::cout << "check_greater_movement: " << this->resources[idx].load()
-                  << " " << other.resources[idx].load() << std::endl;
+        // std::cout << "check_greater_movement: " <<
+        // this->resources[idx].load()
+        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }
@@ -202,9 +203,9 @@ public:
   inline void increase(const ResourcePool &other) {
     if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
-        std::cout << "increase resource: " << resource_names[i] << " "
-                  << this->resources[i].load() << " "
-                  << other.resources[i].load() << std::endl;
+        // std::cout << "increase resource: " << resource_names[i] << " "
+        //           << this->resources[i].load() << " "
+        //           << other.resources[i].load() << std::endl;
         this->resources[i].fetch_add(other.resources[i].load());
       }
     } else if constexpr (category == ResourceCategory::Persistent) {
