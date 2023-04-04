@@ -1,9 +1,8 @@
 #pragma once
-#include <cstdint>
+#include "resources.hpp"
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 
-#include "resources.hpp"
 #include <assert.h>
 #include <atomic>
 #include <chrono>
@@ -18,7 +17,6 @@
 using namespace std::chrono_literals;
 
 #include "containers.hpp"
-
 #include "device_manager.hpp"
 #include "parray.hpp"
 #include "parray_tracker.hpp"
@@ -40,8 +38,6 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
 
-using PointerList = ProtectedVector<uintptr_t>;
-
 /* Access mode to a PArray. */
 enum AccessMode {
   // Input of a task.
@@ -51,6 +47,24 @@ enum AccessMode {
   // Input/output of a task.
   INOUT = 2
 };
+
+// Busy sleep for a given number of microseconds
+inline void cpu_busy_sleep(unsigned int micro) {
+  // compute_range r("sleep::busy", nvtx3::rgb{0, 127, 127});
+  // int count = 0;
+  auto block = std::chrono::microseconds(micro);
+  auto time_start = std::chrono::high_resolution_clock::now();
+
+  auto now = std::chrono::high_resolution_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
+
+  do {
+    now = std::chrono::high_resolution_clock::now();
+    elapsed =
+        std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
+  } while (elapsed.count() < micro);
+}
 
 // Forward declaration of python callbacks
 
@@ -93,17 +107,6 @@ enum State {
   RUNAHEAD = 6,
   // Task has completed
   COMPLETED = 7
-};
-
-enum SynchronizationType {
-  // No synchronization
-  NONE = 0,
-  // BLocking synchronization
-  BLOCKING = 1,
-  // Non-blocking synchronization
-  NON_BLOCKING = 2,
-  // User defined synchronization
-  USER = 3
 };
 
 class StatusFlags {
@@ -185,15 +188,6 @@ public:
   /* Reference to the scheduler (used for synchronizing state on events) */
   InnerScheduler *scheduler = nullptr;
 
-  /*Container for Events*/
-  PointerList events;
-
-  /*Synchronization Type */
-  Task::SynchronizationType sync_type = Task::NON_BLOCKING;
-
-  /*Container for Streams*/
-  PointerList streams;
-
   /*Task monitor*/
   std::mutex mtx;
 
@@ -254,8 +248,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them.
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
-  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-      parray_list;
+  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -349,7 +342,6 @@ public:
     this->num_unmapped_dependencies.store(1);
     this->num_unreserved_dependencies.store(1);
     this->assigned_devices.clear();
-    // this->reset_events_streams();
   }
 
   /* Return whether the task is ready to run */
@@ -418,76 +410,6 @@ public:
 
   /* Get dependents list. Used for testing Python interface. */
   std::vector<void *> get_dependents();
-
-  /*Add event to task*/
-  void add_event(uintptr_t event) { this->events.push_back(event); }
-
-  /*Add stream to task */
-  void add_stream(uintptr_t stream) { this->streams.push_back(stream); };
-
-  /* Reset events and streams */
-  void reset_events_streams() {
-    this->events.clear();
-    this->streams.clear();
-  }
-
-  /* Synchronize self */
-  void synchronize_events() {
-    size_t num_events = this->events.size_unsafe();
-    for (size_t i = 0; i < num_events; i++) {
-      uintptr_t event_ptr = this->events.at_unsafe(i);
-      event_synchronize(event_ptr);
-    }
-  }
-
-  /*handle_runahead_dependencies*/
-  void handle_runahead_dependencies(int sync_type) {
-    if (sync_type == Task::BLOCKING) {
-      this->synchronize_dependency_events();
-    } else if (sync_type == Task::NON_BLOCKING) {
-      this->wait_dependency_events();
-    }
-  }
-
-  /*Synchronize dependencies*/
-  void synchronize_dependency_events() {
-    size_t num_dependencies = this->dependencies.size_unsafe();
-    for (size_t i = 0; i < num_dependencies; i++) {
-      InnerTask *dependency = this->dependencies.at_unsafe(i);
-      dependency->synchronize_events();
-    }
-  }
-
-  /*Wait dependencies*/
-  // TODO(wlr): This locking is overkill. Some of these aren't even necessary.
-  // Comment(wlr): Removing all locks. By the time this executes all
-  // dependencies will have ran their task bodies (can assume no more
-  // modifications)
-  void wait_dependency_events() {
-
-    std::cout << "Setting wait triggers for dependencies of "
-              << this->get_name() << std::endl;
-
-    // For each dependency, wait on all of its events on all of our streams
-    size_t num_dependencies = this->dependencies.size_unsafe();
-    for (size_t i = 0; i < num_dependencies; i++) {
-      InnerTask *dependency = this->dependencies.at_unsafe(i);
-      auto &dependency_events = dependency->events;
-
-      std::cout << "Waiting for event from dependency: "
-                << dependency->get_name() << std::endl;
-      size_t num_events = dependency_events.size_unsafe();
-      for (size_t j = 0; j < num_events; j++) {
-        uintptr_t event_ptr = dependency_events.at_unsafe(j);
-        // Wait on the event on all of our streams
-        size_t num_streams = this->streams.size_unsafe();
-        for (size_t k = 0; k < num_streams; k++) {
-          uintptr_t stream_ptr = this->streams.at_unsafe(k);
-          event_wait(event_ptr, stream_ptr);
-        }
-      }
-    }
-  }
 
   /* Get python task */
   void *get_py_task();
@@ -894,9 +816,6 @@ public:
    * Worker Enqueue */
   void task_cleanup(InnerWorker *worker, InnerTask *task, int state);
 
-  void task_cleanup_presync(InnerWorker *worker, InnerTask *task, int state);
-  void task_cleanup_postsync(InnerWorker *worker, InnerTask *task, int state);
-
   /* Get number of active tasks. A task is active if it is spawned but not
    * complete */
   int get_num_active_tasks();
@@ -953,7 +872,9 @@ public:
    * threads can start*/
   void spawn_wait();
 
-  DeviceManager *get_device_manager() { return this->device_manager_; }
+  DeviceManager *get_device_manager() {
+    return this->device_manager_;
+  }
 
 protected:
   /// It manages all device instances in C++.
