@@ -129,7 +129,6 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     ticks = int((total_time/(10**6))*cycles_per_second)
 
     for i in range(gil_accesses):
-#gpu_bsleep_nogil(dev_id, ticks, stream)
         free_sleep(free_time)
         lock_sleep(gil_time)
 
