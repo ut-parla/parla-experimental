@@ -152,6 +152,8 @@ public:
     } else if constexpr (category == ResourceCategory::Movement) {
       for (auto i = 0; i < movement_resources.size(); i++) {
         const int idx = static_cast<int>(movement_resources[i]);
+        std::cout << "check_greater_movement: " << this->resources[idx].load()
+                  << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }
@@ -250,8 +252,6 @@ public:
   };
 
 protected:
-  // TODO(wlr): Is there any way to make this compile time initilaization depend
-  // on resouce_names.size()?
   std::array<T, resource_names.size()> resources = {};
 };
 
