@@ -18,61 +18,21 @@ import time
 from parla import Parla, spawn, TaskSpace
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
-from parla.common.globals import get_current_devices, get_current_stream
-from parla.cython.device_manager import cpu, gpu
-from parla.cython.variants import specialize
-from parla.cython.sleep import gpu_sleep
 import numpy as np
 
 from fractions import Fraction
 
 
-class GPUInfo():
-
-    #approximate average on frontera RTX
-#cycles_per_second = 1919820866.3481758
-    cycles_per_second = 867404498.3008006
-#cycles_per_second = 47994628114801.04
-
-    def update(self, cycles):
-        self.cycles_per_second = cycles
-
-    def get(self):
-        return self.cycles_per_second
-
-
-def get_placement_set_from(ps_str_set):
-    ps_set = []
-    for ps_str in ps_str_set[0]:
-        dev_type = DeviceType(ps_str)
-        if dev_type == DeviceType.ANY_GPU_DEVICE:
-            ps_set.append(gpu)
-        elif dev_type == DeviceType.CPU_DEVICE:
-            ps_set.append(cpu)
-        elif dev_type == DeviceType.GPU_0:
-            ps_set.append(gpu(0))
-        elif dev_type == DeviceType.GPU_1:
-            ps_set.append(gpu(1))
-        elif dev_type == DeviceType.GPU_2:
-            ps_set.append(gpu(2))
-        elif dev_type == DeviceType.GPU_3:
-            ps_set.append(gpu(3))
-        else:
-            raise ValueError("Does not support this placement:", dev_type)
-    return tuple(ps_set)
-
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float) -> Dict[int, np.ndarray]:
     pass
 
 
-@specialize
 def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
     the total time given.
     """
-    print("CPU variant is called.", flush=True)
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
@@ -83,40 +43,6 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
 
     for i in range(gil_accesses):
         free_sleep(free_time)
-        lock_sleep(gil_time)
-
-    if config.verbose:
-        task_internal_end_t = time.perf_counter()
-        task_internal_duration = task_internal_end_t - task_internal_start_t
-        return task_internal_duration
-
-    return None
-
-
-@synthetic_kernel.variant(gpu)
-def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
-    """
-    A simple synthetic kernel that simulates a task that takes a given amount of time
-    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
-    the total time given.
-    """
-    print("GPU variant is called.", flush=True)
-    if config.verbose:
-        task_internal_start_t = time.perf_counter()
-
-    # Simulate task work
-    kernel_time = total_time / gil_accesses
-    free_time = kernel_time * (1 - gil_fraction)
-    gil_time = kernel_time * gil_fraction
-
-    gpu_info = GPUInfo()
-    cycles_per_second = gpu_info.get()
-    dev_id = get_current_devices()[0]
-    stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
-
-    for i in range(gil_accesses):
-        gpu_sleep(dev_id, ticks, stream)
         lock_sleep(gil_time)
 
     if config.verbose:
@@ -139,14 +65,10 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
-        placement_key = task.task_runtime.keys()
-        placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str)
+        placement_set = (-1,)  # list(task.task_runtime.keys())
 
         # TODO: This needs rework with Device support
-        # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options. 
-        runtime_info = task.task_runtime[placement_set_str[0]]
+        runtime_info = task.task_runtime[placement_set]
 
         # Task Constraints
         device_fraction = runtime_info.device_fraction
@@ -167,8 +89,7 @@ def create_task_no_data(task, taskspaces, config=None, data=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        print("Placement:", placement_set)
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -427,11 +348,9 @@ class GraphContext(object):
             self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
-#print(self.tmpfilepath, flush=True)
 
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
-#print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
