@@ -30,7 +30,8 @@ GPUEnvironment = tasks.GPUEnvironment
 
 
 __all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
-           'sleep_nogil', 'Tasks', 'parla_num_threads']
+           'sleep_nogil', 'Tasks', 'parla_num_threads',
+           'parray']
 
 
 def signal_handler(signal, frame):

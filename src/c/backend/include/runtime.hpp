@@ -1,13 +1,13 @@
 #pragma once
-#include <cstdint>
+
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
-
 #include "resources.hpp"
 #include <assert.h>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
 #include <exception>
 #include <fstream>
 #include <string>
@@ -466,7 +466,8 @@ public:
   // modifications)
   void wait_dependency_events() {
 
-    std::cout << "Setting wait triggers for dependencies of " << this->get_name() << std::endl;
+    std::cout << "Setting wait triggers for dependencies of "
+              << this->get_name() << std::endl;
 
     // For each dependency, wait on all of its events on all of our streams
     size_t num_dependencies = this->dependencies.size_unsafe();
@@ -474,7 +475,8 @@ public:
       InnerTask *dependency = this->dependencies.at_unsafe(i);
       auto &dependency_events = dependency->events;
 
-      std::cout << "Waiting for event from dependency: " << dependency->get_name() << std::endl;
+      std::cout << "Waiting for event from dependency: "
+                << dependency->get_name() << std::endl;
       size_t num_events = dependency_events.size_unsafe();
       for (size_t j = 0; j < num_events; j++) {
         uintptr_t event_ptr = dependency_events.at_unsafe(j);

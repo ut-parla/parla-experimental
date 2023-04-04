@@ -28,7 +28,7 @@ class SynchronizationType(IntEnum):
     USER = 3
 
 
-SYNC_FLAG = os.getenv("PARLA_DEFAULT_SYNC", "2")
+SYNC_FLAG = os.getenv("PARLA_DEFAULT_SYNC", "0")
 
 if SYNC_FLAG == "0":
     default_sync = SynchronizationType.NONE
