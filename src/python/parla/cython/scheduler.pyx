@@ -239,6 +239,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
+                        print("Running Task", active_task, flush=True)
+
                         #Push the task to the thread local stack
                         Locals.push_task(active_task)
 
@@ -304,6 +306,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
 
+                        print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
                         core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
