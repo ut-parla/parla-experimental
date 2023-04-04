@@ -425,7 +425,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "Launcher::enqueue" << std::endl;
+  //std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);

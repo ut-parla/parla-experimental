@@ -247,7 +247,7 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
 
   //std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
-            << std::endl;
+  //          << std::endl;
 
   // std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
