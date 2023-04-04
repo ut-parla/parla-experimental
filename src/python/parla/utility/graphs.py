@@ -448,6 +448,12 @@ def get_task_properties(line: str):
             prop_name, prop_value = prop.strip().split(':')
             properties[prop_name] = prop_value.strip()
 
+        # If ".dm." is in the task name, ignore it since
+        # this is a data movement task.
+        # TODO(hc): we may need to verify data movemnt task too.
+        if ".dm." in properties['name']:
+            continue
+
         properties['name'] = convert_task_id(
             properties['name'], properties['instance'])
 
@@ -487,6 +493,11 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         if line_type == LogState.START_TASK:
             start_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
             task_properties = task_properties[0]
 
             task_start_times[task_properties['name']] = start_time
@@ -510,6 +521,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.COMPLETED_TASK:
             end_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             task_properties = task_properties[0]
 
             current_name = task_properties['name']
@@ -522,6 +539,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
 
         elif line_type == LogState.NOTIFY_DEPENDENTS:
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             notifying_task = task_properties[0]
             current_name = notifying_task['name']
             current_state = notifying_task['get_state']
@@ -538,6 +561,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.ASSIGNED_TASK:
             assigned_time = get_time(line)
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             task_properties = task_properties[0]
 
             current_name = task_properties['name']
@@ -549,6 +578,12 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
 
         elif line_type == LogState.ADDING_DEPENDENCIES:
             task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
             current_task = task_properties[0]['name']
             current_dependencies = []
 
@@ -627,6 +662,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
 
 def generate_reduction_graph(config: ReductionConfig) -> str:
     task_config = config.task_config
+    num_gpus = config.num_gpus
     configurations = task_config.configurations
 
     graph = ""
@@ -654,11 +690,15 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
     #           but for now, we only consider a single device placement and so,  
     #           follow the old generator's graph generation rule.
 
-    for device_id, task_config in configurations.items():
-        last_flag = 1 if device_id == list(
+    device_id = DeviceType.ANY_GPU_DEVICE
+    for config_device_id, task_config in configurations.items():
+        last_flag = 1 if config_device_id == list(
             configurations.keys())[-1] else 0
 
         post_configuration_string += f"{task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
+        # TODO(hc): This should be refined.
+        #           If users did not set "fixed", then it should be any cpu or gpu.
+        device_id = config_device_id[-1]
 
         if last_flag == 0:
             post_configuration_string += ", "
@@ -667,7 +707,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
     global_idx = 0
     for i in range(config.levels, -1, -1):
         total_tasks_in_level = config.branch_factor ** i
-        segment = total_tasks_in_level / 4
+        segment = total_tasks_in_level / num_gpus
         for j in range(total_tasks_in_level):
             if reverse_level > 0:
                 dependency_string  = " "
@@ -692,9 +732,11 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             else:
                 read_dependency = " "
                 write_dependency = f"{global_idx}"
-            device_id = 1
             if config.fixed_placement:
+                # USER_CHOSEN_DEVICE acts as an offset.
                 device_id = int(DeviceType.USER_CHOSEN_DEVICE + j // segment)
+            else:
+                assert device_id == DeviceType.CPU_DEVICE or device_id == DeviceType.ANY_GPU_DEVICE
             pre_configuration_string = f"{{ {device_id} : "
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"

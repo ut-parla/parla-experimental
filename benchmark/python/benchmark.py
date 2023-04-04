@@ -1,4 +1,5 @@
 import time
+import sys
 
 from parla.utility.graphs import DeviceType, TaskConfig, TaskConfigs
 from parla.utility.graphs import IndependentConfig, SerialConfig, ReductionConfig, RunConfig
@@ -10,148 +11,150 @@ from parla.utility.graphs import MovementType
 from parla.utility.execute import verify_order, verify_dependencies, verify_complete, verify_time, verify_states
 from parla.utility.execute import GraphContext
 
-movement_type = MovementType.NO_MOVEMENT
-#movement_type = MovementType.LAZY_MOVEMENT
+#movement_type = MovementType.NO_MOVEMENT
 #movement_type = MovementType.EAGER_MOVEMENT
 data_scale = 1
 
-num_gpus = 4
+num_gpus = int(sys.argv[1])
 
-def serial_scaling():
-    for ng in range(1, num_gpus + 1):
-        for fixedp in (True, False):
-            max_time = 100
-            task_time = 500
-            n = 1000
-            device_type = DeviceType.USER_CHOSEN_DEVICE
-            cost = 1.0
-            concurrent_tasks = ng
-            
-            if ng == 0:
-                cost = 1.0 / concurrent_tasks
-                device_type = DeviceType.CPU_DEVICE
+fixedp = True
+if sys.argv[2] == "fixed-placement":
+    fixedp = True
+elif sys.argv[2] == "automatic":
+    fixedp = False
+ 
+movement_type = MovementType.LAZY_MOVEMENT
+if sys.argv[3] == "no":
+    movement_type = MovementType.NO_MOVEMENT
+elif sys.argv[3] == "lazy":
+    movement_type = movement_type.LAZY_MOVEMENT
+elif sys.argv[3] == "eager":
+    movement_type = movement_type.EAGER_MOVEMENT
 
-            task_configs = TaskConfigs()
-            task_configs.add(device_type, TaskConfig(
-                task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
+total_data_width=62500
+n=1000
+task_time=5000
+max_time=100
 
-            config = SerialConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
-                total_data_width=6250, steps=n, chains=1, task_config=task_configs,
-                num_gpus=ng, fixed_placement=fixedp)
+def serial_scalinum_gpus():
+    device_type = DeviceType.USER_CHOSEN_DEVICE
+    cost = 1.0
+    concurrent_tasks = num_gpus
+    if num_gpus == 0:
+        cost = 1.0 / concurrent_tasks
+        device_type = DeviceType.CPU_DEVICE
 
-            with GraphContext(config, name="serial") as g:
+    task_configs = TaskConfigs()
+    task_configs.add(device_type, TaskConfig(
+        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
 
-                logpath = g.tmplogpath
+    config = SerialConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
+        total_data_width=total_data_width, steps=n, chains=1, task_config=task_configs,
+        num_gpus=num_gpus, fixed_placement=fixedp)
 
-                run_config = RunConfig(
-                    outer_iterations=1,
-                    inner_iterations=1,
-                    verbose=False,
-                    num_gpus=ng,
-                    logfile=logpath,
-                    movement_type=movement_type,
-                    data_scale=data_scale)
+    with GraphContext(config, name="serial") as g:
 
-                timing = g.run(run_config, max_time=max_time)
-                log_times, log_graph, log_states = parse_blog(logpath)
-                assert (verify_complete(log_graph, g.graph))
-                assert (verify_dependencies(log_graph, g.graph))
-                assert (verify_order(log_times,g.graph))
-                assert (verify_states(log_states))
+        logpath = g.tmplogpath
 
-            print("[serial] # gpus:", ng, " fixed:", fixedp, " mean time:", timing.mean, flush=True)
+        run_config = RunConfig(
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            num_gpus=num_gpus,
+            logfile=logpath,
+            movement_type=movement_type,
+            data_scale=data_scale)
 
+        timinum_gpus = g.run(run_config, max_time=max_time)
+        log_times, log_graph, log_states = parse_blog(logpath)
+        assert (verify_complete(log_graph, g.graph))
+        assert (verify_dependencies(log_graph, g.graph))
+        assert (verify_order(log_times,g.graph))
+        assert (verify_states(log_states))
 
-def independent_scaling():
-    for ng in range(1, num_gpus + 1):
-        for fixedp in (True, False):
-
-            max_time = 500
-            task_time = 5000
-            n = 1000
-            device_type = DeviceType.ANY_GPU_DEVICE
-            cost = 1.0
-            if ng == 0:
-                concurrent_tasks = ng
-                cost = 1.0 / concurrent_tasks
-                device_type = DeviceType.CPU_DEVICE
-
-            # Configuration for task graph generation
-            task_configs = TaskConfigs()
-            task_configs.add(device_type, TaskConfig(
-                task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-            config = IndependentConfig(data_pattern=DataInitType.NO_DATA,
-                total_data_width=0, task_count=n, task_config=task_configs, num_gpus=ng,
-                fixed_placement=fixedp)
-
-            with GraphContext(config, name="independent") as g:
-
-                logpath = g.tmplogpath
-
-                run_config = RunConfig(
-                    outer_iterations=1,
-                    inner_iterations=1,
-                    verbose=False,
-                    logfile=logpath,
-                    num_gpus=ng,
-                    movement_type=movement_type,
-                    data_scale=data_scale)
-
-                timing = g.run(run_config, max_time=max_time)
-                log_times, log_graph, log_states = parse_blog(logpath)
-                assert (verify_complete(log_graph, g.graph))
-                assert (verify_dependencies(log_graph, g.graph))
-                assert (verify_order(log_times,g.graph))
-                assert (verify_states(log_states))
-
-            print("[indp] # gpus:", ng, " fixed:", fixedp, " mean time:", timing.mean, flush=True)
+    print("serial, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
 
 
-def reduction_scaling():
-    for ng in range(1, num_gpus + 1):
-        for fixedp in (False, True):
-            max_time = 500
-            task_time = 5000
-            device_type = DeviceType.USER_CHOSEN_DEVICE
-            cost = 1.0
-            if num_gpus == 0: 
-                concurrent_tasks = num_gpus
-                cost = 1.0 / concurrent_tasks
-                device_type = DeviceType.CPU_DEVICE
+def independent_scalinum_gpus():
+    device_type = DeviceType.ANY_GPU_DEVICE
+    cost = 1.0
+    if num_gpus == 0:
+        concurrent_tasks = num_gpus
+        cost = 1.0 / concurrent_tasks
+        device_type = DeviceType.CPU_DEVICE
 
-            # Configuration for task graph generation
-            task_configs = TaskConfigs()
-            task_configs.add(device_type, TaskConfig(
-                task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-            config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
-                fixed_placement=fixedp,
-                total_data_width=6250, levels=8, branch_factor=2,
-                task_config=task_configs, num_gpus=num_gpus)
+    # Configuration for task graph generation
+    task_configs = TaskConfigs()
+    task_configs.add(device_type, TaskConfig(
+        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
+    config = IndependentConfig(data_pattern=DataInitType.NO_DATA,
+        total_data_width=total_data_width, task_count=n, task_config=task_configs, num_gpus=num_gpus,
+        fixed_placement=fixedp)
 
-            with GraphContext(config, name="reduction") as g:
+    with GraphContext(config, name="independent") as g:
 
-                logpath = g.tmplogpath
+        logpath = g.tmplogpath
 
-                run_config = RunConfig(
-                    outer_iterations=1,
-                    inner_iterations=1,
-                    verbose=False,
-                    logfile=logpath,
-                    num_gpus=num_gpus,
-                    movement_type=movement_type,
-                    data_scale=data_scale)
+        run_config = RunConfig(
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            logfile=logpath,
+            num_gpus=num_gpus,
+            movement_type=movement_type,
+            data_scale=data_scale)
 
-                timing = g.run(run_config, max_time=max_time)
-                log_times, log_graph, log_states = parse_blog(logpath)
-                assert (verify_complete(log_graph, g.graph))
-                assert (verify_dependencies(log_graph, g.graph))
-                assert (verify_order(log_times,g.graph))
-                assert (verify_states(log_states))
+        timinum_gpus = g.run(run_config, max_time=max_time)
+        log_times, log_graph, log_states = parse_blog(logpath)
+        assert (verify_complete(log_graph, g.graph))
+        assert (verify_dependencies(log_graph, g.graph))
+        assert (verify_order(log_times,g.graph))
+        assert (verify_states(log_states))
 
-            print("[reduction] # gpus:", ng, " fixed:", fixedp, " mean time:", timing.mean, flush=True)
+    print("independent, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
+
+
+def reduction_scalinum_gpus():
+    device_type = DeviceType.ANY_GPU_DEVICE
+    cost = 1.0
+    if num_gpus == 0: 
+        concurrent_tasks = num_gpus
+        cost = 1.0 / concurrent_tasks
+        device_type = DeviceType.CPU_DEVICE
+
+    # Configuration for task graph generation
+    task_configs = TaskConfigs()
+    task_configs.add(device_type, TaskConfig(
+        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
+    config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
+        fixed_placement=fixedp, num_gpus=num_gpus,
+        total_data_width=total_data_width, levels=9, branch_factor=2,
+        task_config=task_configs)
+
+    with GraphContext(config, name="reduction") as g:
+
+        logpath = g.tmplogpath
+
+        run_config = RunConfig(
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            logfile=logpath,
+            num_gpus=num_gpus,
+            movement_type=movement_type,
+            data_scale=data_scale)
+
+        timinum_gpus = g.run(run_config, max_time=max_time)
+        log_times, log_graph, log_states = parse_blog(logpath)
+        assert (verify_complete(log_graph, g.graph))
+        assert (verify_dependencies(log_graph, g.graph))
+        assert (verify_order(log_times,g.graph))
+        assert (verify_states(log_states))
+
+    print("reduction, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
 
 
 if __name__ == "__main__":
-    independent_scaling()
-    serial_scaling()
-    reduction_scaling()
+    independent_scalinum_gpus()
+    serial_scalinum_gpus()
+    reduction_scalinum_gpus()

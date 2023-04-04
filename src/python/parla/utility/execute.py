@@ -88,7 +88,7 @@ def get_placement_set_from(ps_str_set, num_gpus):
     for ps_str in ps_str_set[0]:
         dev_type = int(ps_str)
         if dev_type == DeviceType.ANY_GPU_DEVICE:
-            ps_set.append(gpu)
+            ps_set.append(gpu[{"vcus":1000}])
         elif dev_type == DeviceType.CPU_DEVICE:
             ps_set.append(cpu)
         # TODO(hc): just assume that system has 4 gpus.
@@ -254,7 +254,7 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
             gil_fraction = config.gil_fraction
 
         #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-        #      " placement:", placement_set)
+        #      " placement:", placement_set, " placement key:", placement_set_str)
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
@@ -423,10 +423,8 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
-        '''
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
-        '''
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
