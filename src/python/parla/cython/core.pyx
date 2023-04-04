@@ -167,6 +167,10 @@ cdef class PyInnerTask:
         _c_task.set_id(idx)
         _c_task.set_py_task(<void *> python_task)
 
+    cpdef set_py_task(self, python_task):
+        cdef InnerTask* _c_task = self.c_task
+        _c_task.set_py_task(<void*> python_task)
+
     cpdef update_name(self, string name):
         cdef InnerTask* _c_task = self.c_task
         self.name = name
@@ -241,6 +245,7 @@ cdef class PyInnerTask:
         dependencies = []
         for i in range(num_deps):
             c_dependency = <InnerTask*> c_dependencies[i]
+            print("converting to python task: ")
             py_dependency = <PyInnerTask> c_dependency.get_py_task()
             dependencies.append(py_dependency)
 

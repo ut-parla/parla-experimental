@@ -313,10 +313,11 @@ int InnerTask::get_num_dependents() { return this->dependents.atomic_size(); }
 std::vector<void *> InnerTask::get_dependencies() {
   std::vector<void *> dependency_list;
   this->dependencies.lock();
+  std::cout << "Dependencies Size: " << this->dependencies.size_unsafe() << std::endl;
   for (size_t i = 0; i < this->dependencies.size_unsafe(); i++) {
     dependency_list.push_back(this->dependencies.get_unsafe(i));
+    std::cout << this->dependencies.get_unsafe(i)->get_name() << std::endl;
   }
-
   this->dependencies.unlock();
   return dependency_list;
 }

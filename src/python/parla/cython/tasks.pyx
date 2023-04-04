@@ -332,7 +332,10 @@ class Task:
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
+        print("Trying to get dependencies: ", self.name)
+
         dependencies = self.get_dependencies()
+
         print("Dependencies: {}".format(dependencies), flush=True)
 
         for task in dependencies:
@@ -572,6 +575,7 @@ class DataMovementTask(Task):
         self.assigned_devices = attrs.assigned_devices
         self.scheduler = scheduler
         self.inner_task.set_c_task(attrs.c_attrs)
+        self.inner_task.set_py_task(self)
         self.dev_id = attrs.dev_id
         self.runahead = runahead
 

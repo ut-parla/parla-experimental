@@ -435,6 +435,7 @@ public:
   void synchronize_events() {
     this->events.lock();
     size_t num_events = this->events.size();
+    std::cout << "Synchronizing on events: " << num_events << std::endl;
     for (size_t i = 0; i < num_events; i++) {
       uintptr_t event_ptr = this->events[i];
       event_synchronize(event_ptr);
@@ -475,9 +476,10 @@ public:
       size_t num_events = dependency_events.size();
       for (size_t j = 0; j < num_events; j++) {
         uintptr_t event_ptr = dependency_events.at_unsafe(j);
-
+	
         // Wait on the event on all of our streams
         this->streams.lock();
+	std::cout << "Synchronizing this event on stream: " << this->streams.size() << std::endl;
         for (size_t k = 0; k < this->streams.size(); k++) {
           uintptr_t stream_ptr = this->streams.at_unsafe(k);
           event_wait(event_ptr, stream_ptr);

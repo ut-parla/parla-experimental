@@ -9,6 +9,9 @@ except ImportError:
     CUPY_ENABLED = False
 
 
+USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == 1)
+_global_data_tasks = {}
+
 class SynchronizationType(IntEnum):
     """
     This class declares the type (if any) of runeahead synchronization

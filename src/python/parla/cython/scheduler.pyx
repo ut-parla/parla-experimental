@@ -3,7 +3,7 @@ from typing import Collection, Optional, Union, List, Dict
 import threading
 from collections import deque, namedtuple, defaultdict
 import inspect 
-
+import os
 from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
 
 import traceback
@@ -17,6 +17,7 @@ from parla.cython import core
 from parla.cython.cyparray import CyPArray
 
 from parla.common.globals import _Locals as Locals 
+from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks
 from parla.common.parray.core import PArray
 
 Task = tasks.Task
@@ -122,7 +123,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
     def start(self, initialize=True):
         super(ControllableThread, self).start()
 
-        self._initialize()
+        init_threads = os.getenv("PARLA_PREINIT_THREADS")
+        if init_threads:
+            self._initialize()
 
     def _initialize(self):
         device_manager = self.scheduler.device_manager
@@ -198,6 +201,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
                         self.task.instantiate(self.task_attrs, self.scheduler)
+                        if USE_PYTHON_RUNAHEAD:
+                            #This is a back up for testing
+                            #Need to keep the python object alive
+                            #Currently this is never cleaned up
+                            _global_data_tasks[id(self.task)] = self.task
+
                     nvtx.pop_range(domain="Python Runtime")
 
                     print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
@@ -224,6 +233,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #handle event wait in C++ (good if num_dependencies large)
                         #active_task.handle_runahead_dependencies()
                         #handle event wait in python 
+                        print("HANDLING RUNAHEAD DEPENDENCIES", active_task, flush=True)
+
+                        print("Global data tasks: ", _global_data_tasks, flush=True)
+
                         active_task.py_handle_runahead_dependencies() 
 
                         print("Running Task", active_task, flush=True)
