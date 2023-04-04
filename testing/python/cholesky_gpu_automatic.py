@@ -2,7 +2,7 @@
 A naive implementation of blocked Cholesky using Numba kernels on CPUs.
 """
 
-from parla.common.parray import asarray_batch
+from parla.common.parray import asarray
 from cupy.cuda import device
 from cupy.cuda import cublas
 import cupy as cp
@@ -278,7 +278,14 @@ def main():
                             ap_list[i].append(cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F'))
                             cp.cuda.Device().synchronize()
-                ap_parray = asarray_batch(ap_list)
+
+                ap_parray = []
+                for i in range(n//block_size):
+                    ap_parray.append([])
+                    for j in range(n//block_size):
+                        ap_parray[i].append(
+                            asarray(ap_list[i][j], name=f"ap_{i}_{j}"))
+
             else:
                 rs = TaskSpace("Reset")
                 for i in range(n//block_size):
