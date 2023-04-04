@@ -345,10 +345,10 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 void RuntimeReserver::enqueue(InnerTask *task) {
   bool is_data_task = task->is_data_task();
   if (!is_data_task) {
-    std::cout << "RuntimeReserver::enqueue: compute task" << std::endl;
+    // std::cout << "RuntimeReserver::enqueue: compute task" << std::endl;
     this->runnable_tasks->enqueue(task);
   } else {
-    std::cout << "RuntimeReserver::enqueue: data task" << std::endl;
+    // std::cout << "RuntimeReserver::enqueue: data task" << std::endl;
     this->movement_tasks->enqueue(task);
   }
 }
@@ -475,8 +475,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   num_tasks = 0;
   while (has_task) {
     num_tasks = this->get_movement_count();
-    std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
-              << std::endl;
+    // std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
+    //           << std::endl;
     has_task = num_tasks > 0;
     if (has_task) {
       InnerTask *task = this->movement_tasks->front();

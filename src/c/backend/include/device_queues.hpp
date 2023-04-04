@@ -34,7 +34,8 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    std::cout << "DeviceQueue::enqueue() - " << task->get_name() << std::endl;
+    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
+    // std::endl;
 
     // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
@@ -195,8 +196,8 @@ public:
     // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     // std::cout << "ndevices: " << this->ndevices << std::endl;
     // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
-    std::cout << "Enqueuing task to phase manager: " << task->get_name()
-              << std::endl;
+    // std::cout << "Enqueuing task to phase manager: " << task->get_name()
+    //           << std::endl;
     task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
       this->device_queues[device->get_global_id()]->enqueue(task);
