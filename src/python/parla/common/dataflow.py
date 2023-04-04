@@ -1,6 +1,8 @@
+from crosspy import CrossPyArray
+
 from parla.common.parray.core import PArray
 
-from typing import List, Any, Tuple
+from typing import List, Any, Tuple, Union
 from itertools import chain
 
 
@@ -41,11 +43,12 @@ class Dataflow:
     The dataflow can be iterated through DataflowIterator.
     """
 
-    def __init__(self, input: List[Tuple[PArray, int]], \
-                 output: List[Tuple[PArray, int]], inout: List[Tuple[PArray, int]]):
-        self._input = input
-        self._output = output
-        self._inout = inout
+    def __init__(self, input: List[Union[CrossPyArray, Tuple[PArray, int]]],
+                 output: List[Union[CrossPyArray, Tuple[PArray, int]]],
+                 inout: List[Union[CrossPyArray, Tuple[PArray, int]]]):
+        self._input = self.process_crosspys(input)
+        self._output = self.process_crosspys(output)
+        self._inout = self.process_crosspys(inout)
 
     @property
     def input(self) -> List:
@@ -65,26 +68,32 @@ class Dataflow:
             return []
         return self._inout
 
-    def auto_move(self):
-        pass
-        '''
+    def process_crosspys(
+        self, _in: List[Union[CrossPyArray, Tuple[PArray, int]]]) \
+            -> List[Tuple[PArray, int]]:
         """
-        Move all data to the current device (of the corresponding tasks).
-        Only PArray is supported.
+        Check elements of IN/OUT/INOUT parameters in @spawn
+        and convert to Tuple[PArray, int] if an element is a CrossPyArray
         """
-        # query the current device id
-        device = task_runtime.get_current_devices()[0]
-        if device.architecture == cpu:
-            device_id = CPU_INDEX
-        else:  # arch is GPU
-            device_id = device.index
-
-        for array in self._input:
-            array._auto_move(device_id, do_write=False)
-
-        for array in chain(self._output, self._inout):
-            array._auto_move(device_id, do_write=True)
-        '''
+        _out = []
+        if _in is not None:
+            for element in _in:
+                if isinstance(element, tuple):
+                    assert isinstance(element[0], PArray)
+                    assert isinstance(element[1], int)
+                    _out.append(element)
+                elif isinstance(element, CrossPyArray):
+                    # A Crosspy's partition number is corresponding
+                    # to an order of the placement.
+                    for i, parray_list in enumerate(element.device_view()):
+                        for parray in parray_list:
+                            if isinstance(parray, PArray):
+                                # Skip CuPy or NumPy arrays.
+                                _out.element((i, parray))
+                else:
+                    raise TypeError("IN/OUT/INOUT should be either a tuple of PArray",
+                                    "and its partition number or CrossPyArray")
+        return _out
 
     def __iter__(self):
         return DataflowIterator(self)
