@@ -217,6 +217,8 @@ public:
     } else if constexpr (category == ResourceCategory::Movement) {
       for (auto i = 0; i < movement_resources.size(); i++) {
         const int idx = static_cast<int>(movement_resources[i]);
+        std::cout << "increase_movement: " << this->resources[idx].load() << " "
+                  << other.resources[idx].load() << std::endl;
         this->resources[idx].fetch_add(other.resources[idx].load());
       }
     }
