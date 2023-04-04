@@ -38,12 +38,42 @@ def make_parrays(data_list):
         l.append(asarray(data))
     return l
 
+
+def estimate_frequency(n_samples= 10, ticks=1900000000):
+    import cupy as cp
+    stream = cp.cuda.get_current_stream()
+    cycles = ticks
+    device_id = 0
+
+    print(f"Starting GPU Frequency benchmark.")
+    times = np.zeros(n_samples)
+    for i in range(n_samples):
+
+        start = time.perf_counter()
+        gpu_bsleep_nogil(device_id, int(ticks), stream)
+        stream.synchronize()
+        end = time.perf_counter()
+        print(f"...collected frequency sample {i} ", end-start)
+
+        times[i] = (end-start)
+
+    times = times[2:]
+    elapsed = np.mean(times)
+    estimated_speed = cycles/np.mean(times)
+    median_speed = cycles/np.median(times)
+
+    print("Finished Benchmark.")
+    print("Estimated GPU Frequency: Mean: ", estimated_speed, ", Median: ", median_speed, flush=True)
+    return estimated_speed
+
+
 class GPUInfo():
 
     #approximate average on frontera RTX
-    cycles_per_second = 1919820866.3481758
+    #cycles_per_second = 1919820866.3481758
     #cycles_per_second = 867404498.3008006
-#cycles_per_second = 47994628114801.04
+    #cycles_per_second = 47994628114801.04
+    cycles_per_second = 1949802881.4819772
 
     def update(self, cycles):
         self.cycles_per_second = cycles
@@ -63,16 +93,16 @@ def get_placement_set_from(ps_str_set, num_gpus):
             ps_set.append(cpu)
         # TODO(hc): just assume that system has 4 gpus.
         elif dev_type == DeviceType.GPU_0:
-            ps_set.append(gpu(0))
+            ps_set.append(gpu(0)[{"vcus":1000}])
         elif dev_type == DeviceType.GPU_1:
-            ps_set.append(gpu(1))
+            ps_set.append(gpu(1)[{"vcus":1000}])
         elif dev_type == DeviceType.GPU_2:
-            ps_set.append(gpu(2))
+            ps_set.append(gpu(2)[{"vcus":1000}])
         elif dev_type == DeviceType.GPU_3:
-            ps_set.append(gpu(3))
+            ps_set.append(gpu(3)[{"vcus":1000}])
         elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
             gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
-            ps_set.append(gpu(gpu_idx))
+            ps_set.append(gpu(gpu_idx)[{"vcus":1000}])
         else:
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
@@ -150,6 +180,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
+    task_internal_start_t = time.perf_counter()
     # Simulate task work
     kernel_time = total_time / gil_accesses
     free_time = kernel_time * (1 - gil_fraction)
@@ -166,12 +197,17 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
+        parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
 
     if config.verbose:
         task_internal_end_t = time.perf_counter()
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
+
+    task_internal_end_t = time.perf_counter()
+    task_internal_duration = task_internal_end_t - task_internal_start_t
+    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
 
     return None
 
@@ -217,10 +253,8 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        '''
-        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-              " placement:", placement_set)
-        '''
+        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+        #      " placement:", placement_set)
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():

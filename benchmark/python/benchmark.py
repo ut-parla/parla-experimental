@@ -20,9 +20,9 @@ num_gpus = 4
 def serial_scaling():
     for ng in range(1, num_gpus + 1):
         for fixedp in (True, False):
-            max_time = 10
-            task_time = 16000
-            n = 300
+            max_time = 100
+            task_time = 500
+            n = 1000
             device_type = DeviceType.USER_CHOSEN_DEVICE
             cost = 1.0
             concurrent_tasks = ng
@@ -66,9 +66,9 @@ def independent_scaling():
     for ng in range(1, num_gpus + 1):
         for fixedp in (True, False):
 
-            max_time = 50
-            task_time = 16000
-            n = 3000
+            max_time = 500
+            task_time = 5000
+            n = 1000
             device_type = DeviceType.ANY_GPU_DEVICE
             cost = 1.0
             if ng == 0:
@@ -81,7 +81,7 @@ def independent_scaling():
             task_configs.add(device_type, TaskConfig(
                 task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
             config = IndependentConfig(data_pattern=DataInitType.NO_DATA,
-                total_data_width=6250, task_count=n, task_config=task_configs, num_gpus=ng,
+                total_data_width=0, task_count=n, task_config=task_configs, num_gpus=ng,
                 fixed_placement=fixedp)
 
             with GraphContext(config, name="independent") as g:
@@ -109,9 +109,9 @@ def independent_scaling():
 
 def reduction_scaling():
     for ng in range(1, num_gpus + 1):
-        for fixedp in [True]:
-            max_time = 100
-            task_time = 16000
+        for fixedp in (False, True):
+            max_time = 500
+            task_time = 5000
             device_type = DeviceType.USER_CHOSEN_DEVICE
             cost = 1.0
             if num_gpus == 0: 
