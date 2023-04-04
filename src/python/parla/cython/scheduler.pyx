@@ -224,8 +224,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         active_task.environment = device_context
 
 
-                        #Pass streams and event pointers to c++ task
-                        #(only saves initial runtime ones, TODO(wlr): save any user ones after body returns)
+                        #Writes all 'default' streams and event pointers to c++ task
+                        #This allows their synchronization without the GIL and faster iteration over them
+                        #(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
                         device_context.write_to_task(active_task)
                         #print("Wrote enviornment to task", active_task, flush=True)
 
