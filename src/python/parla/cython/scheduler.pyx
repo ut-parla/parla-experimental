@@ -276,7 +276,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.add_dependencies(active_task.dependencies, process=False)
                             nvtx.pop_range(domain="Python Runtime")
                         
-                        elif  isinstance(final_state, tasks.TaskCompleted):
+                        elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
                         #print("Cleaning up Task", active_task, flush=True)
