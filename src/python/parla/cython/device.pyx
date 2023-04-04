@@ -370,7 +370,7 @@ class Stream:
         return self._stream
 
     def synchronize(self):
-        print("Synchronizing stream", flush=True)
+        pass
 
     def create_event(self):
         return None
@@ -448,7 +448,7 @@ class CupyStream(Stream):
         return self._stream
 
     def synchronize(self):
-        print("Synchronizing stream", flush=True)
+        #print("Synchronizing stream", flush=True)
         self._stream.synchronize()
 
     def create_event(self):
