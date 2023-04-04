@@ -1,12 +1,14 @@
 import argparse
 
-from parla import Parla, spawn, TaskSpace, sleep_nogil, parray
+from parla import Parla, spawn, TaskSpace, sleep_nogil, parray, gpu_sleep_nogil
 from parla.cython.device_manager import cpu, gpu
 from parla.common.globals import get_current_devices
 import numpy as np
 # from sleep.core import bsleep
 
-bsleep = sleep_nogil
+bsleep = gpu_sleep_nogil
+CYCLES = 1000000000
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-dev_config", type=str)
@@ -14,20 +16,29 @@ args = parser.parse_args()
 
 
 def main(T):
-    a = np.array([[1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6], [1, 2, 4, 5, 6]])
+    a = np.array([[1, 2, 4, 5, 6], [1, 2, 4, 5, 6],
+                 [1, 2, 4, 5, 6], [1, 2, 4, 5, 6]])
     a = parray.asarray(a, name='A')
 
     @spawn(T[0], placement=[gpu(0), gpu(1)])
     def task1():
-        print("+HELLO OUTER 0", flush=True)
-        bsleep(1000)
-        print("-HELLO OUTER 0", flush=True)
+        devices = get_current_devices()
+
+        for device in devices:
+            with device:
+                print("+ 1 HELLO INNER", flush=True)
+                bsleep(device.gpu_id, CYCLES, device.stream.stream)
+                print("- 1 HELLO INNER", flush=True)
 
     @spawn(T[1], dependencies=[T[0]], placement=[gpu(2)])
     def task2():
-        print("+HELLO OUTER 1", flush=True)
-        bsleep(1000)
-        print("-HELLO OUTER 1", flush=True)
+        devices = get_current_devices()
+
+        for device in devices:
+            with device:
+                print("+ 1 HELLO INNER", flush=True)
+                bsleep(device.gpu_id, CYCLES, device.stream.stream)
+                print("- 1 HELLO INNER", flush=True)
 
 
 if __name__ == "__main__":
