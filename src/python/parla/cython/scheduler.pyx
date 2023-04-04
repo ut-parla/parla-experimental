@@ -5,6 +5,7 @@ from collections import deque, namedtuple, defaultdict
 import inspect 
 import os
 from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
+from parla.common.globals import SynchronizationType as SyncType
 
 import traceback
 import sys
@@ -280,17 +281,24 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
                         #print("Cleaning up Task", active_task, flush=True)
+
+                        if self.runahead == SyncType.NONE:
+                            device_context.finalize()
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
                             self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            device_context.synchronize(events=True)
+                            if self.runahead != SyncType.NONE:
+                                device_context.synchronize(events=True)
                             self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
                             #Handle synchronization in C++
                             self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
 
                         #print("Finished Cleaning up Task", active_task, flush=True)
+
+                        if self.runahead != SyncType.NONE:
+                            device_context.return_streams()
 
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:

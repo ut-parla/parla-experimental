@@ -818,6 +818,14 @@ class TaskEnvironment:
     def __len__(self):
         return len(self.env_list)
 
+    def return_streams(self):
+        for env in self.env_list:
+            env.return_streams()
+        
+        stream_pool = get_stream_pool()
+        for stream in self.stream_list:
+            stream_pool.return_stream(stream)
+
     def finalize(self):
         stream_pool = get_stream_pool()
 
@@ -1119,6 +1127,9 @@ class CPUEnvironment(TerminalEnvironment):
     def finalize(self):
         pass
 
+    def return_streams(self):
+        pass
+
 class GPUEnvironment(TerminalEnvironment):
 
     def __init__(self, device, blocking=False):
@@ -1153,6 +1164,11 @@ class GPUEnvironment(TerminalEnvironment):
         stream_pool = get_stream_pool()
         for stream in self.stream_list:
             stream.synchronize()
+            stream_pool.return_stream(stream)
+
+    def return_streams(self):
+        stream_pool = get_stream_pool()
+        for stream in self.stream_list:
             stream_pool.return_stream(stream)
 
 

@@ -9,7 +9,7 @@ except ImportError:
     CUPY_ENABLED = False
 
 
-USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "0") == "1")
+USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
 PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
@@ -25,11 +25,14 @@ class SynchronizationType(IntEnum):
     NONE = 0
     BLOCKING = 1
     NON_BLOCKING = 2
+    USER = 3
 
 
 SYNC_FLAG = os.getenv("PARLA_DEFAULT_SYNC", "2")
 
-if SYNC_FLAG == "1":
+if SYNC_FLAG == "0":
+    default_sync = SynchronizationType.NONE
+elif SYNC_FLAG == "1":
     default_sync = SynchronizationType.BLOCKING
 else:
     default_sync = SynchronizationType.NON_BLOCKING
