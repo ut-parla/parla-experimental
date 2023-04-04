@@ -59,7 +59,7 @@ if args.matrix is None:
 num_tests = args.trials
 
 loc = gpu
-
+v = 1000
 save_file = True
 check_nan = True
 check_error = False
@@ -145,7 +145,7 @@ def cholesky_blocked_inplace(a, block_size):
 
             loc_syrk = gpu
             if fixed:
-                loc_syrk = gpu(j % ngpus)[{'vcus': 0}]
+                loc_syrk = gpu(j % ngpus)[{'vcus': v}]
 
             @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], input=[(a[j][k], 0)], inout=[(a[j][j], 0)], placement=[loc_syrk])
             def t1():
@@ -167,7 +167,7 @@ def cholesky_blocked_inplace(a, block_size):
 
         loc_potrf = gpu
         if fixed:
-            loc_potrf = gpu(j % ngpus)[{'vcus': 0}]
+            loc_potrf = gpu(j % ngpus)[{'vcus': v}]
 
         @spawn(subcholesky[j], [gemm1[j, 0:j]], inout=[(a[j][j], 0)], placement=[loc_potrf])
         def t2():
@@ -189,7 +189,7 @@ def cholesky_blocked_inplace(a, block_size):
 
                 loc_gemm = gpu
                 if fixed:
-                    loc_gemm = gpu(i % ngpus)[{'vcus': 0}]
+                    loc_gemm = gpu(i % ngpus)[{'vcus': v}]
 
                 @spawn(gemm2[i, j, k], [solve[j, k], solve[i, k], gemm2[i, j, 0:k]], inout=[(a[i][j], 0)], input=[(a[i][k], 0), (a[j][k], 0)], placement=[loc_gemm])
                 def t3():
@@ -212,7 +212,7 @@ def cholesky_blocked_inplace(a, block_size):
 
             loc_trsm = gpu
             if fixed:
-                loc_trsm = gpu(i % ngpus)[{'vcus': 0}]
+                loc_trsm = gpu(i % ngpus)[{'vcus': v}]
 
             @spawn(solve[i, j], [gemm2[i, j, 0:j], subcholesky[j]], inout=[(a[i][j], 0)], input=[(a[j][j], 0)], placement=[loc_trsm])
             def t4():
