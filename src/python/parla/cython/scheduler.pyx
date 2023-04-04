@@ -17,7 +17,7 @@ from parla.cython import core
 from parla.cython.cyparray import CyPArray
 
 from parla.common.globals import _Locals as Locals 
-from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks
+from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
 from parla.common.parray.core import PArray
 
 Task = tasks.Task
@@ -123,8 +123,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
     def start(self, initialize=True):
         super(ControllableThread, self).start()
 
-        init_threads = os.getenv("PARLA_PREINIT_THREADS")
-        if init_threads:
+        if PREINIT_THREADS:
             self._initialize()
 
     def _initialize(self):
