@@ -663,6 +663,13 @@ class TaskEnvironment:
         """
         return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
 
+    @property
+    def gpu_id(self):
+        """
+        Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
+        """
+        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
 
