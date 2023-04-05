@@ -88,21 +88,21 @@ def get_placement_set_from(ps_str_set, num_gpus):
     for ps_str in ps_str_set[0]:
         dev_type = int(ps_str)
         if dev_type == DeviceType.ANY_GPU_DEVICE:
-            ps_set.append(gpu[{"vcus":1000}])
+            ps_set.append(gpu)
         elif dev_type == DeviceType.CPU_DEVICE:
             ps_set.append(cpu)
         # TODO(hc): just assume that system has 4 gpus.
         elif dev_type == DeviceType.GPU_0:
-            ps_set.append(gpu(0)[{"vcus":1000}])
+            ps_set.append(gpu(0))
         elif dev_type == DeviceType.GPU_1:
-            ps_set.append(gpu(1)[{"vcus":1000}])
+            ps_set.append(gpu(1))
         elif dev_type == DeviceType.GPU_2:
-            ps_set.append(gpu(2)[{"vcus":1000}])
+            ps_set.append(gpu(2))
         elif dev_type == DeviceType.GPU_3:
-            ps_set.append(gpu(3)[{"vcus":1000}])
+            ps_set.append(gpu(3))
         elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
             gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
-            ps_set.append(gpu(gpu_idx)[{"vcus":1000}])
+            ps_set.append(gpu(gpu_idx))
         else:
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)

@@ -95,6 +95,8 @@ def spawn(task=None,
             else:
                 # Only large values for ease of testing
                 vcus = int(vcus)
+        if memory is not None:
+            memory = int(memory)
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -118,7 +120,9 @@ def spawn(task=None,
         # If none of the placement is passed, make
         # all devices candidate.
         placement = placement if placement is not None else [
-            arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
+            arch[{'vcus': vcus if vcus is not None else 0,
+                  'memory': memory if memory is not None else 0}]
+                for arch in device_manager.get_all_architectures()]
 
         device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
         task.set_device_reqs(device_reqs)
