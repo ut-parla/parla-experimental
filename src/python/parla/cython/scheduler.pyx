@@ -304,9 +304,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
+                            core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         active_task.state = final_state
-                        core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
