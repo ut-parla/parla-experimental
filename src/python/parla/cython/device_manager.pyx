@@ -8,8 +8,6 @@ import os
 import psutil
 import yaml
 
-VCU_BASELINE=1000
-
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
@@ -28,6 +26,7 @@ CUPY_ENABLED = device.CUPY_ENABLED
 gpu = PyCUDAArchitecture()
 cpu = PyCPUArchitecture()
 
+VCU_BASELINE = device.VCU_BASELINE
 
 cdef class CyDeviceManager:
     """

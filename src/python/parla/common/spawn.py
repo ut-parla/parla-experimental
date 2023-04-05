@@ -31,7 +31,7 @@ nvtx.initialize()
 
 Resources = core.Resources
 
-VCU_BASELINE = device_manager.VCU_BASELINE
+VCU_BASELINE = device.VCU_BASELINE
 
 # @profile
 

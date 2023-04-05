@@ -13,6 +13,8 @@ from collections import defaultdict
 import os 
 from enum import IntEnum
 
+VCU_BASELINE=1000
+
 cdef class CyDevice:
     """
     A bridge between pure Python and C++ device objects.
@@ -127,7 +129,7 @@ class PyDevice:
     def __getitem__(self, param):
         if isinstance(param, Dict):
             memory_sz = 0 if "memory" not in param else param["memory"]
-            num_vcus = 0 if "vcus" not in param else param["vcus"]
+            num_vcus = 0 if "vcus" not in param else int(VCU_BASELINE * param["vcus"])
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
               " requirements.")
@@ -267,7 +269,7 @@ class PyArchitecture(metaclass=ABCMeta):
     def __getitem__(self, param):
         if isinstance(param, Dict):
             memory_sz = 0 if "memory" not in param else param["memory"]
-            num_vcus = 0 if "vcus" not in param else param["vcus"]
+            num_vcus = 0 if "vcus" not in param else int(VCU_BASELINE * param["vcus"])
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyArchitecture] Parameter should be a dictionary specifying resource",
               " requirements.")
