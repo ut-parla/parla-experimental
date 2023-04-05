@@ -4,19 +4,19 @@ import cupy as cp
 import numpy as np
 import crosspy as xp
 import math
+import time 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
 parser.add_argument('-num_partitions', type=int, default=2)
-parser.add_argument("-num_gpus", type=int, default=1)
+parser.add_argument("-ngpus", type=int, default=4)
 parser.add_argument("-m", type=int, default=5)
 args = parser.parse_args()
 
 np.random.seed(10)
 cp.random.seed(10)
 
-# TODO(wlr): Fuse this kernel
-ngpus = args.num_gpus
+ngpus = args.ngpus
 
 
 def partition_kernel(A, B, comp, pivot):
@@ -82,55 +82,61 @@ def scatter(splits, active_array, left_array, right_array):
                            ] = np.arange(size_prefix[i]+splits[i+1], size_prefix[i+1])
 
     # Performing left scatter
-    print("Left send indices: ", left_send_indices)
-    print("Right send indices: ", right_send_indices)
+    #print("Left send indices: ", left_send_indices)
+    #print("Right send indices: ", right_send_indices)
+    #print("Source len: ", len(active_array), "Index Len: ", len(left_send_indices), "Target Len: ", len(left_array))
     xp.alltoallv(active_array, left_send_indices, left_array)
 
     # Performing right scatter
-    right_array[:] = active_array[right_send_indices]
     xp.alltoallv(active_array, right_send_indices, right_array)
 
     return None
 
 
-def quicksort(global_array, active_array, active_slice, T):
+def quicksort(idx, global_array, active_array, active_slice, T):
 
-    print("----------------------")
-    print("Starting Partition on Slice: ", active_slice)
+    #print("----------------------")
+    #print(idx, "Starting Partition on Slice: ", active_slice)
     if isinstance(active_array, cp.ndarray):
         n_partitions = 1
     else:
         n_partitions = len(active_array.values())
-    print("CrossPy has n_partitions: ", n_partitions)
+    #print("CrossPy has n_partitions: ", n_partitions)
 
-    if len(active_array) == 1:
-        print("Base case reached, returning...")
+    if n_partitions == 1:
+        #print("Base case reached, returning...")
+        active_array.values()[0][0].sort()
+        print(idx, "active_array: ", active_array)
+        #Can't writeback
+        #global_array[active_slice] = active_array
+        #xp.alltoallv(active_array, np.arange(len(active_array)), global_array[active_slice])
+
         return
 
     pivot_idx = np.random.randint(0, len(active_array))
 
-    print("Active partition has shape: ", active_array.shape)
-    print("Active partition has len: ", len(active_array))
+    #print("Active partition has shape: ", active_array.shape)
+    #print("Active partition has len: ", len(active_array))
 
-    print("The chosen pivot index is: ", pivot_idx)
+    #print("The chosen pivot index is: ", pivot_idx)
 
     pivot = (int)(active_array[pivot_idx].to(-1))
 
-    print("The chosen pivot is: ", pivot)
+    #print("The chosen pivot is: ", pivot)
 
     # local partition
-    print("Performing local partition...")
+    #print("Performing local partition...")
     splits = partition(active_array, pivot)
-    print("Found the following splits: ", splits)
+    #print("Found the following splits: ", splits)
 
     local_split = np.sum(splits)
     local_left = local_split
     local_right = len(active_array) - local_split
 
     # Create new crosspy arrays for the left and right partitions
-    print("Number of elements in the left partition: ", local_left)
+    #print("Number of elements in the left partition: ", local_left)
     num_left_blocks = math.ceil(local_left / args.m)
-    print("Number of left blocks: ", num_left_blocks)
+    #print("Number of left blocks: ", num_left_blocks)
 
     # Allocate left array
     left_cupy_blocks = []
@@ -143,13 +149,13 @@ def quicksort(global_array, active_array, active_slice, T):
     if num_left_blocks == 0:
         left_array = None
     elif num_left_blocks == 1:
-        left_array = left_cupy_blocks[0]
+        left_array = xp.array(left_cupy_blocks[0])
     else:
         left_array = xp.array(left_cupy_blocks, dim=0)
 
-    print("Number of elements in the right partition: ", local_right)
+    #print("Number of elements in the right partition: ", local_right)
     num_right_blocks = (int)(math.ceil(local_right / args.m))
-    print("Number of right blocks: ", num_right_blocks)
+    #print("Number of right blocks: ", num_right_blocks)
 
     # Allocate right array
     right_cupy_blocks = []
@@ -162,36 +168,36 @@ def quicksort(global_array, active_array, active_slice, T):
     if num_right_blocks == 0:
         right_array = None
     elif num_right_blocks == 1:
-        right_array = right_cupy_blocks[0]
+        right_array = xp.array(right_cupy_blocks[0])
     else:
         right_array = xp.array(right_cupy_blocks, dim=0)
 
-    print("Left array: ", left_array)
-    print("Left array 0: ", left_array[0:2])
-    print("Right array: ", right_array)
-    print("Right array 0: ", right_array[0:2])
+    #print("Left array: ", left_array)
+    #print("Left array 0: ", left_array[0:2])
+    #print("Right array: ", right_array)
+    #print("Right array 0: ", right_array[0:2])
 
     # Scatter to other partitions
-    print("Performing local scatter...")
+    #print("Performing local scatter...")
 
-    print("Active array: ", active_array)
+    #print("Active array: ", active_array)
 
     scatter(splits, active_array, left_array, right_array)
 
     # # form slices to pass to children
-    # previous_start = active_slice.start
-    # previous_end = active_slice.stop
+    previous_start = active_slice.start
+    previous_end = active_slice.stop
 
-    # left_start = (int)(previous_start)
-    # left_end = (int)(previous_start + local_split)
-    # left_slice = slice(left_start, left_end)
+    left_start = (int)(previous_start)
+    left_end = (int)(previous_start + local_split)
+    left_slice = slice(left_start, left_end)
 
-    # right_start = (int)(previous_start + local_split)
-    # right_end = (int)(previous_end)
-    # right_slice = slice(right_start, right_end)
+    right_start = (int)(previous_start + local_split)
+    right_end = (int)(previous_end)
+    right_slice = slice(right_start, right_end)
 
-    # quicksort(global_array, left_array, left_slice, T)
-    # quicksort(global_array, right_array, right_slice, T)
+    quicksort(2*idx, global_array, left_array, left_slice, T)
+    quicksort(2*idx+1, global_array, right_array, right_slice, T)
 
 
 def main(T):
@@ -205,8 +211,8 @@ def main(T):
     # Initilize a CrossPy Array
     cupy_list = []
 
-    for i in range(args.num_partitions):
-        with cp.cuda.Device(0):
+    for i in range(args.ngpus):
+        with cp.cuda.Device(i):
             random_array = cp.random.randint(0, 100, size=args.m)
             random_array = random_array.astype(cp.int32)
             cupy_list.append(random_array)
@@ -214,7 +220,10 @@ def main(T):
     xA = xp.array(cupy_list, dim=0)
 
     print("Original Array: ", xA)
-    quicksort(xA, xA, slice(0, len(xA)), T)
+    
+    start_t = time.perf_counter()
+    quicksort(1, xA, xA, slice(0, len(xA)), T)
+    end_t = time.perf_counter()
 
     print("Sorted: ", xA)
 
