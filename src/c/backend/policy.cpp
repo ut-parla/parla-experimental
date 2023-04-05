@@ -17,7 +17,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   }
 
   // PArray locality.
-  size_t local_data = 0, nonlocal_data = 0;
+  Score_t local_data{0}, nonlocal_data{0};
   for (size_t i = 0; i < parray_list.size(); ++i) {
     InnerPArray *parray = parray_list[i].first;
     if (parray_tracker_->get_parray_state(global_dev_id, parray->parent_id)) {
@@ -26,6 +26,9 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
       nonlocal_data += parray->get_size();
     }
   }
+  Resource_t device_memory_size = device.query_resource(Resource::Memory);
+  local_data /= device_memory_size;
+  nonlocal_data /= device_memory_size;
 
 #if 0
   // TODO(hc): This metric is duplicated with data locality.
@@ -69,15 +72,17 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   // is -1, the device giving a score 0 can be chosen.
   *score = (*score < 0)? 0 : *score;
 
-  // std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-  //   " for task "<< task->get_name() << " local data: " << local_data <<
-  //   " non local data:" << nonlocal_data << " normalized device load:" <<
-  //   normalizd_device_load << "\n";
-  // std::cout << "\t[Device Requirement in device Requirement]\n"
-  //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-  //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
-  //           "
-  //           << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+#if 0
+  std::cout << "Device " << device.get_name() << "'s score: " << *score <<
+    " for task "<< task->get_name() << " local data: " << local_data <<
+    " non local data:" << nonlocal_data << " normalized device load:" <<
+    normalizd_device_load << "\n";
+  std::cout << "\t[Device Requirement in device Requirement]\n"
+            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
+            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
+            "
+            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+#endif
   return true;
 }
 
