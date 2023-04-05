@@ -17,9 +17,20 @@ def test_parray_task():
         def task2():
             pass
 
-
         @spawn(placement=[(gpu, cpu[{"vcus":0.4}], gpu[{"vcus":0.7, "memory":200}], gpu[{"vcus":0.3}])], vcus=1, memory=50000)
-        def task2():
+        def task3():
+            pass
+
+        @spawn(placement=[(gpu, cpu[{"vcus":0.4}], gpu[{"vcus":0.7, "memory":200}], gpu[{"vcus":0.3}])], vcus=1)
+        def task4():
+            pass
+
+        @spawn(placement=[(gpu, cpu[{"vcus":0.4}], gpu[{"vcus":0.7, "memory":200}], gpu[{"vcus":0.3}])], memory=1000)
+        def task5():
+            pass
+
+        @spawn(placement=[(gpu, cpu[{"vcus":0.4}], gpu[{"vcus":0.7, "memory":200}], gpu[{"vcus":0.3}])])
+        def task6():
             pass
 
 
