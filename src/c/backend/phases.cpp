@@ -8,6 +8,7 @@
 #include "include/runtime.hpp"
 #include <algorithm>
 #include <random>
+#include <utility>
 
 /**************************/
 // Mapper Implementation
@@ -261,7 +262,14 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       // Copy assigned devices to a compute task to a data movement task.
       // TODO(hc): When we support xpy, it should be devices corresponding
       //           to placements of the local partition.
-      datamove_task->add_assigned_device(task->get_assigned_devices()[i]);
+      auto device = task->get_assigned_devices()[i];
+      datamove_task->add_assigned_device(device);
+
+      datamove_task->device_constraints.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(device->get_global_id()),
+          std::forward_as_tuple(0, 0, 1));
+
       data_tasks.push_back(datamove_task);
       // Add the created data movement task to a reserved task queue.
       this->scheduler->increase_num_active_tasks();
@@ -335,7 +343,14 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 // Ready Phase implementation
 
 void RuntimeReserver::enqueue(InnerTask *task) {
-  this->runnable_tasks->enqueue(task);
+  bool is_data_task = task->is_data_task();
+  if (!is_data_task) {
+    // std::cout << "RuntimeReserver::enqueue: compute task" << std::endl;
+    this->runnable_tasks->enqueue(task);
+  } else {
+    // std::cout << "RuntimeReserver::enqueue: data task" << std::endl;
+    this->movement_tasks->enqueue(task);
+  }
 }
 
 void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
@@ -344,8 +359,18 @@ void RuntimeReserver::enqueue(std::vector<InnerTask *> &tasks) {
   }
 }
 
-size_t RuntimeReserver::get_count() {
+size_t RuntimeReserver::get_compute_count() {
   size_t count = this->runnable_tasks->size();
+  return count;
+}
+
+size_t RuntimeReserver::get_movement_count() {
+  size_t count = this->movement_tasks->size();
+  return count;
+}
+
+size_t RuntimeReserver::get_count() {
+  size_t count = this->get_compute_count() + this->get_movement_count();
   return count;
 }
 
@@ -366,6 +391,22 @@ bool RuntimeReserver::check_resources(InnerTask *task) {
   return status;
 }
 
+bool RuntimeReserver::check_data_resources(InnerTask *task) {
+  bool status = true;
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+
+    status = device_pool.check_greater<ResourceCategory::Movement>(task_pool);
+
+    if (!status) {
+      break;
+    }
+  }
+  return status;
+}
+
 void RuntimeReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
   for (Device *device : task->assigned_devices) {
@@ -373,6 +414,16 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
     device_pool.decrease<ResourceCategory::NonPersistent>(task_pool);
+  }
+}
+
+void RuntimeReserver::reserve_data_resources(InnerTask *task) {
+  // TODO(wlr): Add runtime error check if resource failure
+  for (Device *device : task->assigned_devices) {
+    ResourcePool_t &task_pool =
+        task->device_constraints[device->get_global_id()];
+    ResourcePool_t &device_pool = device->get_reserved_pool();
+    device_pool.decrease<ResourceCategory::Movement>(task_pool);
   }
 }
 
@@ -387,10 +438,13 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   // Useful for a multi-threaded scheduler. Not needed for a single-threaded.
   // std::unique_lock<std::mutex> lock(this->mtx);
 
+  // Try to launch as many compute tasks as possible
+  int fail_count = 0;
+  int max_fail = this->runnable_tasks->get_num_devices() * 2;
   bool has_task = true;
   int num_tasks = 0;
-  while (has_task) {
-    num_tasks = this->get_count();
+  while (has_task && (fail_count < max_fail)) {
+    num_tasks = this->get_compute_count();
     has_task = num_tasks > 0;
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
@@ -402,6 +456,43 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
           // Decrease Resources
           this->reserve_resources(task);
+          launcher->enqueue(task, worker);
+          this->status.increase(RuntimeReserverState::Success);
+        } else {
+          this->status.increase(RuntimeReserverState::NoWorker);
+          fail_count++; // += max_fail;
+          //break;        // No more workers available
+        }
+      } else {
+        this->status.increase(RuntimeReserverState::NoResource);
+        fail_count++;
+        //break; // No more resources available
+      }
+    } else {
+      this->status.increase(RuntimeReserverState::NoTask);
+      fail_count++; //+= max_fail;
+      //break;        // No more tasks available
+    }
+  }
+
+  // Try to launch as many data movement tasks as possible
+  has_task = true;
+  num_tasks = 0;
+  while (has_task) {
+    num_tasks = this->get_movement_count();
+    // std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
+    //           << std::endl;
+    has_task = num_tasks > 0;
+    if (has_task) {
+      InnerTask *task = this->movement_tasks->front();
+      bool has_resources = check_data_resources(task);
+      if (has_resources) {
+        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+        if (has_thread) {
+          InnerTask *task = this->movement_tasks->pop();
+          InnerWorker *worker = scheduler->workers.dequeue_worker();
+          // Decrease Resources
+          this->reserve_data_resources(task);
           launcher->enqueue(task, worker);
           this->status.increase(RuntimeReserverState::Success);
         } else {
@@ -425,7 +516,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  //std::cout << "Launcher::enqueue" << std::endl;
+  // std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);

@@ -4,6 +4,9 @@
 #include "device_manager.hpp"
 #include "runtime.hpp"
 
+// TODO(wlr): FIXME Change these back to smart pointers. I'm leaking memory
+// here...
+
 /**
  * Per-device container for tasks that are waiting to be dequeued.
  * Supports both single and multi-device tasks.
@@ -31,6 +34,9 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
+    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
+    // std::endl;
+
     // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
     num_tasks++;
@@ -171,6 +177,8 @@ public:
         // std::cout << "Initialized DeviceQueue for Device: "
         //           << device->get_name() << std::endl;
       }
+
+      this->last_device_idx = 0;
     }
 
     // std::cout << "Initialized PhaseManager with " << this->ndevices
@@ -188,6 +196,8 @@ public:
     // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     // std::cout << "ndevices: " << this->ndevices << std::endl;
     // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
+    // std::cout << "Enqueuing task to phase manager: " << task->get_name()
+    //           << std::endl;
     task->set_num_instances<category>();
     for (auto device : task->assigned_devices) {
       this->device_queues[device->get_global_id()]->enqueue(task);
@@ -234,14 +244,15 @@ public:
         current_idx = i % ndevices;
 
         // Try to get a non-waiting task
-        //std::cout << "Trying DeviceQueue " << current_idx << " Device: "
-        //          << this->device_queues[current_idx]->get_device()->get_name()
+        // std::cout << "Trying DeviceQueue " << current_idx << " Device: "
+        //          <<
+        //          this->device_queues[current_idx]->get_device()->get_name()
         //          << std::endl;
 
         InnerTask *task = this->device_queues[current_idx]->front();
         if (task != nullptr) {
           // std::cout << "Not null." << std::endl;
-          //std::cout << "Found task: " << task->get_name() << std::endl;
+          // std::cout << "Found task: " << task->get_name() << std::endl;
           this->last_device_idx = ++current_idx;
           return task;
         }
@@ -264,9 +275,9 @@ public:
   InnerTask *pop() {
     // std::cout << "PhaseManager::pop" << std::endl;
     int idx = (this->last_device_idx - 1) % this->ndevices;
-    //std::cout << "Popping from DeviceQueue " << idx << std::endl;
+    // std::cout << "Popping from DeviceQueue " << idx << std::endl;
     InnerTask *task = this->device_queues[idx]->pop();
-    //std::cout << "Popped task: " << task->get_name() << std::endl;
+    // std::cout << "Popped task: " << task->get_name() << std::endl;
     this->num_tasks--;
     return task;
   }
@@ -276,10 +287,6 @@ public:
   inline size_t get_num_device_queues() { return this->device_queues.size(); }
 
 protected:
-  // TODO(wlr): I keep changing this back and forth.
-  //  For now I think global indexing is easier to work with.
-  // std::array<std::vector<DeviceQueue<category>>, NUM_DEVICE_TYPES>
-  //     device_queues;
   std::vector<DeviceQueue<category> *> device_queues;
 
   int last_device_idx{0};
