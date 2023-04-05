@@ -210,14 +210,19 @@ public:
   RuntimeReserver(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {
     // std::cout << "RuntimeReserver created" << std::endl;
+    // FIXME: This leaks memory. Need to add deconstructor.
     this->runnable_tasks =
         new PhaseManager<ResourceCategory::NonPersistent>(devices);
+    this->movement_tasks =
+        new PhaseManager<ResourceCategory::Movement>(devices);
   }
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
+  size_t get_compute_count();
+  size_t get_movement_count();
   PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
     return this->runnable_tasks;
   }
@@ -228,12 +233,17 @@ public:
 
 protected:
   PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
+  PhaseManager<ResourceCategory::Movement> *movement_tasks;
+
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
   std::vector<InnerTask *> launchable_tasks_buffer;
 
   bool check_resources(InnerTask *task);
+  bool check_data_resources(InnerTask *task);
+
   void reserve_resources(InnerTask *task);
+  void reserve_data_resources(InnerTask *task);
 };
 
 class Launcher : virtual public SchedulerPhase {
