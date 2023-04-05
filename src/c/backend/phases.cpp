@@ -461,17 +461,17 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         } else {
           this->status.increase(RuntimeReserverState::NoWorker);
           fail_count++; // += max_fail;
-          break;        // No more workers available
+          //break;        // No more workers available
         }
       } else {
         this->status.increase(RuntimeReserverState::NoResource);
         fail_count++;
-        break; // No more resources available
+        //break; // No more resources available
       }
     } else {
       this->status.increase(RuntimeReserverState::NoTask);
       fail_count++; //+= max_fail;
-      break;        // No more tasks available
+      //break;        // No more tasks available
     }
   }
 
