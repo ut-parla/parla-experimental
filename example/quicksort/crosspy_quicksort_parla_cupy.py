@@ -234,22 +234,22 @@ def main():
     global_array = np.arange(global_size, dtype=np.int32)
     np.random.shuffle(global_array)
 
+    # Initilize a CrossPy Array
+    cupy_list = []
+
+    for i in range(args.ngpus):
+        with cp.cuda.Device(i) as device:
+            random_array = cp.random.randint(0, 100, size=args.m)
+            random_array = random_array.astype(cp.int32)
+            cupy_list.append(random_array)
+            device.synchronize()
+
+    xA = xp.array(cupy_list, dim=0)
+
+    print("Original Array: ", xA)
+    T = TaskSpace("T")
+    start_t = time.perf_counter()
     with Parla():
-        # Initilize a CrossPy Array
-        cupy_list = []
-
-        for i in range(args.ngpus):
-            with cp.cuda.Device(i) as device:
-                random_array = cp.random.randint(0, 100, size=args.m)
-                random_array = random_array.astype(cp.int32)
-                cupy_list.append(random_array)
-                device.synchronize()
-
-        xA = xp.array(cupy_list, dim=0)
-
-        print("Original Array: ", xA)
-        T = TaskSpace("T")
-        start_t = time.perf_counter()
         quicksort(1, xA, xA, slice(0, len(xA)), T)
     end_t = time.perf_counter()
 
