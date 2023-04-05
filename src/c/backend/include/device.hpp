@@ -35,16 +35,16 @@ public:
   Device() = delete;
 
   Device(DeviceType arch, DevID_t dev_id, MemorySz_t mem_sz, VCU_t num_vcus,
-         void *py_dev, int n_copy = 2)
+         void *py_dev, int copy_engines = 2)
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
     res_.set(Resource::VCU, num_vcus);
     res_.set(Resource::Memory, mem_sz);
-    res_.set(Resource::Copy, n_copy);
+    res_.set(Resource::Copy, copy_engines);
 
     reserved_res_.set(Resource::VCU, num_vcus);
     reserved_res_.set(Resource::Memory, mem_sz);
-    reserved_res_.set(Resource::Copy, n_copy);
+    reserved_res_.set(Resource::Copy, copy_engines);
 
     mapped_res_.set(Resource::VCU, 0);
     mapped_res_.set(Resource::Memory, 0);
@@ -140,7 +140,7 @@ protected:
 class CUDADevice : public Device {
 public:
   CUDADevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : Device(DeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 2) {}
+      : Device(DeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
 
 private:
 };

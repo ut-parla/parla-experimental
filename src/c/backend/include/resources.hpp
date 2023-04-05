@@ -247,11 +247,6 @@ public:
         const int idx = static_cast<int>(movement_resources[i]);
         this->resources[idx].fetch_sub(other.resources[idx].load());
       }
-    } else if constexpr (category == ResourceCategory::Movement) {
-      for (auto i = 0; i < movement_resources.size(); i++) {
-        const int idx = static_cast<int>(movement_resources[i]);
-        this->resources[idx].fetch_sub(other.resources[idx].load());
-      }
     }
   };
 
