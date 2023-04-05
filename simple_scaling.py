@@ -7,7 +7,11 @@ import numpy as np
 # from sleep.core import bsleep
 import time
 bsleep = gpu_sleep_nogil
-CYCLES = 10000000000
+
+
+#CYCLES = 10000000000 #5.525 seconds
+
+CYCLES = 100000000 #.05 seconds
 
 
 parser = argparse.ArgumentParser()
@@ -21,22 +25,21 @@ def main(T):
     async def main_task():
 
         start_t = time.perf_counter()
-        for i in range(1000):
+        for i in range(100):
 
-            for k in range(args.ngpus):
-                @spawn(T[i], placement=[gpu(k)])
-                def task1():
-                    devices = get_current_devices()
+            @spawn(T[i], placement=[gpu(i%args.ngpus)[{'vcus': 1000}]])
+            def task1():
+                devices = get_current_devices()
 
-                    for device in devices:
-                        with device:
-                            print("+ 1 HELLO INNER", flush=True)
-                            internal_start_t = time.perf_counter()
-                            bsleep(device.gpu_id, CYCLES, device.stream.stream)
-                            device.synchronize()
-                            internal_end_t = time.perf_counter()
-                            print("- 1 HELLO INNER. Elapsed: ",
-                                  internal_end_t - internal_start_t, flush=True)
+                for device in devices:
+                    with device:
+                        #print("+ 1 HELLO INNER", flush=True)
+                        internal_start_t = time.perf_counter()
+                        bsleep(device.gpu_id, CYCLES, device.stream.stream)
+                        device.synchronize()
+                        internal_end_t = time.perf_counter()
+                        #print("- 1 HELLO INNER. Elapsed: ",
+                        #      internal_end_t - internal_start_t, flush=True)
 
         await T
         end_t = time.perf_counter()
