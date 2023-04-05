@@ -236,9 +236,6 @@ public:
   std::atomic<int> num_runtime_instances{1};
   bool removed_runtime{false};
 
-  /* Tasks Internal Resource Pool. */
-  ResourcePool<std::atomic<int64_t>> resources;
-
   /* Task Assigned Device Set*/
   std::vector<Device *> assigned_devices;
 
@@ -279,9 +276,6 @@ public:
 
   /* Set the priority of the task */
   void set_priority(int priority);
-
-  /*Set a resource of the task*/
-  void set_resources(std::string resource_name, float resource_value);
 
   /* Add a dependency to the task buffer but don't process it*/
   void queue_dependency(InnerTask *task);

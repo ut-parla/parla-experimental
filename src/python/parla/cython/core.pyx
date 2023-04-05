@@ -185,13 +185,6 @@ cdef class PyInnerTask:
         cdef int c_priority = priority
         _c_task.set_priority(c_priority)
 
-    cpdef add_constraints(self, vcus):
-        cdef InnerTask* _c_task = self.c_task
-        resource_type = "vcus"
-        resource_type = resource_type.encode('utf-8')
-        cdef float c_vcus = vcus
-        _c_task.set_resources(resource_type, c_vcus)
-
     cpdef get_py_task(self):
         cdef InnerTask* c_self = self.c_task
         return <object> c_self.get_py_task()

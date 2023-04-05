@@ -79,8 +79,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     normalizd_device_load << "\n";
   std::cout << "\t[Device Requirement in device Requirement]\n"
             << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
-            "
+            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
             << dev_placement_req->res_req().get(Resource::VCU) << "\n";
 #endif
   return true;
