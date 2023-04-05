@@ -1,6 +1,6 @@
 from parla.cython import device
 from parla.cython.device cimport Device
-from parla.common.globals import DeviceType, cupy
+from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 
@@ -26,7 +26,6 @@ CUPY_ENABLED = device.CUPY_ENABLED
 gpu = PyCUDAArchitecture()
 cpu = PyCPUArchitecture()
 
-VCU_BASELINE = device.VCU_BASELINE
 
 cdef class CyDeviceManager:
     """
@@ -324,6 +323,8 @@ class PyDeviceManager:
                 # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
+                req.memory_sz = req.memory_sz if req.memory_sz is not None else memory
+                req.num_vcus = req.num_vcus if req.num_vcus is not None else vcus
                 # If a device specified by users does not exit 
                 # and was not registered to the Parla runtime,
                 # use CPU instead.

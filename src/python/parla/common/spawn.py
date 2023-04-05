@@ -8,7 +8,7 @@ from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
 from parla.common.globals import SynchronizationType as SyncType
-from parla.common.globals import default_sync
+from parla.common.globals import default_sync, VCU_BASELINE
 
 import inspect
 
@@ -31,7 +31,6 @@ nvtx.initialize()
 
 Resources = core.Resources
 
-VCU_BASELINE = device.VCU_BASELINE
 
 # @profile
 
