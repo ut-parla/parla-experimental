@@ -84,11 +84,11 @@ def scatter(splits, active_array, left_array, right_array):
     # Performing left scatter
     print("Left send indices: ", left_send_indices)
     print("Right send indices: ", right_send_indices)
-    xp.all2allv(active_array, left_send_indices, left_array)
+    xp.alltoallv(active_array, left_send_indices, left_array)
 
     # Performing right scatter
     right_array[:] = active_array[right_send_indices]
-    xp.all2allv(active_array, right_send_indices, right_array)
+    xp.alltoallv(active_array, right_send_indices, right_array)
 
     return None
 
