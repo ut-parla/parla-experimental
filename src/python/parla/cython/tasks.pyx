@@ -359,14 +359,12 @@ class Task:
 
             sync_events(task_env)
 
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None, runahead=SyncType.BLOCKING):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], priority=None, dataflow=None, runahead=SyncType.BLOCKING):
 
         self.dependencies = dependencies
-        self.constraints = constraints
         self.priority = priority
         self.runahead = runahead
 
-        self.add_constraints(constraints)
         self.add_dependencies(dependencies)
 
         # A base task class holds a dataflow since both task types,
@@ -527,9 +525,6 @@ class Task:
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
 
-    def add_constraints(self, constraints):
-        self.inner_task.add_constraints(constraints)
-
     def add_stream(self, stream):
         self.inner_task.add_stream(stream)
 
@@ -542,7 +537,7 @@ class ComputeTask(Task):
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
 
-    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
+    def instantiate(self, function, args, dependencies=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
         #Holds the original function
         self.base_function = function
 
@@ -555,7 +550,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow, runahead=runahead)
+        super().instantiate(dependencies=dependencies, priority=priority, dataflow=dataflow, runahead=runahead)
 
     def _execute_task(self):
         return self.func(self, *self.args)

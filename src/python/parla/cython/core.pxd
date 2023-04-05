@@ -47,7 +47,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_id(long long int i)
         void set_py_task(void *py_task)
         void set_priority(int p)
-        void set_resources(string resource_name, float amount)
 
         void queue_dependency(InnerTask* task)
         _StatusFlags process_dependencies()

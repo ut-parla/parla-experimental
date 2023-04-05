@@ -50,10 +50,6 @@ void InnerTask::set_py_task(void *py_task) { this->py_task = py_task; }
 
 void InnerTask::set_priority(int priority) { this->priority = priority; }
 
-void InnerTask::set_resources(std::string resource_name, float resource_value) {
-  this->resources.set(Resource::VCU, resource_value);
-}
-
 void InnerTask::queue_dependency(InnerTask *task) {
   this->dependency_buffer.push_back(task);
 }

@@ -372,8 +372,8 @@ class Scheduler(ControllableThread, SchedulerContext):
     def scheduler(self):
         return self
 
-    def get_device_reqs_from_placement(self, placement):
-        return self.device_manager.get_device_reqs_from_placement(placement)
+    def get_device_reqs_from_placement(self, placement, vcus, memory):
+        return self.device_manager.get_device_reqs_from_placement(placement, vcus, memory)
 
     def __enter__(self):
         if self.inner_scheduler.get_num_active_tasks() != 1:

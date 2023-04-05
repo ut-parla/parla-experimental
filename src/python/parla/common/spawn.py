@@ -63,8 +63,8 @@ def spawn(task=None,
           input: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           output: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           inout: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
-          vcus=1000,
-          memory=0,
+          vcus=None,
+          memory=None,
           runahead=default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
@@ -88,7 +88,7 @@ def spawn(task=None,
         nonlocal placement
         nonlocal runahead
 
-        if not isinstance(vcus, int):
+        if vcus is not None:
             # Default behavior the same as Parla 0.2.
             if vcus <= 1:
                 vcus = int(vcus * VCU_BASELINE)
@@ -120,7 +120,7 @@ def spawn(task=None,
         placement = placement if placement is not None else [
             arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
 
-        device_reqs = scheduler.get_device_reqs_from_placement(placement)
+        device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
         task.set_device_reqs(device_reqs)
 
         dataflow = Dataflow(input, output, inout)
@@ -128,7 +128,6 @@ def spawn(task=None,
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
-                         constraints=vcus,
                          dataflow=dataflow,
                          runahead=runahead
                          )
