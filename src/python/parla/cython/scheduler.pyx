@@ -265,6 +265,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         final_state  = active_task.state
 
+                        #FIXME: This can be cleaned up and hidden from this function with a better interface...
+                        if active_task.runahead == SyncType.NONE:
+                            device_context.finalize()
+
                         #TODO(wlr): Add better exception handling
                         if isinstance(final_state, tasks.TaskException):
                             raise TaskBodyException(active_task.state.exception)
@@ -284,10 +288,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
                         #print("Cleaning up Task", active_task, flush=True)
-
-                        #FIXME: This can be cleaned up and hidden from this function with a better interface...
-                        if active_task.runahead == SyncType.NONE:
-                            device_context.finalize()
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
