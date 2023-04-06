@@ -51,7 +51,7 @@ for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
                   output_fname=${output_prefix}.log
                   commands="python "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
                   echo $commands
-                  PYTHONPATH="../Parla.py" CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+                  CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
                 done
               done
             done
@@ -76,7 +76,7 @@ for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
                   output_fname=${output_prefix}.log
                   echo $output_prefix
                   echo $commands
-                  PYTHONPATH="../Parla.py" CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+                  CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
                 done
               done
             done
