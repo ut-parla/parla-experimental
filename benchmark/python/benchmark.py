@@ -201,7 +201,7 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
         task_config=task_configs,
         num_gpus=num_gpus, fixed_placement=fixed_place)
 
-    with GraphContext(config, name="serial") as g:
+    with GraphContext(config, name="serial", graph_path=graph_path) as g:
 
         logpath = g.tmplogpath
 
