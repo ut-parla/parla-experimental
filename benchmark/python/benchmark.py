@@ -122,7 +122,7 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print(f"reduction,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+    print(f"new_parla,reduction,{branch}-{reduction},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
 
 
@@ -172,7 +172,7 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print(f"independent,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+    print(f"new_parla,independent,{num_tasks},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
 
 def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
@@ -221,7 +221,7 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print(f"serial,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+    print(f"new_parla,serial,{num_tasks},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
 
 
