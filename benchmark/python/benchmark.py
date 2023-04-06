@@ -115,15 +115,15 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
             movement_type=data_move_type,
             data_scale=sD_array_bytes)
 
-        timinum_gpus = g.run(run_config)
+        times = g.run(run_config)
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print(f"reduction,{num_gpus},{fixed_place},{fD_array_bytes},"+
-          f"{timinum_gpus.mean}", flush=True)
+    print(f"reduction,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+          f"{times.mean}", flush=True)
 
 
 def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
@@ -136,23 +136,23 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
           f"GIL count: {gil_count}, GIL time: {gil_time}, Data overlap: " +
           f"{data_pattern} Data move type: {data_move_type}" +
           f" Graph path: {graph_path}")
-    """
-    device_type = DeviceType.ANY_GPU_DEVICE
-    cost = 0.5
+    device_fraction = 1.0
     if num_gpus == 0:
         concurrent_tasks = num_gpus
-        cost = 1.0 / concurrent_tasks
-        device_type = DeviceType.CPU_DEVICE
+        device_fraction = 1.0 / concurrent_tasks
+        user_chosen_device = DeviceType.CPU_DEVICE
 
     # Configuration for task graph generation
     task_configs = TaskConfigs()
-    task_configs.add(device_type, TaskConfig(
-        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-    config = IndependentConfig(data_pattern=DataInitType.NO_DATA,
-        total_data_width=total_data_width, task_count=n, task_config=task_configs, num_gpus=num_gpus,
-        fixed_placement=fixedp)
+    task_configs.add(user_chosen_device, TaskConfig(
+        task_time=computation_weight, gil_accesses=gil_count,
+        gil_fraction=gil_time, device_fraction=device_fraction))
+    config = IndependentConfig(data_pattern=data_pattern,
+        fixed_placement=fixed_place, num_gpus=num_gpus,
+        total_data_width=fD_array_bytes, task_count=num_tasks,
+        task_config=task_configs)
 
-    with GraphContext(config, name="independent") as g:
+    with GraphContext(config, name="independent", graph_path=graph_path) as g:
 
         logpath = g.tmplogpath
 
@@ -162,18 +162,18 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
             verbose=False,
             logfile=logpath,
             num_gpus=num_gpus,
-            movement_type=movement_type,
-            data_scale=data_scale)
+            movement_type=data_move_type,
+            data_scale=sD_array_bytes)
 
-        timinum_gpus = g.run(run_config, max_time=max_time)
+        times = g.run(run_config)
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
-        assert (verify_order(log_times,g.graph))
+        #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print("independent, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
-    """
+    print(f"independent,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+          f"{times.mean}", flush=True)
 
 def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
         fixed_place, user_chosen_device, computation_weight, num_tasks, gil_count,  \
@@ -186,21 +186,20 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
           f"GIL time: {gil_time}, Data overlap: " +
           f"{data_pattern} Data move type: {data_move_type}" +
           f" Graph path: {graph_path}")
-    """
-    device_type = DeviceType.USER_CHOSEN_DEVICE
-    cost = 1.0
+    device_fraction = 1.0
     concurrent_tasks = num_gpus
     if num_gpus == 0:
-        cost = 1.0 / concurrent_tasks
-        device_type = DeviceType.CPU_DEVICE
+        device_fraction = 1.0 / concurrent_tasks
+        user_chosen_device = DeviceType.CPU_DEVICE
 
     task_configs = TaskConfigs()
-    task_configs.add(device_type, TaskConfig(
-        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-
-    config = SerialConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
-        total_data_width=total_data_width, steps=n, chains=1, task_config=task_configs,
-        num_gpus=num_gpus, fixed_placement=fixedp)
+    task_configs.add(user_chosen_device, TaskConfig(
+        task_time=computation_weight, gil_accesses=gil_count,
+        gil_fraction=gil_time, device_fraction=device_fraction))
+    config = SerialConfig(data_pattern=data_pattern,
+        total_data_width=fD_array_bytes, steps=num_tasks, chains=num_gpus,
+        task_config=task_configs,
+        num_gpus=num_gpus, fixed_placement=fixed_place)
 
     with GraphContext(config, name="serial") as g:
 
@@ -212,18 +211,18 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
             verbose=False,
             num_gpus=num_gpus,
             logfile=logpath,
-            movement_type=movement_type,
-            data_scale=data_scale)
+            movement_type=data_move_type,
+            data_scale=sD_array_bytes)
 
-        timinum_gpus = g.run(run_config, max_time=max_time)
+        times = g.run(run_config)
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
-        assert (verify_order(log_times,g.graph))
+        #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print("serial, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
-    """
+    print(f"serial,{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
+          f"{times.mean}", flush=True)
 
 
 if __name__ == "__main__":

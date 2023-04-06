@@ -1,5 +1,5 @@
-#GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
-GRAPH_TYPES_STR=( "reduction" )
+GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
+#GRAPH_TYPES_STR=( "independent" )
 #NUM_TASKS_SET=( 300 500 1000 2000 )
 NUM_TASKS_SET=( 300 )
 #LEVELS=( 8 16 )
@@ -21,12 +21,12 @@ DATA_MOVE_MODES=( 0 1 2 )
 GRAPH_DIR="graphs"
 
 GRAPH_INPUT_DIR="sc23_inputs"
-rm -rf $GRAPH_INPUT_DIR
-mkdir $GRAPH_INPUT_DIR
+#rm -rf $GRAPH_INPUT_DIR
+#mkdir $GRAPH_INPUT_DIR
 
 OUTPUT_DIR="sc23_outputs"
-rm -rf $OUTPUT_DIR
-mkdir $OUTPUT_DIR
+#rm -rf $OUTPUT_DIR
+#mkdir $OUTPUT_DIR
 
 SOURCE=${BASH_SOURCE[0]}
 DIR="$( dirname "${SOURCE}" )"
@@ -51,7 +51,8 @@ for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
                   output_fname=${output_prefix}.log
                   commands="python "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
                   echo $commands
-                  CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+#CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+                  grep "reduction," ${OUTPUT_DIR}/${output_fname} >> ${OUTPUT_DIR}/result.out
                 done
               done
             done
@@ -76,7 +77,12 @@ for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
                   output_fname=${output_prefix}.log
                   echo $output_prefix
                   echo $commands
-                  CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+#CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$num_gpus]} $commands > $OUTPUT_DIR/${output_fname}
+                  if [[ ${GRAPH_TYPE} == *"independent"* ]]; then
+                      grep "independent," ${OUTPUT_DIR}/${output_fname} >> ${OUTPUT_DIR}/result.out
+                  elif [[ ${GRAPH_TYPE} == *"serial"* ]]; then
+                      grep "serial," ${OUTPUT_DIR}/${output_fname} >> ${OUTPUT_DIR}/result.out
+                  fi
                 done
               done
             done
