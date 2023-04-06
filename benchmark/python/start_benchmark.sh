@@ -3,7 +3,8 @@
 SOURCE=${BASH_SOURCE[0]}
 DIR="$( dirname "${SOURCE}" )"
 
-PLACEMENT_MODE=( "fixed-placement" "policy" )
+#PLACEMENT_MODE=( "fixed-placement" "policy" )
+PLACEMENT_MODE=( "policy" )
 
 #DATA_MOVE_MODE=( "no" "lazy" "eager" )
 DATA_MOVE_MODE=( "eager" )
