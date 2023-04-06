@@ -74,30 +74,30 @@ def parse_data_move_flag(flag):
 
 
 def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
-        num_gpus, fixed_place, user_flag, computation_weight, gil_count, \
-        gil_time, data_pattern, level, branch, data_move_type):
+        num_gpus, fixed_place, user_chosen_device, computation_weight, \
+        gil_count, gil_time, data_pattern, level, branch, data_move_type):
     print(f"[Reduction] fD array bytes: {fD_array_bytes}, " +
           f"sD array bytes: {sD_array_bytes} " +
           f"Num GPUs: {num_gpus}, Fixed Placement: {fixed_place}, " +
-          f"User flag: {user_flag}, Computation Weight: {computation_weight} " +
+          f"User flag: {user_chosen_device}, " +
+          f"Computation Weight: {computation_weight} " +
           f"Level: {level}, Branch: {branch}, GIL count: {gil_count}, " +
           f"GIL time: {gil_time}, Data overlap: "+
           f"{data_pattern} Data move type: {data_move_type}")
-    """
-    device_type = DeviceType.ANY_GPU_DEVICE
-    cost = 1.0
+    device_fraction = 1.0
     if num_gpus == 0: 
         concurrent_tasks = num_gpus
-        cost = 1.0 / concurrent_tasks
-        device_type = DeviceType.CPU_DEVICE
+        device_fraction = 1.0 / concurrent_tasks
+        user_chosen_device = DeviceType.CPU_DEVICE
 
     # Configuration for task graph generation
     task_configs = TaskConfigs()
-    task_configs.add(device_type, TaskConfig(
-        task_time=task_time, gil_accesses=1, gil_fraction=0, device_fraction=cost))
-    config = ReductionConfig(data_pattern=DataInitType.OVERLAPPED_DATA,
-        fixed_placement=fixedp, num_gpus=num_gpus,
-        total_data_width=total_data_width, levels=9, branch_factor=2,
+    task_configs.add(user_chosen_device, TaskConfig(
+        task_time=computation_weight, gil_accesses=gil_count,
+        gil_fraction=gil_time, device_fraction=device_fraction))
+    config = ReductionConfig(data_pattern=data_pattern,
+        fixed_placement=fixed_place, num_gpus=num_gpus,
+        total_data_width=fD_array_bytes, levels=level, branch_factor=branch,
         task_config=task_configs)
 
     with GraphContext(config, name="reduction") as g:
@@ -110,26 +110,26 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
             verbose=False,
             logfile=logpath,
             num_gpus=num_gpus,
-            movement_type=movement_type,
-            data_scale=data_scale)
+            movement_type=data_move_type,
+            data_scale=sD_array_bytes)
 
-        timinum_gpus = g.run(run_config, max_time=max_time)
+        timinum_gpus = g.run(run_config)
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
 
-    print("reduction, # gpus,", num_gpus, ", fixed,", sys.argv[2], ", data,", sys.argv[3] ," mean time:", timinum_gpus.mean, flush=True)
-    """
+    print(f"reduction,{num_gpus},{fixed_place},{fD_array_bytes},"+
+          f"{timinum_gpus.mean}", flush=True)
 
 
 def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
-        fixed_place, user_flag, computation_weight, num_tasks, gil_count,  \
+        fixed_place, user_chosen_device, computation_weight, num_tasks, gil_count,  \
         gil_time, data_pattern, data_move_type):
     print(f"[Indp] fD array bytes: {fD_array_bytes}, " +
           f"sD array bytes: {sD_array_bytes} Num GPUs: {num_gpus}, " +
-          f"Fixed place: {fixed_place}, User flag: {user_flag}, " +
+          f"Fixed place: {fixed_place}, User flag: {user_chosen_device}, " +
           f"Computation Weight: {computation_weight} Num tasks: {num_tasks}, " +
           f"GIL count: {gil_count}, GIL time: {gil_time}, Data overlap: "+
           f"{data_pattern} Data move type: {data_move_type}")
@@ -173,11 +173,11 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
     """
 
 def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
-        fixed_place, user_flag, computation_weight, num_tasks, gil_count,  \
+        fixed_place, user_chosen_device, computation_weight, num_tasks, gil_count,  \
         gil_time, data_pattern, data_move_type):
     print(f"[Serial] fD array bytes: {fD_array_bytes}, " +
           f"sD array bytes: {sD_array_bytes} Num GPUs: {num_gpus}, " +
-          f"Fixed place: {fixed_place}, User flag: {user_flag}, " +
+          f"Fixed place: {fixed_place}, User flag: {user_chosen_device}, " +
           f"Computation Weight: {computation_weight} " +
           f"Num tasks: {num_tasks}, GIL count: {gil_count}, " +
           f"GIL time: {gil_time}, Data overlap: "+
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     fD_array_bytes = args.width_bytes
     sD_array_bytes = args.d
     num_gpus = args.num_gpus
-    fixed_place, user_flag = parse_user_chosen_placement_flag(args.user, num_gpus)
+    fixed_place, user_chosen_device = parse_user_chosen_placement_flag(args.user, num_gpus)
     computation_weight = args.computation_weight
     num_tasks = args.n
     gil_count = args.gil_count
@@ -249,16 +249,16 @@ if __name__ == "__main__":
 
     if graph_type == "reduction":
         reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes,
-            num_gpus, fixed_place, user_flag, computation_weight, gil_count,
+            num_gpus, fixed_place, user_chosen_device, computation_weight, gil_count,
             gil_time, data_pattern, reduce_level, reduce_branch,
             data_move_type)
     elif graph_type == "independent":
         independent_scalinum_gpus(fD_array_bytes, sD_array_bytes,
-            num_gpus, fixed_place, user_flag, computation_weight, num_tasks,
+            num_gpus, fixed_place, user_chosen_device, computation_weight, num_tasks,
             gil_count, gil_time, data_pattern, data_move_type)
     elif graph_type == "serial":
         serial_scalinum_gpus(fD_array_bytes, sD_array_bytes,
-            num_gpus, fixed_place, user_flag, computation_weight, num_tasks,
+            num_gpus, fixed_place, user_chosen_device, computation_weight, num_tasks,
             gil_count, gil_time, data_pattern, data_move_type)
     else:
         raise ValueError(f"Does not support this workload type: {graph_type} (Supporting reduction, independent, serial)")
