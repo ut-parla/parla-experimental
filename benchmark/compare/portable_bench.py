@@ -16,7 +16,7 @@ parser.add_argument('-verbose', type=int, default=0)
 parser.add_argument('-empty', type=int, default=0)
 args = parser.parse_args()
 
-if use_old := os.getenv("USE_OLD"):
+if use_old := os.getenv("USE_OLD_PARLA"):
     from parla import Parla
     from parla.cuda import gpu
     from parla.tasks import *
@@ -34,13 +34,13 @@ def main(workers, n, t):
         start_t = time.perf_counter()
         T = TaskSpace("T")
 
-        nvtx.push_range(message="Launch", color="green",
+        nvtx.push_range(message="launch", color="green",
                         domain="application")
 
         for i in range(n):
             @spawn(T[i], placement=cpu, vcus=cost)
             def task1():
-                nvtx.push_range(message="Task", color="blue",
+                nvtx.push_range(message="task", color="blue",
                                 domain="application")
                 free_sleep(t)
                 nvtx.pop_range(domain="application")
