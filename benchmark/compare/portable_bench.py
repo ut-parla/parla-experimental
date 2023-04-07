@@ -57,4 +57,5 @@ def main(workers, n, t):
 
 
 if __name__ == "__main__":
-    main(args.workers, args.n, args.t)
+    with Parla():
+        main(args.workers, args.n, args.t)

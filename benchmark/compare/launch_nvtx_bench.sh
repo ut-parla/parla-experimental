@@ -34,8 +34,9 @@ do
 	arg=$(echo $arg | sed 's/-/_/g')
         output_file_name="${output_file_name}_${arg}"
     done
-    output_file_name="${output_file_name:1}.txt"
+    output_file_txt="${output_file_name:1}.txt"
     output_file_log="${output_file_name:1}.qdrep"
     echo "Saving output to: $output_file_name"
-    nsys profile -o $output_file_log python $script_name $args |tee $output_file_name
+    nsys profile -o $output_file_log --force-overwrite true python $script_name $args |tee $output_file_txt
+    nsys export $output_file_log --type sqlite
 done < $argsfile_name
