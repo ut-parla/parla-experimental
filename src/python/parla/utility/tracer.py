@@ -1,3 +1,6 @@
+from parla.globals.common import PARLA_ENABLE_NVTX
+
+
 class NVTXTracer:
     """
     This is a wrapper class of Python nvtx.
@@ -10,9 +13,12 @@ class NVTXTracer:
     def __init__(self):
         if NVTXTracer.nvtx is None:
             try:
-                import nvtx as nvtx_module
-                NVTXTracer.nvtx = nvtx_module
-                # print("NVTX is enabled", flush=True)
+                if PARLA_ENABLE_NVTX:
+                    # print("NVTX is enabled", flush=True)
+                    import nvtx as nvtx_module
+                    NVTXTracer.nvtx = nvtx_module
+                else:
+                    NVTXTracer.nvtx = None
             except ImportError:
                 # print("NVTX is disabled", flush=True)
                 NVTXTracer.nvtx = None
