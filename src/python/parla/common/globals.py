@@ -8,7 +8,7 @@ except ImportError:
     cupy = None
     CUPY_ENABLED = False
 
-
+PARLA_ENABLE_NVTX = (os.getenv("PARLA_ENABLE_NVTX", "0") == "1")
 USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
 PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
 
@@ -19,7 +19,7 @@ print("PREINIT_THREADS: ", PREINIT_THREADS)
 _global_data_tasks = {}
 
 
-VCU_BASELINE=1000
+VCU_BASELINE = 1000
 
 
 class SynchronizationType(IntEnum):

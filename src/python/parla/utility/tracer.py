@@ -1,4 +1,4 @@
-from parla.globals.common import PARLA_ENABLE_NVTX
+from parla.common.globals import PARLA_ENABLE_NVTX
 
 
 class NVTXTracer:
