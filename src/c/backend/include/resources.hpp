@@ -71,14 +71,14 @@ inline constexpr std::array<Resource, 1> movement_resources = {Resource::Copy};
  * initilaization.
  *
  */
-template <typename T> class ResourcePool {
+class ResourcePool {
+
+  using V = Resource_t;
 
 public:
-  using V = typename T::value_type;
-
   ResourcePool(){
-      // std::cout << "Resource Initialized:" << std::endl;
-      // for (int i = 0; i < resource_names.size(); i++) {
+      //std::cout << "Resource Initialized:" << std::endl;
+      //for (int i = 0; i < resource_names.size(); i++) {
       //  std::cout << this->resources[i].load() << std::endl;
       //}
   };
@@ -109,9 +109,9 @@ public:
     }
   }
 
-  inline const V set(Resource resource, auto value) {
+  inline const V set(Resource resource, V value) {
     const int idx = static_cast<int>(resource);
-    return this->resources[idx].exchange(static_cast<T>(value));
+    return this->resources[idx].exchange(static_cast<V>(value));
   };
 
   inline const V get(Resource resource) const {
@@ -131,9 +131,6 @@ public:
     } else if constexpr (category == ResourceCategory::Persistent) {
       for (auto i = 0; i < persistent_resources.size(); i++) {
         const int idx = static_cast<int>(persistent_resources[i]);
-        // std::cout << "check_greater_persistent: " <<
-        // this->resources[idx].load()
-        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }
@@ -142,8 +139,6 @@ public:
     } else if constexpr (category == ResourceCategory::NonPersistent) {
       for (auto i = 0; i < non_persistent_resources.size(); i++) {
         const int idx = static_cast<int>(non_persistent_resources[i]);
-        // std::cout << "check_greater_runtime: " << this->resources[idx].load()
-        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }
@@ -152,9 +147,6 @@ public:
     } else if constexpr (category == ResourceCategory::Movement) {
       for (auto i = 0; i < movement_resources.size(); i++) {
         const int idx = static_cast<int>(movement_resources[i]);
-        // std::cout << "check_greater_movement: " <<
-        // this->resources[idx].load()
-        //           << " " << other.resources[idx].load() << std::endl;
         if (this->resources[idx].load() < other.resources[idx].load()) {
           return false;
         }
@@ -203,9 +195,6 @@ public:
   inline void increase(const ResourcePool &other) {
     if constexpr (category == ResourceCategory::All) {
       for (auto i = 0; i < resource_names.size(); i++) {
-        // std::cout << "increase resource: " << resource_names[i] << " "
-        //           << this->resources[i].load() << " "
-        //           << other.resources[i].load() << std::endl;
         this->resources[i].fetch_add(other.resources[i].load());
       }
     } else if constexpr (category == ResourceCategory::Persistent) {
@@ -251,7 +240,7 @@ public:
   };
 
 protected:
-  std::array<T, resource_names.size()> resources = {};
+  std::array<std::atomic<V>, resource_names.size()> resources = {0, 0, 0};
 };
 
 #endif // RESOURCES_HPP

@@ -811,11 +811,6 @@ public:
   /* Container of Thread Workers */
   WorkerPool_t workers;
 
-  /* Resource Pool */
-  // TODO(wlr): Remove this (deprecated from testing)
-  ResourcePool<std::atomic<int64_t>>
-      resources; // TODO: Dummy class, needs complete rework with devices
-
   /* Active task counter (thread-safe) */
   std::atomic<int> num_active_tasks{1};
 
@@ -846,11 +841,6 @@ public:
 
   /* Set the number of workers */
   void set_num_workers(int nworkers);
-
-  /* Set available resources  */
-  void set_resources(std::string resource_name,
-                     float resource_value); // TODO: Dummy function, needs
-                                            // complete rework with devices
 
   /* Set Python Scheduler */
   void set_py_scheduler(void *py_scheduler);

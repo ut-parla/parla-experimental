@@ -121,7 +121,6 @@ cdef extern from "include/runtime.hpp" nogil:
         InnerScheduler(DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
-        void set_resources(string resource_name, float amount)
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
 

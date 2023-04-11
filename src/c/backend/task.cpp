@@ -208,8 +208,7 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
-void InnerTask::add_parray(parray::InnerPArray *parray, int am,
-                           int dev_id) {
+void InnerTask::add_parray(parray::InnerPArray *parray, int am, int dev_id) {
   AccessMode access_mode = static_cast<AccessMode>(am);
   if (access_mode != AccessMode::IN) {
     parray->get_parent_parray()->add_task(this);
