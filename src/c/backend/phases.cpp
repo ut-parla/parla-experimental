@@ -28,7 +28,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "Mapper::run" << std::endl;
+  std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
@@ -47,6 +47,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   has_task = this->get_count() > 0;
   while (has_task) {
+    //Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
@@ -59,6 +60,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
     Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
+    std::cout << "has task!" << std::endl;
     // Iterate all placement requirements passed by users and calculate
     // scores based on a policy.
     for (std::shared_ptr<PlacementRequirementBase> base_req :
@@ -116,6 +118,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
       }
     }
 
+
+    std::cout << "Has chosen device" << std::endl;
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
       // If it is, re-enqueue the task to the mappable task queue.
@@ -150,6 +154,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
       //   std::cout << "\t memory:" << res.get(Resource::Memory)
       //             << ", vcu:" << res.get(Resource::VCU) << "\n";
       // }
+      //
+      std::cout << "task has been mapped" << std::endl;
 
       this->mapped_tasks_buffer.push_back(task);
       this->atomic_incr_num_mapped_tasks();
@@ -158,6 +164,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
+    std::cout << "notifying dependencies of mapped status" << std::endl;
     mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
@@ -284,7 +291,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "MemoryReserver::run" << std::endl;
+  std::cout << "MemoryReserver::run" << std::endl;
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
@@ -430,7 +437,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "RuntimeReserver::run" << std::endl;
+  std::cout << "RuntimeReserver::run" << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
@@ -516,7 +523,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "Launcher::enqueue" << std::endl;
+  std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);

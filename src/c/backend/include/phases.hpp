@@ -159,7 +159,7 @@ protected:
 
   std::shared_ptr<MappingPolicy> policy_;
   /// The total number of tasks mapped to and running on the whole devices.
-  std::atomic<size_t> total_num_mapped_tasks_;
+  std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
 };
@@ -250,7 +250,7 @@ class Launcher : virtual public SchedulerPhase {
 public:
   /*Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete*/
-  std::atomic<size_t> num_running_tasks;
+  std::atomic<size_t> num_running_tasks{0};
 
   Launcher(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {}
