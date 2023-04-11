@@ -290,7 +290,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "MemoryReserver::run" << std::endl;
+  //std::cout << "MemoryReserver::run" << std::endl;
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
@@ -436,7 +436,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "RuntimeReserver::run" << std::endl;
+  //std::cout << "RuntimeReserver::run" << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
@@ -522,7 +522,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "Launcher::enqueue" << std::endl;
+  //std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);
