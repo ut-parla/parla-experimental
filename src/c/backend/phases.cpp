@@ -13,14 +13,14 @@
 /**************************/
 // Mapper Implementation
 
-void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }
+void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back_unsafe(task); }
 
 void Mapper::enqueue(std::vector<InnerTask *> &tasks) {
-  this->mappable_tasks.push_back(tasks);
+  this->mappable_tasks.push_back_unsafe(tasks);
 }
 
 size_t Mapper::get_count() {
-  size_t count = this->mappable_tasks.atomic_size();
+  size_t count = this->mappable_tasks.size_unsafe();
   return count;
 }
 
@@ -36,19 +36,18 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   // This is a non-critical region
   // Comment(wlr): Why is this a noncritical region?
+  // Comment(lhc): Only one thread performs this function.
 
   // Assumptions:
   // Scheduler maps a task to a device.
   // Scheduler does not reserve any resource at this phase.
-
-  // TODO(hc): for now, I'm planning task mapping without policy.
 
   bool has_task = true;
 
   has_task = this->get_count() > 0;
   while (has_task) {
     //Comment(wlr): this assumes the task is always able to be mapped.
-    InnerTask *task = this->mappable_tasks.front_and_pop();
+    InnerTask *task = this->mappable_tasks.front_and_pop_unsafe();
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
     std::vector<std::shared_ptr<PlacementRequirementBase>>
