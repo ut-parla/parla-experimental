@@ -473,11 +473,7 @@ cdef class PyInnerScheduler:
         _inner_scheduler = self.inner_scheduler
 
         _inner_scheduler.set_num_workers(num_workers)
-
-        resource_name = "vcus"
-        resource_name = resource_name.encode('utf-8')
-        _inner_scheduler.set_resources(resource_name, vcus)
-
+        
         _inner_scheduler.set_py_scheduler(<void *> python_scheduler)
 
         cdef stopfunc_t py_stop = callback_stop

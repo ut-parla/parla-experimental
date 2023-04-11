@@ -71,11 +71,11 @@ inline constexpr std::array<Resource, 1> movement_resources = {Resource::Copy};
  * initilaization.
  *
  */
-template <typename T> class ResourcePool {
+class ResourcePool {
+
+  using V = Resource_t;
 
 public:
-  using V = typename T::value_type;
-
   ResourcePool(){
       // std::cout << "Resource Initialized:" << std::endl;
       // for (int i = 0; i < resource_names.size(); i++) {
@@ -109,9 +109,9 @@ public:
     }
   }
 
-  inline const V set(Resource resource, auto value) {
+  inline const V set(Resource resource, V value) {
     const int idx = static_cast<int>(resource);
-    return this->resources[idx].exchange(static_cast<T>(value));
+    return this->resources[idx].exchange(static_cast<V>(value));
   };
 
   inline const V get(Resource resource) const {
@@ -251,7 +251,7 @@ public:
   };
 
 protected:
-  std::array<T, resource_names.size()> resources = {};
+  std::array<std::atomic<V>, resource_names.size()> resources = {};
 };
 
 #endif // RESOURCES_HPP
