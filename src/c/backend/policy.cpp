@@ -9,10 +9,11 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
               &parray_list) {
   const Device &device = *(dev_placement_req->device());
   DevID_t global_dev_id = device.get_global_id();
-  // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
+  std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
   // Check device resource availability.
   if (!device.check_resource_availability(dev_placement_req.get())) {
+    //std::cout << "Device resource failure!" << std::endl;
     return false;
   }
 

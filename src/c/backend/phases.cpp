@@ -28,7 +28,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
-  std::cout << "Mapper::run" << std::endl;
+  //std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
@@ -60,7 +60,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
     Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
-    std::cout << "has task!" << std::endl;
     // Iterate all placement requirements passed by users and calculate
     // scores based on a policy.
     for (std::shared_ptr<PlacementRequirementBase> base_req :
@@ -119,11 +118,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
     }
 
 
-    std::cout << "Has chosen device" << std::endl;
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
+      //std::cout << "Task has not been mapped" << std::endl;
     } else {
       std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           *parray_list = &(task->parray_list);
@@ -155,7 +154,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
       //             << ", vcu:" << res.get(Resource::VCU) << "\n";
       // }
       //
-      std::cout << "task has been mapped" << std::endl;
+      //std::cout << "task has been mapped!" << std::endl;
 
       this->mapped_tasks_buffer.push_back(task);
       this->atomic_incr_num_mapped_tasks();
