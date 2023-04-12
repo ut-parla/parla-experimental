@@ -495,6 +495,7 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
     final_instance_map = {}
 
     for line in output:
+        print(line, flush=True)
         line_type = check_log_line(line)
         if line_type == LogState.START_TASK:
             start_time = get_time(line)

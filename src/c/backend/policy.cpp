@@ -73,7 +73,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   *score = 50;
   *score += (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
 
-#if 0
+  /*
   std::cout << "Device " << device.get_name() << "'s score: " << *score <<
     " for task "<< task->get_name() << " local data: " << local_data <<
     " non local data:" << nonlocal_data << " normalized device load:" <<
@@ -82,7 +82,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
             << "\t\t" << dev_placement_req->device()->get_name() << " -> "
             << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
             << dev_placement_req->res_req().get(Resource::VCU) << "\n";
-#endif
+  */
   return true;
 }
 
