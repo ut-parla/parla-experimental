@@ -495,7 +495,6 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
     final_instance_map = {}
 
     for line in output:
-        print(line, flush=True)
         line_type = check_log_line(line)
         if line_type == LogState.START_TASK:
             start_time = get_time(line)
@@ -681,7 +680,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
                 assert (i-k >= 0)
-                dependency_string += f"{i-k, 0}"
+                dependency_string += f"{i-k, j}"
 
                 if k < dependency_limit:
                     dependency_string += " : "
