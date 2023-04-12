@@ -675,18 +675,19 @@ def generate_serial_graph(config: SerialConfig) -> str:
         inout_data_index = i
         if config.data_pattern == DataInitType.OVERLAPPED_DATA:
             inout_data_index = 0
-        # TODO(hc): for now, do not support chain
-        dependency_string = ""
-        dependency_limit = min(i, config.dependency_count)
-        for k in range(1, dependency_limit+1):
-            assert (i-k >= 0)
-            dependency_string += f"{i-k, 0}"
+        for j in range(config.chains): # width
+            # TODO(hc): for now, do not support chain
+            dependency_string = ""
+            dependency_limit = min(i, config.dependency_count)
+            for k in range(1, dependency_limit+1):
+                assert (i-k >= 0)
+                dependency_string += f"{i-k, 0}"
 
-            if k < dependency_limit:
-                dependency_string += " : "
+                if k < dependency_limit:
+                    dependency_string += " : "
 
-        # TODO(hc): for now, do not support chain
-        graph += f"{i, 0} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
+            # TODO(hc): for now, do not support chain
+            graph += f"{i, 0} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
 
     return graph
 
