@@ -143,6 +143,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
 
+#if 0
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
                 << "\n";
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
@@ -155,6 +156,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
                   << ", vcu:" << res.get(Resource::VCU) << "\n";
         */
       }
+#endif
 
       this->mapped_tasks_buffer.push_back(task);
       this->atomic_incr_num_mapped_tasks();
@@ -163,7 +165,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
-    std::cout << "notifying dependencies of mapped status" << std::endl;
     mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
