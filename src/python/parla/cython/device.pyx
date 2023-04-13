@@ -84,8 +84,9 @@ class DeviceResource:
         self.memory_sz = memory_sz
         self.num_vcus = num_vcus
 
+    #Comment(wlr): Reverted this as more things print "object(fields)" than not in our repo
     def __repr__(self):
-        return "[Resource] mem:" + str(self.memory_sz) + " vcu:" + str(self.num_vcus)
+        return f"DeviceResource(memory_sz={self.memory_sz}, num_vcus={self.num_vcus})"
 
 
 class PyDevice:

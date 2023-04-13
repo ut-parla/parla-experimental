@@ -77,7 +77,7 @@ Task::State InnerTask::add_dependency(InnerTask *task) {
 
   bool dependency_complete = false;
 
-  Task::State dependent_state = task->add_dependent(this);
+  Task::State dependent_state = task->add_dependent_task(this);
 
   if (dependent_state >= Task::RUNAHEAD) {
     this->num_blocking_dependencies.fetch_sub(1);
@@ -129,6 +129,9 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
     this->num_unreserved_dependencies.fetch_add(tasks.size());
     this->num_blocking_compute_dependencies.fetch_add(tasks.size());
   }
+
+  // CHECKME: Is this still correct on the subsequent call (should be
+  // tasks.size()+1 to prevent finishing while adding)
   this->num_blocking_dependencies.fetch_add(tasks.size());
 
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -185,7 +188,7 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
  *    I am sure there is a better implementation of this.
  */
 
-Task::State InnerTask::add_dependent(InnerTask *task) {
+Task::State InnerTask::add_dependent_task(InnerTask *task) {
 
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
@@ -208,12 +211,41 @@ Task::State InnerTask::add_dependent(InnerTask *task) {
   return state;
 }
 
+Task::State InnerTask::add_dependent_space(TaskBarrier *barrier) {
+  this->spaces.lock();
+  Task::State state = this->get_state();
+  this->spaces.push_back_unsafe(barrier);
+  this->spaces.unlock();
+
+  return state;
+}
+
 void InnerTask::add_parray(parray::InnerPArray *parray, int am, int dev_id) {
   AccessMode access_mode = static_cast<AccessMode>(am);
   if (access_mode != AccessMode::IN) {
     parray->get_parent_parray()->add_task(this);
   }
   this->parray_list[dev_id].emplace_back(std::make_pair(parray, access_mode));
+}
+
+void InnerTask::notify_dependents_completed() {
+  LOG_INFO(TASK, "Notifying dependents of {}.", this);
+  NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
+
+  this->dependents.lock();
+  this->spaces.lock();
+
+  for (size_t i = 0; i < this->spaces.size_unsafe(); i++) {
+    auto space = this->spaces.get_unsafe(i);
+    space->notify();
+  }
+
+  this->set_state(Task::COMPLETED);
+
+  this->spaces.unlock();
+  this->dependents.unlock();
+
+  LOG_INFO(TASK, "Notified dependents of {}.", this);
 }
 
 void InnerTask::notify_dependents(TaskStateList &buffer,
@@ -243,6 +275,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
   }
 
   this->set_state(new_state);
+
   this->dependents.unlock();
 
   // std::cout << "Notified dependents of " << this->name << ". Ready tasks: "
@@ -267,12 +300,12 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
   bool runnable = false;
 
   if (is_data) {
-    if (dependency_state >= Task::RUNAHEAD) {
+    if (dependency_state == Task::RUNAHEAD) {
       // A data task never notifies for the other stages
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
     }
   } else {
-    if (dependency_state >= Task::RUNAHEAD) {
+    if (dependency_state == Task::RUNAHEAD) {
       compute_runnable =
           (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
@@ -432,3 +465,35 @@ bool InnerTask::is_data_task() {
 void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }
 
 AccessMode InnerDataTask::get_access_mode() { return this->access_mode_; }
+
+Task::State TaskBarrier::_add_task(InnerTask *task) {
+  Task::State dependent_state = task->add_dependent_space(this);
+
+  if (dependent_state == Task::COMPLETED) {
+    this->num_incomplete_tasks.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  return dependent_state;
+}
+
+void TaskBarrier::add_task(InnerTask *task) {
+  // don't use this
+  this->num_incomplete_tasks.fetch_add(1, std::memory_order_relaxed);
+  this->_add_task(task);
+  this->notify();
+}
+
+void TaskBarrier::add_tasks(std::vector<InnerTask *> &tasks) {
+
+  this->num_incomplete_tasks.fetch_add(tasks.size() + 1,
+                                       std::memory_order_relaxed);
+  for (auto task : tasks) {
+    this->_add_task(task);
+  }
+
+  // std::cout << "TaskBarrier::add_tasks: " <<
+  // this->num_incomplete_tasks.load()
+  //           << std::endl;
+
+  this->notify();
+}

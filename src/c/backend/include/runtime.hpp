@@ -30,6 +30,7 @@ using namespace std::chrono_literals;
 
 // Forward Declarations of Inner Classes
 class InnerTask;
+class TaskBarrier;
 class InnerWorker;
 class InnerScheduler;
 
@@ -40,6 +41,8 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
+
+using SpaceList = ProtectedVector<TaskBarrier *>;
 
 using PointerList = ProtectedVector<uintptr_t>;
 
@@ -210,6 +213,9 @@ public:
   /* Container of Task Dependents (should be thread-safe)*/
   TaskList dependents;
 
+  /* Container of Task Spaces */
+  SpaceList spaces;
+
   /*Local depdendency buffer*/
   std::vector<InnerTask *> dependency_buffer = std::vector<InnerTask *>();
 
@@ -295,7 +301,8 @@ public:
                                      bool data_tasks = false);
 
   /* Add a dependent to the task */
-  Task::State add_dependent(InnerTask *task);
+  Task::State add_dependent_task(InnerTask *task);
+  Task::State add_dependent_space(TaskBarrier *barrier);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
@@ -321,6 +328,7 @@ public:
    *  TODO: Decide on a container to use for this
    */
   void notify_dependents(TaskStateList &tasks, Task::State new_state);
+  void notify_dependents_completed();
 
   /* Wrapper for testing */
   bool notify_dependents_wrapper();
@@ -600,6 +608,81 @@ private:
 LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status)
 LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
+
+/**
+ *   The C++ "Mirror" of Parla's Python TaskSets & Spaces
+ *   They are used as barriers for the calling thread for the completion of
+ *   their members
+ */
+
+class TaskBarrier {
+  // TODO: As is, this is not resuable.
+
+  // TODO: This assumes the Python holder of the TaskBarrier will not be deleted
+  // before all of its tasks are completed. Add backlinks for cleanup?
+
+public:
+  std::mutex mtx;
+  std::condition_variable cv;
+  int64_t id;
+
+  std::atomic<int> num_incomplete_tasks{0};
+
+  TaskBarrier() = default;
+
+  TaskBarrier(int num_tasks) : num_incomplete_tasks(num_tasks) {}
+
+  Task::State _add_task(InnerTask *task);
+  void add_task(InnerTask *task);
+  void add_tasks(std::vector<InnerTask *> &tasks);
+  void set_id(int64_t id) { this->id = id; }
+
+  void wait() {
+    // std::cout << "Barrier Wait" << std::endl;
+    std::unique_lock<std::mutex> lck(mtx);
+    cv.wait(lck, [this] { return num_incomplete_tasks == 0; });
+    LOG_INFO("Barrier {} awake.", this->id)
+  }
+
+  void notify() {
+    std::unique_lock<std::mutex> lck(mtx);
+    int prev = this->num_incomplete_tasks.fetch_sub(1);
+    if (prev == 1) {
+      LOG_INFO("Alerting Barrier {}.", this->id)
+      cv.notify_all();
+    }
+  }
+};
+
+class InnerTaskSpace : public TaskBarrier {
+
+public:
+  InnerTaskSpace() = default;
+
+  std::unordered_map<int64_t, InnerTask *> task_map;
+
+  void add_task(int64_t key, InnerTask *task) {
+    task_map.insert({key, task});
+    TaskBarrier::add_task(task);
+  }
+
+  void add_tasks(std::vector<int64_t> &keys, std::vector<InnerTask *> &tasks) {
+    for (int i = 0; i < keys.size(); i++) {
+      task_map.insert({keys[i], tasks[i]});
+    }
+    TaskBarrier::add_tasks(tasks);
+  }
+
+  void get_tasks(std::vector<int64_t> &keys, std::vector<InnerTask *> &tasks) {
+    for (int i = 0; i < keys.size(); i++) {
+      tasks.push_back(task_map[keys[i]]);
+    }
+  }
+
+  void wait() { TaskBarrier::wait(); }
+
+  void notify() { TaskBarrier::notify(); }
+};
 
 /**
  *   The C++ "Mirror" of Parla's Python Workers

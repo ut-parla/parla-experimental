@@ -265,7 +265,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();
-    task->set_state(Task::COMPLETED);
+    task->notify_dependents_completed();
   }
 
   // Release all resources for this task on all devices
