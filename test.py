@@ -31,7 +31,7 @@ def main(T):
         print("-HELLO OUTER 0", flush=True)
 
     """
-    @spawn(T[0], placement=[(cpu[{"vcus": 0.2, "memory": 40000}], gpu[{"vcus": 1, "memory": 20}]), (cpu(0), gpu(1)[{"vcus": 10, "memory": 2000}])], \
+    @spawn(T[0], placement=[(cpu[{"vcus": 1, "memory": 40000}], gpu[{"vcus": 1, "memory": 20}]), (cpu(0), gpu(1)[{"vcus": 1, "memory": 2000}])], \
           input=[(a, 0), (b, 1)], output=[(c, 0)], inout=[(d, 1)])
     def task1():
         print("+HELLO OUTER 0", flush=True)

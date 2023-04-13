@@ -687,7 +687,7 @@ def timeout(seconds_before_timeout):
 
 class GraphContext(object):
 
-    def __init__(self, config: GraphConfig, name: str):
+    def __init__(self, config: GraphConfig, name: str, graph_path = None):
         self.config = config
         self.graph = None
         self.data_config = None
@@ -702,16 +702,23 @@ class GraphContext(object):
         elif isinstance(config, ReductionConfig):
             self.graph_function = generate_reduction_graph
 
+        if graph_path is not None:
+            self.tmpfilepath = graph_path
+        else:
+            self.tmpfilepath = None
+
     def __enter__(self):
 
         self.diro = tempfile.TemporaryDirectory()
         self.dir = self.diro.__enter__()
 
-        self.tmpfilepath = os.path.join(
-            self.dir, 'test_'+str(self.name)+'.graph')
+        if self.tmpfilepath is None:
+            self.tmpfilepath = os.path.join(
+                self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
 
+        print("Graph Path:", self.tmpfilepath)
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
             #print(graph)

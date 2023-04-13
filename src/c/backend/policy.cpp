@@ -68,12 +68,12 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
         num_tasks_to_device / double(total_num_mapped_tasks);
   }
 
-  *score = (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
-  // If the score is less than 0, sets to 0. As the default value of the best score
-  // is -1, the device giving a score 0 can be chosen.
-  *score = (*score < 0)? 0 : *score;
+  // Avoid negative score and make this focus on load balancing if data
+  // is not used.
+  *score = 50;
+  *score += (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
 
-#if 0
+  /*
   std::cout << "Device " << device.get_name() << "'s score: " << *score <<
     " for task "<< task->get_name() << " local data: " << local_data <<
     " non local data:" << nonlocal_data << " normalized device load:" <<
@@ -82,7 +82,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
             << "\t\t" << dev_placement_req->device()->get_name() << " -> "
             << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
             << dev_placement_req->res_req().get(Resource::VCU) << "\n";
-#endif
+  */
   return true;
 }
 
