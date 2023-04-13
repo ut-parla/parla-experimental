@@ -87,6 +87,17 @@ def spawn(task=None,
         nonlocal placement
         nonlocal runahead
 
+        #COMMENT(wlr): Just added this back to revert my commit 30 min ago.
+        if vcus is not None:
+            # Default behavior the same as Parla 0.2.
+            if vcus <= 1:
+                vcus = int(vcus * VCU_BASELINE)
+            else:
+                # Only large values for ease of testing
+                vcus = int(vcus)
+        if memory is not None:
+            memory = int(memory)
+
         if inspect.iscoroutine(body):
             separated_body = body
         else:
