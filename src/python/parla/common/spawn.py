@@ -90,7 +90,10 @@ def spawn(task=None,
         #COMMENT(wlr): Just added this back to revert my commit 30 min ago.
         if vcus is not None:
             # Default behavior the same as Parla 0.2.
-            if vcus <= 1:
+            # The baseline should not be multiplied when placement is None.
+            # This is because architecture's __getitem__ also multiplies
+            # the baseline, and it multiplies (baseline^2).
+            if vcus <= 1 and placement is not None:
                 vcus = int(vcus * VCU_BASELINE)
             else:
                 # Only large values for ease of testing
