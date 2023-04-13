@@ -113,7 +113,7 @@ def spawn(task=None,
                   'memory': memory if memory is not None else 0}]
                 for arch in device_manager.get_all_architectures()]
         
-        print("placement: ", placement)
+        #print("placement: ", placement)
 
         device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
         task.set_device_reqs(device_reqs)

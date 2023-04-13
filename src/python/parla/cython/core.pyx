@@ -365,7 +365,15 @@ cdef class PyInnerTask:
         cdef InnerTask* c_self = self.c_task
         with nogil:
             c_self.synchronize_events()
-        
+
+cdef class CyTaskList:
+    cdef vector[InnerTask*] c_task_list
+
+    def __cinit__(self):
+        cdef vector[InnerTask*] _task_list
+        self.c_task_list = _task_list
+
+    
 cdef class PyTaskBarrier:
     cdef TaskBarrier* c_task_barrier
 
@@ -374,12 +382,22 @@ cdef class PyTaskBarrier:
         _task_barrier = new TaskBarrier()
         self.c_task_barrier = _task_barrier
 
-    def __init__(self, task_list):
-        self.add_tasks(task_list)
+    def __init__(self, task_list=[]):
+
+        cdef TaskBarrier* c_self = self.c_task_barrier
+
+        cdef CyTaskList cy_task_list
+
+        if isinstance(task_list, CyTaskList):
+            cy_task_list = task_list
+            c_self.add_tasks(cy_task_list.c_task_list)
+        else:
+            self.add_tasks(task_list)
+
+        self.c_task_barrier.set_id(id(self))
 
     cpdef wait(self):
         cdef TaskBarrier* c_self = self.c_task_barrier
-        print("Waiting on barrier (python)")
         with nogil:
             c_self.wait()
 
@@ -389,15 +407,79 @@ cdef class PyTaskBarrier:
         cdef PyInnerTask inner_task
         cdef InnerTask* task
 
-        for i in range(len(task_list)):
-            inner_task = task_list[i].inner_task 
-            task = inner_task.c_task
-            c_task_list.push_back(task)
+        cdef CyTaskList cy_task_list
+
+        if isinstance(task_list, CyTaskList):
+            cy_task_list = task_list
+            c_task_list = cy_task_list.c_task_list
+        else:
+            for i in range(len(task_list)):
+                inner_task = task_list[i].inner_task 
+                task = inner_task.c_task
+                c_task_list.push_back(task)
 
         with nogil:
             c_self.add_tasks(c_task_list)
 
-            
+cdef class PyTaskSpace:
+    cdef InnerTaskSpace* c_task_space
+
+    def __cinit__(self):
+        cdef InnerTaskSpace* _task_space
+        _task_space = new InnerTaskSpace()
+        self.c_task_space = _task_space
+
+    def __init__(self):
+        self.c_task_space.set_id(id(self))
+
+
+    cpdef add_tasks(self, idx_list, task_list):
+        cdef InnerTaskSpace* c_self = self.c_task_space
+
+        cdef vector[int64_t] c_idx_list
+        cdef vector[InnerTask*] c_task_list
+
+        cdef PyInnerTask inner_task
+        cdef InnerTask* task
+
+        for i in range(len(idx_list)):
+            c_idx_list[i] = hash(idx_list[i])
+
+            inner_task = task_list[i].inner_task
+            task = inner_task.c_task
+            c_task_list[i] = task
+
+        c_self.add_tasks(c_idx_list, c_task_list)
+
+    cpdef get_tasks(self, idx_list, CyTaskList task_list):
+
+        cdef InnerTaskSpace* c_self = self.c_task_space
+
+        cdef vector[int64_t] c_idx_list
+        cdef vector[InnerTask*] c_task_list
+
+        cdef PyInnerTask inner_task
+        cdef InnerTask* task
+
+        for i in range(len(idx_list)):
+            c_idx_list[i] = hash(idx_list[i])
+
+        c_self.get_tasks(c_idx_list, task_list.c_task_list)
+
+    cpdef wait(self):
+        cdef InnerTaskSpace* c_self = self.c_task_space
+        with nogil:
+            c_self.wait()
+
+        
+
+        
+
+        
+        
+
+
+
 
 
 

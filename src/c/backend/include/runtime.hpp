@@ -624,6 +624,7 @@ class TaskBarrier {
 public:
   std::mutex mtx;
   std::condition_variable cv;
+  int64_t id;
 
   std::atomic<int> num_incomplete_tasks{0};
 
@@ -634,30 +635,30 @@ public:
   Task::State _add_task(InnerTask *task);
   void add_task(InnerTask *task);
   void add_tasks(std::vector<InnerTask *> &tasks);
+  void set_id(int64_t id) { this->id = id; }
 
   void wait() {
-    std::cout << "Barrier Wait" << std::endl;
+    // std::cout << "Barrier Wait" << std::endl;
     std::unique_lock<std::mutex> lck(mtx);
     cv.wait(lck, [this] { return num_incomplete_tasks == 0; });
-    std::cout << "Barrier Awake" << std::endl;
+    LOG_INFO("Barrier {} awake.", this->id)
   }
 
   void notify() {
     std::unique_lock<std::mutex> lck(mtx);
     int prev = this->num_incomplete_tasks.fetch_sub(1);
-    std::cout << "Barrier Notify: " << prev << std::endl;
     if (prev == 1) {
-      std::cout << "Barrier End." << std::endl;
+      LOG_INFO("Alerting Barrier {}.", this->id)
       cv.notify_all();
     }
   }
 };
 
-class TaskSpace : public TaskBarrier {
+class InnerTaskSpace : public TaskBarrier {
 
 public:
-  TaskSpace() = default;
-  TaskSpace(int num_tasks) : TaskBarrier(num_tasks) {}
+  InnerTaskSpace() = default;
+
   std::unordered_map<int64_t, InnerTask *> task_map;
 
   void add_task(int64_t key, InnerTask *task) {
@@ -672,8 +673,7 @@ public:
     TaskBarrier::add_tasks(tasks);
   }
 
-  void retrieve_tasks(std::vector<int64_t> &keys,
-                      std::vector<InnerTask *> &tasks) {
+  void get_tasks(std::vector<int64_t> &keys, std::vector<InnerTask *> &tasks) {
     for (int i = 0; i < keys.size(); i++) {
       tasks.push_back(task_map[keys[i]]);
     }

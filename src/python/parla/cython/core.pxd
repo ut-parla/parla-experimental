@@ -5,7 +5,7 @@ from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
 from parla.cython.cyparray cimport InnerPArray
 
-from libc.stdint cimport uint32_t, uint64_t
+from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -92,6 +92,14 @@ cdef extern from "include/runtime.hpp" nogil:
         TaskBarrier() except +
         void add_tasks(vector[InnerTask*] tasks) except +
         void wait() except +
+        void set_id(int64_t i) except +
+
+    cdef cppclass InnerTaskSpace:
+        InnerTaskSpace() except +
+        void add_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
+        void wait() except +
+        void set_id(int64_t i) except +
+        void get_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
 
     cdef cppclass InnerWorker:
         void* py_worker

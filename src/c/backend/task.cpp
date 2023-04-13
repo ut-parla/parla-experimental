@@ -468,6 +468,11 @@ AccessMode InnerDataTask::get_access_mode() { return this->access_mode_; }
 
 Task::State TaskBarrier::_add_task(InnerTask *task) {
   Task::State dependent_state = task->add_dependent_space(this);
+
+  if (dependent_state == Task::COMPLETED) {
+    this->num_incomplete_tasks.fetch_sub(1, std::memory_order_relaxed);
+  }
+
   return dependent_state;
 }
 
@@ -486,8 +491,9 @@ void TaskBarrier::add_tasks(std::vector<InnerTask *> &tasks) {
     this->_add_task(task);
   }
 
-  std::cout << "TaskBarrier::add_tasks: " << this->num_incomplete_tasks.load()
-            << std::endl;
+  // std::cout << "TaskBarrier::add_tasks: " <<
+  // this->num_incomplete_tasks.load()
+  //           << std::endl;
 
   this->notify();
 }
