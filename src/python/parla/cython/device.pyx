@@ -127,7 +127,7 @@ class PyDevice:
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = None if "memory" not in param else param["memory"]
+            memory_sz = None if "memory" not in param else int(param["memory"])
             num_vcus = None if "vcus" not in param else int(VCU_BASELINE * param["vcus"])
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
