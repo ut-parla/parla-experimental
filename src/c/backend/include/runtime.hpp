@@ -353,6 +353,11 @@ public:
   /* Get a task name */
   std::string get_name();
 
+  /* Return True if an instance is a data movement task */
+  const bool is_data_task() const {
+    return this->is_data.load(std::memory_order_relaxed);
+  }
+
   /* Get number of dependencies */
   int get_num_dependencies();
 
@@ -542,9 +547,6 @@ public:
     return placement_req_options_;
   }
 
-  /* Return True if an instance is a data movement task */
-  bool is_data_task();
-
 protected:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
@@ -597,7 +599,7 @@ private:
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status)
+LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status, is_data_task)
 LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 

@@ -20,7 +20,7 @@ class DeviceRequirement;
 /**
  * @brief Architecture types for devices.
  */
-enum class DeviceType { All = -1, CPU = 0, CUDA = 1 };
+enum class DeviceType { INVALID = -2, All = -1, CPU = 0, CUDA = 1 };
 
 inline const constexpr std::array architecture_types{DeviceType::CPU,
                                                      DeviceType::CUDA};
