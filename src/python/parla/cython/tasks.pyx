@@ -1351,7 +1351,16 @@ class TaskCollection:
         return self
 
 
+
 class TaskList(TaskCollection):
+
+    def __init__(self, tasks, name=None, flatten=True):
+
+        if isinstance(tasks, TaskList):
+            self._name = tasks._name
+            self._tasks = tasks.tasks
+        else:
+            super().__init__(tasks, name, flatten)
 
     def __getitem__(self, index):
         task_list = self.tasks[index]
@@ -1371,6 +1380,27 @@ class TaskList(TaskCollection):
     def __iadd__(self, other):
         self._tasks += other._tasks
         return self
+
+cpdef wait(barrier):
+    barrier.wait()
+
+class FrozenTaskList(TaskList):
+
+    def __init__(self, tasks, name=None, flatten=True):
+        super().__init__(tasks, name, flatten)
+        self.inner_barrier = core.PyTaskBarrier(self.tasks)
+
+    def __repr__(self):
+        return "FrozenTaskList: {}".format(self.tasks)
+
+    def __add__(self, other):
+        return FrozenTaskList(self._tasks + other._tasks)
+
+    def __iadd__(self, other):
+        raise TypeError("Cannot modify a FrozenTaskList")
+
+    def wait(self):
+        self.inner_barrier.wait()
 
 
 _task_space_globals = {}

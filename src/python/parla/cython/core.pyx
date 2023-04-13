@@ -366,6 +366,39 @@ cdef class PyInnerTask:
         with nogil:
             c_self.synchronize_events()
         
+cdef class PyTaskBarrier:
+    cdef TaskBarrier* c_task_barrier
+
+    def __cinit__(self):
+        cdef TaskBarrier* _task_barrier
+        _task_barrier = new TaskBarrier()
+        self.c_task_barrier = _task_barrier
+
+    def __init__(self, task_list):
+        self.add_tasks(task_list)
+
+    cpdef wait(self):
+        cdef TaskBarrier* c_self = self.c_task_barrier
+        print("Waiting on barrier (python)")
+        with nogil:
+            c_self.wait()
+
+    cpdef add_tasks(self, task_list):
+        cdef TaskBarrier* c_self = self.c_task_barrier
+        cdef vector[InnerTask*] c_task_list
+        cdef PyInnerTask inner_task
+        cdef InnerTask* task
+
+        for i in range(len(task_list)):
+            inner_task = task_list[i].inner_task 
+            task = inner_task.c_task
+            c_task_list.push_back(task)
+
+        with nogil:
+            c_self.add_tasks(c_task_list)
+
+            
+
 
 
 cdef class PyInnerWorker:

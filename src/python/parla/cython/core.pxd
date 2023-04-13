@@ -83,14 +83,15 @@ cdef extern from "include/runtime.hpp" nogil:
         void synchronize_events()   except +
 
 
-        
-
-
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
         int get_device_id()
 
+    cdef cppclass TaskBarrier:
+        TaskBarrier() except +
+        void add_tasks(vector[InnerTask*] tasks) except +
+        void wait() except +
 
     cdef cppclass InnerWorker:
         void* py_worker

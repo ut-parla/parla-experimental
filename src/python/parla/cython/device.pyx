@@ -84,6 +84,9 @@ class DeviceResource:
         self.memory_sz = memory_sz
         self.num_vcus = num_vcus
 
+    def __repr__(self):
+        return f"DeviceResource(memory_sz={self.memory_sz}, num_vcus={self.num_vcus})"
+
 
 class PyDevice:
     """
