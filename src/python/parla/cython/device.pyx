@@ -84,6 +84,7 @@ class DeviceResource:
         self.memory_sz = memory_sz
         self.num_vcus = num_vcus
 
+    #Comment(wlr): Reverted this as more things print "object(fields)" than not in our repo
     def __repr__(self):
         return f"DeviceResource(memory_sz={self.memory_sz}, num_vcus={self.num_vcus})"
 
@@ -131,7 +132,8 @@ class PyDevice:
     def __getitem__(self, param):
         if isinstance(param, Dict):
             memory_sz = None if "memory" not in param else int(param["memory"])
-            num_vcus = None if "vcus" not in param else int(VCU_BASELINE * param["vcus"])
+            num_vcus = None if "vcus" not in param else \
+                int(VCU_BASELINE * param["vcus"]) if param["vcus"] <= 1 else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
               " requirements.")
@@ -271,7 +273,8 @@ class PyArchitecture(metaclass=ABCMeta):
     def __getitem__(self, param):
         if isinstance(param, Dict):
             memory_sz = None if "memory" not in param else param["memory"]
-            num_vcus = None if "vcus" not in param else int(VCU_BASELINE * param["vcus"])
+            num_vcus = None if "vcus" not in param else \
+                int(VCU_BASELINE * param["vcus"]) if param["vcus"] <= 1 else param["vcus"]
             return (self, DeviceResource(memory_sz, num_vcus))
         raise TypeError("[PyArchitecture] Parameter should be a dictionary specifying resource",
               " requirements.")
