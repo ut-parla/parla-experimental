@@ -3,7 +3,6 @@ from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
 from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType
-from parla.cython.tasks import TaskEnvironment
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -482,7 +481,7 @@ class PArray:
             return get_current_devices()[0].get_parla_device()
         return None
 
-    def _get_compute_device_for_crosspy(self, index: int = 0) -> TaskEnvironment | None:
+    def _get_compute_device_for_crosspy(self, index: int = 0):
         """
         Get the active device context for crosspy.
         Returns None if not called from within a task. 
