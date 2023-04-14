@@ -396,6 +396,9 @@ cdef class PyTaskBarrier:
 
         self.c_task_barrier.set_id(id(self))
 
+    def __dealloc__(self):
+        del self.c_task_barrier
+
     cpdef wait(self):
         cdef TaskBarrier* c_self = self.c_task_barrier
         with nogil:
@@ -431,6 +434,9 @@ cdef class PyTaskSpace:
 
     def __init__(self):
         self.c_task_space.set_id(id(self))
+
+    def __dealloc__(self):
+        del self.c_task_space
 
 
     cpdef add_tasks(self, idx_list, task_list):

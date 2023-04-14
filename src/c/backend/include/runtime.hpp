@@ -1,7 +1,8 @@
 #pragma once
-
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
+
+#include "phases.hpp"
 #include "resources.hpp"
 #include <assert.h>
 #include <atomic>
@@ -901,14 +902,14 @@ public:
   std::atomic<bool> should_run = true;
 
   /* Phase: maps tasks to devices */
-  Mapper *mapper;
+  std::shared_ptr<Mapper> mapper;
 
   /* Phase reserves resources to limit/plan task execution*/
-  MemoryReserver *memory_reserver;
-  RuntimeReserver *runtime_reserver;
+  std::shared_ptr<MemoryReserver> memory_reserver;
+  std::shared_ptr<RuntimeReserver> runtime_reserver;
 
   /*Responsible for launching a task. Signals worker thread*/
-  Launcher *launcher;
+  std::shared_ptr<Launcher> launcher;
 
   InnerScheduler(DeviceManager *device_manager);
   // InnerScheduler(int nworkers);

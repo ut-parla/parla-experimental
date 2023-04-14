@@ -3,6 +3,7 @@
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 
+#include <memory>
 #include <new>
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -139,10 +140,13 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
           device_manager, &this->parray_tracker_);
 
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
-  this->memory_reserver = new MemoryReserver(this, device_manager);
-  this->runtime_reserver = new RuntimeReserver(this, device_manager);
-  this->launcher = new Launcher(this, device_manager);
+  this->mapper =
+      std::make_shared<Mapper>(this, device_manager, std::move(mapping_policy));
+  this->memory_reserver =
+      std::make_shared<MemoryReserver>(this, device_manager);
+  this->runtime_reserver =
+      std::make_shared<RuntimeReserver>(this, device_manager);
+  this->launcher = std::make_shared<Launcher>(this, device_manager);
   // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
   //  TODO: Clean these up
 }
@@ -180,9 +184,12 @@ void InnerScheduler::stop() {
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
 
-  this->mapper->run(this->memory_reserver);
-  this->memory_reserver->run(this->runtime_reserver);
-  this->runtime_reserver->run(this->launcher);
+  // Note(wlr): Lifetime for these phase objects is the same as lifetime as the
+  // scheduler
+
+  this->mapper->run(this->memory_reserver.get());
+  this->memory_reserver->run(this->runtime_reserver.get());
+  this->runtime_reserver->run(this->launcher.get());
 
   // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->runtime_reserver);
   return this->status;
@@ -201,20 +208,24 @@ void InnerScheduler::spawn_task(InnerTask *task) {
 }
 
 void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
-  // TODO: Change this to appropriate phase as it becomes implemented
+
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
   if (status.mappable && (task->get_state() < Task::MAPPED)) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
     task->set_status(Task::MAPPABLE);
+
     this->mapper->enqueue(task);
+
   } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
     task->set_status(Task::RESERVABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
+
     this->memory_reserver->enqueue(task);
+
   } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
     task->set_status(Task::RUNNABLE);
-    // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
+
     this->runtime_reserver->enqueue(task);
   }
 }
@@ -241,10 +252,6 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
   NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
 
-  // std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
-  //           << std::endl;
-
-  // std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
 
     // Notify dependents that they can be scheduled
@@ -260,8 +267,6 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
 void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
                                            int state) {
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
-
-  // std::cout << "Task Cleanup Post Sync" << std::endl;
 
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();
