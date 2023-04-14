@@ -481,19 +481,14 @@ class PArray:
             return get_current_devices()[0].get_parla_device()
         return None
 
-    def _get_active_device_for_crosspy(self, index: int = 0) -> int | None:
+    def _get_compute_device_for_crosspy(self, index: int = 0) -> int | None:
         """
-        Get the active device for crosspy.
-        If the current device is CPU, return -1.
-        If the current device is GPU, return the CUDA_VISIBLE_DEVICE id.
+        Get the active device context for crosspy.
+        Returns None if not called from within a task. 
         """
         if has_environment():
             current_device = get_current_devices()[index]
-            if (current_device.architecture == DeviceType.CPU):
-                return -1
-            elif (current_device.architecture == DeviceType.GPU):
-                # NOTE: This is the same as the CUDA_VISIBLE_DEVICE id
-                return current_device.get_parla_device().id
+            return current_device
         return None
 
     def _auto_move(self, device_id: int = None, do_write: bool = False) -> None:
