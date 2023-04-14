@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
-from parla.common.globals import get_current_devices, get_scheduler, has_environment
+from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -259,9 +259,9 @@ class PArray:
         self.nbytes = array.nbytes
         self.subarray_nbytes = self.nbytes
         self._cy_parray.set_size(self.nbytes)
-        
+
         self._slices = []
-        
+
         # reset coherence
         self._coherence.reset(this_device)
 
@@ -479,6 +479,21 @@ class PArray:
         """
         if has_environment():
             return get_current_devices()[0].get_parla_device()
+        return None
+
+    def _get_active_device_for_crosspy(self, index: int = 0) -> int | None:
+        """
+        Get the active device for crosspy.
+        If the current device is CPU, return -1.
+        If the current device is GPU, return the CUDA_VISIBLE_DEVICE id.
+        """
+        if has_environment():
+            current_device = get_current_devices()[index]
+            if (current_device.architecture == DeviceType.CPU):
+                return -1
+            elif (current_device.architecture == DeviceType.GPU):
+                # NOTE: This is the same as the CUDA_VISIBLE_DEVICE id
+                return current_device.get_parla_device().id
         return None
 
     def _auto_move(self, device_id: int = None, do_write: bool = False) -> None:
