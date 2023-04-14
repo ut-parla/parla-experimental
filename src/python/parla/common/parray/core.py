@@ -317,15 +317,15 @@ class PArray:
         Note: `:` equals to slice(None, None, None)
         Note: `None` or tuple of `None` is not acceptable (even if `numpy.ndarray` accept `None`)
         # TODO: support `None`
-        """
-        if self._slices:  # resolve saved slices first
-            ret = self.array[slices]
-            
+        """   
         if isinstance(slices, numpy.ndarray) or isinstance(slices, cupy.ndarray):
             slices = slices.tolist()
         
-        ret = self._array.get_by_global_slices(
-            self._current_device_index, slices)
+        if self._slices:  # resolve saved slices first
+            ret = self.array[slices]
+        else:
+            ret = self._array.get_by_global_slices(
+                self._current_device_index, slices)
 
         # ndarray.__getitem__() may return a ndarray
         if ret is None:
