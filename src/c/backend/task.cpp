@@ -3,7 +3,7 @@
 #include "include/runtime.hpp"
 #include <string.h>
 
-#define DEPENDENCY_BUFFER_SIZE 10
+#define DEPENDENCY_BUFFER_SIZE 4
 
 // Task Implementation
 
@@ -58,12 +58,14 @@ Task::StatusFlags InnerTask::process_dependencies() {
   NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
   Task::StatusFlags status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
+  this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   return status;
 }
 
 void InnerTask::clear_dependencies() {
   this->dependency_buffer.clear();
   this->dependencies.clear();
+  // this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
 }
 
 Task::State InnerTask::add_dependency(InnerTask *task) {
