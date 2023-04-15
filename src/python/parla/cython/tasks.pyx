@@ -1478,7 +1478,7 @@ class TaskSpace(TaskCollection):
 
         index_list = []
         cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
-        task_list, _ , _= get_or_create_tasks(self, index_list, create=self._create)
+        task_list, _ = get_or_create_tasks(self, index_list, create=self._create)
 
         if len(task_list) == 1:
             return task_list[0]
