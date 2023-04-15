@@ -720,7 +720,7 @@ class TaskEnvironment:
 
     def loop(self, envlist=None):
         if envlist is None:
-            envlist = self.contexts
+            envlist = self.env_list
         
         for env in envlist:
             env.__enter__()
