@@ -720,7 +720,7 @@ class TaskEnvironment:
 
     def loop(self, envlist=None):
         if envlist is None:
-            envlist = self.env_list
+            envlist = self.contexts
         
         for env in envlist:
             env.__enter__()
@@ -843,7 +843,7 @@ class TaskEnvironment:
     def parfor(self, envlist=None):
 
         if envlist is None:
-            envlist = self.env_list
+            envlist = self.contexts
 
         def deco(func):
             @functools.wraps(func)
