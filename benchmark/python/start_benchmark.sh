@@ -58,8 +58,8 @@ for out_iter in "${OUT_ITERS[@]}"; do
     for computation_time in "${SLEEP_KNOBS[@]}"; do
       GRAPH_INPUT_DIR=$BASE_DIR"/asplos24_100KB_input_"$computation_time
       OUTPUT_DIR=$BASE_DIR"/asplos24_100KB_output_"$computation_time
-      mkdir $GRAPH_INPUT_DIR
-      mkdir $OUTPUT_DIR
+      mkdir -p $GRAPH_INPUT_DIR
+      mkdir -p $OUTPUT_DIR
       for fd_data_knob in "${FD_DATA_KNOBS[@]}"; do
         for sd_data_knob in "${SD_DATA_KNOBS[@]}"; do 
           for user_chosen_placement in "${USER_CHOSEN_PLACEMENT_SET[@]}"; do
