@@ -144,7 +144,13 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
   // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
-  //  TODO: Clean these up
+}
+
+InnerScheduler::~InnerScheduler() {
+  delete this->mapper;
+  delete this->memory_reserver;
+  delete this->runtime_reserver;
+  delete this->launcher;
 }
 
 void InnerScheduler::set_num_workers(int nworkers) {

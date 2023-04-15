@@ -188,6 +188,12 @@ public:
     //           << " queues" << std::endl;
   }
 
+  ~PhaseManager() {
+    for (auto &queue : this->device_queues) {
+      delete queue;
+    }
+  }
+
   /**
    * Enqueues a task to the appropriate DeviceQueue(s).
    * @param task the task to enqueue. May be single or multi-device.

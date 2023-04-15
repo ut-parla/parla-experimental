@@ -911,6 +911,7 @@ public:
   Launcher *launcher;
 
   InnerScheduler(DeviceManager *device_manager);
+  ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
