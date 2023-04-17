@@ -5,7 +5,7 @@ from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
 from parla.cython.cyparray cimport InnerPArray
 
-from libc.stdint cimport uint32_t, uint64_t
+from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -47,7 +47,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_id(long long int i)
         void set_py_task(void *py_task)
         void set_priority(int p)
-        void set_resources(string resource_name, float amount)
 
         void queue_dependency(InnerTask* task)
         _StatusFlags process_dependencies()
@@ -84,14 +83,23 @@ cdef extern from "include/runtime.hpp" nogil:
         void synchronize_events()   except +
 
 
-        
-
-
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
         int get_device_id()
 
+    cdef cppclass TaskBarrier:
+        TaskBarrier() except +
+        void add_tasks(vector[InnerTask*] tasks) except +
+        void wait() except +
+        void set_id(int64_t i) except +
+
+    cdef cppclass InnerTaskSpace:
+        InnerTaskSpace() except +
+        void add_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
+        void wait() except +
+        void set_id(int64_t i) except +
+        void get_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
 
     cdef cppclass InnerWorker:
         void* py_worker
@@ -122,7 +130,6 @@ cdef extern from "include/runtime.hpp" nogil:
         InnerScheduler(DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
-        void set_resources(string resource_name, float amount)
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
 

@@ -12,7 +12,8 @@
 using DevID_t = uint32_t;
 using MemorySz_t = Resource_t;
 using VCU_t = Resource_t;
-using ResourcePool_t = ResourcePool<std::atomic<Resource_t>>;
+// using ResourcePool_t = ResourcePool<std::atomic<Resource_t>>;
+using ResourcePool_t = ResourcePool;
 
 class DeviceRequirement;
 

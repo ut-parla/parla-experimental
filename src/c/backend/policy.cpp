@@ -9,15 +9,16 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
               &parray_list) {
   const Device &device = *(dev_placement_req->device());
   DevID_t global_dev_id = device.get_global_id();
-  // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
+  //std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
   // Check device resource availability.
   if (!device.check_resource_availability(dev_placement_req.get())) {
+    //std::cout << "Device resource failure!" << std::endl;
     return false;
   }
 
   // PArray locality.
-  size_t local_data = 0, nonlocal_data = 0;
+  Score_t local_data{0}, nonlocal_data{0};
   for (size_t i = 0; i < parray_list.size(); ++i) {
     InnerPArray *parray = parray_list[i].first;
     if (parray_tracker_->get_parray_state(global_dev_id, parray->parent_id)) {
@@ -26,6 +27,9 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
       nonlocal_data += parray->get_size();
     }
   }
+  Resource_t device_memory_size = device.query_resource(Resource::Memory);
+  local_data /= device_memory_size;
+  nonlocal_data /= device_memory_size;
 
 #if 0
   // TODO(hc): This metric is duplicated with data locality.
@@ -64,20 +68,21 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
         num_tasks_to_device / double(total_num_mapped_tasks);
   }
 
-  *score = (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
-  // If the score is less than 0, sets to 0. As the default value of the best score
-  // is -1, the device giving a score 0 can be chosen.
-  *score = (*score < 0)? 0 : *score;
+  // Avoid negative score and make this focus on load balancing if data
+  // is not used.
+  *score = 50;
+  *score += (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
 
-  // std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-  //   " for task "<< task->get_name() << " local data: " << local_data <<
-  //   " non local data:" << nonlocal_data << " normalized device load:" <<
-  //   normalizd_device_load << "\n";
-  // std::cout << "\t[Device Requirement in device Requirement]\n"
-  //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-  //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU
-  //           "
-  //           << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+  /*
+  std::cout << "Device " << device.get_name() << "'s score: " << *score <<
+    " for task "<< task->get_name() << " local data: " << local_data <<
+    " non local data:" << nonlocal_data << " normalized device load:" <<
+    normalizd_device_load << "\n";
+  std::cout << "\t[Device Requirement in device Requirement]\n"
+            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
+            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
+            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+  */
   return true;
 }
 

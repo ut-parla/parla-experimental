@@ -35,7 +35,7 @@ template <typename T> class ProtectedVector {
 
 private:
   std::vector<T> vec = std::vector<T>();
-  std::atomic<int> length;
+  std::atomic<int> length{0};
   std::mutex mtx;
   std::string name;
 
@@ -272,7 +272,7 @@ template <typename T> class ProtectedQueue {
 
 private:
   std::deque<T> q = std::deque<T>();
-  std::atomic<int> length;
+  std::atomic<int> length{0};
   std::mutex mtx;
   std::string name;
 

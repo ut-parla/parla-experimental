@@ -79,7 +79,7 @@ void PArrayTracker::release_parray(const InnerPArray &parray, Device *device) {
       dev_mapped_pool.template decrease<ResourceCategory::Persistent>(
           parray_resource);
     } else {
-      dev_mapped_pool.template set(Resource::Memory, 0);
+      dev_mapped_pool.set(Resource::Memory, 0);
     }
     // std::cout << "[PArrayTracker] PArray ID:" << parray.id << "(parent id:"
     // <<

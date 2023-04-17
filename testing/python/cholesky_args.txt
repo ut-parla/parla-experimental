@@ -1,0 +1,12 @@
+-fixed 1 -matrix chol_20000.npy -ngpus 4 -b 2000
+-fixed 1 -matrix chol_20000.npy -ngpus 2 -b 2000
+-fixed 1 -matrix chol_20000.npy -ngpus 1 -b 2000 
+-fixed 1 -matrix chol_20000.npy -ngpus 4 -b 1000
+-fixed 1 -matrix chol_20000.npy -ngpus 2 -b 1000
+-fixed 1 -matrix chol_20000.npy -ngpus 1 -b 1000 
+-fixed 1 -matrix chol_20000.npy -ngpus 4 -b 500
+-fixed 1 -matrix chol_20000.npy -ngpus 2 -b 500
+-fixed 1 -matrix chol_20000.npy -ngpus 1 -b 500 
+-fixed 1 -matrix chol_20000.npy -ngpus 4 -b 250
+-fixed 1 -matrix chol_20000.npy -ngpus 2 -b 250
+-fixed 1 -matrix chol_20000.npy -ngpus 1 -b 250 

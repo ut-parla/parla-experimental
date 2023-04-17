@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 project(parla LANGUAGES C CXX)
 
@@ -28,7 +28,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include_directories(${NUMPY_INCLUDE})
 
 if(PARLA_DEBUG)
-    SET(PARLA_DEBUG_C_COMPILE_FLAGS "-fconcepts -fno-omit-frame-pointer -O0 -g -static-libstdc++")
+    SET(PARLA_DEBUG_C_COMPILE_FLAGS "-fno-omit-frame-pointer -O0 -g -static-libstdc++")
     SET(PARLA_DEBUG_CYTHON_COMPILE_FLAGS "--gdb")
     SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${PARLA_DEBUG_C_COMPILE_FLAGS}")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PARLA_DEBUG_C_COMPILE_FLAGS}")
@@ -36,6 +36,7 @@ if(PARLA_DEBUG)
     set(CYTHON_FLAGS "${CYTHON_FLAGS} ${PARLA_DEBUG_CYTHON_COMPILE_FLAGS}")
 endif(PARLA_DEBUG)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lrt -lpthread")
 if(PARLA_ENABLE_NVTX)
     set(NVTX_INCLUDE ${3RD_PARTY_DIR}/nvtx/c/include)
 endif(PARLA_ENABLE_NVTX)

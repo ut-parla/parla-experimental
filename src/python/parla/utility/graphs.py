@@ -41,9 +41,10 @@ class LogState(IntEnum):
     ADD_CONSTRAINT = 1
     ASSIGNED_TASK = 2
     START_TASK = 3
-    NOTIFY_DEPENDENTS = 4
-    COMPLETED_TASK = 5
-    UNKNOWN = 6
+    RUNAHEAD_TASK = 4
+    NOTIFY_DEPENDENTS = 6
+    COMPLETED_TASK = 6
+    UNKNOWN = 7
 
 
 class MovementType(IntEnum):
@@ -231,7 +232,7 @@ class RunConfig:
     movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
     logfile: str = "testing.blog"  # The log file location
     do_check: bool = False  # If this is true, validate configuration/execution
-    num_gpus: int = 4 # TODO(hc): it is duplicated with GrpahConfig.
+    num_gpus: int = 4  # TODO(hc): it is duplicated with GrpahConfig.
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')
@@ -292,7 +293,7 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
             data_config[idx] = DataInfo(idx, size, location)
             idx += 1
 
-        #print("Data Config", data_config)
+        # print("Data Config", data_config)
         # Read the task graph
         for line in lines:
 
@@ -419,6 +420,8 @@ def check_log_line(line: str) -> int:
         return LogState.NOTIFY_DEPENDENTS
     elif "Assigned " in line:
         return LogState.ASSIGNED_TASK
+    elif "Runahead task" in line:
+        return LogState.RUNAHEAD_TASK
     elif "Completed task" in line:
         return LogState.COMPLETED_TASK
     elif "Adding dependencies" in line:
@@ -475,11 +478,14 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
     output = output.splitlines()
 
     task_start_times = {}
+    task_runahead_times = {}
+    task_notify_times = {}
     task_end_times = {}
     task_assigned_times = {}
 
     task_start_order = []
     task_end_order = []
+    task_runahead_order = []
 
     task_times = {}
     task_states = defaultdict(list)
@@ -518,6 +524,25 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
                 #        "Instance number is not 0 for first instance of task")
                 final_instance_map[base_name] = base_name
 
+        elif line_type == LogState.RUNAHEAD_TASK:
+            runahead_time = get_time(line)
+            task_properties = get_task_properties(line)
+            if len(task_properties) == 0:
+                # If the length of the task properties is 0,
+                # it implies that this task is data movement task.
+                # Ignore it.
+                continue
+
+            task_properties = task_properties[0]
+
+            current_name = task_properties['name']
+            base_name = TaskID(current_name.taskspace,
+                               current_name.task_idx,
+                               0)
+
+            task_runahead_times[base_name] = runahead_time
+            task_runahead_order.append(base_name)
+
         elif line_type == LogState.COMPLETED_TASK:
             end_time = get_time(line)
             task_properties = get_task_properties(line)
@@ -538,6 +563,7 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
             task_end_order.append(base_name)
 
         elif line_type == LogState.NOTIFY_DEPENDENTS:
+            notify_time = get_time(line)
             task_properties = get_task_properties(line)
             if len(task_properties) == 0:
                 # If the length of the task properties is 0,
@@ -596,6 +622,7 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
     for task in task_end_times:
         assigned_t = task_assigned_times[task]
         start_t = task_start_times[task]
+        # end_t = task_end_times[task]
         end_t = task_end_times[task]
         duration = end_t - start_t
         task_times[task] = TaskTime(assigned_t, start_t, end_t, duration)
@@ -613,8 +640,9 @@ def generate_serial_graph(config: SerialConfig) -> str:
     if config.data_pattern == DataInitType.NO_DATA:
         data_config_string = "{1 , -1}\n"
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
-        config.data_partitions = 1 
-        single_data_block_size = (config.total_data_width // config.data_partitions)
+        config.data_partitions = 1
+        single_data_block_size = (
+            config.total_data_width // config.data_partitions)
         for i in range(config.data_partitions):
             data_config_string += f"{single_data_block_size , -1}"
             if i+1 < config.data_partitions:
@@ -622,8 +650,9 @@ def generate_serial_graph(config: SerialConfig) -> str:
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError("[Serial] Data patterns not implemented")
     else:
-        raise ValueError(f"[Serial] Not supported data configuration: {config.data_pattern}")
-    data_config_string += "\n";
+        raise ValueError(
+            f"[Serial] Not supported data configuration: {config.data_pattern}")
+    data_config_string += "\n"
 
     if task_config is None:
         raise ValueError("Task config must be specified")
@@ -641,11 +670,12 @@ def generate_serial_graph(config: SerialConfig) -> str:
             configuration_string += ", "
 
     graph += data_config_string
-    for i in range(config.steps): # height
+    for i in range(config.steps):  # height
         inout_data_index = i
         if config.data_pattern == DataInitType.OVERLAPPED_DATA:
             inout_data_index = 0
         for j in range(config.chains): # width
+            # TODO(hc): for now, do not support chain
             dependency_string = ""
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
@@ -655,7 +685,8 @@ def generate_serial_graph(config: SerialConfig) -> str:
                 if k < dependency_limit:
                     dependency_string += " : "
 
-            graph += f"{i, j} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
+            # TODO(hc): for now, do not support chain
+            graph += f"{i, 0} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
 
     return graph
 
@@ -687,7 +718,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
     post_configuration_string = ""
 
     # TODO(hc): when this was designed, we considered multidevice placement.
-    #           but for now, we only consider a single device placement and so,  
+    #           but for now, we only consider a single device placement and so,
     #           follow the old generator's graph generation rule.
 
     device_id = DeviceType.ANY_GPU_DEVICE
@@ -710,14 +741,13 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
         segment = total_tasks_in_level / num_gpus
         for j in range(total_tasks_in_level):
             if reverse_level > 0:
-                dependency_string  = " "
+                dependency_string = " "
                 for k in range(config.branch_factor):
                     dependency_string += f"{reverse_level-1, config.branch_factor*j + k}"
                     if k+1 < config.branch_factor:
                         dependency_string += " : "
             else:
                 dependency_string = " "
-
 
             if reverse_level > 0:
                 l = 0
@@ -741,7 +771,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
             global_idx += 1
-        reverse_level += 1    
+        reverse_level += 1
     return graph
 
 
@@ -764,7 +794,8 @@ def generate_independent_graph(config: IndependentConfig) -> str:
             if i+1 < config.data_partitions:
                 data_config_string += f" | "
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
-        raise NotImplementedError("[Independent] Data patterns not implemented")
+        raise NotImplementedError(
+            "[Independent] Data patterns not implemented")
     else:
         raise ValueError("[Independent] Data patterns not implemented")
     data_config_string += "\n"

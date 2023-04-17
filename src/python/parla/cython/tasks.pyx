@@ -359,14 +359,12 @@ class Task:
 
             sync_events(task_env)
 
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], constraints=None, priority=None, dataflow=None, runahead=SyncType.BLOCKING):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=[], priority=None, dataflow=None, runahead=SyncType.BLOCKING):
 
         self.dependencies = dependencies
-        self.constraints = constraints
         self.priority = priority
         self.runahead = runahead
 
-        self.add_constraints(constraints)
         self.add_dependencies(dependencies)
 
         # A base task class holds a dataflow since both task types,
@@ -527,9 +525,6 @@ class Task:
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
 
-    def add_constraints(self, constraints):
-        self.inner_task.add_constraints(constraints)
-
     def add_stream(self, stream):
         self.inner_task.add_stream(stream)
 
@@ -542,7 +537,7 @@ class ComputeTask(Task):
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
 
-    def instantiate(self, function, args, dependencies=None, constraints=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
+    def instantiate(self, function, args, dependencies=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
         #Holds the original function
         self.base_function = function
 
@@ -555,7 +550,7 @@ class ComputeTask(Task):
         #Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
-        super().instantiate(dependencies=dependencies, constraints=constraints, priority=priority, dataflow=dataflow, runahead=runahead)
+        super().instantiate(dependencies=dependencies, priority=priority, dataflow=dataflow, runahead=runahead)
 
     def _execute_task(self):
         return self.func(self, *self.args)
@@ -725,7 +720,7 @@ class TaskEnvironment:
 
     def loop(self, envlist=None):
         if envlist is None:
-            envlist = self.env_list
+            envlist = self.contexts
         
         for env in envlist:
             env.__enter__()
@@ -848,7 +843,7 @@ class TaskEnvironment:
     def parfor(self, envlist=None):
 
         if envlist is None:
-            envlist = self.env_list
+            envlist = self.contexts
 
         def deco(func):
             @functools.wraps(func)
@@ -1293,6 +1288,9 @@ def parse_index(prefix, index,  step,  stop):
 
 cpdef get_or_create_tasks(taskspace, list index_list, create=True):
     cdef list task_list = []
+    cdef list new_tasks = []
+    cdef list new_index = []
+
     tasks = taskspace._tasks
 
     for i in range(0, len(index_list)):
@@ -1305,8 +1303,10 @@ cpdef get_or_create_tasks(taskspace, list index_list, create=True):
             task = ComputeTask(taskspace=taskspace, idx=index)
             tasks[index] = task
             task_list.append(task)
+            new_tasks.append(task)
+            new_index.append(index)
 
-    return task_list
+    return task_list, (new_tasks, new_index)
 class TaskCollection:
 
     def __init__(self, tasks, name=None, flatten=True):
@@ -1356,7 +1356,16 @@ class TaskCollection:
         return self
 
 
+
 class TaskList(TaskCollection):
+
+    def __init__(self, tasks, name=None, flatten=True):
+
+        if isinstance(tasks, TaskList):
+            self._name = tasks._name
+            self._tasks = tasks.tasks
+        else:
+            super().__init__(tasks, name, flatten)
 
     def __getitem__(self, index):
         task_list = self.tasks[index]
@@ -1376,6 +1385,44 @@ class TaskList(TaskCollection):
     def __iadd__(self, other):
         self._tasks += other._tasks
         return self
+
+cpdef wait(barrier):
+
+    if isinstance(barrier, core.CyTaskList):
+        barrier = BackendTaskList(barrier)
+
+    barrier.wait()
+
+class AtomicTaskList(TaskList):
+
+    def __init__(self, tasks, name=None, flatten=True):
+        super().__init__(tasks, name, flatten)
+        self.inner_barrier = core.PyTaskBarrier(self.tasks)
+
+    def __repr__(self):
+        return "AtomicTaskList: {}".format(self.tasks)
+
+    def __add__(self, other):
+        return AtomicTaskList(self._tasks + other._tasks)
+
+    def __iadd__(self, other):
+        raise TypeError("Cannot modify an AtomicTaskList")
+
+    def wait(self):
+        self.inner_barrier.wait()
+
+class BackendTaskList(TaskList):
+
+    def __init__(self, tasks, name=None, flatten=True):
+        self.inner_barrier = core.PyTaskBarrier(tasks)
+        self._tasks = None
+        self._name = name 
+
+    def __repr__(self):
+        return "BackendTaskList: {}"
+
+    def wait(self):
+        self.inner_barrier.wait()
 
 
 _task_space_globals = {}
@@ -1413,14 +1460,14 @@ class TaskSpace(TaskCollection):
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
 
             idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
-            task_list = get_or_create_tasks(self, idx, create=create)
+            task_list, _= get_or_create_tasks(self, idx, create=create)
 
             if len(task_list) == 1:
                 return task_list[0]
             return TaskList(task_list)
 
         if isinstance(index, str):
-            task_list = get_or_create_tasks(self, [(index,)], create=create)
+            task_list, _ = get_or_create_tasks(self, [(index,)], create=create)
             if len(task_list) == 1:
                 return task_list[0]
             return TaskList(task_list)
@@ -1431,7 +1478,7 @@ class TaskSpace(TaskCollection):
 
         index_list = []
         cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
-        task_list = get_or_create_tasks(self, index_list, create=self._create)
+        task_list, _ = get_or_create_tasks(self, index_list, create=self._create)
 
         if len(task_list) == 1:
             return task_list[0]
@@ -1449,7 +1496,7 @@ class TaskSpace(TaskCollection):
     @property
     def view(self):
         if self._view is None:
-            self._view = TaskSpace(name=self._name, create=False, shape=self.shape, start=self.start)
+            self._view = type(self)(name=self._name, create=False, shape=self.shape, start=self.start)
             self._view._tasks = self._tasks
         return self._view
 
@@ -1459,11 +1506,138 @@ class TaskSpace(TaskCollection):
     def __add__(self, other):
         merged_dict = {**self._tasks, **other._tasks}
         merged_name = f"{self._name} + {other._name}"
-        new_space = TaskSpace(name=merged_name, create=False, shape=self.shape, start=self.start)
+        new_space = type(self)(name=merged_name, create=False, shape=self.shape, start=self.start)
         new_space._tasks = merged_dict
         return new_space
 
     def __iadd__(self, other):
         self._tasks.update(other._tasks)
         return self
+
+
+class AtomicTaskSpace(TaskSpace):
+
+    def __init__(self, name="", create=True, shape=None, start=None):
+        super().__init__(name, create, shape, start)
+        self.inner_space = core.PyTaskBarrier()
+
+    def __repr__(self):
+        return f"AtomicTaskSpace({self._name}, ntasks={len(self)})"
+
+    
+    def __getitem__(self, index):
+
+        create = self._create
+        tasks = self._tasks
+
+        if isinstance(index, int):
+            start_flag = (self.start is not None)
+            shape_flag = (self.shape is not None)
+            lower_boundary = self.start[0] if start_flag else 0
+            upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
+
+            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
+            task_list, (new_tasks, new_idx) = get_or_create_tasks(self, idx, create=create)
+
+            #self.inner_space.add_tasks(new_idx, new_tasks)
+            self.inner_space.add_tasks(new_tasks)
+
+            if len(task_list) == 1:
+                return task_list[0]
+
+            return AtomicTaskList(task_list)
+
+        if isinstance(index, str):
+            task_list, (new_tasks, new_index) = get_or_create_tasks(self, [(index,)], create=create)
+            #self.inner_space.add_tasks(new_idx, new_tasks)
+            self.inner_space.add_tasks(new_tasks)
+
+            if len(task_list) == 1:
+                return task_list[0]
+
+            return AtomicTaskList(task_list)
+
+
+        if not isinstance(index, tuple):
+            index = (index,)
+
+        index_list = []
+        cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
+        task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=self._create)
+        #self.inner_space.add_tasks(new_idx, new_tasks)
+        self.inner_space.add_tasks(new_tasks)
+
+        if len(task_list) == 1:
+            return task_list[0]
+
+        return AtomicTaskList(task_list)
+
+    def wait(self):
+        self.inner_space.wait()
+
+
+#TODO(wlr): This is incredibly experimental. 
+class BackendTaskSpace(TaskSpace):
+
+    def __init__(self, name="", create=True, shape=None, start=None):
+        super().__init__(name, create, shape, start)
+        self.inner_space = core.PyTaskSpace()
+
+    def __repr__(self):
+        return f"BackendTaskspace({self._name}, ntasks={len(self)})"
+
+    
+    def __getitem__(self, index):
+
+        create = self._create
+        tasks = self._tasks
+
+        if isinstance(index, int):
+            start_flag = (self.start is not None)
+            shape_flag = (self.shape is not None)
+            lower_boundary = self.start[0] if start_flag else 0
+            upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
+
+            index_list = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
+            task_list, (new_tasks, new_idx) = get_or_create_tasks(self, index_list, create=create)
+
+            #self.inner_space.add_tasks(new_idx, new_tasks)
+            self.inner_space.add_tasks(new_tasks)
+
+            return_list = core.CyTaskList()
+            self.inner_space.get_tasks(index_list, return_list)
+            return return_list
+
+        if isinstance(index, str):
+            index_list = [(index,)]
+            task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=create)
+            #self.inner_space.add_tasks(new_idx, new_tasks)
+            self.inner_space.add_tasks(new_tasks)
+
+            return_list = core.CyTaskList()
+            self.inner_space.get_tasks(index_list, return_list)
+            return return_list
+
+
+        if not isinstance(index, tuple):
+            index = (index,)
+
+        index_list = []
+        cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
+        task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=self._create)
+        #self.inner_space.add_tasks(new_idx, new_tasks)
+        self.inner_space.add_tasks(new_tasks)
+
+        return_list = core.CyTaskList()
+        self.inner_space.get_tasks(index_list, return_list)
+        return return_list
+
+
+    def wait(self):
+        self.inner_space.wait()
+
+
+
+
+    
     

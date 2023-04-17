@@ -88,21 +88,21 @@ def get_placement_set_from(ps_str_set, num_gpus):
     for ps_str in ps_str_set[0]:
         dev_type = int(ps_str)
         if dev_type == DeviceType.ANY_GPU_DEVICE:
-            ps_set.append(gpu[{"vcus":1000}])
+            ps_set.append(gpu)
         elif dev_type == DeviceType.CPU_DEVICE:
             ps_set.append(cpu)
         # TODO(hc): just assume that system has 4 gpus.
         elif dev_type == DeviceType.GPU_0:
-            ps_set.append(gpu(0)[{"vcus":1000}])
+            ps_set.append(gpu(0))
         elif dev_type == DeviceType.GPU_1:
-            ps_set.append(gpu(1)[{"vcus":1000}])
+            ps_set.append(gpu(1))
         elif dev_type == DeviceType.GPU_2:
-            ps_set.append(gpu(2)[{"vcus":1000}])
+            ps_set.append(gpu(2))
         elif dev_type == DeviceType.GPU_3:
-            ps_set.append(gpu(3)[{"vcus":1000}])
+            ps_set.append(gpu(3))
         elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
             gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
-            ps_set.append(gpu(gpu_idx)[{"vcus":1000}])
+            ps_set.append(gpu(gpu_idx))
         else:
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
@@ -196,6 +196,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
+        print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
         gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
         parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
@@ -687,7 +688,7 @@ def timeout(seconds_before_timeout):
 
 class GraphContext(object):
 
-    def __init__(self, config: GraphConfig, name: str):
+    def __init__(self, config: GraphConfig, name: str, graph_path = None):
         self.config = config
         self.graph = None
         self.data_config = None
@@ -702,16 +703,23 @@ class GraphContext(object):
         elif isinstance(config, ReductionConfig):
             self.graph_function = generate_reduction_graph
 
+        if graph_path is not None:
+            self.tmpfilepath = graph_path
+        else:
+            self.tmpfilepath = None
+
     def __enter__(self):
 
         self.diro = tempfile.TemporaryDirectory()
         self.dir = self.diro.__enter__()
 
-        self.tmpfilepath = os.path.join(
-            self.dir, 'test_'+str(self.name)+'.graph')
+        if self.tmpfilepath is None:
+            self.tmpfilepath = os.path.join(
+                self.dir, 'test_'+str(self.name)+'.graph')
         self.tmplogpath = os.path.join(
             self.dir, 'test_'+str(self.name)+'_.blog')
 
+        print("Graph Path:", self.tmpfilepath)
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
             #print(graph)
