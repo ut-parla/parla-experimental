@@ -102,6 +102,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
             dynamic_cast<ArchitectureRequirement *>(base_req.get());
         std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
         Score_t chosen_dev_score{0};
+        // std::cout << "[Mapper] Task name:" << task->get_name() << ", " << "Checking arch requirement."
+        //           << "\n";
         bool is_req_available = policy_->calc_score_archplacement(
             task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
             parray_list[0]);

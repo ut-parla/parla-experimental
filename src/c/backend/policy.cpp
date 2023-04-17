@@ -73,16 +73,14 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   *score = 50;
   *score += (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
 
-  /*
-  std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-    " for task "<< task->get_name() << " local data: " << local_data <<
-    " non local data:" << nonlocal_data << " normalized device load:" <<
-    normalizd_device_load << "\n";
-  std::cout << "\t[Device Requirement in device Requirement]\n"
-            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
-            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
-  */
+  // std::cout << "Device " << device.get_name() << "'s score: " << *score <<
+  //   " for task "<< task->get_name() << " local data: " << local_data <<
+  //   " non local data:" << nonlocal_data << " normalized device load:" <<
+  //   normalizd_device_load << "\n";
+  // std::cout << "\t[Device Requirement in device Requirement]\n"
+  //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
+  //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
+  //           << dev_placement_req->res_req().get(Resource::VCU) << "\n";
   return true;
 }
 
@@ -94,13 +92,20 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
             &parray_list, std::vector<bool> *is_dev_assigned) {
   Score_t best_score{0};
   std::shared_ptr<DeviceRequirement> best_device_req{nullptr};
+  // std::cout << task->get_name() << "inside arch req mapping. " << std::endl;
+  //TODO(wlr): Is this unused??
   uint32_t i{0};
   bool is_arch_available{false};
   // For now the architecture placement has one resource requirement
   // regardless of the devices of the architecture. In the future,
   // we will allow a separate placement for each device.
-  for (std::shared_ptr<DeviceRequirement> dev_req :
-       arch_placement_req->GetDeviceRequirementOptions()) {
+  auto placement_options = arch_placement_req->GetDeviceRequirementOptions();
+  int n_options = placement_options.size();
+  int start_idx = ++this->rrcount;
+
+  for (int k = 0; k < n_options; k++){
+    int idx = (start_idx+k)%n_options;
+    std::shared_ptr<DeviceRequirement> dev_req = placement_options[idx];
     Score_t score{0};
     DevID_t dev_global_id = dev_req->device()->get_global_id();
     if (is_dev_assigned != nullptr &&

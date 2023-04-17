@@ -641,14 +641,12 @@ public:
     // std::cout << "Barrier Wait" << std::endl;
     std::unique_lock<std::mutex> lck(mtx);
     cv.wait(lck, [this] { return num_incomplete_tasks == 0; });
-    LOG_INFO("Barrier {} awake.", this->id)
   }
 
   void notify() {
     std::unique_lock<std::mutex> lck(mtx);
     int prev = this->num_incomplete_tasks.fetch_sub(1);
     if (prev == 1) {
-      LOG_INFO("Alerting Barrier {}.", this->id)
       cv.notify_all();
     }
   }
