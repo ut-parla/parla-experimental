@@ -1,4 +1,5 @@
-from parla import Parla, spawn, TaskSpace
+from parla import Parla, spawn
+from parla.cython.tasks import AtomicTaskSpace
 from parla.common.globals import get_current_context
 from parla.cython.device_manager import cpu, gpu
 
@@ -18,19 +19,17 @@ cp.random.seed(10)
 
 ngpus = args.ngpus
 
-def quicksort(array: xp.CrossPyArray, out, T, T_idx=0):
-    placement = tuple(array.block_view(lambda arr: gpu(arr.device.id)[{'vcus': 1000}]))
+def quicksort(array: xp.CrossPyArray, T, T_idx=1):
+    placement = tuple(array.block_view(lambda arr: gpu(arr.device.id)))
     print("CREATING TASK CONSTRAINTS: ", T_idx, array, array.block_view(lambda arr: arr.device.id))
     print("Placement for : ", T_idx, placement, flush=True)
 
     @spawn(T[T_idx], placement=[placement])
-    def quicksort_task():
+    async def quicksort_task():
         context = get_current_context()
         print(T[T_idx], "is running on", context)
 
         if len(array) < 2:
-            if out is not array:
-                out[:] = array
             return
 
         pivot = int(array[len(array) - 1])  # without type conversion it's a view, not copy
@@ -42,12 +41,18 @@ def quicksort(array: xp.CrossPyArray, out, T, T_idx=0):
         assert len(array) == len(left) + 1 + len(right)
 
         if len(left):
-            quicksort(left, left, T, 2*T_idx)
-            xp.assignment(out, cp.arange(len(left)), left, None)
+            quicksort(left, T, 2*T_idx)
         if len(right):
-            quicksort(right, right, T, 2*T_idx+1)
-            xp.assignment(out, cp.arange(len(left) + 1, len(array)), right, None)
-        out[len(left)] = pivot
+            quicksort(right, T, 2*T_idx+1)
+
+        array[len(left)] = pivot
+        if len(left):
+            await T[2*T_idx]
+            xp.assignment(array, cp.arange(len(left)), left, None)
+        if len(right):
+            await T[2*T_idx+1]
+            xp.assignment(array, cp.arange(len(left) + 1, len(array)), right, None)
+        return
 
 def main():
     with Parla():
@@ -62,9 +67,10 @@ def main():
 
         xA = xp.array(cupy_list, axis=0)
         print("Original Array: ", xA)
-        T = TaskSpace("T")
+        T = AtomicTaskSpace("T")
         start_t = time.perf_counter()
-        quicksort(xA, xA, T)
+        quicksort(xA, T)
+        T.wait()
         end_t = time.perf_counter()
 
     print("Sorted: ", xA)
