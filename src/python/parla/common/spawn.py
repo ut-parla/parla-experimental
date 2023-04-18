@@ -7,14 +7,13 @@ from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
-from parla.common.globals import SynchronizationType as SyncType
 from parla.common.globals import default_sync, VCU_BASELINE
 
 import inspect
 
 from parla.cython import tasks
 
-from typing import Optional, Collection, Any, Union, List, Tuple
+from typing import Collection, Any, Union, List, Tuple
 
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
