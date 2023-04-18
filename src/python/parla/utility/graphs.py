@@ -210,6 +210,15 @@ class ReductionConfig(GraphConfig):
 
 
 @dataclass
+class ReductionScatterConfig(GraphConfig):
+    """
+    Used to configure the generation of a reduction-scatter task graph.
+    """
+    task_count: int = 1
+    levels: int = 4 # Numberof levels in the tree
+
+
+@dataclass
 class RunConfig:
     """
     Configuration object for executing a synthetic task graph.
@@ -817,6 +826,29 @@ def generate_independent_graph(config: IndependentConfig) -> str:
                 configuration_string += ", "
         graph += f"{i} |  {configuration_string} | | {read_data_block} : :\n"
     return graph
+
+
+def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> str:
+    task_config = tgraph_config.task_config
+    configurations = task_config.configurations
+    num_gpus = tgraph_config.num_gpus
+    num_tasks = tgraph_config.task_count
+    levels = tgraph_config.levels
+    num_bridge_tasks = (num_tasks / levels) + (num_tasks % levels)
+    num_bulk_tasks = (num_tasks - num_bridge_tasks) / levels
+    num_bulk_tasks_per_gpu = (num_bulk_tasks) / num_gpus
+    # TODO(hc): adjust the number of tasks.
+
+    graph = ""
+
+    data_config_string = ""
+    # TODO(hc): for now, assume that data allocation starts from cpu.
+    if config.data_pattern == DataInitType.NO_DATA:
+        data_config_string = f"{1, -1}"
+    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
+    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        raise NotImplementedError(
+            "[Independent] Data patterns not implemented")
 
 
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
