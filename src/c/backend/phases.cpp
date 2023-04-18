@@ -28,7 +28,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "Mapper::run" << std::endl;
+  //std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
@@ -47,6 +47,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   has_task = this->get_count() > 0;
   while (has_task) {
+    //Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
@@ -101,6 +102,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
             dynamic_cast<ArchitectureRequirement *>(base_req.get());
         std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
         Score_t chosen_dev_score{0};
+        // std::cout << "[Mapper] Task name:" << task->get_name() << ", " << "Checking arch requirement."
+        //           << "\n";
         bool is_req_available = policy_->calc_score_archplacement(
             task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
             parray_list[0]);
@@ -116,10 +119,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
       }
     }
 
+
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
+      //std::cout << "Task has not been mapped" << std::endl;
     } else {
       std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           *parray_list = &(task->parray_list);
@@ -140,16 +145,20 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
 
-      // std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
-      //           << "\n";
-      // for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-      //   std::cout << "\t [" << i << "] "
-      //             << task->assigned_devices[i]->get_name() << "\n";
-      //   auto res = task->device_constraints[task->assigned_devices[i]
-      //                                           ->get_global_id()];
-      //   std::cout << "\t memory:" << res.get(Resource::Memory)
-      //             << ", vcu:" << res.get(Resource::VCU) << "\n";
-      // }
+#if 0
+      std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
+                << "\n";
+      for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+        std::cout << "\t [" << i << "] "
+                  << task->assigned_devices[i]->get_name() << "\n";
+        /*
+        auto res = task->device_constraints[task->assigned_devices[i]
+                                                ->get_global_id()];
+        std::cout << "\t memory:" << res.get(Resource::Memory)
+                  << ", vcu:" << res.get(Resource::VCU) << "\n";
+        */
+      }
+#endif
 
       this->mapped_tasks_buffer.push_back(task);
       this->atomic_incr_num_mapped_tasks();
@@ -284,7 +293,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "MemoryReserver::run" << std::endl;
+  //std::cout << "MemoryReserver::run" << std::endl;
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
@@ -430,7 +439,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "RuntimeReserver::run" << std::endl;
+  //std::cout << "RuntimeReserver::run" << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
@@ -516,7 +525,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "Launcher::enqueue" << std::endl;
+  //std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);

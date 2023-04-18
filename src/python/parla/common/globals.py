@@ -19,6 +19,9 @@ print("PREINIT_THREADS: ", PREINIT_THREADS)
 _global_data_tasks = {}
 
 
+VCU_BASELINE=1000
+
+
 class SynchronizationType(IntEnum):
     """
     This class declares the type (if any) of runeahead synchronization

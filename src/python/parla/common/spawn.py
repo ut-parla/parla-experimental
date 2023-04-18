@@ -7,14 +7,13 @@ from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
-from parla.common.globals import SynchronizationType as SyncType
-from parla.common.globals import default_sync
+from parla.common.globals import default_sync, VCU_BASELINE
 
 import inspect
 
 from parla.cython import tasks
 
-from typing import Optional, Collection, Any, Union, List, Tuple
+from typing import Collection, Any, Union, List, Tuple
 
 ComputeTask = tasks.ComputeTask
 task_locals = tasks.task_locals
@@ -31,7 +30,6 @@ nvtx.initialize()
 
 Resources = core.Resources
 
-VCU_BASELINE = device_manager.VCU_BASELINE
 
 # @profile
 
@@ -63,8 +61,8 @@ def spawn(task=None,
           input: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           output: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
           inout: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
-          vcus=1000,
-          memory=0,
+          vcus=None,
+          memory=None,
           runahead=default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
@@ -88,13 +86,19 @@ def spawn(task=None,
         nonlocal placement
         nonlocal runahead
 
-        if not isinstance(vcus, int):
+        #COMMENT(wlr): Just added this back to revert my commit 30 min ago.
+        if vcus is not None:
             # Default behavior the same as Parla 0.2.
-            if vcus <= 1:
+            # The baseline should not be multiplied when placement is None.
+            # This is because architecture's __getitem__ also multiplies
+            # the baseline, and it multiplies (baseline^2).
+            if vcus <= 1 and placement is not None:
                 vcus = int(vcus * VCU_BASELINE)
             else:
                 # Only large values for ease of testing
                 vcus = int(vcus)
+        if memory is not None:
+            memory = int(memory)
 
         if inspect.iscoroutine(body):
             separated_body = body
@@ -118,9 +122,13 @@ def spawn(task=None,
         # If none of the placement is passed, make
         # all devices candidate.
         placement = placement if placement is not None else [
-            arch[{'vcus': vcus, 'memory': memory}] for arch in device_manager.get_all_architectures()]
+            arch[{'vcus': vcus if vcus is not None else 0,
+                  'memory': memory if memory is not None else 0}]
+                for arch in device_manager.get_all_architectures()]
+        
+        #print("placement: ", placement)
 
-        device_reqs = scheduler.get_device_reqs_from_placement(placement)
+        device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
         task.set_device_reqs(device_reqs)
 
         dataflow = Dataflow(input, output, inout)
@@ -128,7 +136,6 @@ def spawn(task=None,
         task.instantiate(function=_task_callback,
                          args=(separated_body,),
                          dependencies=flattened_dependencies,
-                         constraints=vcus,
                          dataflow=dataflow,
                          runahead=runahead
                          )

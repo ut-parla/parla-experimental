@@ -30,6 +30,7 @@ using namespace std::chrono_literals;
 
 // Forward Declarations of Inner Classes
 class InnerTask;
+class TaskBarrier;
 class InnerWorker;
 class InnerScheduler;
 
@@ -40,6 +41,8 @@ using WorkerList = ProtectedVector<InnerWorker *>;
 
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
+
+using SpaceList = ProtectedVector<TaskBarrier *>;
 
 using PointerList = ProtectedVector<uintptr_t>;
 
@@ -210,6 +213,9 @@ public:
   /* Container of Task Dependents (should be thread-safe)*/
   TaskList dependents;
 
+  /* Container of Task Spaces */
+  SpaceList spaces;
+
   /*Local depdendency buffer*/
   std::vector<InnerTask *> dependency_buffer = std::vector<InnerTask *>();
 
@@ -235,9 +241,6 @@ public:
   /* Number of waiting instances (for multidevice) */
   std::atomic<int> num_runtime_instances{1};
   bool removed_runtime{false};
-
-  /* Tasks Internal Resource Pool. */
-  ResourcePool<std::atomic<int64_t>> resources;
 
   /* Task Assigned Device Set*/
   std::vector<Device *> assigned_devices;
@@ -280,9 +283,6 @@ public:
   /* Set the priority of the task */
   void set_priority(int priority);
 
-  /*Set a resource of the task*/
-  void set_resources(std::string resource_name, float resource_value);
-
   /* Add a dependency to the task buffer but don't process it*/
   void queue_dependency(InnerTask *task);
 
@@ -301,7 +301,8 @@ public:
                                      bool data_tasks = false);
 
   /* Add a dependent to the task */
-  Task::State add_dependent(InnerTask *task);
+  Task::State add_dependent_task(InnerTask *task);
+  Task::State add_dependent_space(TaskBarrier *barrier);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
@@ -327,6 +328,7 @@ public:
    *  TODO: Decide on a container to use for this
    */
   void notify_dependents(TaskStateList &tasks, Task::State new_state);
+  void notify_dependents_completed();
 
   /* Wrapper for testing */
   bool notify_dependents_wrapper();
@@ -608,6 +610,79 @@ LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 
 /**
+ *   The C++ "Mirror" of Parla's Python TaskSets & Spaces
+ *   They are used as barriers for the calling thread for the completion of
+ *   their members
+ */
+
+class TaskBarrier {
+  // TODO: As is, this is not resuable.
+
+  // TODO: This assumes the Python holder of the TaskBarrier will not be deleted
+  // before all of its tasks are completed. Add backlinks for cleanup?
+
+public:
+  std::mutex mtx;
+  std::condition_variable cv;
+  int64_t id;
+
+  std::atomic<int> num_incomplete_tasks{0};
+
+  TaskBarrier() = default;
+
+  TaskBarrier(int num_tasks) : num_incomplete_tasks(num_tasks) {}
+
+  Task::State _add_task(InnerTask *task);
+  void add_task(InnerTask *task);
+  void add_tasks(std::vector<InnerTask *> &tasks);
+  void set_id(int64_t id) { this->id = id; }
+
+  void wait() {
+    // std::cout << "Barrier Wait" << std::endl;
+    std::unique_lock<std::mutex> lck(mtx);
+    cv.wait(lck, [this] { return num_incomplete_tasks == 0; });
+  }
+
+  void notify() {
+    std::unique_lock<std::mutex> lck(mtx);
+    int prev = this->num_incomplete_tasks.fetch_sub(1);
+    if (prev == 1) {
+      cv.notify_all();
+    }
+  }
+};
+
+class InnerTaskSpace : public TaskBarrier {
+
+public:
+  InnerTaskSpace() = default;
+
+  std::unordered_map<int64_t, InnerTask *> task_map;
+
+  void add_task(int64_t key, InnerTask *task) {
+    task_map.insert({key, task});
+    TaskBarrier::add_task(task);
+  }
+
+  void add_tasks(std::vector<int64_t> &keys, std::vector<InnerTask *> &tasks) {
+    for (int i = 0; i < keys.size(); i++) {
+      task_map.insert({keys[i], tasks[i]});
+    }
+    TaskBarrier::add_tasks(tasks);
+  }
+
+  void get_tasks(std::vector<int64_t> &keys, std::vector<InnerTask *> &tasks) {
+    for (int i = 0; i < keys.size(); i++) {
+      tasks.push_back(task_map[keys[i]]);
+    }
+  }
+
+  void wait() { TaskBarrier::wait(); }
+
+  void notify() { TaskBarrier::notify(); }
+};
+
+/**
  *   The C++ "Mirror" of Parla's Python Workers
  *   This class is used to create a C++ representation of a Parla Worker
  *   All scheduling logic should be handled by these after creation until
@@ -817,11 +892,6 @@ public:
   /* Container of Thread Workers */
   WorkerPool_t workers;
 
-  /* Resource Pool */
-  // TODO(wlr): Remove this (deprecated from testing)
-  ResourcePool<std::atomic<int64_t>>
-      resources; // TODO: Dummy class, needs complete rework with devices
-
   /* Active task counter (thread-safe) */
   std::atomic<int> num_active_tasks{1};
 
@@ -839,6 +909,7 @@ public:
   Launcher *launcher;
 
   InnerScheduler(DeviceManager *device_manager);
+  ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
   /* Pointer to callback to stop the Python scheduler */
@@ -852,11 +923,6 @@ public:
 
   /* Set the number of workers */
   void set_num_workers(int nworkers);
-
-  /* Set available resources  */
-  void set_resources(std::string resource_name,
-                     float resource_value); // TODO: Dummy function, needs
-                                            // complete rework with devices
 
   /* Set Python Scheduler */
   void set_py_scheduler(void *py_scheduler);

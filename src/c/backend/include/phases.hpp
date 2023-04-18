@@ -159,7 +159,7 @@ protected:
 
   std::shared_ptr<MappingPolicy> policy_;
   /// The total number of tasks mapped to and running on the whole devices.
-  std::atomic<size_t> total_num_mapped_tasks_;
+  std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
 };
@@ -177,7 +177,7 @@ public:
       : SchedulerPhase(scheduler, devices) {
     // std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
-        new PhaseManager<ResourceCategory::Persistent>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::Persistent>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -187,7 +187,7 @@ public:
 
 protected:
   // std::string name{"Memory Reserver"};
-  PhaseManager<ResourceCategory::Persistent> *reservable_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::Persistent>> reservable_tasks;
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
   std::vector<InnerTask *> reserved_tasks_buffer;
@@ -212,9 +212,10 @@ public:
     // std::cout << "RuntimeReserver created" << std::endl;
     // FIXME: This leaks memory. Need to add deconstructor.
     this->runnable_tasks =
-        new PhaseManager<ResourceCategory::NonPersistent>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::NonPersistent>>(
+            devices);
     this->movement_tasks =
-        new PhaseManager<ResourceCategory::Movement>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::Movement>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -223,17 +224,14 @@ public:
   size_t get_count();
   size_t get_compute_count();
   size_t get_movement_count();
-  PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
-    return this->runnable_tasks;
-  }
 
   const std::string &get_name() const { return this->name; }
   const RuntimeReserverStatus &get_status() const { return this->status; }
   const void print_status() const { this->status.print(); }
 
 protected:
-  PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
-  PhaseManager<ResourceCategory::Movement> *movement_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::NonPersistent>> runnable_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::Movement>> movement_tasks;
 
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
@@ -250,7 +248,7 @@ class Launcher : virtual public SchedulerPhase {
 public:
   /*Number of running tasks. A task is running if it has been assigned to a
    * worker and is not complete*/
-  std::atomic<size_t> num_running_tasks;
+  std::atomic<size_t> num_running_tasks{0};
 
   Launcher(InnerScheduler *scheduler, DeviceManager *devices)
       : SchedulerPhase(scheduler, devices) {}

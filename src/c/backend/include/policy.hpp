@@ -96,6 +96,7 @@ public:
 protected:
   DeviceManager *device_manager_;
   PArrayTracker *parray_tracker_;
+  int rrcount = 0;
 };
 
 class LocalityLoadBalancingMappingPolicy : public MappingPolicy {

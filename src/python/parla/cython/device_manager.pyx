@@ -1,14 +1,12 @@
 from parla.cython import device
 from parla.cython.device cimport Device
-from parla.common.globals import DeviceType, cupy
+from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 
 import os
 import psutil
 import yaml
-
-VCU_BASELINE=1000
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -309,24 +307,26 @@ class PyDeviceManager:
             return False
         return True
 
-    def construct_single_device_requirements(self, dev, res_req = None):
-        res_req_ = res_req if res_req is not None else DeviceResource()
-        return DeviceResourceRequirement(dev, res_req_)
+    def construct_single_device_requirements(self, dev, res_req):
+        return DeviceResourceRequirement(dev, res_req)
 
-    def construct_single_architecture_requirements(self, arch, res_req = None):
+    def construct_single_architecture_requirements(self, arch, res_req):
         arch_reqs = []
-        res_req_ = res_req if res_req is not None else DeviceResource()
         for d in arch.devices:
             arch_reqs.append(self.construct_single_device_requirements(
-                  d, res_req_))
+                  d, res_req))
         return PrintableFrozenSet(arch_reqs)
 
-    def construct_resource_requirements(self, placement_component):
+    def construct_resource_requirements(self, placement_component, vcus, memory):
         if isinstance(placement_component, Tuple) and \
               not self.is_multidevice_placement(placement_component):
                 # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
+                req.memory_sz = req.memory_sz if req.memory_sz is not None else  \
+                    (0 if memory is None else memory)
+                req.num_vcus = req.num_vcus if req.num_vcus is not None else  \
+                    (0 if vcus is not None else vcus)
                 # If a device specified by users does not exit 
                 # and was not registered to the Parla runtime,
                 # use CPU instead.
@@ -345,16 +345,22 @@ class PyDeviceManager:
                     return self.construct_single_device_requirements(
                         placement, req)
         elif isinstance(placement_component, PyArchitecture):
+            vcus = vcus if vcus is not None else 0
+            memory = memory if memory is not None else 0
+            res_req = DeviceResource(memory, vcus)
             return self.construct_single_architecture_requirements(
-                placement_component)
+                placement_component, res_req)
         elif isinstance(placement_component, PyDevice):
+            vcus = vcus if vcus is not None else 0
+            memory = memory if memory is not None else 0
+            res_req = DeviceResource(memory, vcus)
             return self.construct_single_device_requirements(
-                placement_component)
+                placement_component, res_req)
         else:
             raise TypeError("Incorrect placement")
 
 
-    def unpack_placements(self, placement_components):
+    def unpack_placements(self, placement_components, vcus, memory):
         """ Unpack a placement parameter and return a list of
             a pair of devices and requirements in a proper hierarchy structure.
             Placements (from @spawn) could be collections, for
@@ -381,22 +387,21 @@ class PyDeviceManager:
                 # construct a list of member devices and their resource
                 # requirements to distinguish them from other flat
                 # resource requirements.
-                unpacked_devices.append(self.unpack_placements(c))
+                unpacked_devices.append(self.unpack_placements(c, vcus, memory))
             else:
-                unpacked_devices.append(self.construct_resource_requirements(c))
+                unpacked_devices.append(self.construct_resource_requirements(c, vcus, memory))
         return unpacked_devices
 
-    def get_device_reqs_from_placement(self, placement):
+    def get_device_reqs_from_placement(self, placement, vcus, memory):
         """ Unpack placement and return device objects that are specified
             (or implied) through the placement argument of @spawn.
             If None is passed to the placement, all devices exiting
             in the current system become candidates of the placement. """
-        if placement is not None:
-            ps = placement if isinstance(placement, Iterable) else [placement]
-            return self.unpack_placements(ps)
-        else:
-            return [DeviceResourceRequirement(d, DeviceResource()) \
-                    for d in self.get_all_devices()]
+        # Placement cannot be None since it is set to a list of the whole 
+        # devices.
+        assert placement is not None
+        ps = placement if isinstance(placement, Iterable) else [placement]
+        return self.unpack_placements(ps, vcus, memory)
 
     def globalid_to_parrayid(self, global_dev_id):
         return self.cy_device_manager.globalid_to_parrayid(global_dev_id)
