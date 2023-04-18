@@ -1,36 +1,33 @@
 #GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
 #GRAPH_TYPES_STR=( "independent" )
 #GRAPH_TYPES_STR=( "serial" )
-GRAPH_TYPES_STR=( "independent" )
+GRAPH_TYPES_STR=( "reduction" )
 #NUM_TASKS_SET=( 300 500 1000 2000 )
 #NUM_TASKS_SET=( 1000 )
 #NUM_TASKS_SET=( 500 1000 2000 )
 #NUM_TASKS_SET=( 500 1000 2000 4000 )
-NUM_TASKS_SET=( 500 2000 4000 )
 #NUM_TASKS_SET=( 4000 )
 #NUM_TASKS_SET=( 10 )
 #LEVELS=( 8 16 )
-LEVELS=( 8 )
+LEVELS=( 7 8 9 10 11 )
+#LEVELS=( 11 )
 #SLEEP_KNOBS=( 3000 5000 10000 16000 20000 )
-#SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
-SLEEP_KNOBS=( 500 )
+SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
 #SLEEP_KNOBS=(  1000 )
 #SLEEP_KNOBS=( 16000 32000 64000 )
 #SLEEP_KNOBS=( 64000 )
 #SLEEP_KNOBS=( 16000 )
 #FD_DATA_KNOBS=( 6250 62500 625000 6250000 )
 #FD_DATA_KNOBS=( 6250 )
-#FD_DATA_KNOBS=( 125000000 )
-FD_DATA_KNOBS=( 125000 )
+FD_DATA_KNOBS=( 1250000 )
 #FD_DATA_KNOBS=( 0 )
 #SD_DATA_KNOBS=( 1 2 )
 SD_DATA_KNOBS=( 2 )
-#NUM_GPUS_SET=( "1" "2" "3" "4")
+NUM_GPUS_SET=( "1" "2" "3" "4")
 #NUM_GPUS_SET=( "3" "4" )
-NUM_GPUS_SET=("1" "4")
+#NUM_GPUS_SET=("1")
 #NUM_GPUS_SET=("0")
-#CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
-CUDA_VISIBLE_DEVICES_SET=( "0" "0,1,2,3" )
+CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2" "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0" )
@@ -47,7 +44,7 @@ DATA_MOVE_MODES=( 1 2 )
 #DATA_MOVE_MODES=( 0 )
 #DATA_MOVE_MODES=( 2 )
 
-BASE_DIR=04152023
+BASE_DIR=04182023
 
 #GRAPH_INPUT_DIR="asplos24_nodata_input_"
 #rm -rf $GRAPH_INPUT_DIR
@@ -58,9 +55,10 @@ BASE_DIR=04152023
 #mkdir $OUTPUT_DIR
 
 SOURCE=${BASH_SOURCE[0]}
-DIR="$( dirname "${SOURCE}" )"
+#DIR="$( dirname "${SOURCE}" )"
+DIR="/work2/06398/hochan/frontera/workspace/parla-experimental/benchmark/python"
 
-FILE_BASE_NAME="asplos24_100MB_"
+FILE_BASE_NAME="asplos24_10MB_"
 
 for out_iter in "${OUT_ITERS[@]}"; do
   for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
@@ -89,6 +87,12 @@ for out_iter in "${OUT_ITERS[@]}"; do
                     echo $commands
                     echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
                     CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                    while [ $? -ge 128 ]
+                    do
+                        echo "Segfault: "
+                        echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
+                        CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                    done
                     grep "reduction," ${OUTPUT_DIR}/${output_fname} >> ${OUTPUT_DIR}/result.out
                     grep "reduction," ${OUTPUT_DIR}/${output_fname} >> ${BASE_DIR}/result.out
                     sleep 5

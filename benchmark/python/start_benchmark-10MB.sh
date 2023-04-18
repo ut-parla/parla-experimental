@@ -5,32 +5,28 @@ GRAPH_TYPES_STR=( "independent" )
 #NUM_TASKS_SET=( 300 500 1000 2000 )
 #NUM_TASKS_SET=( 1000 )
 #NUM_TASKS_SET=( 500 1000 2000 )
-#NUM_TASKS_SET=( 500 1000 2000 4000 )
-NUM_TASKS_SET=( 500 2000 4000 )
+NUM_TASKS_SET=( 500 1000 2000 4000 )
 #NUM_TASKS_SET=( 4000 )
 #NUM_TASKS_SET=( 10 )
 #LEVELS=( 8 16 )
 LEVELS=( 8 )
 #SLEEP_KNOBS=( 3000 5000 10000 16000 20000 )
-#SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
-SLEEP_KNOBS=( 500 )
+SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
 #SLEEP_KNOBS=(  1000 )
 #SLEEP_KNOBS=( 16000 32000 64000 )
 #SLEEP_KNOBS=( 64000 )
 #SLEEP_KNOBS=( 16000 )
 #FD_DATA_KNOBS=( 6250 62500 625000 6250000 )
 #FD_DATA_KNOBS=( 6250 )
-#FD_DATA_KNOBS=( 125000000 )
-FD_DATA_KNOBS=( 125000 )
+FD_DATA_KNOBS=( 1250000 )
 #FD_DATA_KNOBS=( 0 )
 #SD_DATA_KNOBS=( 1 2 )
 SD_DATA_KNOBS=( 2 )
-#NUM_GPUS_SET=( "1" "2" "3" "4")
+NUM_GPUS_SET=( "1" "2" "3" "4")
 #NUM_GPUS_SET=( "3" "4" )
-NUM_GPUS_SET=("1" "4")
+#NUM_GPUS_SET=("1")
 #NUM_GPUS_SET=("0")
-#CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
-CUDA_VISIBLE_DEVICES_SET=( "0" "0,1,2,3" )
+CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2" "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0" )
@@ -47,7 +43,7 @@ DATA_MOVE_MODES=( 1 2 )
 #DATA_MOVE_MODES=( 0 )
 #DATA_MOVE_MODES=( 2 )
 
-BASE_DIR=04152023
+BASE_DIR=04182023
 
 #GRAPH_INPUT_DIR="asplos24_nodata_input_"
 #rm -rf $GRAPH_INPUT_DIR
@@ -60,7 +56,7 @@ BASE_DIR=04152023
 SOURCE=${BASH_SOURCE[0]}
 DIR="$( dirname "${SOURCE}" )"
 
-FILE_BASE_NAME="asplos24_100MB_"
+FILE_BASE_NAME="asplos24_10MB_"
 
 for out_iter in "${OUT_ITERS[@]}"; do
   for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
@@ -118,6 +114,12 @@ for out_iter in "${OUT_ITERS[@]}"; do
                     echo $output_prefix
                     echo $commands
                     CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                    while [ $? -ge 128 ]
+                    do
+                        echo "Segfault: "
+                        echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
+                        CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                    done
                     echo "ng_idx:"$ng_idx
                     echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
 #CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands
