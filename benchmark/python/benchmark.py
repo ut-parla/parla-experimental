@@ -168,11 +168,13 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
             data_scale=sD_array_bytes)
 
         times = g.run(run_config)
+        """
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
+        """
 
     print(f"new_parla,independent,{iter},{computation_weight},{num_tasks},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)

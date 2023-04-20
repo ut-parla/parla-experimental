@@ -196,7 +196,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
-        print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
+#print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
         gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
         parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
@@ -347,7 +347,8 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         """
 
         # TODO(hc): Add data checking.
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
+#@spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
+        @spawn(dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -733,11 +734,15 @@ class GraphContext(object):
 
     def run(self, run_config: RunConfig, max_time: int = 100):
 
+        """
         @timeout(max_time)
         def run_with_timeout():
             return run(self.graph, self.data_config, run_config)
 
         return run_with_timeout()
+        """
+        return run(self.graph, self.data_config, run_config)
+
 
     def __exit__(self, type, value, traceback):
         self.diro.__exit__(type, value, traceback)

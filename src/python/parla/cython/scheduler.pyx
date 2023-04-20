@@ -118,6 +118,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
         self.inner_worker = PyInnerWorker(self, scheduler.inner_scheduler)
 
+        print("thread ", index, " is initialized\n")
+
         #Add the worker to the scheduler pool of all workers (not yet active)
         scheduler.inner_scheduler.add_worker(self.inner_worker)
 
@@ -362,6 +364,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         with self.start_monitor:
             for thread in self.worker_threads:
+                
                 thread.start()
             #print("Scheduler: Waiting at least one thread to Spawn", flush=True)
             self.start_monitor.wait()

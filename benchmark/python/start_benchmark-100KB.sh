@@ -1,19 +1,20 @@
 #GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
 #GRAPH_TYPES_STR=( "independent" )
 #GRAPH_TYPES_STR=( "serial" )
-#GRAPH_TYPES_STR=( "independent" )
-GRAPH_TYPES_STR=( "reduction_scatter" )
-#NUM_TASKS_SET=( 300 500 1000 2000 )
-NUM_TASKS_SET=( 1000 )
+GRAPH_TYPES_STR=( "independent" )
+#GRAPH_TYPES_STR=( "reduction_scatter" )
+NUM_TASKS_SET=( 300 500 1000 2000 )
+#NUM_TASKS_SET=( 1000 )
 #NUM_TASKS_SET=( 500 1000 2000 )
 #NUM_TASKS_SET=( 500 1000 2000 4000 )
+#NUM_TASKS_SET=( 3 )
 #NUM_TASKS_SET=( 4000 )
-#NUM_TASKS_SET=( 10 )
+#NUM_TASKS_SET=( 50 )
 #LEVELS=( 8 16 )
 LEVELS=( 8 )
 #SLEEP_KNOBS=( 3000 5000 10000 16000 20000 )
-#SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
-SLEEP_KNOBS=(  1000 )
+SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
+#SLEEP_KNOBS=(  1000 )
 #SLEEP_KNOBS=( 16000 32000 64000 )
 #SLEEP_KNOBS=( 64000 )
 #SLEEP_KNOBS=( 16000 )
@@ -24,11 +25,12 @@ FD_DATA_KNOBS=( 125000 )
 #SD_DATA_KNOBS=( 1 2 )
 SD_DATA_KNOBS=( 2 )
 #NUM_GPUS_SET=( "1" "2" "3" "4")
-NUM_GPUS_SET=( "3" "4" )
-#NUM_GPUS_SET=("1")
+#NUM_GPUS_SET=( "3" "4" )
+NUM_GPUS_SET=("1")
 #NUM_GPUS_SET=("0")
 #CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
-CUDA_VISIBLE_DEVICES_SET=( "0,1,2" "0,1,2,3" )
+#CUDA_VISIBLE_DEVICES_SET=( "2,3,4" "2,3,4,5" )
+CUDA_VISIBLE_DEVICES_SET=( "2" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0" )
 #USER_CHOSEN_PLACEMENT_SET=( "0" "1" )
@@ -110,11 +112,11 @@ for out_iter in "${OUT_ITERS[@]}"; do
                         output_prefix+=".nodata"
                     fi
 #commands="python -X faulthandler "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
-                    commands="python  "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
+                    commands="python -X faulthandler "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
                     output_fname=${output_prefix}.log
                     echo $output_prefix
                     echo $commands
-                    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands
                     while [ $? -ge 128 ]
                     do
                         echo "Segfault: "
@@ -150,11 +152,11 @@ for out_iter in "${OUT_ITERS[@]}"; do
                           output_prefix+=".nodata"
                       fi
 #commands="python -X faulthandler "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
-                      commands="python  "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
+                      commands="python3.6  "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
                       output_fname=${output_prefix}.log
                       echo $output_prefix
                       echo $commands
-                      CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                      CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands
                       while [ $? -ge 128 ]
                       do
                           echo "Segfault: "

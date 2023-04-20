@@ -46,6 +46,7 @@ if parla_num_threads is None:
 else:
     parla_num_threads = int(parla_num_threads)
 
+parla_num_threads = 1
 
 class Parla:
 

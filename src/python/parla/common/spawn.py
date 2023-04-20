@@ -77,6 +77,7 @@ def spawn(task=None,
             idx = len(taskspace)
 
         task = taskspace[idx]
+        print(f"task {idx} ", type(task), flush=True)
 
     # @profile
     def decorator(body):
