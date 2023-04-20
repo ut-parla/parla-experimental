@@ -1,18 +1,19 @@
 #GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
 #GRAPH_TYPES_STR=( "independent" )
 #GRAPH_TYPES_STR=( "serial" )
-GRAPH_TYPES_STR=( "independent" )
+#GRAPH_TYPES_STR=( "independent" )
+GRAPH_TYPES_STR=( "reduction_scatter" )
 #NUM_TASKS_SET=( 300 500 1000 2000 )
-#NUM_TASKS_SET=( 1000 )
+NUM_TASKS_SET=( 1000 )
 #NUM_TASKS_SET=( 500 1000 2000 )
-NUM_TASKS_SET=( 500 1000 2000 4000 )
+#NUM_TASKS_SET=( 500 1000 2000 4000 )
 #NUM_TASKS_SET=( 4000 )
 #NUM_TASKS_SET=( 10 )
 #LEVELS=( 8 16 )
 LEVELS=( 8 )
 #SLEEP_KNOBS=( 3000 5000 10000 16000 20000 )
-SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
-#SLEEP_KNOBS=(  1000 )
+#SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
+SLEEP_KNOBS=(  1000 )
 #SLEEP_KNOBS=( 16000 32000 64000 )
 #SLEEP_KNOBS=( 64000 )
 #SLEEP_KNOBS=( 16000 )
@@ -22,16 +23,16 @@ FD_DATA_KNOBS=( 125000 )
 #FD_DATA_KNOBS=( 0 )
 #SD_DATA_KNOBS=( 1 2 )
 SD_DATA_KNOBS=( 2 )
-NUM_GPUS_SET=( "1" "2" "3" "4")
-#NUM_GPUS_SET=( "3" "4" )
+#NUM_GPUS_SET=( "1" "2" "3" "4")
+NUM_GPUS_SET=( "3" "4" )
 #NUM_GPUS_SET=("1")
 #NUM_GPUS_SET=("0")
-CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
-#CUDA_VISIBLE_DEVICES_SET=( "0,1,2" "0,1,2,3" )
+#CUDA_VISIBLE_DEVICES_SET=( "0" "0,1" "0,1,2" "0,1,2,3" )
+CUDA_VISIBLE_DEVICES_SET=( "0,1,2" "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0,1,2,3" )
 #CUDA_VISIBLE_DEVICES_SET=( "0" )
-USER_CHOSEN_PLACEMENT_SET=( "0" "1" )
-#USER_CHOSEN_PLACEMENT_SET=( "0" )
+#USER_CHOSEN_PLACEMENT_SET=( "0" "1" )
+USER_CHOSEN_PLACEMENT_SET=( "1" )
 GIL_COUNT=1
 GIL_TIME=0
 
@@ -39,9 +40,9 @@ GIL_TIME=0
 OUT_ITERS=( "1" )
 
 #DATA_MOVE_MODES=( 0 1 2 )
-DATA_MOVE_MODES=( 1 2 )
+#DATA_MOVE_MODES=( 1 2 )
 #DATA_MOVE_MODES=( 0 )
-#DATA_MOVE_MODES=( 2 )
+DATA_MOVE_MODES=( 2 )
 
 BASE_DIR=04182023
 
@@ -68,7 +69,7 @@ for out_iter in "${OUT_ITERS[@]}"; do
       for fd_data_knob in "${FD_DATA_KNOBS[@]}"; do
         for sd_data_knob in "${SD_DATA_KNOBS[@]}"; do 
           for user_chosen_placement in "${USER_CHOSEN_PLACEMENT_SET[@]}"; do
-            if [[ ${GRAPH_TYPE} == *"reduction"* ]]; then
+            if [[ ${GRAPH_TYPE} == "reduction" ]]; then
               for level in "${LEVELS[@]}"; do
                 for ng_idx in "${!NUM_GPUS_SET[@]}"; do
                   for data_move_mode in "${DATA_MOVE_MODES[@]}"; do
@@ -91,7 +92,7 @@ for out_iter in "${OUT_ITERS[@]}"; do
                   done
                 done
               done
-            else
+            elif [[ ${GRAPH_TYPE} == *"serial"* || ${GRAPH_TYPE} == *"independent"* ]]; then
               for num_task in "${NUM_TASKS_SET[@]}"; do
                 for ng_idx in "${!NUM_GPUS_SET[@]}"; do
                   for data_move_mode in "${DATA_MOVE_MODES[@]}"; do
@@ -133,7 +134,43 @@ for out_iter in "${OUT_ITERS[@]}"; do
                   done
                 done
               done
+            elif [[ ${GRAPH_TYPE} == *"reduction_scatter"* ]]; then
+              echo "graphtype:"${GRAPH_TYPE}
+              for num_task in "${NUM_TASKS_SET[@]}"; do
+                for level in "${LEVELS[@]}"; do
+                  for ng_idx in "${!NUM_GPUS_SET[@]}"; do
+                    for data_move_mode in "${DATA_MOVE_MODES[@]}"; do
+                      num_gpus=${NUM_GPUS_SET[$ng_idx]}
+                      FLAGS=" -computation_weight "${computation_time}" -gil_count "$GIL_COUNT" -gil_time "$GIL_TIME" -user "$user_chosen_placement" -num_gpus "$num_gpus
+                      FLAGS+=" -d "${sd_data_knob}" -data_move "${data_move_mode}
+                      FLAGS+=" -width_bytes "${fd_data_knob}" -iter "${out_iter}" -level "${level}
+                      FLAGS+=" -overlap 1 -n ${num_task} -workloads reduction_scatter"
+                      output_prefix="${GRAPH_TYPE}_${fd_data_knob}_${sd_data_knob}_${computation_time}_${user_chosen_placement}_${num_task}_${num_gpus}_${data_move_mode}_${out_iter}"
+                      if [[ ${fd_data_knob} == 0 ]]; then
+                          output_prefix+=".nodata"
+                      fi
+#commands="python -X faulthandler "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
+                      commands="python  "${DIR}"/benchmark.py -graph ${GRAPH_INPUT_DIR}/${output_prefix}.gph "$FLAGS
+                      output_fname=${output_prefix}.log
+                      echo $output_prefix
+                      echo $commands
+                      CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                      while [ $? -ge 128 ]
+                      do
+                          echo "Segfault: "
+                          echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
+                          CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands > $OUTPUT_DIR/${output_fname}
+                      done
+                      echo "ng_idx:"$ng_idx
+                      echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES_SET[$ng_idx]} $commands"
+                      grep "reduction_scatter," ${OUTPUT_DIR}/${output_fname} >> ${OUTPUT_DIR}/result.out
+                      grep "reduction_scatter," ${OUTPUT_DIR}/${output_fname} >> ${BASE_DIR}/result.out
+                    done
+                  done
+                done
+              done
             fi
+
           done
         done
       done

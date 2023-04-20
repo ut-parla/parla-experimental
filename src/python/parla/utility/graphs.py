@@ -829,29 +829,137 @@ def generate_independent_graph(config: IndependentConfig) -> str:
 
 
 def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> str:
+    """
+    Generate reduction-scatter graph input file.
+
+    e.g.,
+    * * * * * * (bulk tasks) 
+    \ | | | | /
+         *      (bridge task)
+    / | | | | \
+    * * * * * *
+    ...
+    """
     task_config = tgraph_config.task_config
     configurations = task_config.configurations
     num_gpus = tgraph_config.num_gpus
     num_tasks = tgraph_config.task_count
+    # Level starts from 1
     levels = tgraph_config.levels
-    num_bridge_tasks = (num_tasks / levels) + (num_tasks % levels)
-    num_bulk_tasks = (num_tasks - num_bridge_tasks) / levels
-    num_bulk_tasks_per_gpu = (num_bulk_tasks) / num_gpus
-    # TODO(hc): adjust the number of tasks.
+    # Calcualte the number of bridge tasks in the graph.
+    num_bridge_tasks = levels // 2
+    num_bridge_tasks += 1 if (levels % 2 > 0) else  0
+    # Calculate the number of bulk tasks in the graph.
+    num_bulk_tasks = (num_tasks - num_bridge_tasks)
+    # Calculate the number of bulk tasks per level.
+    num_levels_for_bulk_tasks = levels // 2 + 1
+    num_bulk_tasks_per_level = num_bulk_tasks // num_levels_for_bulk_tasks
+    # All the remaining bulk tasks are added to the last level.
+    num_bulk_tasks_last_level = (num_bulk_tasks % num_levels_for_bulk_tasks) + num_bulk_tasks_per_level
+    # Calculate the number of tasks per gpu per level. 
+    num_bulk_tasks_per_gpu = (num_bulk_tasks_per_level) // num_gpus
+    """
+    for l in range(levels + 1):
+        if l % 2 > 0:
+            print(f"Level {l}: -- 1 --", flush=True)
+        else:
+            if l == levels:
+                print(f"Level {l}: {num_bulk_tasks_last_level}, {num_bulk_tasks_per_gpu}", flush=True)
+            else:
+                print(f"Level {l}: {num_bulk_tasks_per_level}, {num_bulk_tasks_per_gpu}", flush=True)
+    """
 
     graph = ""
 
     data_config_string = ""
     # TODO(hc): for now, assume that data allocation starts from cpu.
-    if config.data_pattern == DataInitType.NO_DATA:
+    if tgraph_config.data_pattern == DataInitType.NO_DATA:
         data_config_string = f"{1, -1}"
-    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
-    elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
+    elif tgraph_config.data_pattern == DataInitType.OVERLAPPED_DATA:
+        # Each bulk task takes an individual (non-overlapped) data block.
+        # A bridge task reduces all data blocks from the bulk tasks in the previous level.
+        single_data_block_size = tgraph_config.total_data_width
+        for d in range(num_bulk_tasks_last_level):
+            if d > 0:
+                data_config_string += " | "
+            data_config_string += f"{single_data_block_size, -1}"
+    elif tgraph_config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError(
             "[Independent] Data patterns not implemented")
+    data_config_string += "\n"
+    graph += data_config_string
 
+    # TODO(hc): I don't know how to handle user-fixed placement on multi-device
+    #           tasks. Let me design single device task workload.
+    assert len(task_config.configurations) == 1
+
+    # Construct task graphs.
+    task_id = 0
+    bridge_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
+                         DeviceType.ANY_GPU_DEVICE
+    last_bridge_task_id_str = ""
+    last_bridge_task_id = 0 
+    for l in range(levels + 1):
+        # If the last level has a bridge task, the previous level should take all remaining bulk
+        # tasks.
+        if levels % 2 > 0:
+            l_num_bulk_tasks = num_bulk_tasks_per_level if l < (levels - 1) else num_bulk_tasks_last_level
+        else:
+            l_num_bulk_tasks = num_bulk_tasks_per_level if l < levels else num_bulk_tasks_last_level
+        if l % 2 > 0: # Bridge task condition
+            dependency_block = ""
+            inout_data_block = ""
+            for d in range(l_num_bulk_tasks):
+                inout_data_block += f"{d}"
+                if l == 1:
+                    dependency_block += f"{d + last_bridge_task_id}"
+                else:
+                    dependency_block += f"{d + last_bridge_task_id + 1}"
+                if d != (l_num_bulk_tasks - 1):
+                    inout_data_block += ","
+                    dependency_block += " : "
+            # TODO(hc): assume a single device task.
+            for _, sdevice_task_config in task_config.configurations.items():
+                graph += (f"{task_id} | {{ {bridge_task_dev_id} : {sdevice_task_config.task_time}, "
+                          f"{sdevice_task_config.device_fraction}, {sdevice_task_config.gil_accesses}, "
+                          f"{sdevice_task_config.gil_fraction}, {sdevice_task_config.memory} }}")
+            graph += f" | {dependency_block}"
+            graph += f" | : : {inout_data_block}\n"
+            if tgraph_config.fixed_placement:
+                bridge_task_dev_id += 1
+                if bridge_task_dev_id == num_gpus + DeviceType.USER_CHOSEN_DEVICE:
+                    bridge_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
+            last_bridge_task_id_str = f"{task_id}"
+            last_bridge_task_id = int(task_id)
+            task_id += 1
+        else: # Bulk tasks condition
+            bulk_task_id_per_gpu = 0
+            bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
+                               DeviceType.ANY_GPU_DEVICE
+            for bulk_task_id in range(l_num_bulk_tasks):
+                inout_data_block = f"{bulk_task_id}"
+                # TODO(hc): assume a single device task.
+                for _, sdevice_task_config in task_config.configurations.items():
+                    graph += (f"{task_id} | {{ {bulk_task_dev_id} : {sdevice_task_config.task_time}, "
+                              f"{sdevice_task_config.device_fraction}, {sdevice_task_config.gil_accesses}, "
+                              f"{sdevice_task_config.gil_fraction}, {sdevice_task_config.memory} }}")
+                graph += f" | {last_bridge_task_id_str}"
+                graph += f" | : : {inout_data_block}\n"
+                l_num_bulk_tasks_per_gpu = l_num_bulk_tasks // num_gpus
+                if tgraph_config.fixed_placement:
+                    if l_num_bulk_tasks % num_gpus >= (bulk_task_dev_id - DeviceType.USER_CHOSEN_DEVICE):
+                        l_num_bulk_tasks_per_gpu += 1
+                    bulk_task_id_per_gpu += 1
+                    if bulk_task_id_per_gpu == l_num_bulk_tasks_per_gpu:
+                        bulk_task_id_per_gpu = 0
+                        bulk_task_dev_id += 1
+                        if bulk_task_dev_id == num_gpus:
+                            bulk_task_id = DeviceType.USER_CHOSEN_DEVICE
+                task_id += 1
+    return graph
 
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read_pgraph,
            parse_blog, TaskConfigs, RunConfig, shuffle_tasks,
-           generate_independent_graph, generate_serial_graph]
+           generate_independent_graph, generate_serial_graph,
+           generate_reduction_scatter_graph]
