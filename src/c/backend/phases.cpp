@@ -13,14 +13,14 @@
 /**************************/
 // Mapper Implementation
 
-void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back_unsafe(task); }
+void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }
 
 void Mapper::enqueue(std::vector<InnerTask *> &tasks) {
-  this->mappable_tasks.push_back_unsafe(tasks);
+  this->mappable_tasks.push_back(tasks);
 }
 
 size_t Mapper::get_count() {
-  size_t count = this->mappable_tasks.size_unsafe();
+  size_t count = this->mappable_tasks.atomic_size();
   return count;
 }
 
@@ -47,7 +47,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   has_task = this->get_count() > 0;
   while (has_task) {
     //Comment(wlr): this assumes the task is always able to be mapped.
-    InnerTask *task = this->mappable_tasks.front_and_pop_unsafe();
+    InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
     std::vector<std::shared_ptr<PlacementRequirementBase>>
