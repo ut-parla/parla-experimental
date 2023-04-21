@@ -214,8 +214,12 @@ class ReductionScatterConfig(GraphConfig):
     """
     Used to configure the generation of a reduction-scatter task graph.
     """
+    # The total number of tasks.
+    # The number of tasks for each level is calculated based on this.
+    # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
+    #       with 2 bridge tasks.
     task_count: int = 1
-    levels: int = 4 # Numberof levels in the tree
+    levels: int = 4 # Number of levels in the tree
 
 
 @dataclass
