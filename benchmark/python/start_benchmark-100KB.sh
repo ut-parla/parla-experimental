@@ -1,7 +1,8 @@
 #GRAPH_TYPES_STR=( "serial" "independent" "reduction" )
+GRAPH_TYPES_STR=( "reduction" )
 #GRAPH_TYPES_STR=( "independent" )
 #GRAPH_TYPES_STR=( "serial" )
-GRAPH_TYPES_STR=( "independent" )
+#GRAPH_TYPES_STR=( "independent" )
 #GRAPH_TYPES_STR=( "reduction_scatter" )
 NUM_TASKS_SET=( 300 500 1000 2000 )
 #NUM_TASKS_SET=( 1000 )
@@ -11,7 +12,7 @@ NUM_TASKS_SET=( 300 500 1000 2000 )
 #NUM_TASKS_SET=( 4000 )
 #NUM_TASKS_SET=( 50 )
 #LEVELS=( 8 16 )
-LEVELS=( 8 )
+LEVELS=( 8 9 10 11 )
 #SLEEP_KNOBS=( 3000 5000 10000 16000 20000 )
 SLEEP_KNOBS=( 500 1000 2000 4000 8000 16000 32000 64000 )
 #SLEEP_KNOBS=(  1000 )
@@ -42,11 +43,11 @@ GIL_TIME=0
 OUT_ITERS=( "1" )
 
 #DATA_MOVE_MODES=( 0 1 2 )
-#DATA_MOVE_MODES=( 1 2 )
+DATA_MOVE_MODES=( 1 2 )
 #DATA_MOVE_MODES=( 0 )
-DATA_MOVE_MODES=( 2 )
+#DATA_MOVE_MODES=( 2 )
 
-BASE_DIR=04182023
+BASE_DIR=04192023
 
 #GRAPH_INPUT_DIR="asplos24_nodata_input_"
 #rm -rf $GRAPH_INPUT_DIR
@@ -59,7 +60,7 @@ BASE_DIR=04182023
 SOURCE=${BASH_SOURCE[0]}
 DIR="$( dirname "${SOURCE}" )"
 
-FILE_BASE_NAME="asplos24_1MB_"
+FILE_BASE_NAME="asplos24_100KB"
 
 for out_iter in "${OUT_ITERS[@]}"; do
   for GRAPH_TYPE in "${GRAPH_TYPES_STR[@]}"; do
