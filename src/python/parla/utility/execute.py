@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from .threads import Propagate
 
 from .graphs import LogState, DeviceType, MovementType, DataInitType, TaskID, TaskRuntimeInfo, TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample
-from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig, ReductionConfig
-from .graphs import generate_serial_graph, generate_independent_graph, generate_reduction_graph, shuffle_tasks
+from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig, ReductionConfig, ReductionScatterConfig
+from .graphs import generate_serial_graph, generate_independent_graph, generate_reduction_graph, generate_reduction_scatter_graph, shuffle_tasks
 from .graphs import read_pgraph, parse_blog
 
 import os
@@ -702,6 +702,8 @@ class GraphContext(object):
             self.graph_function = generate_independent_graph
         elif isinstance(config, ReductionConfig):
             self.graph_function = generate_reduction_graph
+        elif isinstance(config, ReductionScatterConfig):
+            self.graph_function = generate_reduction_scatter_graph
 
         if graph_path is not None:
             self.tmpfilepath = graph_path

@@ -36,12 +36,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   // This is a non-critical region
   // Comment(wlr): Why is this a noncritical region?
+  // Comment(lhc): Only one thread performs this function.
 
   // Assumptions:
   // Scheduler maps a task to a device.
   // Scheduler does not reserve any resource at this phase.
-
-  // TODO(hc): for now, I'm planning task mapping without policy.
 
   bool has_task = true;
 

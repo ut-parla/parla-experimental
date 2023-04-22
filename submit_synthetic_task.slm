@@ -13,4 +13,9 @@ source /work2/06398/hochan/frontera/workspace/miniconda3/etc/profile.d/conda.sh
 conda activate parla
 module load cuda
 
-PATH=$PATH:. source benchmark/python/start_benchmark.sh
+#PATH=$PATH:. source benchmark/python/start_benchmark-10MB.sh
+#PATH=$PATH:. source benchmark/python/start_benchmark-100KB.sh
+#PATH=$PATH:. source benchmark/python/start_benchmark-1MB.sh
+#PATH=$PATH:. source benchmark/python/reduction/start_benchmark-10MB.sh
+#PATH=$PATH:. source benchmark/python/reduction/start_benchmark-100KB.sh
+PATH=$PATH:. source benchmark/python/reduction/start_benchmark-1MB.sh
