@@ -305,7 +305,22 @@ class PArray:
 
     # slicing/indexing
 
-    def __getitem__(self, slices: SlicesType) -> PArray | Any:
+    def __getitem__(self, slices: SlicesType | numpy.ndarray | cupy.ndarray) -> PArray | Any:
+        """
+        Acceptable Slices: Slice, Int, tuple of (Slice, Int, List of Int), ndarray of numpy/cupy
+        Example:
+            A[0]  # int
+            A[:]  # slice
+            A[0,:,10]  # tuple of int slice int
+            A[2:10:2, 0, [1, 3, 5]]  # tuple of slice int list of Int
+
+        Note: `:` equals to slice(None, None, None)
+        Note: `None` or tuple of `None` is not acceptable (even if `numpy.ndarray` accept `None`)
+        # TODO: support `None`
+        """   
+        if isinstance(slices, numpy.ndarray) or isinstance(slices, cupy.ndarray):
+            slices = slices.tolist()
+        
         if self._slices:  # resolve saved slices first
             ret = self.array[slices]
         else:
@@ -329,9 +344,9 @@ class PArray:
         else:
             return ret
 
-    def __setitem__(self, slices: SlicesType, value: PArray | ndarray | Any) -> None:
+    def __setitem__(self, slices: SlicesType | numpy.ndarray | cupy.ndarray, value: PArray | ndarray | Any) -> None:
         """
-        Acceptable Slices: Slice, Int, tuple of (Slice, Int, List of Int)
+        Acceptable Slices: Slice, Int, tuple of (Slice, Int, List of Int), ndarray of numpy/cupy
         Example:
             A[0]  # int
             A[:]  # slice
@@ -340,10 +355,13 @@ class PArray:
 
         Note: `:` equals to slice(None, None, None)
         Note: `None` or tuple of `None` is not acceptable (even if `numpy.ndarray` accept `None`)
-        # TODO: support `None` and `ndarray` as slices
+        # TODO: support `None`
         """
         if isinstance(value, PArray):
             value = value.array
+
+        if isinstance(slices, numpy.ndarray) or isinstance(slices, cupy.ndarray):
+            slices = slices.tolist()
 
         if self._slices:  # resolve saved slices first
             self.array.__setitem__(slices, value)
