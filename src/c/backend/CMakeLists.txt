@@ -55,6 +55,13 @@ target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(backend PROPERTIES PUBLIC_HEADER "${BACKEND_HDR_INCLUDE}")
 
+find_package(Torch REQUIRED)
+add_executable(dcgan rl_task_mapper.cpp)
+
+message(STATUS "Torch libraries: ${TORCH_LIBRARIES}")
+target_link_libraries(backend "${TORCH_LIBRARIES}")
+target_link_libraries(dcgan "${TORCH_LIBRARIES}")
+
 #${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/lib/
 
 install(
@@ -64,5 +71,3 @@ install(
         PUBLIC_HEADER
             DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/include/
     )
-
-    
