@@ -28,8 +28,9 @@ struct FullyConnectedDQN : torch::nn::Module {
     x = torch::relu(fc2_->forward(x.reshape({x.size(0), in_dim_ * 4})));
     //std::cout << "state 2:" << x << "\n";
     x = out_->forward(x.reshape({x.size(0), in_dim_ * 4}));
-    //std::cout << "out:" << x << "\n";
-    return x;
+    std::cout << "out:" << x << "\n";
+    //std::cout << "out after squeeze:" << torch::squeeze(x, 1) << "\n";
+    return x.squeeze(0);
   }
 
   uint32_t in_dim_, out_dim_;
@@ -49,7 +50,7 @@ public:
       eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
       steps_(0) {}
 
-  uint32_t select_device_from_policy(
+  uint32_t select_device(
       torch::Tensor state, std::vector<ParlaDevice *> device_candidates) {
     float eps_threshold = this->eps_end_ + (this->eps_start_ - this->eps_end_) *
                               exp(-1.f * this->steps_ / this->eps_decay_);
@@ -62,9 +63,33 @@ public:
       " sample: " << sample << " \n";
     std::cout << "state original:" << state << "\n";
     if (sample > eps_threshold) {
-      // TODO: no grad, and calls policy network.
-      std::cout << this->policy_net_.forward(state) << "\n";
+      torch::NoGradGuard no_grad;
+      torch::Tensor out_tensor = this->policy_net_.forward(state);
+      //std::cout << "out tensor:" << out_tensor << "\n";
+      for (uint32_t action = 0; action < this->n_actions_; ++action) {
+        auto max_action_pair = out_tensor.max(0);
+        torch::Tensor max_tensor = std::get<0>(max_action_pair);
+        int64_t max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
+        //std::cout << "max:" << std::get<0>(max_action_pair) <<
+        //    ", index:" << max_tensor_idx << "\n";
+
+        // TODO: replace it with candidates.
+        if (max_tensor_idx < 4) {
+          return max_tensor_idx;
+        } else {
+          out_tensor[max_tensor_idx] = -999999;
+        }
+        //std::cout << "updated tensor:" << out_tensor << "\n";
+      }
+    } else {
+      // TODO: replace it with candidates.
+      std::uniform_real_distribution<> randomly_chosen_device(0.f, 5.f);
+      return uint32_t{randomly_chosen_device(mt)};
     }
+  }
+
+  void optimize_model(uint64_t rl_episodes) {
+    // TODO: 
 
   }
 
