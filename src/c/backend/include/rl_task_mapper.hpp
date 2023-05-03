@@ -6,6 +6,32 @@
 #include <torch/torch.h>
 #include <random>
 
+class ExperienceReplay {
+public:
+  using BufferTupleType = std::tuple<torch::Tensor /* Current state */,
+                                     torch::Tensor /* Chosen device from the state */,
+                                     torch::Tensor /* Next state */,
+                                     torch::Tensor /* Reward */,
+                                     uint64_t      /* Episode */>;
+  using BufferTy = std::deque<BufferTupleType>;
+  ExperienceReplay(int64_t capacity) : capacity_(capacity) {}
+
+  void push(torch::Tensor curr_state, torch::Tensor chosen_device,
+            torch::Tensor next_state, torch::Tensor reward,
+            uint64_t episode) {
+    BufferTupleType new_buffer_element = std::make_tuple(
+        curr_state, chosen_device, next_state, reward, episode);
+    while (this->buffer_.size() >= this->capacity_) {
+      this->buffer_.pop_front();
+    }
+    this->buffer_.push_back(new_buffer_element);
+  }
+            
+private:
+  int64_t capacity_;
+  BufferTy buffer_;
+};
+
 struct FullyConnectedDQN : torch::nn::Module {
   FullyConnectedDQN(size_t in_dim, size_t out_dim) :
       in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
