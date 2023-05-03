@@ -16,6 +16,15 @@ public:
   using BufferTy = std::deque<BufferTupleType>;
   ExperienceReplay(int64_t capacity) : capacity_(capacity) {}
 
+  /*
+   * Append new tuple to the experience replay buffer.
+   *
+   * @param curr_state Tensor of the current state
+   * @param chosen_device Tensor of the chosen device
+   * @param next_state Tensor of the next state
+   * @param reward Tensor of the reward from the chosen device
+   * @param episode Current episode
+   */
   void push(torch::Tensor curr_state, torch::Tensor chosen_device,
             torch::Tensor next_state, torch::Tensor reward,
             uint64_t episode) {
@@ -25,6 +34,24 @@ public:
       this->buffer_.pop_front();
     }
     this->buffer_.push_back(new_buffer_element);
+  }
+
+  std::vector<BufferTupleType> sample(int64_t batch_size) {
+    std::vector<BufferTupleType> sampled_buffer(batch_size);
+    std::sample(this->buffer_.begin(), this->buffer_.end(),
+                sampled_buffer.begin(), sampled_buffer.size(),
+                std::mt19937_64{std::random_device{}()});
+    return sampled_buffer;
+  }
+
+  void print() {
+    for (size_t i = 0; i < this->buffer_.size(); ++i) {
+      std::cout << "\n [" << i << "th buffer]\n";
+      std::cout << "\t Current state: " << std::get<0>(this->buffer_[i]) << ", " <<
+                   "Chosen device: " << std::get<1>(this->buffer_[i]) << ", " <<
+                   "Next state: " << std::get<2>(this->buffer_[i]) << ", " <<
+                   "Reward: " << std::get<3>(this->buffer_[i]) << "\n";
+    }
   }
             
 private:
@@ -74,7 +101,7 @@ public:
       policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
       device_(device), rl_mode_(rl_mode), n_actions_(n_actions),
       eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
-      steps_(0) {}
+      steps_(0), replay_memory_(1000) {}
 
   uint32_t select_device(
       torch::Tensor state, std::vector<ParlaDevice *> device_candidates) {
@@ -88,6 +115,8 @@ public:
     std::cout << "Select device from policy " << eps_threshold << 
       " sample: " << sample << " \n";
     std::cout << "state original:" << state << "\n";
+    // TODO(hc): remove it
+    eps_threshold = 0;
     if (sample > eps_threshold) {
       torch::NoGradGuard no_grad;
       torch::Tensor out_tensor = this->policy_net_.forward(state);
@@ -119,6 +148,22 @@ public:
 
   }
 
+  void append_replay_memory(
+      torch::Tensor curr_state, torch::Tensor chosen_device,
+      torch::Tensor next_state, torch::Tensor reward,
+      uint64_t episode) {
+    this->replay_memory_.push(curr_state, chosen_device, next_state, reward, episode);
+  }
+
+  void print() {
+    this->replay_memory_.print();
+  }
+
+  std::vector<std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor,
+    uint64_t>> sample(int64_t b) {
+    return this->replay_memory_.sample(b);
+  }
+
 private:
   // TODO: replay memory
 
@@ -129,6 +174,7 @@ private:
   uint32_t n_actions_;
   float eps_start_, eps_end_, eps_decay_;
   uint64_t steps_;
+  ExperienceReplay replay_memory_;
 };
 
 #endif
