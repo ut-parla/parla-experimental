@@ -25,6 +25,7 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+#include "rl_task_mapper.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -243,7 +244,7 @@ public:
   bool removed_runtime{false};
 
   /* Task Assigned Device Set*/
-  std::vector<Device *> assigned_devices;
+  std::vector<ParlaDevice *> assigned_devices;
 
   /*Resource Requirements for each assigned device*/
   std::unordered_map<int, ResourcePool_t> device_constraints;
@@ -496,17 +497,17 @@ public:
   void *get_py_task();
 
   /* Get the python assigned devices */
-  std::vector<Device *> &get_assigned_devices();
+  std::vector<ParlaDevice *> &get_assigned_devices();
 
   /*Add to the assigned device list*/
-  void add_assigned_device(Device *device);
+  void add_assigned_device(ParlaDevice *device);
 
   /*
    * Copy a vector of device pointers
    *
    * @param others Source vector of device pointers to copy
    */
-  void copy_assigned_devices(const std::vector<Device *> &others);
+  void copy_assigned_devices(const std::vector<ParlaDevice *> &others);
 
   /* Set the task status */
   int set_state(int state);
@@ -540,7 +541,7 @@ public:
   /* Get complete */
   bool get_complete();
 
-  void add_device_req(Device *dev_ptr, MemorySz_t mem_sz, VCU_t num_vcus);
+  void add_device_req(ParlaDevice *dev_ptr, MemorySz_t mem_sz, VCU_t num_vcus);
   void begin_arch_req_addition();
   void end_arch_req_addition();
   void begin_multidev_req_addition();
@@ -999,14 +1000,14 @@ public:
 
   /* Reserve a PArray in a device */
   void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
+    ParlaDevice *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.reserve_parray(*parray, device);
   }
 
   /* Release a PArray in a device */
   void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
+    ParlaDevice *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.release_parray(*parray, device);
   }
@@ -1030,6 +1031,9 @@ protected:
   /// It manages the current/planned distribution of PArrays across devices.
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
+
+  /// RL agent.
+  RLAgent rl_agent_;
 };
 
 #endif // PARLA_BACKEND_HPP

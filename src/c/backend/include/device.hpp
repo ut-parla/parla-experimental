@@ -20,22 +20,22 @@ class DeviceRequirement;
 /**
  * @brief Architecture types for devices.
  */
-enum class DeviceType { All = -1, CPU = 0, CUDA = 1 };
+enum class ParlaDeviceType { All = -1, CPU = 0, CUDA = 1 };
 
-inline const constexpr std::array architecture_types{DeviceType::CPU,
-                                                     DeviceType::CUDA};
+inline const constexpr std::array architecture_types{ParlaDeviceType::CPU,
+                                                     ParlaDeviceType::CUDA};
 inline const constexpr int NUM_DEVICE_TYPES = architecture_types.size();
 inline const std::array<std::string, NUM_DEVICE_TYPES> architecture_names{
     "CPU", "CUDA"};
 
 /// Devices can be distinguished from other devices
 /// by a class type and its index.
-class Device {
+class ParlaDevice {
 
 public:
-  Device() = delete;
+  ParlaDevice() = delete;
 
-  Device(DeviceType arch, DevID_t dev_id, MemorySz_t mem_sz, VCU_t num_vcus,
+  ParlaDevice(ParlaDeviceType arch, DevID_t dev_id, MemorySz_t mem_sz, VCU_t num_vcus,
          void *py_dev, int copy_engines = 2)
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
@@ -72,7 +72,7 @@ public:
     return this->mapped_res_.get(type);
   }
 
-  const DeviceType get_type() const { return dev_type_; }
+  const ParlaDeviceType get_type() const { return dev_type_; }
 
   // Comment(wlr): Maybe max resource pool should be const?
 
@@ -127,7 +127,7 @@ public:
   const bool check_resource_availability(DeviceRequirement *dev_req) const;
 
 protected:
-  DeviceType dev_type_;
+  ParlaDeviceType dev_type_;
   DevID_t dev_id_;
   DevID_t dev_global_id_;
   ResourcePool_t res_;
@@ -138,20 +138,21 @@ protected:
 };
 
 ///
-class CUDADevice : public Device {
+class CUDADevice : public ParlaDevice {
 public:
   CUDADevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : Device(DeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
+      : ParlaDevice(ParlaDeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
 
 private:
 };
 
 ///
-class CPUDevice : public Device {
+class CPUDevice : public ParlaDevice {
 public:
   CPUDevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : Device(DeviceType::CPU, dev_id, mem_sz, num_vcus, py_dev, 4) {}
+      : ParlaDevice(ParlaDeviceType::CPU, dev_id, mem_sz, num_vcus, py_dev, 4) {}
 
 private:
 };
+
 #endif

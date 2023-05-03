@@ -6,8 +6,8 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
     const Mapper &mapper, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-        &parray_list) {
-  const Device &device = *(dev_placement_req->device());
+              &parray_list) {
+  const ParlaDevice &device = *(dev_placement_req->device());
   DevID_t global_dev_id = device.get_global_id();
   // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
@@ -160,7 +160,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
   // multiple times. This vector marks an assigned device and filter it
   // out at the next device decision.
   std::vector<bool> is_dev_assigned(
-      this->device_manager_->get_num_devices<DeviceType::All>(), false);
+      this->device_manager_->get_num_devices<ParlaDeviceType::All>(), false);
   // Iterate requirements of the devices specified in multi-device placement.
   // All of the member devices should be available.
   for (DevID_t did = 0; did < placement_reqs_vec.size(); ++did) {

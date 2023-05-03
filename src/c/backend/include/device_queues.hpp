@@ -22,12 +22,12 @@ template <ResourceCategory category> class DeviceQueue {
 
 public:
   DeviceQueue() = default;
-  DeviceQueue(Device *device) : device(device) {}
+  DeviceQueue(ParlaDevice *device) : device(device) {}
 
   /**
    * @return the device that this queue is associated with
    */
-  Device *get_device() { return device; }
+  ParlaDevice *get_device() { return device; }
 
   /**
    * Enqueues a task on this device.
@@ -145,7 +145,7 @@ public:
   inline bool empty() { return mixed_queue.empty() && waiting_queue.empty(); }
 
 protected:
-  Device *device;
+  ParlaDevice *device;
   MixedQueue_t mixed_queue;
   MDQueue_t waiting_queue;
   std::atomic<int> num_tasks{0};
@@ -169,10 +169,10 @@ public:
   PhaseManager(DeviceManager *device_manager) {
     // std::cout << "Initializing PhaseManager" << std::endl;
 
-    for (const DeviceType dev_type : architecture_types) {
+    for (const ParlaDeviceType dev_type : architecture_types) {
       this->ndevices += device_manager->get_num_devices(dev_type);
 
-      for (Device *device : device_manager->get_devices(dev_type)) {
+      for (ParlaDevice *device : device_manager->get_devices(dev_type)) {
         this->device_queues.emplace_back(new DeviceQueue<category>(device));
         // std::cout << "Initialized DeviceQueue for Device: "
         //           << device->get_name() << std::endl;
@@ -296,7 +296,7 @@ protected:
   std::vector<DeviceQueue<category> *> device_queues;
 
   int last_device_idx{0};
-  // DeviceType last_device_type{CPU};
+  // ParlaDeviceType last_device_type{CPU};
 
   int ndevices{0};
   std::atomic<int> num_tasks{0};

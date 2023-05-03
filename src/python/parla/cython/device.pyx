@@ -18,7 +18,7 @@ cdef class CyDevice:
     """
     A bridge between pure Python and C++ device objects.
     """
-    cdef Device* get_cpp_device(self):
+    cdef ParlaDevice* get_cpp_device(self):
         return self._cpp_device
 
     def __dealloc__(self):
@@ -214,7 +214,7 @@ class PyCUDADevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(PyDeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
@@ -230,7 +230,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
     def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -318,7 +318,7 @@ class PyArchitecture(metaclass=ABCMeta):
  
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("CUDAArch", PyDeviceType.CUDA)
 
     def add_device(self, device):
         assert isinstance(device, PyDevice)
@@ -327,7 +327,7 @@ class PyCUDAArchitecture(PyArchitecture):
  
 class PyCPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CPUArch", DeviceType.CPU)
+        super().__init__("CPUArch", PyDeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)

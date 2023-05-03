@@ -16,7 +16,7 @@ public:
   DeviceManager() {}
   DeviceManager(const DeviceManager &) = delete;
 
-  void register_device(Device *new_dev) {
+  void register_device(ParlaDevice *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
     const int idx = static_cast<int>(new_dev->get_type());
     arch_devices_[idx].emplace_back(new_dev);
@@ -25,7 +25,7 @@ public:
 
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
-    for (DeviceType dev_type : architecture_types) {
+    for (ParlaDeviceType dev_type : architecture_types) {
       int i = static_cast<int>(dev_type);
       std::cout << "Device type: " << i << "\n";
       auto device_list = arch_devices_[i];
@@ -39,54 +39,54 @@ public:
     }
   }
 
-  template <DeviceType T> int get_num_devices() {
-    if constexpr (T == DeviceType::All) {
+  template <ParlaDeviceType T> int get_num_devices() {
+    if constexpr (T == ParlaDeviceType::All) {
       return all_devices_.size();
-    } else if constexpr (T == DeviceType::CPU) {
-      return arch_devices_[static_cast<int>(DeviceType::CPU)].size();
-    } else if constexpr (T == DeviceType::CUDA) {
-      return arch_devices_[static_cast<int>(DeviceType::CUDA)].size();
+    } else if constexpr (T == ParlaDeviceType::CPU) {
+      return arch_devices_[static_cast<int>(ParlaDeviceType::CPU)].size();
+    } else if constexpr (T == ParlaDeviceType::CUDA) {
+      return arch_devices_[static_cast<int>(ParlaDeviceType::CUDA)].size();
     }
   }
 
-  int get_num_devices(DeviceType dev_type) {
+  int get_num_devices(ParlaDeviceType dev_type) {
     switch (dev_type) {
-    case DeviceType::CPU:
-      return get_num_devices<DeviceType::CPU>();
-    case DeviceType::CUDA:
-      return get_num_devices<DeviceType::CUDA>();
+    case ParlaDeviceType::CPU:
+      return get_num_devices<ParlaDeviceType::CPU>();
+    case ParlaDeviceType::CUDA:
+      return get_num_devices<ParlaDeviceType::CUDA>();
     default:
-      return get_num_devices<DeviceType::All>();
+      return get_num_devices<ParlaDeviceType::All>();
     }
   }
 
-  template <DeviceType T> std::vector<Device *> &get_devices() {
-    if constexpr (T == DeviceType::CPU) {
-      return arch_devices_[static_cast<int>(DeviceType::CPU)];
-    } else if constexpr (T == DeviceType::CUDA) {
-      return arch_devices_[static_cast<int>(DeviceType::CUDA)];
-    } else if constexpr (T == DeviceType::All) {
+  template <ParlaDeviceType T> std::vector<ParlaDevice *> &get_devices() {
+    if constexpr (T == ParlaDeviceType::CPU) {
+      return arch_devices_[static_cast<int>(ParlaDeviceType::CPU)];
+    } else if constexpr (T == ParlaDeviceType::CUDA) {
+      return arch_devices_[static_cast<int>(ParlaDeviceType::CUDA)];
+    } else if constexpr (T == ParlaDeviceType::All) {
       return all_devices_;
     }
   }
 
-  Device *get_device_by_parray_id(DevID_t parray_dev_id) const {
+  ParlaDevice *get_device_by_parray_id(DevID_t parray_dev_id) const {
     DevID_t global_dev_id = this->parrayid_to_globalid(parray_dev_id);
     return all_devices_[global_dev_id];
   }
 
-  Device *get_device_by_global_id(DevID_t global_dev_id) const {
+  ParlaDevice *get_device_by_global_id(DevID_t global_dev_id) const {
     return all_devices_[global_dev_id];
   }
 
-  std::vector<Device *> &get_devices(DeviceType dev_type) {
+  std::vector<ParlaDevice *> &get_devices(ParlaDeviceType dev_type) {
     switch (dev_type) {
-    case DeviceType::CPU:
-      return get_devices<DeviceType::CPU>();
-    case DeviceType::CUDA:
-      return get_devices<DeviceType::CUDA>();
+    case ParlaDeviceType::CPU:
+      return get_devices<ParlaDeviceType::CPU>();
+    case ParlaDeviceType::CUDA:
+      return get_devices<ParlaDeviceType::CUDA>();
     default:
-      return get_devices<DeviceType::All>();
+      return get_devices<ParlaDeviceType::All>();
     }
   }
 
@@ -95,8 +95,8 @@ public:
   // TODO(hc): use a customized type for device id.
 
   const DevID_t globalid_to_parrayid(DevID_t global_dev_id) const {
-    Device *dev = all_devices_[global_dev_id];
-    if (dev->get_type() == DeviceType::CPU) {
+    ParlaDevice *dev = all_devices_[global_dev_id];
+    if (dev->get_type() == ParlaDeviceType::CPU) {
       return -1;
     } else {
       return dev->get_id();
@@ -122,9 +122,9 @@ protected:
   DevID_t last_dev_id_ = 0;
 
   // Store devices by architecture type
-  std::array<std::vector<Device *>, NUM_DEVICE_TYPES> arch_devices_;
+  std::array<std::vector<ParlaDevice *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
-  std::vector<Device *> all_devices_;
+  std::vector<ParlaDevice *> all_devices_;
 };
 
 #endif

@@ -23,6 +23,7 @@ include(CTest)
 find_package(PythonExtensions REQUIRED)
 find_package(Cython REQUIRED)
 
+find_package(Torch REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 #include_directories(${NumPy_INCLUDE_DIRS})
 include_directories(${NUMPY_INCLUDE})

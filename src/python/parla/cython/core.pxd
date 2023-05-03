@@ -2,7 +2,7 @@ import cython
 cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
-from parla.cython.device cimport Device, CyDevice
+from parla.cython.device cimport ParlaDevice, CyDevice
 from parla.cython.cyparray cimport InnerPArray
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
@@ -54,7 +54,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         vector[void*] get_dependencies()
         vector[void*] get_dependents()
-        vector[Device*]& get_assigned_devices() 
+        vector[ParlaDevice*]& get_assigned_devices() 
         void add_parray(InnerPArray* py_parray, int access_mode, int dev_id)
         bool notify_dependents_wrapper()
 

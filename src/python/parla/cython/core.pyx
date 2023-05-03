@@ -4,7 +4,7 @@ from parla.common.parray.core import PArray
 from parla.common.dataflow import Dataflow
 from parla.common.globals import AccessMode
 
-from parla.cython.device cimport Device
+from parla.cython.device cimport ParlaDevice
 from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
 import threading
@@ -279,14 +279,14 @@ cdef class PyInnerTask:
     cpdef get_assigned_devices(self):
         cdef InnerTask* c_self = self.c_task
 
-        cdef vector[Device*] c_devices = c_self.get_assigned_devices()
+        cdef vector[ParlaDevice*] c_devices = c_self.get_assigned_devices()
         cdef size_t num_devices = c_devices.size()
 
-        cdef Device* c_device
+        cdef ParlaDevice* c_device
 
         devices = []
         for i in range(num_devices):
-            c_device = <Device*> c_devices[i]
+            c_device = <ParlaDevice*> c_devices[i]
             py_device = <object> c_device.get_py_device()
             devices.append(py_device)
 
@@ -313,7 +313,7 @@ cdef class PyInnerTask:
 
     cpdef add_device_req(self, CyDevice cy_device, long mem_sz, int num_vcus):
         cdef InnerTask* c_self = self.c_task
-        cdef Device* cpp_device = cy_device.get_cpp_device()
+        cdef ParlaDevice* cpp_device = cy_device.get_cpp_device()
         c_self.add_device_req(cpp_device, mem_sz, num_vcus)
 
     cpdef begin_arch_req_addition(self):
@@ -529,9 +529,9 @@ cdef class PyInnerWorker:
         cdef InnerTask* c_task
         cdef InnerDataTask* c_data_task
         cdef bool is_data_task = False
-        cdef vector[Device*] c_devices 
+        cdef vector[ParlaDevice*] c_devices 
         cdef size_t num_devices
-        cdef Device* c_device
+        cdef ParlaDevice* c_device
 
         if _inner_worker.ready:
             _inner_worker.get_task(&c_task, &is_data_task)
@@ -547,7 +547,7 @@ cdef class PyInnerWorker:
                 num_devices = c_devices.size()
                 # Construct a list of Python PArrays.
                 for i in range(num_devices):
-                    c_device = <Device *> c_devices[i]
+                    c_device = <ParlaDevice *> c_devices[i]
                     py_device = <object> c_device.get_py_device()
                     py_assigned_devices.append(py_device)
                 py_parray = <object> c_data_task.get_py_parray()

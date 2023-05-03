@@ -93,8 +93,10 @@ class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-         std::shared_ptr<MappingPolicy> policy)
-      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+         std::shared_ptr<MappingPolicy> policy,
+         RLAgent *rl_agent)
+      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy},
+        rl_agent_(rl_agent) {
     dev_num_mapped_tasks_.resize(devices->get_num_devices());
   }
 
@@ -156,6 +158,8 @@ protected:
   std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
+  /// RL agent.
+  RLAgent *rl_agent_;
 };
 
 /**

@@ -369,15 +369,15 @@ int InnerTask::set_state(int state) {
   return old_state_id;
 }
 
-std::vector<Device *> &InnerTask::get_assigned_devices() {
+std::vector<ParlaDevice *> &InnerTask::get_assigned_devices() {
   return this->assigned_devices;
 }
 
-void InnerTask::copy_assigned_devices(const std::vector<Device *> &others) {
+void InnerTask::copy_assigned_devices(const std::vector<ParlaDevice *> &others) {
   this->assigned_devices = others;
 }
 
-void InnerTask::add_assigned_device(Device *device) {
+void InnerTask::add_assigned_device(ParlaDevice *device) {
   this->assigned_devices.push_back(device);
 }
 
@@ -411,7 +411,7 @@ bool InnerTask::get_complete() { return this->get_state(); }
 // TODO(hc): The current Parla exploits two types of resources,
 //           memory and vcus. Later, this can be extended with
 //           a map.
-void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
+void InnerTask::add_device_req(ParlaDevice *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
   res_req.set(Resource::Memory, mem_sz);

@@ -55,14 +55,14 @@ target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(backend PROPERTIES PUBLIC_HEADER "${BACKEND_HDR_INCLUDE}")
 
-find_package(Torch REQUIRED)
-add_executable(dcgan rl_task_mapper.cpp)
+list(APPEND CMAKE_PREFIX_PATH "libtorch")
 
 message(STATUS "Torch libraries: ${TORCH_LIBRARIES}")
-target_link_libraries(backend "${TORCH_LIBRARIES}")
-target_link_libraries(dcgan "${TORCH_LIBRARIES}")
-
-#${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/lib/
+target_link_libraries(backend PRIVATE "${TORCH_LIBRARIES}")
+target_include_directories(backend PRIVATE "${TORCH_INCLUDE_DIR}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+# XXX(hc): Idk why the rpath is not set properly.
+#          it needed manual setting.
 
 install(
         TARGETS backend

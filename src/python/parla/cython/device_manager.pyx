@@ -1,5 +1,5 @@
 from parla.cython import device
-from parla.cython.device cimport Device
+from parla.cython.device cimport ParlaDevice
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
@@ -42,7 +42,7 @@ cdef class CyDeviceManager:
 
     cpdef register_device(self, CyDevice cy_device):
         """ Register devices to the c++ runtime. """
-        cdef Device* cpp_device = cy_device.get_cpp_device()
+        cdef ParlaDevice* cpp_device = cy_device.get_cpp_device()
         self.cpp_device_manager_.register_device(cpp_device)
 
     cpdef print_registered_devices(self):

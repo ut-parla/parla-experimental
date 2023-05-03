@@ -124,7 +124,9 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 // Scheduler Implementation
 
 InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager), parray_tracker_(device_manager) {
+    : device_manager_(device_manager), parray_tracker_(device_manager),
+      rl_agent_(this->device_manager_->get_num_devices(),
+                this->device_manager_->get_num_devices()) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -139,7 +141,7 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
           device_manager, &this->parray_tracker_);
 
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
+  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy), &(this->rl_agent_));
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
@@ -276,7 +278,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 
   // Release all resources for this task on all devices
   for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-    Device *device = task->assigned_devices[i];
+    ParlaDevice *device = task->assigned_devices[i];
     DevID_t dev_id = device->get_global_id();
     ResourcePool_t &device_pool = device->get_reserved_pool();
     ResourcePool_t &task_pool =

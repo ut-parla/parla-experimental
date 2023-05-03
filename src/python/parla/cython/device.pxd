@@ -8,16 +8,16 @@ from libcpp.vector cimport vector
 
 cdef extern from "include/device.hpp" nogil:
 
-    cdef enum DeviceType:
-        All "DeviceType::All"
-        CPU "DeviceType::CPU"
-        CUDA "DeviceType::CUDA"
+    cdef enum ParlaDeviceType:
+        All "ParlaDeviceType::All"
+        CPU "ParlaDeviceType::CPU"
+        CUDA "ParlaDeviceType::CUDA"
         # TODO(hc): For now, we only support CUDA gpu devices.
         # Laster, it would be extended to more gpu types
         # like for AMD
         
-    cdef cppclass Device:
-        Device(string, int, long, long, void*) except +
+    cdef cppclass ParlaDevice:
+        ParlaDevice(string, int, long, long, void*) except +
         int get_id() except +
         int get_global_id() except +
         string get_name() except +
@@ -28,10 +28,10 @@ cdef extern from "include/device.hpp" nogil:
         long long int query_reserved_resource(Resource) except +
         long long int query_mapped_resource(Resource) except +
 
-    cdef cppclass CUDADevice(Device):
+    cdef cppclass CUDADevice(ParlaDevice):
         CUDADevice(int, long, long, void*) except +
 
-    cdef cppclass CPUDevice(Device):
+    cdef cppclass CPUDevice(ParlaDevice):
         CPUDevice(int, long, long, void*) except +
 
     cdef cppclass DeviceSet:
@@ -39,8 +39,8 @@ cdef extern from "include/device.hpp" nogil:
 
 
 cdef class CyDevice:
-    cdef Device* _cpp_device
-    cdef Device* get_cpp_device(self)
+    cdef ParlaDevice* _cpp_device
+    cdef ParlaDevice* get_cpp_device(self)
     cpdef int get_global_id(self)
     cpdef long long int query_resource(self, int)
     cpdef long long int query_reserved_resource(self, int)

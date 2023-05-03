@@ -13,8 +13,7 @@
 #include <cuda_runtime_api.h>
 #endif
 
-using namespace std;
-using namespace chrono;
+using namespace std::chrono;
 
 void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr);

@@ -70,7 +70,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
           *parray_list = &(task->parray_list);
       for (size_t i = 0; i < chosen_devices.size(); ++i) {
         assert(chosen_devices[i] != nullptr);
-        Device *chosen_device = chosen_devices[i]->device();
+        ParlaDevice *chosen_device = chosen_devices[i]->device();
         DevID_t global_dev_id = chosen_device->get_global_id();
         task->assigned_devices.push_back(chosen_device);
         task->device_constraints.insert(
@@ -143,7 +143,7 @@ size_t MemoryReserver::get_count() {
 
 bool MemoryReserver::check_resources(InnerTask *task) {
   bool status = true;
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
@@ -160,7 +160,7 @@ bool MemoryReserver::check_resources(InnerTask *task) {
 void MemoryReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
 
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
@@ -326,7 +326,7 @@ size_t RuntimeReserver::get_count() {
 
 bool RuntimeReserver::check_resources(InnerTask *task) {
   bool status = true;
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
@@ -343,7 +343,7 @@ bool RuntimeReserver::check_resources(InnerTask *task) {
 
 bool RuntimeReserver::check_data_resources(InnerTask *task) {
   bool status = true;
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
@@ -359,7 +359,7 @@ bool RuntimeReserver::check_data_resources(InnerTask *task) {
 
 void RuntimeReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
@@ -369,7 +369,7 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
 
 void RuntimeReserver::reserve_data_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
-  for (Device *device : task->assigned_devices) {
+  for (ParlaDevice *device : task->assigned_devices) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
