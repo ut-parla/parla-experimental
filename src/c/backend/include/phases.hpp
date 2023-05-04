@@ -106,32 +106,34 @@ public:
   /// Increase the number of the total mapped tasks to the whole devices.
   ///
   /// @return The number of the total mapped tasks
-  size_t atomic_incr_num_mapped_tasks() {
-    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
+  size_t atomic_incr_num_mapped_tasks(size_t weight = 1) {
+    return total_num_mapped_tasks_.fetch_add(weight, std::memory_order_relaxed);
   }
 
   /// Increase the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The number of the tasks mapped to a device
-  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id) {
-    return dev_num_mapped_tasks_[dev_id].fetch_add(1,
+  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_tasks_[dev_id].fetch_add(weight,
                                                    std::memory_order_relaxed);
   }
 
   /// Decrease the number of the total mapped tasks to the whole devices.
   ///
   /// @return The number of the total mapped tasks
-  size_t atomic_decr_num_mapped_tasks() {
-    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
+  size_t atomic_decr_num_mapped_tasks(size_t weight = 1) {
+    return total_num_mapped_tasks_.fetch_sub(weight, std::memory_order_relaxed);
   }
 
   /// Decrease the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The number of the tasks mapped to a device
-  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id) {
-    return dev_num_mapped_tasks_[dev_id].fetch_sub(1,
+  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_tasks_[dev_id].fetch_sub(weight,
                                                    std::memory_order_relaxed);
   }
 

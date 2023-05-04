@@ -35,7 +35,7 @@ public:
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       const Mapper &mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list) = 0;
+          &parray_list) = 0;
 
   /// Calculate a score of the architecture placement requirement.
   /// This function first iterates devices of the architecture, and calculates
@@ -64,7 +64,8 @@ public:
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list, std::vector<bool> *is_dev_assigned = nullptr) = 0;
+          &parray_list,
+      std::vector<bool> *is_dev_assigned = nullptr) = 0;
 
   /// Calculate a score of the multi-device placement that users passed.
   /// The placement requirement could contain multiple device or/and
@@ -91,7 +92,7 @@ public:
       Score_t *average_score,
       const std::vector<
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-              &parray_list) = 0;
+          &parray_list) = 0;
 
 protected:
   DeviceManager *device_manager_;
@@ -108,14 +109,14 @@ public:
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
       const Mapper &mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list) override;
+          &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
       const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
-              &parray_list,
+          &parray_list,
       std::vector<bool> *is_dev_assigned = nullptr) override;
 
   bool calc_score_mdevplacement(
@@ -125,7 +126,7 @@ public:
       Score_t *average_score,
       const std::vector<
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-              &parray_list) override;
+          &parray_list) override;
 };
 
 #endif
