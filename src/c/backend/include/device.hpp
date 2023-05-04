@@ -35,8 +35,8 @@ class ParlaDevice {
 public:
   ParlaDevice() = delete;
 
-  ParlaDevice(ParlaDeviceType arch, DevID_t dev_id, MemorySz_t mem_sz, VCU_t num_vcus,
-         void *py_dev, int copy_engines = 2)
+  ParlaDevice(ParlaDeviceType arch, DevID_t dev_id, MemorySz_t mem_sz,
+              VCU_t num_vcus, void *py_dev, int copy_engines = 2)
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
     res_.set(Resource::VCU, num_vcus);
@@ -141,7 +141,8 @@ protected:
 class CUDADevice : public ParlaDevice {
 public:
   CUDADevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : ParlaDevice(ParlaDeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
+      : ParlaDevice(ParlaDeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev,
+                    3) {}
 
 private:
 };
@@ -150,7 +151,8 @@ private:
 class CPUDevice : public ParlaDevice {
 public:
   CPUDevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : ParlaDevice(ParlaDeviceType::CPU, dev_id, mem_sz, num_vcus, py_dev, 4) {}
+      : ParlaDevice(ParlaDeviceType::CPU, dev_id, mem_sz, num_vcus, py_dev, 4) {
+  }
 
 private:
 };

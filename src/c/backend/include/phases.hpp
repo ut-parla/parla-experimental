@@ -95,8 +95,7 @@ class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-         std::shared_ptr<MappingPolicy> policy,
-         RLAgent *rl_agent);
+         std::shared_ptr<MappingPolicy> policy, RLAgent *rl_agent);
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
