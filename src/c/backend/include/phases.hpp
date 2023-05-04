@@ -26,6 +26,8 @@ enum class RuntimeReserverState {
 };
 enum class LauncherState { Failure = 0, Success = 1, MAX = 2 };
 
+class RLEnvironment;
+
 template <typename S> class PhaseStatus {
 protected:
   const int size{static_cast<int>(S::MAX)};
@@ -94,11 +96,7 @@ public:
   Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
          std::shared_ptr<MappingPolicy> policy,
-         RLAgent *rl_agent)
-      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy},
-        rl_agent_(rl_agent) {
-    dev_num_mapped_tasks_.resize(devices->get_num_devices());
-  }
+         RLAgent *rl_agent);
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -160,6 +158,8 @@ protected:
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
   /// RL agent.
   RLAgent *rl_agent_;
+  /// RL environment.
+  RLEnvironment *rl_env_;
 };
 
 /**
