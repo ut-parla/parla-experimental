@@ -104,7 +104,8 @@ public:
         device_(device), rl_mode_(rl_mode), n_actions_(n_actions),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
-        replay_memory_(1000) {}
+        replay_memory_(1000),
+        rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)) {}
 
   uint32_t select_device(torch::Tensor state,
                          std::vector<ParlaDevice *> device_candidates) {
@@ -174,12 +175,11 @@ public:
     curr_states_tensor = torch::cat(curr_states, 0);
     next_states_tensor = torch::cat(next_states, 0);
     actions_tensor = torch::cat(actions, 0).to(this->device_).unsqueeze(0);
-    rewards_tensor = torch::cat(rewards, 0).to(this->device_); //.unsqueeze(0);
+    rewards_tensor = torch::cat(rewards, 0).to(this->device_);
 
+    // Calculate expected Q value.
     torch::Tensor q_values = this->policy_net_.forward(curr_states_tensor);
-    q_values = q_values.gather(1, actions_tensor);
-    // torch::Tensor next_target_q_values =
-    //     std::get<0>(this->target_net_.forward(next_states_tensor).max(1));
+    q_values = q_values.gather(1, actions_tensor).reshape({this->batch_size_, 1});
     torch::Tensor next_target_q_values =
         this->target_net_.forward(next_states_tensor);
     next_target_q_values = std::get<0>(next_target_q_values.max(1));
@@ -190,6 +190,16 @@ public:
               << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
               << ", reward tensor:" << rewards_tensor << ", "
               << ", expected q values:" << expected_q_values << "\n";
+
+    torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1}));
+    // Zerofying gradients in the optimizer.
+    this->rms_optimizer.zero_grad();
+    // Update gradients.
+    loss.backward();
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      parameter.grad().data().clamp(-1, 1);
+    }
+    this->rms_optimizer.step();
   }
 
   void append_replay_memory(torch::Tensor curr_state,
@@ -221,6 +231,7 @@ private:
   float gamma_;
   uint64_t steps_;
   ExperienceReplay replay_memory_;
+  torch::optim::RMSprop rms_optimizer;
 };
 
 #endif
