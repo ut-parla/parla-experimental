@@ -260,8 +260,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         // The task list in PArray is currently thread safe since
         // we do not remove tasks from the list but just keep even completed
         // task as its implementation is easier.
-        for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
-          if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
+        for (size_t t = 0; t < parray_task_list.size(); ++t) {
+          if (parray_task_list.at(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
           }
         }
