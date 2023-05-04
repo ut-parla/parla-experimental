@@ -11,6 +11,20 @@ public:
   RLEnvironment(DeviceManager *device_manager, Mapper *mapper) :
       device_manager_(device_manager), mapper_(mapper) {}
 
+  torch::Tensor make_current_state() {
+    DevID_t num_devices =
+        this->device_manager_->template get_num_devices(ParlaDeviceType::All);
+    torch::Tensor current_state = torch::zeros({1, num_devices});
+    for (DevID_t d = 0; d < num_devices; ++d) {
+      // TODO: narrowed type conversion.
+      int64_t dev_running_planned_tasks =
+          this->mapper_->atomic_load_dev_num_mapped_tasks_device(
+              d);
+      current_state[0][d] = dev_running_planned_tasks;
+    }
+    return current_state;
+  }
+
   torch::Tensor calculate_reward(
       DevID_t chosen_device_id, torch::Tensor current_state) {
     if (current_state[0][chosen_device_id].item<int64_t>() == 0) {
