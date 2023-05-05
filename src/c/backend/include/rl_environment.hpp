@@ -2,7 +2,6 @@
 #define PARLA_RL_ENVIRONMENT
 
 #include "device_manager.hpp"
-#include "phases.hpp"
 
 #include <torch/torch.h>
 

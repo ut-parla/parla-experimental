@@ -25,7 +25,6 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
-#include "rl_task_mapper.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -1031,9 +1030,6 @@ protected:
   /// It manages the current/planned distribution of PArrays across devices.
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
-
-  /// RL agent.
-  RLAgent rl_agent_;
 };
 
 #endif // PARLA_BACKEND_HPP

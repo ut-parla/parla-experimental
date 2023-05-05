@@ -1,4 +1,3 @@
-#include "include/rl_environment.hpp"
 #include "include/phases.hpp"
 #include "include/device.hpp"
 #include "include/parray.hpp"
@@ -15,12 +14,9 @@
 // Mapper Implementation
 
 Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-       std::shared_ptr<MappingPolicy> policy,
-       RLAgent *rl_agent)
-    : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy},
-      rl_agent_(rl_agent) {
+       std::shared_ptr<MappingPolicy> policy)
+    : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
   this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
-  this->rl_env_ = new RLEnvironment(this->device_manager, this);
 }
 
 void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }

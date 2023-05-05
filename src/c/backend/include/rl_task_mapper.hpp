@@ -2,6 +2,8 @@
 #define PARLA_RL_TASK_MAPPER
 
 #include "device_manager.hpp"
+#include "phases.hpp"
+#include "rl_environment.hpp"
 
 #include <random>
 #include <torch/torch.h>
@@ -232,6 +234,55 @@ private:
   uint64_t steps_;
   ExperienceReplay replay_memory_;
   torch::optim::RMSprop rms_optimizer;
+};
+
+class RLTaskMappingPolicy : public MappingPolicy {
+public:
+  RLTaskMappingPolicy(
+      DeviceManager *device_manager, PArrayTracker *parray_tracker,
+      Mapper *mapper);
+
+  bool calc_score_devplacement(
+      InnerTask *task,
+      const std::shared_ptr<DeviceRequirement> &dev_placement_req,
+      const Mapper &mapper, Score_t *score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list) override;
+
+  bool calc_score_archplacement(
+      InnerTask *task, ArchitectureRequirement *arch_placement_req,
+      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Score_t *chosen_dev_score,
+      const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
+          &parray_list,
+      std::vector<bool> *is_dev_assigned = nullptr) override;
+
+  bool calc_score_mdevplacement(
+      InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
+      const Mapper &mapper,
+      std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
+      Score_t *average_score,
+      const std::vector<
+          std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+          &parray_list) override;
+#if 0
+  // RL forwarding.
+  bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement();
+  // RL forwarding.
+  // Sets devices of different architecture to max value.
+  // (so the load is infinite, to ignore that)
+  bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement();
+  // Find max device first, 
+  // Then set that device state to max value.
+  // Repeat until it finds all device combinations
+  // State should be passed to here.
+  bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement();
+#endif
+private:
+  /// RL agent.
+  RLAgent *rl_agent_;
+  /// RL environment.
+  RLEnvironment *rl_env_;
 };
 
 #endif

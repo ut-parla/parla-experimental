@@ -124,10 +124,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 // Scheduler Implementation
 
 InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager), parray_tracker_(device_manager),
-      rl_agent_(this->device_manager_->get_num_devices(),
-                this->device_manager_->get_num_devices()) {
-
+    : device_manager_(device_manager), parray_tracker_(device_manager) {
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
   // otherwise the runtime will finish immediately
@@ -141,7 +138,7 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
           device_manager, &this->parray_tracker_);
 
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy), &(this->rl_agent_));
+  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);

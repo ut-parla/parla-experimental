@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 
+class RLTaskMappingPolicy;
+
 enum class MapperState { Failure = 0, Success = 1, MAX = 2 };
 enum class MemoryReserverState { Failure = 0, Success = 1, MAX = 2 };
 enum class RuntimeReserverState {
@@ -95,7 +97,7 @@ class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-         std::shared_ptr<MappingPolicy> policy, RLAgent *rl_agent);
+         std::shared_ptr<MappingPolicy> policy);
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -155,10 +157,6 @@ protected:
   std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
-  /// RL agent.
-  RLAgent *rl_agent_;
-  /// RL environment.
-  RLEnvironment *rl_env_;
 };
 
 /**
