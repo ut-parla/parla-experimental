@@ -8,13 +8,12 @@
 #include "device_manager.hpp"
 #include "device_queues.hpp"
 #include "policy.hpp"
+#include "rl_task_mapper.hpp"
 #include "resources.hpp"
 #include "runtime.hpp"
 
 #include <memory>
 #include <string>
-
-class RLTaskMappingPolicy;
 
 enum class MapperState { Failure = 0, Success = 1, MAX = 2 };
 enum class MemoryReserverState { Failure = 0, Success = 1, MAX = 2 };
@@ -96,8 +95,7 @@ protected:
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-         std::shared_ptr<MappingPolicy> policy);
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices, PArrayTracker *parray_tracker);
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);

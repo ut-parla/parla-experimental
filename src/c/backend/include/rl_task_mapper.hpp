@@ -2,11 +2,14 @@
 #define PARLA_RL_TASK_MAPPER
 
 #include "device_manager.hpp"
-#include "phases.hpp"
 #include "rl_environment.hpp"
+#include "runtime.hpp"
+#include "policy.hpp"
 
 #include <random>
 #include <torch/torch.h>
+
+class Mapper;
 
 class ExperienceReplay {
 public:

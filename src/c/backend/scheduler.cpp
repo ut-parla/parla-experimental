@@ -132,13 +132,8 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
 
   this->workers.set_num_workers(1);
 
-  // Mapping policy
-  std::shared_ptr<LocalityLoadBalancingMappingPolicy> mapping_policy =
-      std::make_shared<LocalityLoadBalancingMappingPolicy>(
-          device_manager, &this->parray_tracker_);
-
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
+  this->mapper = new Mapper(this, device_manager, &this->parray_tracker_);
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);

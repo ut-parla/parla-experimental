@@ -3,6 +3,8 @@
 #include "include/parray.hpp"
 #include "include/policy.hpp"
 #include "include/profiling.hpp"
+#include "include/rl_environment.hpp"
+#include "include/rl_task_mapper.hpp"
 #include "include/resource_requirements.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
@@ -14,9 +16,16 @@
 // Mapper Implementation
 
 Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-       std::shared_ptr<MappingPolicy> policy)
-    : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+       PArrayTracker *parray_tracker)
+    : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
   this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
+  if (true) {
+    this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
+        devices, parray_tracker);
+  } else {
+    this->policy_ = std::make_shared<RLTaskMappingPolicy>(
+        devices, parray_tracker, this);
+  }
 }
 
 void Mapper::enqueue(InnerTask *task) { this->mappable_tasks.push_back(task); }

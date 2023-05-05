@@ -1,5 +1,5 @@
-#include "include/policy.hpp"
 #include "include/phases.hpp"
+#include "include/policy.hpp"
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     InnerTask *task,
