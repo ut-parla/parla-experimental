@@ -77,8 +77,8 @@ class ResourcePool {
 
 public:
   ResourcePool(){
-      //std::cout << "Resource Initialized:" << std::endl;
-      //for (int i = 0; i < resource_names.size(); i++) {
+      // std::cout << "Resource Initialized:" << std::endl;
+      // for (int i = 0; i < resource_names.size(); i++) {
       //  std::cout << this->resources[i].load() << std::endl;
       //}
   };

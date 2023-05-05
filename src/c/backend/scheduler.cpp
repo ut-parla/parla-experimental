@@ -297,6 +297,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         // and will be released if that is 0.
       }
     }
+    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
   }
 
   // Clear all assigned streams from the task
