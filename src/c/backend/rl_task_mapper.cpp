@@ -15,6 +15,19 @@ bool RLTaskMappingPolicy::calc_score_devplacement(
     const Mapper &mapper, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
               &parray_list) {
+  torch::Tensor rl_current_state = this->rl_env_->make_current_state();
+  uint32_t chosen_device = this->rl_agent_->select_device(
+      rl_current_state,
+      this->device_manager_->template get_devices<ParlaDeviceType::All>());
+  torch::Tensor rl_next_state = this->rl_env_->make_next_state(
+      rl_current_state, chosen_device);
+  std::cout << "current state: " << rl_current_state << ", next state: "
+      << rl_next_state << ", chosen device:" << chosen_device << "\n";
+  torch::Tensor reward = this->rl_env_->calculate_reward(
+      chosen_device, rl_current_state);
+  this->rl_agent_->append_replay_memory(
+      rl_current_state, torch::tensor({float{chosen_device}}, torch::kInt64),
+      rl_next_state, torch::tensor({1.f}, torch::kFloat), 0);
   return true;
 }
 
