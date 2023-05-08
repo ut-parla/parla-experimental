@@ -27,9 +27,13 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
       nonlocal_data += parray->get_size();
     }
   }
+#if 0
+  // XXX(hc) These device_memory_size is too big and so we are not normalizing
+  //         them to the size.
   Resource_t device_memory_size = device.query_resource(Resource::Memory);
   local_data /= device_memory_size;
   nonlocal_data /= device_memory_size;
+#endif
 
 #if 0
   // TODO(hc): This metric is duplicated with data locality.
@@ -55,9 +59,6 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   //           << "\n";
 #endif
 
-  // TODO(hc): memory load; but let me postpone this implementation because
-  //           it may require nested for loops.
-
   // Calculate device load balancing.
   size_t total_num_mapped_tasks = mapper.atomic_load_total_num_mapped_tasks();
   size_t num_tasks_to_device =
@@ -74,14 +75,18 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   *score +=
       (30.0 * local_data - 30.0 * nonlocal_data - 10 * normalizd_device_load);
 
-  // std::cout << "Device " << device.get_name() << "'s score: " << *score <<
-  //   " for task "<< task->get_name() << " local data: " << local_data <<
-  //   " non local data:" << nonlocal_data << " normalized device load:" <<
-  //   normalizd_device_load << "\n";
-  // std::cout << "\t[Device Requirement in device Requirement]\n"
-  //           << "\t\t" << dev_placement_req->device()->get_name() << " -> "
-  //           << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
-  //           << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+  /*
+  std::cout << "Device " << device.get_name() << "'s score: " << *score <<
+    " for task "<< task->get_name() << " local data: " << local_data <<
+    " non local data:" << nonlocal_data << " normalized device load:" <<
+    normalizd_device_load << "\n";
+  */
+  /*
+  std::cout << "\t[Device Requirement in device Requirement]\n"
+            << "\t\t" << dev_placement_req->device()->get_name() << " -> "
+            << dev_placement_req->res_req().get(Resource::Memory) << "B, VCU"
+            << dev_placement_req->res_req().get(Resource::VCU) << "\n";
+  */
   return true;
 }
 
@@ -191,4 +196,81 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
   }
   *average_score /= placement_reqs_vec.size();
   return true;
+}
+
+bool LocalityLoadBalancingMappingPolicy::run_task_mapping(
+    InnerTask *task, const Mapper &mapper,
+    std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
+    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+        &parray_list,
+    std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) {
+  // A set of chosen devices to a task.
+  Score_t best_score{-1};
+  // If any device was chosen as a candidate device,
+  // it is set to True and the best_score is used to be compared
+  // and find the next better candidate device.
+  bool any_device_chosen{false};
+
+  // Iterate all placement requirements passed by users and calculate
+  // scores based on a policy.
+  for (std::shared_ptr<PlacementRequirementBase> base_req :
+       *placement_req_options_vec) {
+    if (base_req->is_multidev_req()) {
+      // Multi-device placement requirements.
+      // std::cout << "[Multi-device requirement]\n";
+      MultiDeviceRequirements *mdev_reqs =
+          dynamic_cast<MultiDeviceRequirements *>(base_req.get());
+      std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
+      Score_t score{0};
+      bool is_req_available = calc_score_mdevplacement(
+          task, mdev_reqs, mapper, &mdev_reqs_vec, &score, parray_list);
+      if (!is_req_available) {
+        continue;
+      }
+      if (best_score <= score || !any_device_chosen) {
+        best_score = score;
+        chosen_devices->swap(mdev_reqs_vec);
+        any_device_chosen = true;
+      }
+    } else if (base_req->is_dev_req()) {
+      // A single device placement requirement.
+      std::shared_ptr<DeviceRequirement> dev_req =
+          std::dynamic_pointer_cast<DeviceRequirement>(base_req);
+      Score_t score{0};
+      bool is_req_available = calc_score_devplacement(
+          task, dev_req, mapper, &score, parray_list[0]);
+      if (!is_req_available) {
+        continue;
+      }
+      if (best_score <= score || !any_device_chosen) {
+        assert(dev_req != nullptr);
+        best_score = score;
+        chosen_devices->clear();
+        chosen_devices->emplace_back(dev_req);
+        any_device_chosen = true;
+      }
+    } else if (base_req->is_arch_req()) {
+      // A single architecture placement requirement.
+      ArchitectureRequirement *arch_req =
+          dynamic_cast<ArchitectureRequirement *>(base_req.get());
+      std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
+      Score_t chosen_dev_score{0};
+      // std::cout << "[Mapper] Task name:" << task->get_name() << ", " <<
+      // "Checking arch requirement."
+      //           << "\n";
+      bool is_req_available = calc_score_archplacement(
+          task, arch_req, mapper, chosen_dev_req, &chosen_dev_score,
+          parray_list[0]);
+      if (!is_req_available) {
+        continue;
+      }
+      if (best_score <= chosen_dev_score || !any_device_chosen) {
+        assert(chosen_dev_req != nullptr);
+        best_score = chosen_dev_score;
+        chosen_devices->clear();
+        chosen_devices->emplace_back(chosen_dev_req);
+        any_device_chosen = true;
+      }
+    }
+  }
 }

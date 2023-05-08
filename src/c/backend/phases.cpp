@@ -53,71 +53,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
     std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
             placement_req_options.get_placement_req_opts_ref();
-    std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
-    // A set of chosen devices to a task.
-    Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
-    // Iterate all placement requirements passed by users and calculate
-    // scores based on a policy.
-    for (std::shared_ptr<PlacementRequirementBase> base_req :
-         placement_req_options_vec) {
-      if (base_req->is_multidev_req()) {
-        // Multi-device placement requirements.
-        // std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements *mdev_reqs =
-            dynamic_cast<MultiDeviceRequirements *>(base_req.get());
-        std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
-        Score_t score{0};
-        bool is_req_available = policy_->calc_score_mdevplacement(
-            task, mdev_reqs, *this, &mdev_reqs_vec, &score, parray_list);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= score) {
-          best_score = score;
-          chosen_devices.swap(mdev_reqs_vec);
-        }
-      } else if (base_req->is_dev_req()) {
-        // A single device placement requirement.
-        std::shared_ptr<DeviceRequirement> dev_req =
-            std::dynamic_pointer_cast<DeviceRequirement>(base_req);
-        Score_t score{0};
-        bool is_req_available = policy_->calc_score_devplacement(
-            task, dev_req, *this, &score, parray_list[0]);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= score) {
-          assert(dev_req != nullptr);
-          best_score = score;
-          chosen_devices.clear();
-          chosen_devices.emplace_back(dev_req);
-        }
-      } else if (base_req->is_arch_req()) {
-        // A single architecture placement requirement.
-        ArchitectureRequirement *arch_req =
-            dynamic_cast<ArchitectureRequirement *>(base_req.get());
-        std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
-        Score_t chosen_dev_score{0};
-        // std::cout << "[Mapper] Task name:" << task->get_name() << ", " <<
-        // "Checking arch requirement."
-        //           << "\n";
-        bool is_req_available = policy_->calc_score_archplacement(
-            task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
-            parray_list[0]);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= chosen_dev_score) {
-          assert(chosen_dev_req != nullptr);
-          best_score = chosen_dev_score;
-          chosen_devices.clear();
-          chosen_devices.emplace_back(chosen_dev_req);
-        }
-      }
-    }
+    policy_->run_task_mapping(task, *this, &chosen_devices, parray_list,
+        &placement_req_options_vec);
 
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
