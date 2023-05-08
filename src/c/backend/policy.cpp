@@ -97,7 +97,11 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         &parray_list,
     std::vector<bool> *is_dev_assigned) {
-  Score_t best_score{0};
+  Score_t best_score{-1};
+  // If any device was chosen as a candidate device,
+  // it is set to True and the best_score is used to be compared
+  // and find the next better candidate device.
+  bool any_device_chosen{false};
   std::shared_ptr<DeviceRequirement> best_device_req{nullptr};
   // std::cout << task->get_name() << "inside arch req mapping. " << std::endl;
   // TODO(wlr): Is this unused??
@@ -128,9 +132,10 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
       continue;
     }
     is_arch_available = true;
-    if (best_score <= score) {
+    if (!any_device_chosen || best_score <= score) {
       best_score = score;
       best_device_req = dev_req;
+      any_device_chosen = true;
     }
     ++i;
   }
