@@ -101,8 +101,9 @@ class RLAgent {
 public:
   using BufferTupleType = typename ExperienceReplay::BufferTupleType;
 
-  RLAgent(size_t in_dim, size_t out_dim, torch::Device device = torch::kCUDA,
-          std::string rl_mode = "training", uint32_t n_actions = 4,
+  RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions,
+          torch::Device device = torch::kCUDA,
+          std::string rl_mode = "training",
           float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 200,
           size_t batch_size = 2, float gamma = 0.999)
       : policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
@@ -112,8 +113,9 @@ public:
         replay_memory_(1000),
         rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)) {}
 
-  uint32_t select_device(torch::Tensor state,
-                         std::vector<ParlaDevice *> device_candidates) {
+  std::pair<uint32_t, bool> select_device(torch::Tensor state,
+                         std::vector<ParlaDevice *> device_candidates,
+                         std::vector<bool> *mask = nullptr) {
     float eps_threshold =
         this->eps_end_ + (this->eps_start_ - this->eps_end_) *
                              exp(-1.f * this->steps_ / this->eps_decay_);
@@ -127,30 +129,36 @@ public:
     std::cout << "state original:" << state << "\n";
     // TODO(hc): remove it
     eps_threshold = 0;
-    if (sample > eps_threshold) {
+    //if (sample > eps_threshold) {
       torch::NoGradGuard no_grad;
       torch::Tensor out_tensor = this->policy_net_.forward(state);
-      // std::cout << "out tensor:" << out_tensor << "\n";
+      std::cout << "out tensor:" << out_tensor << "\n";
+      std::cout << " n actions:" << this->n_actions_ << "\n";
       for (uint32_t action = 0; action < this->n_actions_; ++action) {
         auto max_action_pair = out_tensor.max(0);
         torch::Tensor max_tensor = std::get<0>(max_action_pair);
         int64_t max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
-        // std::cout << "max:" << std::get<0>(max_action_pair) <<
-        //     ", index:" << max_tensor_idx << "\n";
+        std::cout << "max:" << std::get<0>(max_action_pair) <<
+            ", index:" << max_tensor_idx << "\n";
 
-        // TODO: replace it with candidates.
-        if (max_tensor_idx < 4) {
-          return max_tensor_idx;
+        // If mask is null, it means there is no constraint in device selection.
+        // If mask is not null, this task has device candidates and should
+        // follw that.
+        if (mask == nullptr || (mask != nullptr && (*mask)[max_tensor_idx])) {
+          return std::make_pair(max_tensor_idx, true);
         } else {
           out_tensor[max_tensor_idx] = -999999;
         }
-        // std::cout << "updated tensor:" << out_tensor << "\n";
       }
+      /*
     } else {
       // TODO: replace it with candidates.
       std::uniform_real_distribution<> randomly_chosen_device(0.f, 5.f);
-      return uint32_t{randomly_chosen_device(mt)};
+      return std::make_pair(
+          uint32_t{randomly_chosen_device(mt)}, std::numeric_limits<float>::max());
     }
+    */
+    return std::make_pair(0, false);
   }
 
   void optimize_model(uint64_t rl_episodes) {
@@ -268,6 +276,14 @@ public:
       const std::vector<
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list) override;
+
+  bool run_task_mapping(
+      InnerTask *task, const Mapper &mapper,
+      std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
+      const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+          &parray_list,
+      std::vector<std::shared_ptr<PlacementRequirementBase>>
+          *placement_req_options_vec) override;
 #if 0
   // RL forwarding.
   bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement();
@@ -286,6 +302,8 @@ private:
   RLAgent *rl_agent_;
   /// RL environment.
   RLEnvironment *rl_env_;
+  torch::Tensor rl_current_state_;
+  torch::Tensor rl_next_state_;
 };
 
 #endif

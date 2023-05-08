@@ -19,7 +19,7 @@ Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
        PArrayTracker *parray_tracker)
     : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
   this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
-  if (true) {
+  if (false) {
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
         devices, parray_tracker);
   } else {
@@ -108,15 +108,12 @@ void Mapper::run(SchedulerPhase *next_phase) {
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
         std::cout << "\t [" << i << "] "
                   << task->assigned_devices[i]->get_name() << "\n";
-        /*
         auto res = task->device_constraints[task->assigned_devices[i]
                                                 ->get_global_id()];
         std::cout << "\t memory:" << res.get(Resource::Memory)
                   << ", vcu:" << res.get(Resource::VCU) << "\n";
-        */
       }
 #endif
-
       this->mapped_tasks_buffer.push_back(task);
     }
     has_task = this->get_count() > 0;
@@ -129,7 +126,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
     bool enqueue_flag =
         (mapped_task->num_unreserved_dependencies.fetch_sub(1) == 1);
-
     if (enqueue_flag) {
       mapped_task->set_status(Task::RESERVABLE);
       memory_reserver->enqueue(mapped_task);
