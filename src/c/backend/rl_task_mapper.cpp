@@ -115,7 +115,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
 #endif
 }
 
-bool RLTaskMappingPolicy::run_task_mapping(
+void RLTaskMappingPolicy::run_task_mapping(
     InnerTask *task, const Mapper &mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
@@ -177,7 +177,7 @@ bool RLTaskMappingPolicy::run_task_mapping(
   std::cout << "chosen device index:" << chosen_device_gid << "\n";
   if (!found_device || !compatible_devices[chosen_device_gid]) {
     std::cout << "Incompatible or unavailable device was chosen: " << chosen_device_gid << " \n";
-    return false;
+    return;
   }
   this->rl_next_state_ = this->rl_env_->make_next_state(
       this->rl_current_state_, chosen_device_gid);
@@ -189,5 +189,4 @@ bool RLTaskMappingPolicy::run_task_mapping(
       this->rl_next_state_, torch::tensor({1.f}, torch::kFloat), 0);
   chosen_devices->clear();
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
-  return true;
 }

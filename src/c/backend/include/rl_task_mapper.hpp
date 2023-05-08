@@ -277,7 +277,7 @@ public:
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list) override;
 
-  bool run_task_mapping(
+  void run_task_mapping(
       InnerTask *task, const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
