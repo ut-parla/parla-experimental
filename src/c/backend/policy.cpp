@@ -198,7 +198,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
   return true;
 }
 
-bool LocalityLoadBalancingMappingPolicy::run_task_mapping(
+void LocalityLoadBalancingMappingPolicy::run_task_mapping(
     InnerTask *task, const Mapper &mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
