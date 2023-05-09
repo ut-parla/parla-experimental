@@ -1,10 +1,20 @@
 import numpy as np
 
-def independent_ideal_time(comp_time: int, num_gpus: int):
+num_task_set = [ 500, 1000, 2000, 4000 ]
+levels = [ 9, 10, 11, 12 ]
+computation_times = [ 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 ]
+data_size = [ "100KB", "1MB", "10MB" ]
+num_gpu_set = [ 1, 2, 3, 4 ]
+user_chosen_devs = [ 0, 1 ]
+data_move_modes = [ 1, 2 ]
+
+def independent_ideal_time(comp_time: int, num_tasks: int, num_gpus: int):
     """ The ideal time of the independent tasks 
         can be done when all the tasks are distributed
         to each GPU in a balanced manner. """
-    return comp_time / float(num_gpus)
+    ideal_time = (num_tasks / float(num_gpus)) * comp_time
+    ideal_time += comp_time * (num_tasks % float(num_gpus)) if (num_tasks % float(num_gpus)) > 0 else 0 
+    return ideal_time
 
 
 def reduction_ideal_time(comp_time: int, num_gpus: int, branch: int, levels: int):
@@ -14,13 +24,12 @@ def reduction_ideal_time(comp_time: int, num_gpus: int, branch: int, levels: int
     # To store the total execution time for each GPU and to find the
     # maximum execution time among them.
     total_comp_time_np = np.zeros(num_gpus)
-    for i in range(levels):
+    for i in range(levels, -1, -1):
         total_in_level = branch ** i
         segment = total_in_level / num_gpus
         for j in range(total_in_level):
             device = int(j // segment)
             total_comp_time_np[device] += comp_time
-    #print(total_comp_time_np)
     return total_comp_time_np.max(0)
 
 
@@ -71,6 +80,30 @@ def reduction_scatter_ideal_time(comp_time: int, num_gpus: int, num_tasks: int, 
 
 
 if __name__ == "__main__":
-  print(independent_ideal_time(100, 4))
-  print(reduction_ideal_time(100, 4, 2, 5))
-  print(reduction_scatter_ideal_time(100, 4, 10, 4))
+  for compute_time in computation_times:
+    for data_sz in data_size:
+      for user_chosen_dev in user_chosen_devs:
+        for level in levels:
+          for num_gpu in num_gpu_set:
+            for data_move_mode in data_move_modes:
+              mean_time = reduction_ideal_time(compute_time, num_gpu, 2, level) / float(10**6)
+              print((f"ideal,reduction,1,{compute_time},2-{level},{num_gpu},{user_chosen_dev},"
+                     f"{data_sz},{data_move_mode},{mean_time}"))
+  for compute_time in computation_times:
+    for data_sz in data_size:
+      for user_chosen_dev in user_chosen_devs:
+        for num_task in num_task_set:
+          for num_gpu in num_gpu_set:
+            for data_move_mode in data_move_modes:
+              mean_time = (independent_ideal_time(compute_time, num_task, num_gpu)) / float(10**6)
+              print((f"ideal,independent,1,{compute_time},{num_task},{num_gpu},{user_chosen_dev},"
+                     f"{data_sz},{data_move_mode},{mean_time}"))
+  for compute_time in computation_times:
+    for data_sz in data_size:
+      for user_chosen_dev in user_chosen_devs:
+        for num_task in num_task_set:
+          for num_gpu in num_gpu_set:
+            for data_move_mode in data_move_modes:
+              mean_time = (reduction_scatter_ideal_time(compute_time, num_task, num_gpu, 10)) / float(10**6)
+              print((f"ideal,reduction_scatter,1,{compute_time},{num_task},{num_gpu},{user_chosen_dev},"
+                     f"{data_sz},{data_move_mode},{mean_time}"))
