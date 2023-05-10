@@ -156,16 +156,13 @@ void RLTaskMappingPolicy::run_task_mapping(
           compatible_devices[global_dev_id] = false;
         }
       }
-    } else {
+    } else if (base_req->is_multidev_req()) {
       assert(false);
     }
   }
 
   this->rl_current_state_ =
       this->rl_env_->make_current_state();
-  for (size_t i = 0; i < compatible_devices.size(); ++i) {
-    std::cout << i << "'s availability:" << compatible_devices[i] << "\n";
-  }
   //std::cout << "current state: " << this->rl_current_state_ << ", next state: "
   //    << this->rl_next_state_ << "\n";
 
@@ -174,7 +171,6 @@ void RLTaskMappingPolicy::run_task_mapping(
           this->rl_current_state_,
           this->device_manager_->template get_devices<ParlaDeviceType::All>(),
           &compatible_devices);
-  std::cout << "chosen device index:" << chosen_device_gid << "\n";
   if (!found_device || !compatible_devices[chosen_device_gid]) {
     std::cout << "Incompatible or unavailable device was chosen: " << chosen_device_gid << " \n";
     return;

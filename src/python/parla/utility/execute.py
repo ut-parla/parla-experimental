@@ -105,7 +105,7 @@ def get_placement_set_from(ps_str_set, num_gpus):
             ps_set.append(gpu(gpu_idx))
         else:
             raise ValueError("Does not support this placement:", dev_type)
-    return tuple(ps_set)
+    return ps_set
 
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
     value = 0
@@ -257,7 +257,7 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #      " placement:", placement_set, " placement key:", placement_set_str)
 
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -345,9 +345,8 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
         """
-
         # TODO(hc): Add data checking.
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set, input=IN, output=OUT, inout=INOUT)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -426,7 +425,7 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
             gil_fraction = config.gil_fraction
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)

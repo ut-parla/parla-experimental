@@ -957,8 +957,8 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
                     if bulk_task_id_per_gpu == l_num_bulk_tasks_per_gpu:
                         bulk_task_id_per_gpu = 0
                         bulk_task_dev_id += 1
-                        if bulk_task_dev_id == num_gpus:
-                            bulk_task_id = DeviceType.USER_CHOSEN_DEVICE
+                        if bulk_task_dev_id == num_gpus + DeviceType.USER_CHOSEN_DEVICE:
+                            bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
                 task_id += 1
     return graph
 
