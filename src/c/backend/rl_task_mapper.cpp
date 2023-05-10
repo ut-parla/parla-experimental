@@ -182,8 +182,12 @@ void RLTaskMappingPolicy::run_task_mapping(
   this->rl_agent_->append_replay_memory(
       this->rl_current_state_,
       torch::tensor({float{chosen_device_gid}}, torch::kInt64),
-      this->rl_next_state_, reward, /* TODO */ 0);
-  this->rl_agent_->optimize_model(/* TODO */ 0);
+      this->rl_next_state_, reward);
+  this->rl_agent_->optimize_model();
   chosen_devices->clear();
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
+
+  if (task->get_name().find("begin_rl_task") != std::string::npos) {
+    this->rl_agent_->incr_episode();
+  }
 }

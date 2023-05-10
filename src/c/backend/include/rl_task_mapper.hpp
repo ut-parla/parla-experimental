@@ -87,7 +87,7 @@ struct FullyConnectedDQN : torch::nn::Module {
     x = torch::relu(fc2_->forward(x.reshape({x.size(0), in_dim_ * 4})));
     // std::cout << "state 2:" << x << "\n";
     x = out_->forward(x.reshape({x.size(0), in_dim_ * 4}));
-    std::cout << "out:" << x << "\n";
+    // std::cout << "out:" << x << "\n";
     // std::cout << "out after squeeze:" << torch::squeeze(x, 1) << "\n";
     return x.squeeze(0);
   }
@@ -111,7 +111,8 @@ public:
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
         replay_memory_(1000),
-        rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)) {}
+        rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
+        episode_(0) {}
 
   std::pair<uint32_t, bool> select_device(torch::Tensor state,
                          std::vector<ParlaDevice *> device_candidates,
@@ -124,22 +125,22 @@ public:
     std::uniform_real_distribution<double> distribution(0, 1);
     std::mt19937_64 mt(random());
     float sample = distribution(mt);
-    std::cout << "Select device from policy " << eps_threshold
-              << " sample: " << sample << " \n";
-    std::cout << "state original:" << state << "\n";
+    //std::cout << "Select device from policy " << eps_threshold
+    //          << " sample: " << sample << " \n";
+    //std::cout << "state original:" << state << "\n";
     // TODO(hc): remove it
     eps_threshold = 0;
     //if (sample > eps_threshold) {
       torch::NoGradGuard no_grad;
       torch::Tensor out_tensor = this->policy_net_.forward(state);
-      std::cout << "out tensor:" << out_tensor << "\n";
-      std::cout << " n actions:" << this->n_actions_ << "\n";
+      //std::cout << "out tensor:" << out_tensor << "\n";
+      //std::cout << " n actions:" << this->n_actions_ << "\n";
       for (uint32_t action = 0; action < this->n_actions_; ++action) {
         auto max_action_pair = out_tensor.max(0);
         torch::Tensor max_tensor = std::get<0>(max_action_pair);
         int64_t max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
-        std::cout << "max:" << std::get<0>(max_action_pair) <<
-            ", index:" << max_tensor_idx << "\n";
+        //std::cout << "max:" << std::get<0>(max_action_pair) <<
+        //    ", index:" << max_tensor_idx << "\n";
 
         // If mask is null, it means there is no constraint in device selection.
         // If mask is not null, this task has device candidates and should
@@ -161,7 +162,7 @@ public:
     return std::make_pair(0, false);
   }
 
-  void optimize_model(uint64_t rl_episodes) {
+  void optimize_model() {
     if (this->replay_memory_.size() < this->batch_size_) {
       return;
     }
@@ -200,11 +201,11 @@ public:
     next_target_q_values = std::get<0>(next_target_q_values.max(1));
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
-    std::cout << " qvals:" << q_values << ", "
-              << " action_tensor:" << actions_tensor << ", "
-              << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
-              << ", reward tensor:" << rewards_tensor << ", "
-              << ", expected q values:" << expected_q_values << "\n";
+    //std::cout << " qvals:" << q_values << ", "
+    //          << " action_tensor:" << actions_tensor << ", "
+    //          << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
+    //          << ", reward tensor:" << rewards_tensor << ", "
+    //          << ", expected q values:" << expected_q_values << "\n";
 
     torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1}));
     // Zerofying gradients in the optimizer.
@@ -219,10 +220,9 @@ public:
 
   void append_replay_memory(torch::Tensor curr_state,
                             torch::Tensor chosen_device,
-                            torch::Tensor next_state, torch::Tensor reward,
-                            uint64_t episode) {
+                            torch::Tensor next_state, torch::Tensor reward) {
     this->replay_memory_.push(curr_state, chosen_device, next_state, reward,
-                              episode);
+                              this->episode_);
   }
 
   void print() { this->replay_memory_.print(); }
@@ -231,6 +231,10 @@ public:
                          torch::Tensor, uint64_t>>
   sample(int64_t b) {
     return this->replay_memory_.sample(b);
+  }
+
+  void incr_episode() {
+    ++this->episode_;
   }
 
 private:
@@ -247,6 +251,7 @@ private:
   uint64_t steps_;
   ExperienceReplay replay_memory_;
   torch::optim::RMSprop rms_optimizer;
+  size_t episode_;
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
@@ -286,6 +291,7 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>>
           *placement_req_options_vec) override;
+
 #if 0
   // RL forwarding.
   bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement();
