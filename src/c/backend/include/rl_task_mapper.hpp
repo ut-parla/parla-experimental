@@ -237,6 +237,10 @@ public:
     ++this->episode_;
   }
 
+  size_t get_episode() {
+    return this->episode_;
+  }
+
 private:
   // TODO: replay memory
 
