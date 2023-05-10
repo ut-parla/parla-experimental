@@ -490,6 +490,14 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
         for i in range(run_config.inner_iterations):
             data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
 
+            begin_rl_ts = TaskSpace("begin_rl_task")
+            end_rl_ts = TaskSpace("end_rl_task")
+
+            @spawn(begin_rl_ts[0])
+            def begin_rl_task():
+                print("Start RL")
+            await begin_rl_ts[0]
+
             # Initialize task spaces
             taskspaces = {}
 
@@ -509,6 +517,11 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             graph_elapsed = graph_end_t - graph_start_t
             graph_times.append(graph_elapsed)
+
+            @spawn(end_rl_ts[0])
+            def end_rl_task():
+                print("End RL")
+            await end_rl_ts[0]
 
         graph_times = np.asarray(graph_times)
         graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(

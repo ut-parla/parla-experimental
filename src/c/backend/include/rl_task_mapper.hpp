@@ -166,6 +166,8 @@ public:
       return;
     }
 
+    std::cout << "Model optimization starts\n";
+
     std::vector<BufferTupleType> batch =
         this->replay_memory_.sample(this->batch_size_);
     std::vector<torch::Tensor> curr_states;
