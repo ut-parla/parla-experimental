@@ -187,6 +187,14 @@ void RLTaskMappingPolicy::run_task_mapping(
   chosen_devices->clear();
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
+  std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+    " device id " << chosen_device_gid << " replay memory size:" <<
+    this->rl_agent_->get_replay_memory_size() << "\n";
+
+  std::cout << "current state:" << this->rl_current_state_ << "\n";
+  std::cout << "reward:" << reward << "\n";
+
+
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
     this->rl_agent_->incr_episode();
   }

@@ -241,6 +241,10 @@ public:
     return this->episode_;
   }
 
+  size_t get_replay_memory_size() {
+    return this->replay_memory_.size();
+  }
+
 private:
   // TODO: replay memory
 
