@@ -124,7 +124,7 @@ class Coherence:
         """
         for device_id in self._local_states.keys():
             self._local_states[device_id] = self.INVALID
-            self._versions[device_id] = None
+            self._versions[device_id] = -1
             self._is_complete[device_id] = None
         
         self._local_states[new_owner] = self.MODIFIED
@@ -456,9 +456,8 @@ class Coherence:
         Return:
             List[MemoryOperation], could return several MemoryOperations.
                 And the order operations matter.
-        Note: if this device has the last copy and `keep_one_copy` is false, 
-            the whole protocol state will be INVALID then.
-            And the system will lose the copy. Be careful when evict the last copy.
+            Or [ERROR] if this device has the last copy and `keep_one_copy` is false, 
+            since eviction cannot be performed.
         """
         device_local_state = self._local_states[device_id]
         operations = []
@@ -499,12 +498,7 @@ class Coherence:
                 else:
                     return [MemoryOperation.noop()]
             else:
-                self._global_state = self.INVALID  # the system lose the last copy
-                self.owner = None
-                self._versions[device_id] = -1
-                self._is_complete[device_id] = None
-
-                self._local_states[device_id] = self.INVALID
-                operations.append(MemoryOperation.evict(device_id))
+                # do nothing and report error
+                return [MemoryOperation.error()]
 
         return operations
