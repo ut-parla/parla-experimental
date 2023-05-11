@@ -3,10 +3,11 @@ import numpy as np
 num_task_set = [ 500, 1000, 2000, 4000 ]
 levels = [ 9, 10, 11, 12 ]
 computation_times = [ 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 ]
-data_size = [ "100KB", "1MB", "10MB" ]
+data_size = [ "12500", "125000", "1250000" ]
 num_gpu_set = [ 1, 2, 3, 4 ]
-user_chosen_devs = [ 0, 1 ]
+user_chosen_devs = [ "False", "True" ]
 data_move_modes = [ 1, 2 ]
+
 
 def independent_ideal_time(comp_time: int, num_tasks: int, num_gpus: int):
     """ The ideal time of the independent tasks 
@@ -75,7 +76,6 @@ def reduction_scatter_ideal_time(comp_time: int, num_gpus: int, num_tasks: int, 
                     if bulk_task_dev_id == num_gpus:
                         bulk_task_dev_id = 0
                 task_id += 1
-    #print(total_comp_time_np)
     return total_comp_time_np.max(0)
 
 
@@ -104,6 +104,6 @@ if __name__ == "__main__":
         for num_task in num_task_set:
           for num_gpu in num_gpu_set:
             for data_move_mode in data_move_modes:
-              mean_time = (reduction_scatter_ideal_time(compute_time, num_task, num_gpu, 10)) / float(10**6)
+              mean_time = (reduction_scatter_ideal_time(compute_time, num_gpu, num_task, 10)) / float(10**6)
               print((f"ideal,reduction_scatter,1,{compute_time},{num_task},{num_gpu},{user_chosen_dev},"
                      f"{data_sz},{data_move_mode},{mean_time}"))
