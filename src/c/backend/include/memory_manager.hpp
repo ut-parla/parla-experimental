@@ -1,7 +1,21 @@
 #ifndef PARLA_MEMORY_MANNGER_HPP
 #define PARLA_MEMORY_MANNGER_HPP
 
+#include "device_manager.hpp"
 #include "parray.hpp"
+
+enum PArrayInstanceState {
+  // A PArray is being prefetched (moved).
+  PREFETCHING = 0,
+  // A PArray's reference count is more than 1,
+  // but it is not acquired yet.
+  RESERVED = 1,
+  // A task acuires and is using a PArray.
+  ACQUIRED = 2,
+  // None of mapped/running tasks is using this PArray.
+  FREE = 3
+};
+
 
 class PArrayNode {
 public:
@@ -15,6 +29,7 @@ public:
   PArrayNode *next;
   PArrayNode *prev;
 };
+
 
 class DoubleLinkedList {
 public:
@@ -128,9 +143,52 @@ private:
   size_t list_size_{0};
 };
 
-class LRUMemoryManager {
+
+class LRUDeviceMemoryManager {
+public:
+  void acquire_data(parray::InnerPArray *parray) {
+
+  }
+
+  void release_data(parray::InnerPArray *parray) {
+
+  }
+
+  /*
+  void evict_data(parray:::InnerPArray *target_parray) {}
+  void run_eviction() {}
+  */
+
+private:
+  std::mutex mtx_;
+  std::vector<std::unordered_map<uint64_t, size_t>> parray_reference_counts_;
+  /// A list of zero-referenced PArrays.
+  DoubleLinkedList zr_parray_list_;
+};
 
 
+class LRUGlobalMemoryManager {
+
+  LRUGlobalMemoryManager(DeviceManager *device_manager) :
+    device_manager_(device_manager) {
+    this->device_mm_.resize(
+        device_manager->template get_num_devices<DeviceType::All>());
+    for (size_t i = 0; i < this->device_mm_.size(); ++i) {
+      this->device_mm_[i] = new LRUDeviceMemoryManager();
+    }
+  }
+
+  void acquire_data(parray::InnerPArray *parray, DevID_t dev_id) {
+    this->device_mm_[dev_id]->acquire_data(parray);
+  }
+
+  void release_data(parray::InnerPArray *parray, DevID_t dev_id) {
+    this->device_mm_[dev_id]->release_data(parray);
+  }
+
+private:
+  DeviceManager *device_manager_;
+  std::vector<LRUDeviceMemoryManager *> device_mm_;
 };
 
 #endif
