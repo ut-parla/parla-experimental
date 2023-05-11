@@ -20,7 +20,13 @@ class _VariantFunction(object):
         self._variants = {}
         functools.update_wrapper(self, func)
 
-    def variant(self, spec_list, override=False):
+
+    def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
+
+        if architecture is not None:
+            if spec_list is not None:
+                raise VariantDefinitionError("Cannot specify both architecture and spec_list.")
+            spec_list = [architecture*i for i in range(1, max_amount+1)]
 
         if not isinstance(spec_list, list):
             spec_list = [spec_list]
@@ -30,9 +36,9 @@ class _VariantFunction(object):
 
         def variant(f):
             for t in spec_list:
-                print(type(t))
-                assert isinstance(t, PyArchitecture)
-                self._variants[t.id] = f
+                if not isinstance(t, tuple):
+                    t = (t,)
+                self._variants[t] = f
             return f
         
         variant.__name__ = "{}.variant".format(self._default.__name__)
@@ -53,8 +59,6 @@ class _VariantFunction(object):
 
         # Construct a architecture specialization key from the local devices.
         spec_key = tuple([d.architecture for d in local_devices])
-        # If a single architecture variant type, it needs a single id, not a tuple.
-        spec_key = spec_key[0] if len(spec_key) == 1 else spec_key
 
         # Get the variant for the current specialization key.
         variant_f = self.get_variant(spec_key)
