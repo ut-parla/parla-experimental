@@ -56,7 +56,7 @@ void PArrayTracker::release_parray(const InnerPArray &parray, Device *device) {
   }
   if (this->managed_parrays_[dev_global_id][parray.parent_id] == true) {
     this->managed_parrays_[dev_global_id][parray.parent_id] = false;
-    // Release memory for a PArray to a specified device.
+    // Release memory for a PArray from a specified device.
     ResourcePool_t &dev_mapped_pool = device->get_mapped_pool();
     ResourcePool_t parray_resource;
     parray_resource.set(Resource::Memory, parray.get_size());
