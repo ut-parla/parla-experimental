@@ -49,7 +49,6 @@ public:
     this->mtx_.unlock();
   }
 
-
   /// Insert the new_node to the before the node.
   /// .. -> [new node] -> node
   void insert_before(PArrayNode *node, PArrayNode *new_node) {
@@ -113,12 +112,20 @@ public:
     return list_size;
   }
 
+  PArrayNode *get_head() {
+    return this->head_;
+  }
+
+  PArrayNode *get_tail() {
+    return this->tail_;
+  }
+
 private:
-  PArrayNode *head_;
-  PArrayNode *tail_;
+  PArrayNode *head_{nullptr};
+  PArrayNode *tail_{nullptr};
 
   std::mutex mtx_;
-  size_t list_size_;
+  size_t list_size_{0};
 };
 
 class LRUMemoryManager {
