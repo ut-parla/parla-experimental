@@ -246,8 +246,11 @@ def get_scheduler():
 
 
 def get_device_manager():
-    return get_scheduler().device_manager
-
+    scheduler = get_scheduler()
+    if scheduler is None:
+        raise RuntimeError("Attempted to access device manager, but no scheduler is active.")
+    else:
+        return scheduler.device_manager
 
 def get_stream_pool():
     return get_device_manager().stream_pool

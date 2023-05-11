@@ -30,6 +30,7 @@ class _VariantFunction(object):
 
         def variant(f):
             for t in spec_list:
+                print(type(t))
                 assert isinstance(t, PyArchitecture)
                 self._variants[t.id] = f
             return f
