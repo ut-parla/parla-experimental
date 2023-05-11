@@ -86,6 +86,17 @@ def test_parray_task():
                 assert a[-1] == 4
                 assert a._coherence.owner == 1
 
+            @spawn(ts[5], dependencies=[ts[4]], placement=gpu(1), inout=[(a,0)])
+            def check_array_update():
+                result = a.evict(1, False)
+
+                assert result == False
+
+                result = a.evict(1)
+
+                assert result == True
+                assert a._coherence.owner == -1
+
 if __name__=="__main__":
     test_parray_creation()
     test_parray_task()
