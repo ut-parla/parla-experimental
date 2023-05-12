@@ -1,6 +1,6 @@
 import cython 
 
-from parla.common.parray.core import PArray
+#from parla.common.parray.core import PArray
 from parla.common.dataflow import Dataflow
 from parla.common.globals import AccessMode
 
