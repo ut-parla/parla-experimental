@@ -16,6 +16,8 @@ from parla.common.globals import AccessMode, Storage
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
 
+import gc
+
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
@@ -556,6 +558,10 @@ class ComputeTask(Task):
         return self.func(self, *self.args)
 
     def cleanup(self):
+        print("Task cleanup is called.")
+        print("\tfunc refs:", gc.get_referrers(self.func))
+        print("\targs refs:", gc.get_referrers(self.args))
+        print("\tdata flow refs:", gc.get_referrers(self.dataflow))
         self.func = None
         self.args = None
         self.dataflow = None
@@ -605,6 +611,8 @@ class DataMovementTask(Task):
         return TaskRunahead(0)
 
     def cleanup(self):
+        print("Datamove Task cleanup is called.")
+        print("\t Parray reference count:", gc.get_referrers(self.parray))
         # Release the reference
         self.parray = None
 
