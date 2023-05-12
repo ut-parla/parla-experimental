@@ -6,11 +6,9 @@ import time
 from scipy import linalg
 import numpy as np
 import os
-import mkl
 import random
 
 t = 1
-mkl.set_num_threads(t)
 os.environ["NUMEXPR_NUM_THREADS"] = str(t)
 os.environ["OMP_NUM_THREADS"] = str(t)
 os.environ["OPENBLAS_NUM_THREADS"] = str(t)
@@ -18,7 +16,6 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = str(t)
 
 # This triangular solve only supports one side
 # import cupyx.scipy.linalg as cpx
-
 
 def numpy_trsm_wrapper(a, b):
     a = np.array(a, order='F', dtype=np.float64)
