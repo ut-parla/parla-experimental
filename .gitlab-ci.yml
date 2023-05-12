@@ -1,0 +1,7 @@
+test:
+  stage: test
+  script:
+    - whoami
+    - hostname
+  tags:
+    - lassen
