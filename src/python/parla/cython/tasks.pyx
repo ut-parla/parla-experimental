@@ -604,6 +604,11 @@ class DataMovementTask(Task):
         #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
 
+    def cleanup(self):
+        # Release the reference
+        self.parray = None
+
+
 ######
 # Task Environment
 ######
@@ -1635,9 +1640,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
-
-
-
-    
-    

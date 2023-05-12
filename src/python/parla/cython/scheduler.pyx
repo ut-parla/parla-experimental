@@ -307,6 +307,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                            active_task.cleanup()
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
