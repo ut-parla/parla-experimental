@@ -117,6 +117,8 @@ class PArray:
             self._name = name
 
         # record the size in Cython PArray
+        # This is to track PArray declarations.
+        # Later, this PArray instances can be placed anywhere.
         scheduler = get_scheduler()
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(

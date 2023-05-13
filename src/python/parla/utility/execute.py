@@ -341,10 +341,8 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
             gil_fraction = config.gil_fraction
 
         #print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
-        """
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
-        """
         # TODO(hc): Add data checking.
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set, input=IN, output=OUT, inout=INOUT)
         async def task_func():
@@ -423,8 +421,8 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
-        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-            " placement:", placement_set)
+        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+        #            " placement:", placement_set)
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set)
         async def task_func():
             if config.verbose:
@@ -516,6 +514,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             graph_end_t = time.perf_counter()
 
             graph_elapsed = graph_end_t - graph_start_t
+            print("Episode :", i, ", elapsed time:", graph_elapsed)
             graph_times.append(graph_elapsed)
 
             @spawn(end_rl_ts[0])
@@ -743,7 +742,7 @@ class GraphContext(object):
 
         return self
 
-    def run(self, run_config: RunConfig, max_time: int = 100):
+    def run(self, run_config: RunConfig, max_time: int = 10000):
 
         @timeout(max_time)
         def run_with_timeout():

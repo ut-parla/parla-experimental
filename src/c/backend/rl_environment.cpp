@@ -33,11 +33,14 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
   size_t dev_running_planned_tasks =
       this->mapper_->atomic_load_dev_num_mapped_tasks_device(
           chosen_device_id);
-  float score = 0;
+  double score = 0;
   if (total_running_planned_tasks != 0) {
-    score = float{1 - (dev_running_planned_tasks / total_running_planned_tasks)};
+    score = double{1 - (dev_running_planned_tasks / float(total_running_planned_tasks))};
   }
 
-  return torch::tensor({score}, torch::kFloat);
+  std::cout << "score:" << score << ", " <<
+    total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
+
+  return torch::tensor({score}, torch::kDouble);
 }
 

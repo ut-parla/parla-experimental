@@ -40,6 +40,11 @@ public:
     this->buffer_.push_back(new_buffer_element);
   }
 
+  /*
+   * Sample tuples (S, S', R, A) from the experience replay buffer.
+   *
+   * @param batch_size Batch size
+   */
   std::vector<BufferTupleType> sample(int64_t batch_size) {
     std::vector<BufferTupleType> sampled_buffer(batch_size);
     std::sample(this->buffer_.begin(), this->buffer_.end(),
@@ -47,6 +52,11 @@ public:
                 std::mt19937_64{std::random_device{}()});
     return sampled_buffer;
   }
+
+  /*
+   * Return the number of tuples in the experience replay memory.
+   */
+  size_t size() { return this->buffer_.size(); }
 
   void print() {
     for (size_t i = 0; i < this->buffer_.size(); ++i) {
@@ -58,16 +68,17 @@ public:
     }
   }
 
-  size_t size() { return this->buffer_.size(); }
-
 private:
+  /// The maximum experience replay memory size.
   int64_t capacity_;
+  /// Experience replay memory.
   BufferTy buffer_;
 };
 
 struct FullyConnectedDQN : torch::nn::Module {
   FullyConnectedDQN(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
+    // Move networks to a GPU.
     fc1_ = register_module("fc1", torch::nn::Linear(in_dim, in_dim * 4));
     fc1_->to(device_);
     fc2_ = register_module("fc2", torch::nn::Linear(in_dim * 4, in_dim * 4));
@@ -77,18 +88,10 @@ struct FullyConnectedDQN : torch::nn::Module {
   }
 
   torch::Tensor forward(torch::Tensor x) {
-    // std::cout << "forward 1:" << x << "\n";
     x = x.to(device_);
-    // std::cout << "forward 2:" << x << "\n";
-    // std::cout << "in dim:" << in_dim_ << "\n";
-    // std::cout << "reshaped:" << x.reshape({x.size(0), in_dim_}) << "\n";
     x = torch::relu(fc1_->forward(x.reshape({x.size(0), in_dim_})));
-    // std::cout << "state 1:" << x << "\n";
     x = torch::relu(fc2_->forward(x.reshape({x.size(0), in_dim_ * 4})));
-    // std::cout << "state 2:" << x << "\n";
     x = out_->forward(x.reshape({x.size(0), in_dim_ * 4}));
-    // std::cout << "out:" << x << "\n";
-    // std::cout << "out after squeeze:" << torch::squeeze(x, 1) << "\n";
     return x.squeeze(0);
   }
 
@@ -105,7 +108,7 @@ public:
           torch::Device device = torch::kCUDA,
           std::string rl_mode = "training",
           float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 200,
-          size_t batch_size = 2, float gamma = 0.999)
+          size_t batch_size = 100, float gamma = 0.999)
       : policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
         device_(device), rl_mode_(rl_mode), n_actions_(n_actions),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
@@ -114,52 +117,56 @@ public:
         rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
         episode_(0) {}
 
-  std::pair<uint32_t, bool> select_device(torch::Tensor state,
-                         std::vector<ParlaDevice *> device_candidates,
-                         std::vector<bool> *mask = nullptr) {
-    float eps_threshold =
-        this->eps_end_ + (this->eps_start_ - this->eps_end_) *
-                             exp(-1.f * this->steps_ / this->eps_decay_);
-    this->steps_ += 1;
+  /*
+   * Select a device from the current state.
+   */
+  DevID_t select_device(torch::Tensor state,
+                        std::vector<ParlaDevice *> device_candidates,
+                        std::vector<bool> *mask = nullptr) {
     // Random number generation.
     std::uniform_real_distribution<double> distribution(0, 1);
     std::mt19937_64 mt(random());
     float sample = distribution(mt);
-    //std::cout << "Select device from policy " << eps_threshold
-    //          << " sample: " << sample << " \n";
-    //std::cout << "state original:" << state << "\n";
-    // TODO(hc): remove it
-    eps_threshold = 0;
-    //if (sample > eps_threshold) {
+    float eps_threshold =
+        this->eps_end_ + (this->eps_start_ - this->eps_end_) *
+                             exp(-1.f * this->steps_ / this->eps_decay_);
+    this->steps_ += 1;
+    if (sample > eps_threshold) {
       torch::NoGradGuard no_grad;
       torch::Tensor out_tensor = this->policy_net_.forward(state);
-      //std::cout << "out tensor:" << out_tensor << "\n";
-      //std::cout << " n actions:" << this->n_actions_ << "\n";
-      for (uint32_t action = 0; action < this->n_actions_; ++action) {
+      std::cout << ">> Out:" << out_tensor.unsqueeze(0) << "\n";
+      int64_t max_tensor_idx{1};
+      for (size_t a = 0; a < this->n_actions_; ++a) {
         auto max_action_pair = out_tensor.max(0);
         torch::Tensor max_tensor = std::get<0>(max_action_pair);
-        int64_t max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
-        //std::cout << "max:" << std::get<0>(max_action_pair) <<
-        //    ", index:" << max_tensor_idx << "\n";
-
-        // If mask is null, it means there is no constraint in device selection.
-        // If mask is not null, this task has device candidates and should
-        // follw that.
+        max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
         if (mask == nullptr || (mask != nullptr && (*mask)[max_tensor_idx])) {
-          return std::make_pair(max_tensor_idx, true);
+          std::cout << "\t" << max_tensor_idx << "\n";
+          return static_cast<DevID_t>(max_tensor_idx);
         } else {
-          out_tensor[max_tensor_idx] = -999999;
+          std::cout << "\t " << max_tensor_idx << " fail \n";
+        }
+
+        out_tensor[max_tensor_idx] = -9999999;
+      }
+      // Pytorch tensor supports int64_t index, but Parla
+      // chooses a device ID and so casting to uint32_t is fine.
+      std::cout << "\t fail:" << max_tensor_idx << "\n";
+      return static_cast<DevID_t>(max_tensor_idx);
+    } else {
+      std::cout << ">> Random: " << " \n";
+      std::uniform_real_distribution<> devid_distribution(
+          0.f, static_cast<float>(this->n_actions_));
+      DevID_t randomly_chosen_device{1};
+      for (size_t a = 0; a < this->n_actions_; ++a) {
+        randomly_chosen_device =
+            static_cast<DevID_t>(devid_distribution(mt));
+        if (mask == nullptr || (mask != nullptr && (*mask)[randomly_chosen_device])) {
+          return randomly_chosen_device;
         }
       }
-      /*
-    } else {
-      // TODO: replace it with candidates.
-      std::uniform_real_distribution<> randomly_chosen_device(0.f, 5.f);
-      return std::make_pair(
-          uint32_t{randomly_chosen_device(mt)}, std::numeric_limits<float>::max());
+      return randomly_chosen_device;
     }
-    */
-    return std::make_pair(0, false);
   }
 
   void optimize_model() {
@@ -176,6 +183,7 @@ public:
     std::vector<torch::Tensor> actions;
     std::vector<torch::Tensor> rewards;
 
+    // Stack Ss, S's, As, Rs in the batch to create 2D matrices.
     for (BufferTupleType &buffer : batch) {
       curr_states.push_back(std::get<0>(buffer));
       next_states.push_back(std::get<2>(buffer));
@@ -190,14 +198,19 @@ public:
 
     curr_states_tensor = torch::cat(curr_states, 0);
     next_states_tensor = torch::cat(next_states, 0);
+    // Action was 1 dimensional tensor, so needs to be unsqueezed to be
+    // a (1, :) dimension tensor.
     actions_tensor = torch::cat(actions, 0).to(this->device_).unsqueeze(0);
     rewards_tensor = torch::cat(rewards, 0).to(this->device_);
 
     // Calculate expected Q value.
     torch::Tensor q_values = this->policy_net_.forward(curr_states_tensor);
-    q_values = q_values.gather(1, actions_tensor).reshape({this->batch_size_, 1});
+    // Gather q values corresponding to chosen actions.
+    q_values = q_values.gather(1, actions_tensor).reshape({this->batch_size_, 1ULL});
     torch::Tensor next_target_q_values =
         this->target_net_.forward(next_states_tensor);
+    //std::cout << "next Q values:" << next_target_q_values << "\n";
+    //std::cout << "next Q max values:" << std::get<0>(next_target_q_values.max(1)) << "\n";
     next_target_q_values = std::get<0>(next_target_q_values.max(1));
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
@@ -207,7 +220,7 @@ public:
     //          << ", reward tensor:" << rewards_tensor << ", "
     //          << ", expected q values:" << expected_q_values << "\n";
 
-    torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1}));
+    torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1ULL}));
     // Zerofying gradients in the optimizer.
     this->rms_optimizer.zero_grad();
     // Update gradients.
