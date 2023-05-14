@@ -145,20 +145,20 @@ public:
         torch::Tensor max_tensor = std::get<0>(max_action_pair);
         max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
         if (mask == nullptr || (mask != nullptr && (*mask)[max_tensor_idx])) {
-          std::cout << "\t" << max_tensor_idx << "\n";
+          //std::cout << "\t" << max_tensor_idx << "\n";
           return static_cast<DevID_t>(max_tensor_idx);
         } else {
-          std::cout << "\t " << max_tensor_idx << " fail \n";
+          //std::cout << "\t " << max_tensor_idx << " fail \n";
         }
 
         out_tensor[max_tensor_idx] = -9999999;
       }
       // Pytorch tensor supports int64_t index, but Parla
       // chooses a device ID and so casting to uint32_t is fine.
-      std::cout << "\t fail:" << max_tensor_idx << "\n";
+      //std::cout << "\t fail:" << max_tensor_idx << "\n";
       return static_cast<DevID_t>(max_tensor_idx);
     } else {
-      std::cout << ">> Random: " << " \n";
+      //std::cout << ">> Random: " << " \n";
       std::uniform_real_distribution<> devid_distribution(
           0.f, static_cast<float>(this->n_actions_));
       DevID_t randomly_chosen_device{1};
@@ -174,21 +174,20 @@ public:
   }
 
   void optimize_model() {
-    std::cout << this->replay_memory_.size() << " vs " <<
-        this->batch_size_ << "\n";
     if (this->replay_memory_.size() < this->batch_size_) {
       return;
     }
 
     std::cout << this->episode_ << " optimization..\n";
+
+    /*
     size_t p_i{0};
     std::ofstream fp_b(std::to_string(this->episode_) + ".before");
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       fp_b << p_i++ << ":" << parameter << "\n";
     }
     fp_b.close();
-
-    std::cout << "Model optimization starts\n";
+    */
 
     std::vector<BufferTupleType> batch =
         this->replay_memory_.sample(this->batch_size_);
@@ -243,12 +242,14 @@ public:
       parameter.grad().data().clamp(-1, 1);
     }
     this->rms_optimizer.step();
+    /*
     p_i = 0;
     std::ofstream fp_a(std::to_string(this->episode_) + ".after");
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       fp_a << p_i++ << ":" << parameter << "\n";
     }
     fp_a.close();
+    */
   }
 
   void target_net_soft_update(float TAU = 0.005) {
@@ -261,23 +262,29 @@ public:
       torch::Tensor param_value = named_parameter.value();
       torch::Tensor *target_param_val_ptr = target_named_parameters.find(param_key);
       if (target_param_val_ptr != nullptr) {
+        /*
         std::cout << param_key << ", " << named_parameter.value() 
           << ", old " << *target_param_val_ptr << "\n";
+        */
         torch::Tensor new_param_val =
             param_value * TAU + *target_param_val_ptr * (1 - TAU);
         target_param_val_ptr->copy_(new_param_val);
       } else {
         target_param_val_ptr = named_buffers.find(param_key);
         if (target_param_val_ptr != nullptr) {
+          /*
           std::cout << param_key << ", " << named_parameter.value() 
              << ", old " << *target_param_val_ptr << "\n";
+          */
           torch::Tensor new_param_val =
               param_value * TAU + *target_param_val_ptr * (1 - TAU);
           target_param_val_ptr->copy_(new_param_val);
         }
       }
+      /*
       std::cout << param_key << ", " << named_parameter.value() 
         << ", new " << *target_param_val_ptr << "\n";
+      */
     }
   }
 

@@ -38,8 +38,8 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
     score = double{1 - (dev_running_planned_tasks / float(total_running_planned_tasks))};
   }
 
-  std::cout << "score:" << score << ", " <<
-    total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
+  //std::cout << "score:" << score << ", " <<
+  //  total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
 
   return torch::tensor({score}, torch::kDouble);
 }

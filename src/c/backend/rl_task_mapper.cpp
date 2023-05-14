@@ -126,7 +126,7 @@ void RLTaskMappingPolicy::run_task_mapping(
   std::vector<bool> compatible_devices(num_devices, false);
   std::vector<std::shared_ptr<DeviceRequirement>>
       device_requirements(num_devices);
-  std::cout << "\n";
+  //std::cout << "\n";
   for (std::shared_ptr<PlacementRequirementBase> base_req :
        *placement_req_options_vec) {
     if (base_req->is_dev_req()) {
@@ -135,11 +135,9 @@ void RLTaskMappingPolicy::run_task_mapping(
       const ParlaDevice &device = *(dev_req->device());
       DevID_t global_dev_id = device.get_global_id();
       if (device.check_resource_availability(dev_req.get())) {
-        std::cout << global_dev_id << " is true\n";
         compatible_devices[global_dev_id] = true;
         device_requirements[global_dev_id] = dev_req;
       } else {
-        std::cout << global_dev_id << " is false\n";
         compatible_devices[global_dev_id] = false;
       }
     } else if (base_req->is_arch_req()) {
@@ -192,10 +190,8 @@ void RLTaskMappingPolicy::run_task_mapping(
 
   std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
     " current state:" << this->rl_current_state_ <<
-    " device id " << chosen_device_gid << "\n";
-
-  //std::cout << "current state:" << this->rl_current_state_ << "\n";
-  std::cout << "reward:" << reward.item<float>() << "\n";
+    " device id: " << chosen_device_gid << " reward:" <<
+    reward.item<float>() << "\n";
 
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {

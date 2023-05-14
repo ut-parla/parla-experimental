@@ -341,8 +341,8 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
             gil_fraction = config.gil_fraction
 
         #print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
-        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-            " placement:", placement_set)
+        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+        #    " placement:", placement_set)
         # TODO(hc): Add data checking.
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set, input=IN, output=OUT, inout=INOUT)
         async def task_func():
