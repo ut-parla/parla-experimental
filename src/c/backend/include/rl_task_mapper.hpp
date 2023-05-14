@@ -58,6 +58,10 @@ public:
    */
   size_t size() { return this->buffer_.size(); }
 
+  void clear() {
+    this->buffer_.clear();
+  }
+
   void print() {
     for (size_t i = 0; i < this->buffer_.size(); ++i) {
       std::cout << "\n [" << i << "th buffer]\n";
@@ -170,9 +174,19 @@ public:
   }
 
   void optimize_model() {
+    std::cout << this->replay_memory_.size() << " vs " <<
+        this->batch_size_ << "\n";
     if (this->replay_memory_.size() < this->batch_size_) {
       return;
     }
+
+    std::cout << this->episode_ << " optimization..\n";
+    size_t p_i{0};
+    std::ofstream fp_b(std::to_string(this->episode_) + ".before");
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      fp_b << p_i++ << ":" << parameter << "\n";
+    }
+    fp_b.close();
 
     std::cout << "Model optimization starts\n";
 
@@ -229,6 +243,42 @@ public:
       parameter.grad().data().clamp(-1, 1);
     }
     this->rms_optimizer.step();
+    p_i = 0;
+    std::ofstream fp_a(std::to_string(this->episode_) + ".after");
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      fp_a << p_i++ << ":" << parameter << "\n";
+    }
+    fp_a.close();
+  }
+
+  void target_net_soft_update(float TAU = 0.005) {
+    torch::NoGradGuard no_grad;
+    auto target_named_parameters = this->target_net_.named_parameters();
+    auto named_parameters = this->policy_net_.named_parameters(true);
+    auto named_buffers = this->policy_net_.named_buffers(true);
+    for (auto &named_parameter : named_parameters) {
+      std::string param_key = named_parameter.key();
+      torch::Tensor param_value = named_parameter.value();
+      torch::Tensor *target_param_val_ptr = target_named_parameters.find(param_key);
+      if (target_param_val_ptr != nullptr) {
+        std::cout << param_key << ", " << named_parameter.value() 
+          << ", old " << *target_param_val_ptr << "\n";
+        torch::Tensor new_param_val =
+            param_value * TAU + *target_param_val_ptr * (1 - TAU);
+        target_param_val_ptr->copy_(new_param_val);
+      } else {
+        target_param_val_ptr = named_buffers.find(param_key);
+        if (target_param_val_ptr != nullptr) {
+          std::cout << param_key << ", " << named_parameter.value() 
+             << ", old " << *target_param_val_ptr << "\n";
+          torch::Tensor new_param_val =
+              param_value * TAU + *target_param_val_ptr * (1 - TAU);
+          target_param_val_ptr->copy_(new_param_val);
+        }
+      }
+      std::cout << param_key << ", " << named_parameter.value() 
+        << ", new " << *target_param_val_ptr << "\n";
+    }
   }
 
   void append_replay_memory(torch::Tensor curr_state,

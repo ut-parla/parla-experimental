@@ -186,6 +186,7 @@ void RLTaskMappingPolicy::run_task_mapping(
       torch::tensor({float{chosen_device_gid}}, torch::kInt64),
       this->rl_next_state_, reward);
   this->rl_agent_->optimize_model();
+  this->rl_agent_->target_net_soft_update();
   chosen_devices->clear();
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
