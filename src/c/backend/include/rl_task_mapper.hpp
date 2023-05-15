@@ -79,8 +79,8 @@ private:
   BufferTy buffer_;
 };
 
-struct FullyConnectedDQN : torch::nn::Module {
-  FullyConnectedDQN(size_t in_dim, size_t out_dim)
+struct FullyConnectedDQNImpl : public torch::nn::Module {
+  FullyConnectedDQNImpl(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
     // Move networks to a GPU.
     fc1_ = register_module("fc1", torch::nn::Linear(in_dim, in_dim * 4));
@@ -104,9 +104,12 @@ struct FullyConnectedDQN : torch::nn::Module {
   torch::Device device_;
 };
 
+//TORCH_MODULE(FullyConnectedDQN);
+
 class RLAgent {
 public:
   using BufferTupleType = typename ExperienceReplay::BufferTupleType;
+
 
   RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions,
           torch::Device device = torch::kCUDA,
@@ -118,8 +121,93 @@ public:
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
         replay_memory_(1000),
-        rms_optimizer(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
-        episode_(0) {}
+        rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
+        episode_(0) {
+    this->load_models();      
+  }
+
+  ~RLAgent() {
+    this->save_models();
+  }
+
+  void save_models() {
+    std::cout << "Save models..\n";
+    torch::serialize::OutputArchive policy_net_output_archive;
+    torch::serialize::OutputArchive target_net_output_archive;
+    this->policy_net_.save(policy_net_output_archive);
+    this->target_net_.save(target_net_output_archive);
+    policy_net_output_archive.save_to("policy_net.pt");
+    target_net_output_archive.save_to("target_net.pt");
+    torch::save(this->rms_optimizer_, "rms_optimizer.pt");
+#if 0
+    std::ofstream fp_p("policy_net.out");
+    size_t p_i{0};
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      fp_p << p_i++ << ":" << parameter << "\n";
+    }
+    fp_p.close();
+
+    std::ofstream fp_t("target_net.out");
+    p_i = 0;
+    for (torch::Tensor parameter : this->target_net_.parameters()) {
+      fp_t << p_i++ << ":" << parameter << "\n";
+    }
+    fp_t.close();
+
+    std::ofstream fp_o("optimizer.out");
+    p_i = 0;
+    for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
+      fp_o << p_i++ << ":" << parameter << "\n";
+    }
+    fp_o.close();
+#endif
+    //torch::save(this->policy_net_, "policy_net.pt");
+    //torch::save(this->target_net_, "target_net.pt");
+  }
+
+  void load_models() {
+    std::cout << "Load models..\n";
+    if (std::ifstream fp("policy_net.pt"); fp) {
+      std::cout << "Load policy net\n";
+      torch::serialize::InputArchive input_archive;
+      input_archive.load_from("policy_net.pt");
+      this->policy_net_.load(input_archive);
+      //torch::load(this->policy_net_, "policy_net.pt");
+    }
+    if (std::ifstream fp("target_net.pt"); fp) {
+      std::cout << "Load target net\n";
+      torch::serialize::InputArchive input_archive;
+      input_archive.load_from("target_net.pt");
+      this->target_net_.load(input_archive);
+      //torch::load(this->target_net_, "target_net.pt");
+    }
+#if 0
+    if (std::ifstream fp("rms_optimizer.pt"); fp) {
+      std::cout << "Load RMS optimizer\n";
+      torch::load(this->rms_optimizer_, "rms_optimizer.pt");
+    }
+    std::ofstream fp_p("policy_net.in");
+    size_t p_i{0};
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      fp_p << p_i++ << ":" << parameter << "\n";
+    }
+    fp_p.close();
+
+    std::ofstream fp_t("target_net.in");
+    p_i = 0;
+    for (torch::Tensor parameter : this->target_net_.parameters()) {
+      fp_t << p_i++ << ":" << parameter << "\n";
+    }
+    fp_t.close();
+
+    std::ofstream fp_o("optimizer.in");
+    p_i = 0;
+    for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
+      fp_o << p_i++ << ":" << parameter << "\n";
+    }
+    fp_o.close();
+#endif
+  }
 
   /*
    * Select a device from the current state.
@@ -174,6 +262,10 @@ public:
   }
 
   void optimize_model() {
+    if (!this->is_training_mode()) {
+      return;
+    }
+
     if (this->replay_memory_.size() < this->batch_size_) {
       return;
     }
@@ -235,13 +327,16 @@ public:
 
     torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1ULL}));
     // Zerofying gradients in the optimizer.
-    this->rms_optimizer.zero_grad();
+    this->rms_optimizer_.zero_grad();
     // Update gradients.
     loss.backward();
+    std::ofstream fp("loss.out", std::ios_base::app);
+    fp << loss.item<float>() << "\n";
+    fp.close();
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       parameter.grad().data().clamp(-1, 1);
     }
-    this->rms_optimizer.step();
+    this->rms_optimizer_.step();
     /*
     p_i = 0;
     std::ofstream fp_a(std::to_string(this->episode_) + ".after");
@@ -315,11 +410,19 @@ public:
     return this->replay_memory_.size();
   }
 
+  bool is_training_mode() {
+    if (this->rl_mode_.compare("training") == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 private:
   // TODO: replay memory
 
-  FullyConnectedDQN policy_net_;
-  FullyConnectedDQN target_net_;
+  FullyConnectedDQNImpl policy_net_;
+  FullyConnectedDQNImpl target_net_;
   torch::Device device_;
   std::string rl_mode_;
   uint32_t n_actions_;
@@ -328,7 +431,7 @@ private:
   float gamma_;
   uint64_t steps_;
   ExperienceReplay replay_memory_;
-  torch::optim::RMSprop rms_optimizer;
+  torch::optim::RMSprop rms_optimizer_;
   size_t episode_;
 };
 
@@ -337,6 +440,8 @@ public:
   RLTaskMappingPolicy(
       DeviceManager *device_manager, PArrayTracker *parray_tracker,
       Mapper *mapper);
+
+  ~RLTaskMappingPolicy();
 
   bool calc_score_devplacement(
       InnerTask *task,

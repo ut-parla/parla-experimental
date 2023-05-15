@@ -9,6 +9,11 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
   this->rl_env_ = new RLEnvironment(this->device_manager_, mapper);
 }
 
+RLTaskMappingPolicy::~RLTaskMappingPolicy() {
+  delete this->rl_agent_;
+  delete this->rl_env_;
+}
+
 bool RLTaskMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
