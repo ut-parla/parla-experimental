@@ -38,6 +38,15 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
     score = double{1 - (dev_running_planned_tasks / float(total_running_planned_tasks))};
   }
 
+  DevID_t num_devices =
+      this->device_manager_->template get_num_devices(ParlaDeviceType::All);
+  double threshold = (1 - (1 / double(num_devices))) - 0.1;
+  if (total_running_planned_tasks >= dev_running_planned_tasks) {
+    if (score <= threshold) {
+      score = -(1 + score);
+    }
+  }
+
   //std::cout << "score:" << score << ", " <<
   //  total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
 

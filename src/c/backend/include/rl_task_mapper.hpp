@@ -93,9 +93,9 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
 
   torch::Tensor forward(torch::Tensor x) {
     x = x.to(device_);
-    x = torch::relu(fc1_->forward(x.reshape({x.size(0), in_dim_})));
-    x = torch::relu(fc2_->forward(x.reshape({x.size(0), in_dim_ * 4})));
-    x = out_->forward(x.reshape({x.size(0), in_dim_ * 4}));
+    x = torch::relu(fc1_(x.reshape({x.size(0), in_dim_})));
+    x = torch::relu(fc2_(x.reshape({x.size(0), in_dim_ * 4})));
+    x = out_(x.reshape({x.size(0), in_dim_ * 4}));
     return x.squeeze(0);
   }
 
@@ -121,7 +121,7 @@ public:
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
         replay_memory_(1000),
-        rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
+        rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.0025)),
         episode_(0) {
     this->load_models();      
   }
@@ -303,6 +303,7 @@ public:
 
     curr_states_tensor = torch::cat(curr_states, 0);
     next_states_tensor = torch::cat(next_states, 0);
+
     // Action was 1 dimensional tensor, so needs to be unsqueezed to be
     // a (1, :) dimension tensor.
     actions_tensor = torch::cat(actions, 0).to(this->device_).unsqueeze(0);
@@ -319,13 +320,18 @@ public:
     next_target_q_values = std::get<0>(next_target_q_values.max(1));
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
-    //std::cout << " qvals:" << q_values << ", "
-    //          << " action_tensor:" << actions_tensor << ", "
-    //          << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
-    //          << ", reward tensor:" << rewards_tensor << ", "
-    //          << ", expected q values:" << expected_q_values << "\n";
-
+    std::cout << next_target_q_values << " vs reward: " << rewards_tensor << " =\n";
+    std::cout << expected_q_values << "\n";
+    /*std::cout << " qvals:" << q_values << ", "
+              << " action_tensor:" << actions_tensor << ", "
+              << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
+              << ", reward tensor:" << rewards_tensor << ", "
+              << ", expected q values:" << expected_q_values << "\n";
+    */
+    //std::cout << "expectedq vals:" << expected_q_values.reshape({this->batch_size_, 1ULL}) <<"\n";
     torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.reshape({this->batch_size_, 1ULL}));
+
+    std::cout << "\n Loss:" << loss << "\n";
     // Zerofying gradients in the optimizer.
     this->rms_optimizer_.zero_grad();
     // Update gradients.
@@ -338,16 +344,20 @@ public:
     }
     this->rms_optimizer_.step();
     /*
-    p_i = 0;
-    std::ofstream fp_a(std::to_string(this->episode_) + ".after");
+    size_t p_i = 0;
+    std::ofstream fp_a(std::to_string(this->episode_) + "-" + std::to_string(this->subepisode_) + ".after");
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       fp_a << p_i++ << ":" << parameter << "\n";
     }
     fp_a.close();
+    this->subepisode_ += 1;
     */
   }
 
   void target_net_soft_update(float TAU = 0.005) {
+    if (this->episode_ % 500 == 0) {
+      return;
+    }
     torch::NoGradGuard no_grad;
     auto target_named_parameters = this->target_net_.named_parameters();
     auto named_parameters = this->policy_net_.named_parameters(true);
@@ -433,6 +443,7 @@ private:
   ExperienceReplay replay_memory_;
   torch::optim::RMSprop rms_optimizer_;
   size_t episode_;
+  size_t subepisode_{0};
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
