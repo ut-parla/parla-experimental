@@ -25,6 +25,7 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+#include "memory_manager.hpp"
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -1002,6 +1003,7 @@ public:
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.reserve_parray(*parray, device);
+    this->mm_.acquire_data(parray, global_dev_id);
   }
 
   /* Release a PArray in a device */
@@ -1009,6 +1011,10 @@ public:
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.release_parray(*parray, device);
+  }
+
+  void task_release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_.release_data(parray, global_dev_id);
   }
 
   bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
@@ -1030,6 +1036,8 @@ protected:
   /// It manages the current/planned distribution of PArrays across devices.
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
+
+  LRUGlobalMemoryManager mm_;
 };
 
 #endif // PARLA_BACKEND_HPP

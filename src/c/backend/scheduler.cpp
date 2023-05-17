@@ -124,7 +124,8 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 // Scheduler Implementation
 
 InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager), parray_tracker_(device_manager) {
+    : device_manager_(device_manager), parray_tracker_(device_manager),
+      mm_(device_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -295,6 +296,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         // This PArray is not released from the PArray tracker here,
         // but when it is EVICTED, it will check the number of referneces
         // and will be released if that is 0.
+        this->task_release_parray(parray, dev_id);
       }
     }
     this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);

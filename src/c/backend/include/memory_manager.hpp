@@ -147,11 +147,13 @@ private:
 class LRUDeviceMemoryManager {
 public:
   void acquire_data(parray::InnerPArray *parray) {
-
+    std::cout << "Parray:" << parray->id << "," <<
+      " size:" << parray->get_size() << " was acquired\n";
   }
 
   void release_data(parray::InnerPArray *parray) {
-
+    std::cout << "Parray:" << parray->id << "," <<
+      " size:" << parray->get_size() << " was released\n";
   }
 
   /*
@@ -168,7 +170,7 @@ private:
 
 
 class LRUGlobalMemoryManager {
-
+public:
   LRUGlobalMemoryManager(DeviceManager *device_manager) :
     device_manager_(device_manager) {
     this->device_mm_.resize(

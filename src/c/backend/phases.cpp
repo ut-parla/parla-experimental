@@ -84,8 +84,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
                                                   1 + (*parray_list)[i].size());
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
-          this->scheduler->get_parray_tracker()->reserve_parray(*parray,
-                                                                chosen_device);
+          this->scheduler->reserve_parray(parray, global_dev_id);
           parray->incr_num_active_tasks(global_dev_id);
         }
       }
