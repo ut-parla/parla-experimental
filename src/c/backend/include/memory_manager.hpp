@@ -94,11 +94,17 @@ public:
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
     bool is_removed{false};
+    if (node->prev == nullptr && node->next == nullptr) {
+      this->mtx_.unlock();
+      return is_removed;
+    }
+
     if (this->list_size_ == 1 and (node == this->head_ or node == this->tail_)) {
       is_removed = true;
       this->head_ = this->tail_ = node->next = node->prev = nullptr;
       this->list_size_ = 0;
     } else if (node->prev == nullptr && node->next == nullptr) { 
+      this->mtx_.unlock();
       return is_removed;
     }
 
@@ -107,8 +113,13 @@ public:
     } else if ( this->tail_ == node) {
       this->tail_ = node->prev;
     } else {
-      node->prev->next = node->next;
-      node->next->prev = node->prev;
+      // TODO(hc):check it again
+      if (node->prev != nullptr) {
+        node->prev->next = node->next;
+      }
+      if (node->next != nullptr) {
+        node->next->prev = node->prev;
+      }
     }
     is_removed = true;
 
@@ -146,14 +157,62 @@ private:
 
 class LRUDeviceMemoryManager {
 public:
+  struct PArrayMetaInfo {
+    // Points to a PArray node if it exists
+    PArrayNode *parray_node_ptr;
+    // The number of references to a PArray
+    size_t ref_count;
+  };
+
+  LRUDeviceMemoryManager(DevID_t dev_id) : dev_id_(dev_id) {}
+
   void acquire_data(parray::InnerPArray *parray) {
+    this->mtx_.lock();
     std::cout << "Parray:" << parray->id << "," <<
       " size:" << parray->get_size() << " was acquired\n";
+    uint64_t parray_id = parray->id;
+    auto found = this->parray_reference_counts_.find(parray_id);
+    std::cout << "Parray:" << parray_id << "," <<
+      " was found\n";
+    if (found == this->parray_reference_counts_.end()) {
+      std::cout << "Parray:" << parray_id << "," <<
+        " was not found\n";
+      PArrayNode *parray_node = new PArrayNode(parray, this->dev_id_);
+      this->parray_reference_counts_[parray_id] =
+          PArrayMetaInfo{parray_node, 1};
+      std::cout << "Parray:" << parray->id << "," <<
+        " size:" << parray->get_size() << " was ceated, "
+        << " reference count: 1 \n";
+    } else {
+      std::cout << "Parray:" << parray_id << "," <<
+        " increase ! \n";
+      found->second.ref_count++; 
+      std::cout << "Parray:" << parray_id << "," <<
+        " increase to " << found->second.ref_count << "! \n";
+      this->zr_parray_list_.remove(found->second.parray_node_ptr);
+      std::cout << "Parray:" << parray->id << "," <<
+        " size:" << parray->get_size() << " was referenced, "
+        << " reference count: " << found->second.ref_count << "\n";
+    }
+    this->mtx_.unlock();
   }
 
   void release_data(parray::InnerPArray *parray) {
-    std::cout << "Parray:" << parray->id << "," <<
-      " size:" << parray->get_size() << " was released\n";
+    this->mtx_.lock();
+    uint64_t parray_id = parray->id;
+    auto found = this->parray_reference_counts_.find(parray_id);
+    if (found == this->parray_reference_counts_.end()) {
+      std::cout << "This should not happen\n";
+    } else {
+      found->second.ref_count--; 
+      if (found->second.ref_count == 0) {
+        this->zr_parray_list_.append(found->second.parray_node_ptr);
+      }
+      std::cout << "Parray:" << parray->id << "," <<
+        " size:" << parray->get_size() << " was released, "
+        << " reference count:" << found->second.ref_count << " \n";
+    }
+    this->mtx_.unlock();
   }
 
   /*
@@ -162,8 +221,9 @@ public:
   */
 
 private:
+  DevID_t dev_id_;
   std::mutex mtx_;
-  std::vector<std::unordered_map<uint64_t, size_t>> parray_reference_counts_;
+  std::unordered_map<uint64_t, PArrayMetaInfo> parray_reference_counts_;
   /// A list of zero-referenced PArrays.
   DoubleLinkedList zr_parray_list_;
 };
@@ -176,7 +236,7 @@ public:
     this->device_mm_.resize(
         device_manager->template get_num_devices<DeviceType::All>());
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
-      this->device_mm_[i] = new LRUDeviceMemoryManager();
+      this->device_mm_[i] = new LRUDeviceMemoryManager(i);
     }
   }
 

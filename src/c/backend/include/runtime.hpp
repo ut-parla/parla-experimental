@@ -1003,7 +1003,6 @@ public:
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.reserve_parray(*parray, device);
-    this->mm_.acquire_data(parray, global_dev_id);
   }
 
   /* Release a PArray in a device */
@@ -1011,6 +1010,10 @@ public:
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.release_parray(*parray, device);
+  }
+
+  void task_acquire_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_.acquire_data(parray, global_dev_id);
   }
 
   void task_release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
