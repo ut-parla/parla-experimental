@@ -599,6 +599,23 @@ class DataMovementTask(Task):
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
         # print("Attempt to Move: ", self.parray.name, " to a device ", parray_id, flush=True)
+        self.scheduler.set_gc_wait_flag()
+        py_mm = self.scheduler.memory_manager 
+        removable_parray_size = py_mm.size(global_id)
+        print("removable parray sized:" , removable_parray_size)
+        for i in range(0, removable_parray_size):
+            removable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
+            if removable_parray is not None:
+                print("target parray ID:", removable_parray.ID)
+                print("Before eviction:", removable_parray)
+                print("eviction target:", parray_id)
+                removable_parray.evict(parray_id)
+                print("After eviction:", removable_parray)
+                print("target eviction parray:", id(removable_parray))
+                print("target parray:", id(self.parray))
+            else:
+                print("target parray is None\n")
+        self.scheduler.unset_gc_wait_flag()
         self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
@@ -1635,9 +1652,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
-
-
-
-    
-    

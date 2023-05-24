@@ -16,6 +16,7 @@ from parla.cython import tasks
 cimport core
 from parla.cython import core
 from parla.cython.cyparray import CyPArray
+from parla.cython.mm import PyMM
 
 from parla.common.globals import _Locals as Locals 
 from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
@@ -340,7 +341,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 class Scheduler(ControllableThread, SchedulerContext):
 
-    def __init__(self, device_manager, n_threads=6, period=0.001):
+    def __init__(self, memory_manager, device_manager, n_threads=6, period=0.001):
         super().__init__()
 
         self.start_monitor = threading.Condition(threading.Lock())
@@ -354,9 +355,14 @@ class Scheduler(ControllableThread, SchedulerContext):
         #TODO: Handle resources better
         resources = 1.0
 
+        self.memory_manager = memory_manager
         self.device_manager = device_manager
+        cy_memory_manager = self.memory_manager.get_cy_memory_manager()
         cy_device_manager = self.device_manager.get_cy_device_manager()
-        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
+        self.inner_scheduler = PyInnerScheduler(cy_memory_manager,
+                                                cy_device_manager,
+                                                n_threads,
+                                                resources, self)
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
@@ -474,6 +480,12 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_parray_state( \
             global_dev_id, parray_parent_id)
+
+    def set_gc_wait_flag(self):
+        self.inner_scheduler.set_gc_wait_flag()
+
+    def unset_gc_wait_flag(self):
+        self.inner_scheduler.unset_gc_wait_flag()
 
 
 def _task_callback(task, body):

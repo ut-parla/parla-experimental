@@ -909,7 +909,7 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(DeviceManager *device_manager);
+  InnerScheduler(LRUGlobalMemoryManager *memory_manager, DeviceManager *device_manager);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
@@ -1013,11 +1013,11 @@ public:
   }
 
   void task_acquire_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    this->mm_.acquire_data(parray, global_dev_id);
+    this->mm_->acquire_data(parray, global_dev_id);
   }
 
   void task_release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    this->mm_.release_data(parray, global_dev_id);
+    this->mm_->release_data(parray, global_dev_id);
   }
 
   bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
@@ -1031,6 +1031,20 @@ public:
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
 
+  bool need_to_wait_gc() {
+    return this->wait_for_gc_.load();
+  }
+
+  void set_gc_wait_flag() {
+    std::cout << "Set GC wait flag\n";
+    this->wait_for_gc_.store(true);
+  }
+
+  void unset_gc_wait_flag() {
+    std::cout << "Unset GC wait flag\n";
+    this->wait_for_gc_.store(false);
+  }
+
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
@@ -1040,7 +1054,9 @@ protected:
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
 
-  LRUGlobalMemoryManager mm_;
+  LRUGlobalMemoryManager *mm_;
+
+  std::atomic<bool> wait_for_gc_;
 };
 
 #endif // PARLA_BACKEND_HPP

@@ -49,6 +49,9 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // use threshold of the number of tasks to be mapped.
   size_t num_task_mapping_attempt{0};
   while (has_task && num_task_mapping_attempt < 20) {
+    if (this->scheduler->need_to_wait_gc()) {
+      continue;
+    }
     // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
@@ -90,7 +93,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
 
-#if 0
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
                 << "\n";
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
@@ -103,7 +105,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
                   << ", vcu:" << res.get(Resource::VCU) << "\n";
         */
       }
-#endif
 
       this->mapped_tasks_buffer.push_back(task);
     }

@@ -38,9 +38,11 @@ public:
   void append(PArrayNode *node) {
     this->mtx_.lock();
     if (this->list_size_ == 0) {
+      //std::cout << node->parray->id << " is set as head\n";
       this->head_ = node;
       this->tail_ = node;
     } else {
+      //std::cout << node->parray->id << " is attached to tail\n";
       this->tail_->next = node;
       node->prev = this->tail_;
       this->tail_ = node;
@@ -83,28 +85,36 @@ public:
   PArrayNode *remove_head() {
     this->mtx_.lock();
     PArrayNode *old_head = this->head_;
+    //std::cout << " zr list size:" << this->list_size_ << "\n";
     if (old_head != nullptr) {
-      this->remove(old_head); 
+      //std::cout << "old head is not NULL so try to remove this\n";
+      this->remove_unsafe(old_head); 
+    } else {
+      //std::cout << "old head is NULL\n";
     }
     this->mtx_.unlock();
     return old_head;
   }
 
-  /// Remove the node from the list.
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
+    this->remove_unsafe(node);
+    this->mtx_.unlock();
+  }
+
+  /// Remove the node from the list.
+  bool remove_unsafe(PArrayNode *node) {
     bool is_removed{false};
     if (node->prev == nullptr && node->next == nullptr) {
-      this->mtx_.unlock();
       return is_removed;
     }
 
     if (this->list_size_ == 1 and (node == this->head_ or node == this->tail_)) {
       is_removed = true;
       this->head_ = this->tail_ = node->next = node->prev = nullptr;
-      this->list_size_ = 0;
+      //std::cout << node->parray->id << " was emptified from list: " <<
+      //  this->list_size_ << "\n";
     } else if (node->prev == nullptr && node->next == nullptr) { 
-      this->mtx_.unlock();
       return is_removed;
     }
 
@@ -126,8 +136,9 @@ public:
     node->prev = node->next = nullptr;
     if (is_removed) {
       this->list_size_ -= 1;
+      //std::cout << node->parray->id << " was removed from list: " <<
+      //  this->list_size_ << "\n";
     }
-    this->mtx_.unlock();
     return is_removed;
   }
 
@@ -168,51 +179,69 @@ public:
 
   void acquire_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
-    std::cout << "Parray:" << parray->id << "," <<
-      " size:" << parray->get_size() << " was acquired\n";
+    //std::cout << "acquire data: " << &this->zr_parray_list_ << "\n";
+    //std::cout << "Parray:" << parray->id << "," <<
+    //  " size:" << parray->get_size() << " was acquired\n";
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
-    std::cout << "Parray:" << parray_id << "," <<
-      " was found\n";
+    //std::cout << "Parray:" << parray_id << "," <<
+    //  " was found\n";
     if (found == this->parray_reference_counts_.end()) {
-      std::cout << "Parray:" << parray_id << "," <<
-        " was not found\n";
+      //std::cout << "Parray:" << parray_id << "," <<
+      //  " was not found\n";
       PArrayNode *parray_node = new PArrayNode(parray, this->dev_id_);
       this->parray_reference_counts_[parray_id] =
           PArrayMetaInfo{parray_node, 1};
-      std::cout << "Parray:" << parray->id << "," <<
-        " size:" << parray->get_size() << " was ceated, "
-        << " reference count: 1 \n";
+      //std::cout << "Parray:" << parray->id << "," <<
+      //  " size:" << parray->get_size() << " was ceated, "
+      //  << " reference count: 1 \n";
     } else {
-      std::cout << "Parray:" << parray_id << "," <<
-        " increase ! \n";
+      //std::cout << "Parray:" << parray_id << "," <<
+      //  " increase ! \n";
       found->second.ref_count++; 
-      std::cout << "Parray:" << parray_id << "," <<
-        " increase to " << found->second.ref_count << "! \n";
+      //std::cout << "Parray:" << parray_id << "," <<
+      //  " increase to " << found->second.ref_count << "! \n";
       this->zr_parray_list_.remove(found->second.parray_node_ptr);
-      std::cout << "Parray:" << parray->id << "," <<
-        " size:" << parray->get_size() << " was referenced, "
-        << " reference count: " << found->second.ref_count << "\n";
+      //std::cout << "Parray:" << parray->id << "," <<
+      //  " size:" << parray->get_size() << " was referenced, "
+      //  << " reference count: " << found->second.ref_count << 
+      //  ", " << &this->zr_parray_list_ << "\n";
     }
     this->mtx_.unlock();
   }
 
   void release_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
+    //std::cout << "release data: " << &this->zr_parray_list_ << "\n";
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found == this->parray_reference_counts_.end()) {
-      std::cout << "This should not happen\n";
+      //std::cout << "This should not happen\n";
     } else {
       found->second.ref_count--; 
       if (found->second.ref_count == 0) {
         this->zr_parray_list_.append(found->second.parray_node_ptr);
       }
-      std::cout << "Parray:" << parray->id << "," <<
-        " size:" << parray->get_size() << " was released, "
-        << " reference count:" << found->second.ref_count << " \n";
+      //std::cout << "Parray:" << parray->id << "," <<
+      //  " size:" << parray->get_size() << " was released, "
+      //  << " reference count:" << found->second.ref_count << 
+      //  ", " << &this->zr_parray_list_ << " \n";
     }
     this->mtx_.unlock();
+  }
+
+  size_t size() {
+    size_t zr_parray_list_size{0};
+    this->mtx_.lock();
+    zr_parray_list_size = zr_parray_list_.size();
+    this->mtx_.unlock();
+    return zr_parray_list_size;
+  }
+
+  PArrayNode *remove_and_return_head_from_zrlist() {
+    //std::cout << "remove and return head:" << &this->zr_parray_list_ << "\n";
+    //std::cout << "call remove head:" << &this->zr_parray_list_ << " \n";
+    return this->zr_parray_list_.remove_head();
   }
 
   /*
@@ -235,17 +264,44 @@ public:
     device_manager_(device_manager) {
     this->device_mm_.resize(
         device_manager->template get_num_devices<DeviceType::All>());
+    //std::cout << "LRUDeviceMemoryManager was resized:" << this->device_mm_.size() << "\n";
+    //std::cout << "vector addr:" << &this->device_mm_ << "\n";
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
       this->device_mm_[i] = new LRUDeviceMemoryManager(i);
     }
   }
 
   void acquire_data(parray::InnerPArray *parray, DevID_t dev_id) {
+    //std::cout << dev_id << " starts acquiring zrlist head\n";
+    //std::cout << "Parray:" << parray->id << "\n";
     this->device_mm_[dev_id]->acquire_data(parray);
   }
 
   void release_data(parray::InnerPArray *parray, DevID_t dev_id) {
+    //std::cout << dev_id << " starts releasing zrlist head\n";
+    //std::cout << "Parray:" << parray->id << "\n";
     this->device_mm_[dev_id]->release_data(parray);
+  }
+
+  size_t size(DevID_t dev_id) {
+    return this->device_mm_[dev_id]->size();
+  }
+
+  void *remove_and_return_head_from_zrlist(DevID_t dev_id) {
+    //std::cout << dev_id << " starts removing and returning zrlist head\n";
+    //std::cout << " device mm size:" <<
+    //  this->device_mm_.size() << "\n" << std::flush;
+    PArrayNode *old_head =
+        this->device_mm_[dev_id]->remove_and_return_head_from_zrlist();
+    void *py_parray{nullptr};
+    if (old_head != nullptr) {
+      parray::InnerPArray *c_parray = old_head->parray;
+      py_parray = c_parray->get_py_parray();
+      //std::cout << "Return parray:" << c_parray->id << "\n";
+    } else {
+      //std::cout << "Return parray is NULL\n";
+    }
+    return py_parray;
   }
 
 private:

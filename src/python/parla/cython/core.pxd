@@ -3,7 +3,8 @@ cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
-from parla.cython.cyparray cimport InnerPArray
+from parla.cython.cyparray cimport InnerPArray, CyPArray
+from parla.cython.mm cimport LRUGlobalMemoryManager
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
@@ -21,6 +22,7 @@ cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds)
     void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr)
+
 
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
@@ -127,7 +129,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
-        InnerScheduler(DeviceManager* cpp_device_manager)
+        InnerScheduler(LRUGlobalMemoryManager* cpp_memory_manager,  DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
         void set_py_scheduler(void* py_scheduler)
@@ -161,6 +163,10 @@ cdef extern from "include/runtime.hpp" nogil:
         void reserve_parray(InnerPArray* parray, int dev_id) except +
         void release_parray(InnerPArray* parray, int dev_id) except +
 
+        void need_to_wait_gc()
+        void set_gc_wait_flag()
+        void unset_gc_wait_flag()
+
 
 cdef extern from "include/profiling.hpp" nogil:
     void initialize_log(string filename)
@@ -178,8 +184,3 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_scheduler_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
-
-
-
-
-

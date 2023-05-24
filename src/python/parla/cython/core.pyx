@@ -7,6 +7,7 @@ from parla.common.globals import AccessMode
 from parla.cython.device cimport Device
 from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
+from parla.cython.mm cimport CyMM
 import threading
 from enum import IntEnum, auto
 from parla.common.globals import cupy
@@ -477,17 +478,6 @@ cdef class PyTaskSpace:
         with nogil:
             c_self.wait()
 
-        
-
-        
-
-        
-        
-
-
-
-
-
 
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
@@ -582,14 +572,15 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
-    def __cinit__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __cinit__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         cdef DeviceManager* _cpp_device_manager = <DeviceManager*> cy_device_manager.get_cpp_device_manager()
+        cdef LRUGlobalMemoryManager* _cpp_memory_manager = <LRUGlobalMemoryManager*> cy_memory_manager.get_cpp_memory_manager()
 
-        _inner_scheduler = new InnerScheduler(_cpp_device_manager)
+        _inner_scheduler = new InnerScheduler(_cpp_memory_manager, _cpp_device_manager)
         self.inner_scheduler = _inner_scheduler
 
-    def __init__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __init__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 
@@ -703,6 +694,14 @@ cdef class PyInnerScheduler:
         self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
+
+    cpdef set_gc_wait_flag(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.set_gc_wait_flag()
+
+    cpdef unset_gc_wait_flag(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.unset_gc_wait_flag()
 
 
 class Resources:
