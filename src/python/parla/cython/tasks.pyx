@@ -607,10 +607,12 @@ class DataMovementTask(Task):
             removable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
             if removable_parray is not None:
                 print("target parray ID:", removable_parray.ID)
-                print("Before eviction:", removable_parray)
+                print("Before eviction:")
+                removable_parray.print_overview()
                 print("eviction target:", parray_id)
                 removable_parray.evict(parray_id)
-                print("After eviction:", removable_parray)
+                print("After eviction:")
+                removable_parray.print_overview()
                 print("target eviction parray:", id(removable_parray))
                 print("target parray:", id(self.parray))
             else:
