@@ -45,7 +45,10 @@ void Mapper::run(SchedulerPhase *next_phase) {
   bool has_task = true;
 
   has_task = this->get_count() > 0;
-  while (has_task) {
+  // In order to overlap scheduler phases and task execution,
+  // use threshold of the number of tasks to be mapped.
+  size_t num_task_mapping_attempt{0};
+  while (has_task && num_task_mapping_attempt < 20) {
     // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
@@ -105,6 +108,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
       this->mapped_tasks_buffer.push_back(task);
     }
     has_task = this->get_count() > 0;
+    ++num_task_mapping_attempt;
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
