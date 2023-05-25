@@ -381,7 +381,7 @@ class PArray:
 
         with self._coherence_cv[device_id]:
             operations = self._coherence.evict(device_id, keep_one_copy)
-            if operations[0].inst == MemoryOperation.ERROR:
+            if len(operations) != 0 and operations[0].inst == MemoryOperation.ERROR:
                 return False # cannot perform the eviction
             self._process_operations(operations) 
     

@@ -7,18 +7,35 @@ from parla.cython cimport device_manager
 
 class PyMM:
     def __init__(self, dm: device_manager.PyDeviceManager):
-        print("PyMM constructor", flush=True)
-        self.cy_mm = CyMM(dm.get_cy_device_manager())
-        print("PyMM constructor [done]", flush=True)
+        #print("PyMM constructor", flush=True)
+        self._device_manager = device_manager
+        self._cy_mm = CyMM(dm.get_cy_device_manager())
+        #print("PyMM constructor [done]", flush=True)
 
     def size(self, dev_id: int):
-        return self.cy_mm.size(dev_id)
+        return self._cy_mm.size(dev_id)
 
     def remove_and_return_head_from_zrlist(self, dev_id: int):
-        return self.cy_mm.remove_and_return_head_from_zrlist(dev_id)
+        return self._cy_mm.remove_and_return_head_from_zrlist(dev_id)
 
     def get_cy_memory_manager(self):
-        return self.cy_mm
+        return self._cy_mm
+
+    def print_memory_stats(self, device_id, label: str):
+        import psutil
+        import os
+        print(f"[{label}] Memory tracking", flush=True)
+        try:
+            import cupy
+            mempool = cupy.get_default_memory_pool()
+            pinned_mempool = cupy.get_default_pinned_memory_pool()
+            print((
+                  f"\t GPU{device_id} {label} CuPy used bytes: {mempool.used_bytes()} \n"
+                  f"\t GPU{device_id} {label} Free bytes: {mempool.free_bytes()} \n"
+                  f"\t GPU{device_id} {label} Total bytes: {mempool.total_bytes()} \n"), flush=True)
+        except ImportError:
+            print("MM tracker only tracks CuPy memory for now.", flush=True)
+
 
 cdef class CyMM:
 #cdef LRUGlobalMemoryManager* _inner_mm

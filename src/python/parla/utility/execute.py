@@ -501,7 +501,24 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             graph_start_t = time.perf_counter()
 
+            import cupy
+            for i in range(0, 4):
+                with cupy.cuda.Device(i):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t Before {i} Used GPU{i}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
             execute_tasks(taskspaces, tasks, run_config, data_list=data_list)
+            for i in range(0, 4):
+                with cupy.cuda.Device(i):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t After {i} Used GPU{i}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+            import gc
+            for i in range(0, len(data_list)):
+                print(i, ", ", type(data_list[i]))
+#data_list[i] = None
+                referrers = gc.get_referrers(data_list[i])
+                for j in range(0, len(referrers)):
+                    print("\t", j, ", ", type(referrers[j]), ", ", referrers[j])
+
 
             for taskspace in taskspaces.values():
                 await taskspace

@@ -1036,12 +1036,12 @@ public:
   }
 
   void set_gc_wait_flag() {
-    std::cout << "Set GC wait flag\n";
+    //std::cout << "Set GC wait flag\n";
     this->wait_for_gc_.store(true);
   }
 
   void unset_gc_wait_flag() {
-    std::cout << "Unset GC wait flag\n";
+    //std::cout << "Unset GC wait flag\n";
     this->wait_for_gc_.store(false);
   }
 

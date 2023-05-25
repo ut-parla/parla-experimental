@@ -594,7 +594,6 @@ class DataMovementTask(Task):
             self.parray._auto_move(device_manager.get_parray_id(global_device_id),
                                    write_flag)
         """
-#self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
@@ -602,21 +601,17 @@ class DataMovementTask(Task):
         self.scheduler.set_gc_wait_flag()
         py_mm = self.scheduler.memory_manager 
         removable_parray_size = py_mm.size(global_id)
-        print("removable parray sized:" , removable_parray_size)
+        #print("removable parray sized:" , removable_parray_size)
         for i in range(0, removable_parray_size):
             removable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
             if removable_parray is not None:
-                print("target parray ID:", removable_parray.ID)
-                print("Before eviction:")
-                removable_parray.print_overview()
-                print("eviction target:", parray_id)
+                #print("target parray ID:", removable_parray.ID)
+                #print("Before eviction:")
+                #removable_parray.print_overview()
+                #print("eviction target:", parray_id)
+                py_mm.print_memory_stats(parray_id, "Before "+str(self.name))
                 removable_parray.evict(parray_id)
-                print("After eviction:")
-                removable_parray.print_overview()
-                print("target eviction parray:", id(removable_parray))
-                print("target parray:", id(self.parray))
-            else:
-                print("target parray is None\n")
+                py_mm.print_memory_stats(parray_id, "After "+str(self.name))
         self.scheduler.unset_gc_wait_flag()
         self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
