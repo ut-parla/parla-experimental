@@ -477,13 +477,8 @@ class Coherence:
                 # this device owns the last copy
                 if new_owner is None:
                     evict_last_copy = True
-            else:
-                # update states
-                self._local_states[device_id] = self.INVALID
-                self._versions[device_id] = -1
-                self._is_complete[device_id] = None
-
-                operations.append(MemoryOperation.evict(device_id))
+                else:
+                    self.owner = new_owner
         else:  # Modified, this device owns the last copy
             evict_last_copy = True
 
@@ -491,6 +486,9 @@ class Coherence:
             if keep_one_copy:  # write back to CPU
                 if device_id != CPU_INDEX:              
                     operations.extend(self._write_back_to(CPU_INDEX, self.MODIFIED, on_different_device=True, this_device_id=device_id))
+                    # special case, since `this_device_id` is set, _write_back will not evict this devic
+                    # need to do it manually
+                    operations.append(MemoryOperation.evict(device_id))
 
                     self.owner = CPU_INDEX
                     self._local_states[CPU_INDEX] = self.MODIFIED
@@ -500,5 +498,12 @@ class Coherence:
             else:
                 # do nothing and report error
                 return [MemoryOperation.error()]
+        else:
+            # update states for eviction
+            self._local_states[device_id] = self.INVALID
+            self._versions[device_id] = -1
+            self._is_complete[device_id] = None
+
+            operations.append(MemoryOperation.evict(device_id))
 
         return operations
