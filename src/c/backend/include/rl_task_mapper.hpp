@@ -95,6 +95,7 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
     x = x.to(device_);
     x = torch::relu(fc1_(x.view({x.size(0), in_dim_})));
     x = torch::relu(fc2_(x));
+    //x = out_(x);
     x = torch::log_softmax(out_(x), 1);
     return x.squeeze(0);
   }
@@ -329,18 +330,24 @@ public:
 
     // Action was 1 dimensional tensor, so needs to be unsqueezed to be
     // a (1, :) dimension tensor.
-    actions_tensor = torch::cat(actions, 0).to(this->device_).unsqueeze(0);
+    actions_tensor = torch::cat(actions, 0).to(this->device_).unsqueeze(1);
     rewards_tensor = torch::cat(rewards, 0).to(torch::kFloat).to(this->device_);
 
     // Calculate expected Q value.
     torch::Tensor q_values = this->policy_net_.forward(curr_states_tensor);
+    //std::cout << "Before current Q values:" << q_values << "\n";
+    //std::cout << "Before action:" << actions_tensor << "\n";
     // Gather q values corresponding to chosen actions.
     q_values = q_values.gather(1, actions_tensor);
     torch::Tensor next_target_q_values =
         this->target_net_.forward(next_states_tensor);
-    //std::cout << "next Q values:" << next_target_q_values << "\n";
+    //std::cout << "current Q values:" << curr_states_tensor << "\n";
+    //std::cout << "next Q values:" << next_states_tensor << "\n";
     //std::cout << "next Q max values:" << std::get<0>(next_target_q_values.max(1)) << "\n";
+    //std::cout << "Before next Q values:" << next_target_q_values << "\n";
     next_target_q_values = std::get<0>(next_target_q_values.max(1)).detach();
+    //std::cout << "Max next Q values:" << next_target_q_values << "\n";
+    //std::cout << "Reward values:" << rewards_tensor << "\n";
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
     //std::cout << next_target_q_values << " vs reward: " << rewards_tensor << " =\n";
@@ -358,34 +365,58 @@ public:
               << ", reward tensor:" << rewards_tensor << ", "
               << ", expected q values:" << expected_q_values << "\n";
     */
-    //std::cout << "expectedq vals:" << expected_q_values.reshape({this->batch_size_, 1ULL}) <<"\n";
-    torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.unsqueeze(0));
-    //torch::Tensor loss = torch::mse_loss(q_values, expected_q_values.unsqueeze(0));
-    //std::cout << "\n Loss:" << loss << "\n";
+    //std::cout << "q values:" << q_values << "\n";
+    //std::cout << "expectedq vals:" << expected_q_values.unsqueeze(1) <<"\n";
+    torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.unsqueeze(1));
+    //torch::Tensor loss = torch::mse_loss(q_values, expected_q_values.unsqueeze(1));
+    std::cout << "\n Loss:" << loss << "\n";
 
     // Zerofying gradients in the optimizer.
     this->rms_optimizer_.zero_grad();
+    /*
+    for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
+      std::cout << "After zerofying parameter:" << parameter.grad() << "\n";
+    }
+    */
+
     // Update gradients.
     loss.backward();
     std::ofstream fp("loss.out", std::ios_base::app);
     fp << this->episode_ << ", " << loss.item<float>() << "\n";
     fp.close();
+    /*
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
-      //std::cout << "Before parameter:" << parameter.grad().data() << "\n";
+      std::cout << "Before parameter:" << parameter.grad().data() << "\n";
       parameter.grad().data() =
         parameter.grad().data().clamp(-1, 1);
       //std::cout << "After parameter:" << parameter.grad().data() << "\n";
     }
-    //torch::nn::utils::clip_grad_norm_(this->policy_net_.parameters(), 100);
-    //for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
-    //  std::cout << "Before parameter:" << parameter << "\n";
-    //}
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      std::cout << "Before parameter:" << parameter << "\n";
+    }
+    torch::nn::utils::clip_grad_norm_(this->policy_net_.parameters(), 100);
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      std::cout << "After parameter gradient:" << parameter.grad() << "\n";
+    }
+    */
+
+    /*
+    for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
+      std::cout << "Before optiimzer parameter:" << parameter.grad() << "\n";
+    }
+    */
 
     this->rms_optimizer_.step();
+    /*
+    for (torch::Tensor parameter : this->policy_net_.parameters()) {
+      std::cout << "After parameter:" << parameter.grad().data() << "\n";
+    }
 
-    //for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
-    //  std::cout << "After parameter:" << parameter << "\n";
-    //}
+    for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
+      std::cout << "After optiimzer parameter:" << parameter.grad() << "\n";
+    }
+    */
+
 
     /*
     size_t p_i = 0;
