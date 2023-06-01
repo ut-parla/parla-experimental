@@ -87,7 +87,10 @@ def test_parray_task():
                 assert a._coherence.owner == 1
 
             @spawn(ts[5], dependencies=[ts[4]], placement=gpu(1), inout=[(a,0)])
-            def check_array_update():
+            def check_array_evict():
+                a.print_overview()
+
+                print(a)
                 result = a.evict(1, False)
 
                 assert result == False
@@ -96,6 +99,17 @@ def test_parray_task():
 
                 assert result == True
                 assert a._coherence.owner == -1
+                assert a._array._buffer[1] is None
+
+            @spawn(ts[6], dependencies=[ts[5]], placement=gpu(0), input=[(a,0)])
+            def check_array_evict2():
+                assert a._array._buffer[-1] is not None
+                result = a.evict(-1, False)
+
+                assert result == True
+
+                assert a._coherence.owner == 0
+                assert a._array._buffer[-1] is None
 
 if __name__=="__main__":
     test_parray_creation()
