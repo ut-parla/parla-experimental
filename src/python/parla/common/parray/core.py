@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
-from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType
+from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType, CUPY_ENABLED
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -11,12 +11,10 @@ from parla.cython.cyparray import CyPArray
 
 import threading
 import numpy
-try:  # if the system has no GPU
+if CUPY_ENABLED:  # if the system has no GPU
     import cupy
     num_gpu = cupy.cuda.runtime.getDeviceCount()
-except ImportError:
-    # PArray only considers numpy or cupy array
-    # work around of checking cupy.ndarray when cupy could not be imported
+else:
     cupy = numpy
     num_gpu = 0
 
