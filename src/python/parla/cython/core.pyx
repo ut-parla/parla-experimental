@@ -1,3 +1,8 @@
+"""!
+@file core.pyx
+@brief Contains the core intermediate cython wrapper classes for Task, Workers, and Scheduler.
+"""
+
 import cython 
 
 from parla.common.parray.core import PArray
@@ -477,18 +482,6 @@ cdef class PyTaskSpace:
         with nogil:
             c_self.wait()
 
-        
-
-        
-
-        
-        
-
-
-
-
-
-
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
 
@@ -552,7 +545,7 @@ cdef class PyInnerWorker:
                     py_assigned_devices.append(py_device)
                 py_parray = <object> c_data_task.get_py_parray()
                 access_mode = c_data_task.get_access_mode()
-                dev_id = c_data_task.get_device_id();
+                dev_id = c_data_task.get_device_id()
 
                 # Due to circular imports, the data movement task
                 # is not created, but necessary information/objects

@@ -1,0 +1,4 @@
+<map id="parla.cython.tasks.create_env" name="parla.cython.tasks.create_env">
+<area shape="rect" id="node1" title="Create the union TaskEnvironment from a list of TaskEnvironments or PyDevices." alt="" coords="5,13,224,39"/>
+<area shape="rect" id="node2" href="$namespaceparla_1_1cython_1_1tasks.html#a2fd492bc4408c01e40e1b7a05ad1c8f4" title="Create a terminal device environment from a PyDevice." alt="" coords="272,5,459,47"/>
+</map>

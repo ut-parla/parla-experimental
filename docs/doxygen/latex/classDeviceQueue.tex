@@ -1,0 +1,421 @@
+\hypertarget{classDeviceQueue}{}\doxysection{Device\+Queue$<$ category $>$ Class Template Reference}
+\label{classDeviceQueue}\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+
+
+Per-\/device container for tasks that are waiting to be dequeued.  
+
+
+
+
+{\ttfamily \#include $<$device\+\_\+queues.\+hpp$>$}
+
+
+
+Collaboration diagram for Device\+Queue$<$ category $>$\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=288pt]{classDeviceQueue__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDeviceQueue_a719afd32e5857425d1e1a314606fff8e}{Device\+Queue}} ()=default
+\item 
+\mbox{\hyperlink{classDeviceQueue_a9ad5f4baedd0908a3c135df93fab4799}{Device\+Queue}} (\mbox{\hyperlink{classDevice}{Device}} $\ast$\mbox{\hyperlink{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}{device}})
+\item 
+\mbox{\hyperlink{classDevice}{Device}} $\ast$ \mbox{\hyperlink{classDeviceQueue_af2ecdc99eae093eb282cba5301ce8a37}{get\+\_\+device}} ()
+\item 
+void \mbox{\hyperlink{classDeviceQueue_a22ebdd1117d923128bb39345858de1c3}{enqueue}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\begin{DoxyCompactList}\small\item\em Enqueues a task on this device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ \mbox{\hyperlink{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b}{front}} ()
+\item 
+\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ \mbox{\hyperlink{classDeviceQueue_a8e0fe6eae95fceac402b404db3659edc}{pop}} ()
+\begin{DoxyCompactList}\small\item\em Grabs the next task that can be dequeued on this device. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classDeviceQueue_ac8b7361c7b9714c77725a269542d7803}{size}} ()
+\item 
+bool \mbox{\hyperlink{classDeviceQueue_a91f12e5074cc8356c6bd49b5b01c15cf}{empty}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDevice}{Device}} $\ast$ \mbox{\hyperlink{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}{device}}
+\item 
+\mbox{\hyperlink{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}{Mixed\+Queue\+\_\+t}} \mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\+\_\+queue}}
+\item 
+\mbox{\hyperlink{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}{MDQueue\+\_\+t}} \mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\+\_\+queue}}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}{num\+\_\+tasks}} \{0\}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Types}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}{Mixed\+Queue\+\_\+t}} = \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}}
+\item 
+using \mbox{\hyperlink{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}{MDQueue\+\_\+t}} = \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$Resource\+Category category$>$\newline
+class Device\+Queue$<$ category $>$}
+
+Per-\/device container for tasks that are waiting to be dequeued. 
+
+Supports both single and multi-\/device tasks. Multi-\/device tasks are shared between Device\+Queues. Should ONLY be used through \mbox{\hyperlink{classPhaseManager}{Phase\+Manager}}.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em category} & the resource category (persistent/non-\/persistent) that this queue supervises the phase of. \\
+\hline
+\end{DoxyTemplParams}
+
+
+Definition at line 24 of file device\+\_\+queues.\+hpp.
+
+
+
+\doxysubsection{Member Typedef Documentation}
+\mbox{\Hypertarget{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}\label{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!MDQueue\_t@{MDQueue\_t}}
+\index{MDQueue\_t@{MDQueue\_t}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{MDQueue\_t}{MDQueue\_t}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+using \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::\mbox{\hyperlink{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}{MDQueue\+\_\+t}} =  \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 26 of file device\+\_\+queues.\+hpp.
+
+\mbox{\Hypertarget{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}\label{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!MixedQueue\_t@{MixedQueue\_t}}
+\index{MixedQueue\_t@{MixedQueue\_t}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{MixedQueue\_t}{MixedQueue\_t}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+using \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::\mbox{\hyperlink{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}{Mixed\+Queue\+\_\+t}} =  \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 25 of file device\+\_\+queues.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classDeviceQueue_a719afd32e5857425d1e1a314606fff8e}\label{classDeviceQueue_a719afd32e5857425d1e1a314606fff8e}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!DeviceQueue@{DeviceQueue}}
+\index{DeviceQueue@{DeviceQueue}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{DeviceQueue()}{DeviceQueue()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::\mbox{\hyperlink{classDeviceQueue}{Device\+Queue}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\mbox{\Hypertarget{classDeviceQueue_a9ad5f4baedd0908a3c135df93fab4799}\label{classDeviceQueue_a9ad5f4baedd0908a3c135df93fab4799}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!DeviceQueue@{DeviceQueue}}
+\index{DeviceQueue@{DeviceQueue}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{DeviceQueue()}{DeviceQueue()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::\mbox{\hyperlink{classDeviceQueue}{Device\+Queue}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{device }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 30 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{30 : \mbox{\hyperlink{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}{device}}(\mbox{\hyperlink{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}{device}}) \{\}}
+
+\end{DoxyCode}
+
+
+References Device\+Queue$<$ category $>$\+::device.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classDeviceQueue_a91f12e5074cc8356c6bd49b5b01c15cf}\label{classDeviceQueue_a91f12e5074cc8356c6bd49b5b01c15cf}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!empty@{empty}}
+\index{empty@{empty}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{empty()}{empty()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+bool \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::empty (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 150 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{150 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_a8c756e3f94b4c9b329d61cf64de59a9d}{empty}}() \&\& \mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\_queue}}.\mbox{\hyperlink{classProtectedQueue_a8c756e3f94b4c9b329d61cf64de59a9d}{empty}}(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDeviceQueue_a22ebdd1117d923128bb39345858de1c3}\label{classDeviceQueue_a22ebdd1117d923128bb39345858de1c3}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+void \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::enqueue (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Enqueues a task on this device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em task} & the task to enqueue \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 41 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{41                                 \{}
+\DoxyCodeLine{42     \textcolor{comment}{// std::cout << "{}DeviceQueue::enqueue() -\/ "{} << task-\/>get\_name() <<}}
+\DoxyCodeLine{43     \textcolor{comment}{// std::endl;}}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45     \textcolor{comment}{// std::cout << "{}Mixed Queue size: "{} << mixed\_queue.size() << std::endl;}}
+\DoxyCodeLine{46     this-\/>\mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_ac6ffde296a8379e8cb1088ba71ceb519}{push\_back}}(task);}
+\DoxyCodeLine{47     \mbox{\hyperlink{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}{num\_tasks}}++;}
+\DoxyCodeLine{48   \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b}\label{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!front@{front}}
+\index{front@{front}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{front()}{front()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classInnerTask}{Inner\+Task}}$\ast$ \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::front (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxyReturn}{Returns}
+the next task that can be dequeued on this device. If there are no tasks that can dequeued, returns nullptr.
+\end{DoxyReturn}
+A task is can be dequeued if\+:
+\begin{DoxyEnumerate}
+\item It is a single-\/device task
+\item It is a multi-\/device task that is no longer waiting for its other instances
+\end{DoxyEnumerate}
+
+We do not block on multi-\/device tasks that are still waiting for their other instances. This allows progress on single-\/device tasks and avoids deadlock if multi-\/device tasks are enqueued out of order.
+
+This does not check resources, it only checks if the task is ready to dequeue. It does not remove the returned task from the queue. 
+
+Definition at line 66 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{66                      \{}
+\DoxyCodeLine{67 }
+\DoxyCodeLine{68     \textcolor{comment}{// std::cout << "{}DeviceQueue::front()"{} << std::endl;}}
+\DoxyCodeLine{69     \textcolor{comment}{// std::cout << "{}Waiting Queue size: "{} << waiting\_queue.size() << std::endl;}}
+\DoxyCodeLine{70     \textcolor{comment}{// std::cout << "{}Mixed Queue size: "{} << mixed\_queue.size() << std::endl;}}
+\DoxyCodeLine{71 }
+\DoxyCodeLine{72     \textcolor{comment}{// First, check any waiting multi-\/device tasks}}
+\DoxyCodeLine{73     \textcolor{keywordflow}{if} (!\mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\_queue}}.\mbox{\hyperlink{classProtectedQueue_a8c756e3f94b4c9b329d61cf64de59a9d}{empty}}()) \{}
+\DoxyCodeLine{74       \mbox{\hyperlink{classInnerTask}{InnerTask}} *head = \mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\_queue}}.\mbox{\hyperlink{classProtectedQueue_afed4fff282f51147f062814fccc261a7}{front}}();}
+\DoxyCodeLine{75       \textcolor{keywordtype}{int} waiting\_count = head-\/>\mbox{\hyperlink{classInnerTask_aae444d7812a83003fa806fea715f6083}{get\_num\_instances}}<\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}}>();}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77       \textcolor{comment}{// std::cout << "{}MD Head: "{} << head-\/>get\_name()}}
+\DoxyCodeLine{78       \textcolor{comment}{//           << "{} Instances: "{} << waiting\_count}}
+\DoxyCodeLine{79       \textcolor{comment}{//           << "{} Removed: "{} << head-\/>get\_removed<category>() <<}}
+\DoxyCodeLine{80       \textcolor{comment}{//           std::endl;}}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82       \textcolor{comment}{// Any MD task that is no longer waiting should be blocking}}
+\DoxyCodeLine{83       \textcolor{keywordflow}{if} (waiting\_count < 1) \{}
+\DoxyCodeLine{84         \textcolor{comment}{// Remove from waiting queue if dequeued by last instance}}
+\DoxyCodeLine{85         \textcolor{keywordflow}{if} (head-\/>\mbox{\hyperlink{classInnerTask_a79fe5d8de56c41d252b40c1bed83c5dd}{get\_removed}}<\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}}>()) \{}
+\DoxyCodeLine{86           \textcolor{comment}{// TODO(wlr): Should I remove this here?}}
+\DoxyCodeLine{87           \mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\_queue}}.\mbox{\hyperlink{classProtectedQueue_ae2a119c66d76b4d29c8dafa6d8b976f5}{pop\_front}}();}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89           \textcolor{comment}{// TODO(wlr): Should num\_tasks include waiting tasks?}}
+\DoxyCodeLine{90           \textcolor{comment}{// (1)}}
+\DoxyCodeLine{91           \textcolor{comment}{// this-\/>num\_tasks-\/-\/;}}
+\DoxyCodeLine{92         \}}
+\DoxyCodeLine{93         \textcolor{keywordflow}{return} \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{94       \}}
+\DoxyCodeLine{95     \}}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97     \textcolor{keywordflow}{if} (!\mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_a8c756e3f94b4c9b329d61cf64de59a9d}{empty}}()) \{}
+\DoxyCodeLine{98       \mbox{\hyperlink{classInnerTask}{InnerTask}} *head = \mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_afed4fff282f51147f062814fccc261a7}{front}}();}
+\DoxyCodeLine{99       \textcolor{keywordtype}{int} prev\_waiting\_count = head-\/>\mbox{\hyperlink{classInnerTask_a099f5ca5253155bd90f0dadc45e8d3ac}{decrement\_num\_instances}}<\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}}>();}
+\DoxyCodeLine{100 }
+\DoxyCodeLine{101       \textcolor{comment}{// std::cout << "{}Mixed Head: "{} << head-\/>get\_name()}}
+\DoxyCodeLine{102       \textcolor{comment}{//           << "{} Instances: "{} << prev\_waiting\_count}}
+\DoxyCodeLine{103       \textcolor{comment}{//           << "{} Removed: "{} << head-\/>get\_removed<category>() <<}}
+\DoxyCodeLine{104       \textcolor{comment}{//           std::endl;}}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106       \textcolor{comment}{// Check if the task is waiting for other instances}}
+\DoxyCodeLine{107       \textcolor{keywordflow}{if} (prev\_waiting\_count <= 1) \{}
+\DoxyCodeLine{108         \textcolor{comment}{// std::cout << "{}Return task: "{} << head-\/>get\_name() << std::endl;}}
+\DoxyCodeLine{109         \textcolor{keywordflow}{return} head;}
+\DoxyCodeLine{110       \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{111         \textcolor{comment}{// If the task is still waiting, move it to the waiting queue}}
+\DoxyCodeLine{112         \textcolor{comment}{// std::cout << "{}Moving to waiting queue"{} << std::endl;}}
+\DoxyCodeLine{113         \mbox{\hyperlink{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}{waiting\_queue}}.\mbox{\hyperlink{classProtectedQueue_ac6ffde296a8379e8cb1088ba71ceb519}{push\_back}}(head);}
+\DoxyCodeLine{114         \mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_ae2a119c66d76b4d29c8dafa6d8b976f5}{pop\_front}}();}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116         \textcolor{comment}{// TODO(wlr): Should num\_tasks include waiting tasks?}}
+\DoxyCodeLine{117         \textcolor{comment}{// (2)}}
+\DoxyCodeLine{118         this-\/>\mbox{\hyperlink{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}{num\_tasks}}-\/-\/;}
+\DoxyCodeLine{119       \}}
+\DoxyCodeLine{120     \}}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122     \textcolor{keywordflow}{return} \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{123   \}}
+
+\end{DoxyCode}
+
+
+Referenced by Device\+Queue$<$ category $>$\+::pop().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=333pt]{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDeviceQueue_af2ecdc99eae093eb282cba5301ce8a37}\label{classDeviceQueue_af2ecdc99eae093eb282cba5301ce8a37}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!get\_device@{get\_device}}
+\index{get\_device@{get\_device}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{get\_device()}{get\_device()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDevice}{Device}}$\ast$ \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::get\+\_\+device (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxyReturn}{Returns}
+the device that this queue is associated with 
+\end{DoxyReturn}
+
+
+Definition at line 35 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{35 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}{device}}; \}}
+
+\end{DoxyCode}
+
+
+References Device\+Queue$<$ category $>$\+::device.
+
+\mbox{\Hypertarget{classDeviceQueue_a8e0fe6eae95fceac402b404db3659edc}\label{classDeviceQueue_a8e0fe6eae95fceac402b404db3659edc}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!pop@{pop}}
+\index{pop@{pop}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{pop()}{pop()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classInnerTask}{Inner\+Task}}$\ast$ \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::pop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Grabs the next task that can be dequeued on this device. 
+
+If there are no tasks that can dequeued, returns nullptr. Removes the returned task from the queue.
+
+Should be called only after \mbox{\hyperlink{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b}{front()}} returns a non-\/null task. Otherwise, the internal state may be modified (may push multi-\/device to waiting queue).
+
+\begin{DoxyReturn}{Returns}
+the previous task at HEAD of the queue. 
+\end{DoxyReturn}
+
+
+Definition at line 136 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{136                    \{}
+\DoxyCodeLine{137     \textcolor{comment}{// std::cout << "{}DeviceQueue::pop()"{} << std::endl;}}
+\DoxyCodeLine{138     \mbox{\hyperlink{classInnerTask}{InnerTask}} *\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}} = \mbox{\hyperlink{classDeviceQueue_a2556a5d5368adda5af85130d6f4b0e5b}{front}}();}
+\DoxyCodeLine{139     \textcolor{keywordflow}{if} (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}} != \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{140       \textcolor{comment}{// std::cout << "{}Popping task: "{} << task-\/>get\_name() << std::endl;}}
+\DoxyCodeLine{141       \mbox{\hyperlink{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}{mixed\_queue}}.\mbox{\hyperlink{classProtectedQueue_ae2a119c66d76b4d29c8dafa6d8b976f5}{pop\_front}}();}
+\DoxyCodeLine{142       \textcolor{comment}{// Set removed status so task can be pruned from other queues}}
+\DoxyCodeLine{143       \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>set\_removed<\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}}>(\textcolor{keyword}{true});}
+\DoxyCodeLine{144       \mbox{\hyperlink{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}{num\_tasks}}-\/-\/;}
+\DoxyCodeLine{145     \}}
+\DoxyCodeLine{146     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}};}
+\DoxyCodeLine{147   \}}
+
+\end{DoxyCode}
+
+
+References Device\+Queue$<$ category $>$\+::front().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=333pt]{classDeviceQueue_a8e0fe6eae95fceac402b404db3659edc_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDeviceQueue_ac8b7361c7b9714c77725a269542d7803}\label{classDeviceQueue_ac8b7361c7b9714c77725a269542d7803}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!size@{size}}
+\index{size@{size}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{size()}{size()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+size\+\_\+t \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 149 of file device\+\_\+queues.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{149 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}{num\_tasks}}.load(); \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}\label{classDeviceQueue_a6d89bbc20a6de82e1e369462a922dd63}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!device@{device}}
+\index{device@{device}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{device}{device}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDevice}{Device}}$\ast$ \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::device\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 153 of file device\+\_\+queues.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement\+::\+\_\+\+\_\+repr\+\_\+\+\_\+(), Device\+Queue$<$ category $>$\+::\+Device\+Queue(), and Device\+Queue$<$ category $>$\+::get\+\_\+device().
+
+\mbox{\Hypertarget{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}\label{classDeviceQueue_a5d65d72a31c2c54c35a89026ccaccbf5}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!mixed\_queue@{mixed\_queue}}
+\index{mixed\_queue@{mixed\_queue}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{mixed\_queue}{mixed\_queue}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDeviceQueue_a57790d12385e1392dcc0ccc30ab93960}{Mixed\+Queue\+\_\+t}} \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::mixed\+\_\+queue\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 154 of file device\+\_\+queues.\+hpp.
+
+\mbox{\Hypertarget{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}\label{classDeviceQueue_a336a247ee7636616caae5ed1f7034339}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!num\_tasks@{num\_tasks}}
+\index{num\_tasks@{num\_tasks}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{num\_tasks}{num\_tasks}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+std\+::atomic$<$int$>$ \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::num\+\_\+tasks \{0\}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 156 of file device\+\_\+queues.\+hpp.
+
+\mbox{\Hypertarget{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}\label{classDeviceQueue_a02b67d363b9e072b2a8d17c193fb7fb7}} 
+\index{DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}!waiting\_queue@{waiting\_queue}}
+\index{waiting\_queue@{waiting\_queue}!DeviceQueue$<$ category $>$@{DeviceQueue$<$ category $>$}}
+\doxysubsubsection{\texorpdfstring{waiting\_queue}{waiting\_queue}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+\mbox{\hyperlink{classDeviceQueue_a36e997c0ec27f5bd447cf2a07501973f}{MDQueue\+\_\+t}} \mbox{\hyperlink{classDeviceQueue}{Device\+Queue}}$<$ category $>$\+::waiting\+\_\+queue\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 155 of file device\+\_\+queues.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{device__queues_8hpp}{device\+\_\+queues.\+hpp}}\end{DoxyCompactItemize}

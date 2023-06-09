@@ -1,0 +1,2298 @@
+\hypertarget{classInnerTask}{}\doxysection{Inner\+Task Class Reference}
+\label{classInnerTask}\index{InnerTask@{InnerTask}}
+
+
+The C++ \char`\"{}\+Mirror\char`\"{} of Parla\textquotesingle{}s Python Tasks This class is used to create a C++ representation of a Parla \mbox{\hyperlink{namespaceTask}{Task}} All scheduling logic should be handled by these after creation until launched by the Python callback.  
+
+
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+
+
+Inheritance diagram for Inner\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=166pt]{classInnerTask__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Inner\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classInnerTask_af32062a9097ed548c0eaa95311ae302a}{Inner\+Task}} ()
+\item 
+\mbox{\hyperlink{classInnerTask_a68487337ad0ee0aad74ebddfc6fba090}{Inner\+Task}} (long long int \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}}, void $\ast$\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\+\_\+task}})
+\item 
+\mbox{\hyperlink{classInnerTask_a921c52df269a5f8cc3fabe223a360406}{Inner\+Task}} (std\+::string \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}}, long long int \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}}, void $\ast$\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\+\_\+task}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a6b1dd2496910ad8342e5ed7758579ccf}{set\+\_\+scheduler}} (\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$\mbox{\hyperlink{classInnerTask_ac91988e27f2b24e428be195d829d2fb0}{scheduler}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a27bd7ba93036e722fe3ca7dffe86c6a2}{set\+\_\+name}} (std\+::string \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}})
+\item 
+const std\+::string \& \mbox{\hyperlink{classInnerTask_a54222594991bf9e9726d10dd1c1afad2}{get\+\_\+name}} () const
+\item 
+void \mbox{\hyperlink{classInnerTask_acf0bd7a060a4a216e22f38feba2f1a99}{set\+\_\+id}} (long long int \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a7a4cd577b5c324f889284f6be288285c}{set\+\_\+py\+\_\+task}} (void $\ast$\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\+\_\+task}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a06d6b22d27026185432dafc22e098046}{set\+\_\+priority}} (int \mbox{\hyperlink{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}{priority}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a70e6fe79e7e3fa4c02e3c966f9703502}{queue\+\_\+dependency}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\item 
+\mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} \mbox{\hyperlink{classInnerTask_ae23d1c1c1c7d998a7c4ac7acd6834f25}{process\+\_\+dependencies}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a67facd59a35d1108729ba2163a9e9cba}{clear\+\_\+dependencies}} ()
+\item 
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_a166cf746eef96f669121bd0aa08938b4}{add\+\_\+dependency}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\item 
+\mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} \mbox{\hyperlink{classInnerTask_a1bef1f662fd0defd174abb674b961227}{add\+\_\+dependencies}} (std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&tasks, bool data\+\_\+tasks=false)
+\item 
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_a760a6663548fc20fe09686aebfd9f480}{add\+\_\+dependent\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\item 
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_aa52944fe1683ab8414f2ae7e11b6f3a8}{add\+\_\+dependent\+\_\+space}} (\mbox{\hyperlink{classTaskBarrier}{Task\+Barrier}} $\ast$barrier)
+\item 
+void \mbox{\hyperlink{classInnerTask_a842e0e2fafb6c4449920d89fbf2ccde7}{add\+\_\+parray}} (\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$parray, int access\+\_\+mode, int dev\+\_\+id)
+\item 
+void \mbox{\hyperlink{classInnerTask_a49c7c3e4a3fb0fe97c73e6795f485f30}{notify\+\_\+dependents}} (\mbox{\hyperlink{runtime_8hpp_a171f42e65e96e59208fe7f526af5586a}{Task\+State\+List}} \&tasks, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} new\+\_\+state)
+\item 
+void \mbox{\hyperlink{classInnerTask_ad61553584936bbeec62d1dd39c371863}{notify\+\_\+dependents\+\_\+completed}} ()
+\item 
+bool \mbox{\hyperlink{classInnerTask_a1ec3cb4d1d2f669f12f7673a2062e323}{notify\+\_\+dependents\+\_\+wrapper}} ()
+\item 
+\mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} \mbox{\hyperlink{classInnerTask_a484600de6c72fd5faf467b31dedbb842}{notify}} (\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} dependency\+\_\+state, bool \mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\+\_\+data}}=false)
+\item 
+void \mbox{\hyperlink{classInnerTask_ace88fd5b0348a0fc5e7a436a6d662ea4}{reset}} ()
+\item 
+bool \mbox{\hyperlink{classInnerTask_ac871790e45902c8b9b0c7d74cccd013f}{blocked}} ()
+\item 
+std\+::string \mbox{\hyperlink{classInnerTask_a6c71683548513cb6a4138f904dd06277}{get\+\_\+name}} ()
+\item 
+int \mbox{\hyperlink{classInnerTask_ac2d1dd58dc30b93b6a3f963142884ce1}{get\+\_\+num\+\_\+dependencies}} ()
+\item 
+int \mbox{\hyperlink{classInnerTask_a4f763eede4997ac272b56740bbd7d62b}{get\+\_\+num\+\_\+dependents}} ()
+\item 
+int \mbox{\hyperlink{classInnerTask_a40fa8c9aeb9ff43b1f8c5f9a350f0fb7}{get\+\_\+num\+\_\+blocking\+\_\+dependencies}} () const
+\item 
+int \mbox{\hyperlink{classInnerTask_af5b4e1cff7ce98efefa16c714d0ef1aa}{get\+\_\+num\+\_\+unmapped\+\_\+dependencies}} () const
+\item 
+{\footnotesize template$<$Resource\+Category category$>$ }\\void \mbox{\hyperlink{classInnerTask_a36525688381150dd62a44f24aa67cb98}{set\+\_\+num\+\_\+instances}} ()
+\item 
+{\footnotesize template$<$Resource\+Category category$>$ }\\int \mbox{\hyperlink{classInnerTask_a099f5ca5253155bd90f0dadc45e8d3ac}{decrement\+\_\+num\+\_\+instances}} ()
+\item 
+{\footnotesize template$<$Resource\+Category category$>$ }\\int \mbox{\hyperlink{classInnerTask_aae444d7812a83003fa806fea715f6083}{get\+\_\+num\+\_\+instances}} ()
+\item 
+{\footnotesize template$<$Resource\+Category category$>$ }\\bool \mbox{\hyperlink{classInnerTask_a79fe5d8de56c41d252b40c1bed83c5dd}{get\+\_\+removed}} ()
+\item 
+{\footnotesize template$<$Resource\+Category category$>$ }\\void \mbox{\hyperlink{classInnerTask_ad7950bdcca7577bcf67e4fb8ee06948b}{set\+\_\+removed}} (bool waiting)
+\item 
+std\+::vector$<$ void $\ast$ $>$ \mbox{\hyperlink{classInnerTask_a4e348d9d71133dddb79fa6aeb7ae60f1}{get\+\_\+dependencies}} ()
+\item 
+std\+::vector$<$ void $\ast$ $>$ \mbox{\hyperlink{classInnerTask_aef5da089b467b38d091214558a9e0a3e}{get\+\_\+dependents}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_addec9d65a5a0930417233f4ac070a0bf}{add\+\_\+event}} (uintptr\+\_\+t event)
+\item 
+void \mbox{\hyperlink{classInnerTask_aa91d270a3bc4820fdd322addb8259aa9}{add\+\_\+stream}} (uintptr\+\_\+t stream)
+\item 
+void \mbox{\hyperlink{classInnerTask_a0e78f4fcbc8699e35796f3e38c29ee73}{reset\+\_\+events\+\_\+streams}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_adb90cbdc396b22a13de1e0840defbf4b}{synchronize\+\_\+events}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a92079518210c802ecc161be46b9de603}{handle\+\_\+runahead\+\_\+dependencies}} (int \mbox{\hyperlink{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}{sync\+\_\+type}})
+\item 
+void \mbox{\hyperlink{classInnerTask_a70138c1916ed55664ca86bf70792628b}{synchronize\+\_\+dependency\+\_\+events}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a45106317784b3e5485d8dfcb75896aec}{wait\+\_\+dependency\+\_\+events}} ()
+\item 
+void $\ast$ \mbox{\hyperlink{classInnerTask_abf6c0d665eff487ed2a56e37d7a34ef4}{get\+\_\+py\+\_\+task}} ()
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classDevice}{Device}} $\ast$ $>$ \& \mbox{\hyperlink{classInnerTask_a99274c711b7adf37acab061cfec05ff4}{get\+\_\+assigned\+\_\+devices}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_ac706288b8bd57400afe204d51793adc7}{add\+\_\+assigned\+\_\+device}} (\mbox{\hyperlink{classDevice}{Device}} $\ast$device)
+\item 
+void \mbox{\hyperlink{classInnerTask_a3f2718d7ae69f555edbb7aed10f9ca75}{copy\+\_\+assigned\+\_\+devices}} (const std\+::vector$<$ \mbox{\hyperlink{classDevice}{Device}} $\ast$ $>$ \&others)
+\item 
+int \mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\+\_\+state}} (int \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}})
+\item 
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_a55800effc9c14226703f7997e2fb62ea}{set\+\_\+state}} (\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}})
+\item 
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} \mbox{\hyperlink{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}{get\+\_\+state}} () const
+\item 
+\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} \mbox{\hyperlink{classInnerTask_a5cb0eb8638f9e7ae7eacadbac4e820ff}{set\+\_\+status}} (\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}})
+\item 
+\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} \mbox{\hyperlink{classInnerTask_a11102077e4e860c6acb1e799c7fa9b1a}{determine\+\_\+status}} (bool spawnable, bool mappable, bool reservable, bool ready)
+\item 
+\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} \mbox{\hyperlink{classInnerTask_a1869f40c560a8b0044797053477144c8}{get\+\_\+status}} () const
+\item 
+void \mbox{\hyperlink{classInnerTask_a957761bf8d56241e0c25d80f81750f1f}{set\+\_\+complete}} ()
+\item 
+bool \mbox{\hyperlink{classInnerTask_a14a24dc3f5497608ec6e3289e3af48b2}{get\+\_\+complete}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a6880648eef3e2a4604f5ff0d7e9aabe4}{add\+\_\+device\+\_\+req}} (\mbox{\hyperlink{classDevice}{Device}} $\ast$dev\+\_\+ptr, \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} mem\+\_\+sz, \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} num\+\_\+vcus)
+\item 
+void \mbox{\hyperlink{classInnerTask_ab857102bb62ac3c84ce480a52a185325}{begin\+\_\+arch\+\_\+req\+\_\+addition}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_ab2170bf7fcf3a2b3cd83513afe62f889}{end\+\_\+arch\+\_\+req\+\_\+addition}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a497996831ce081ea69da5284ef88fcb5}{begin\+\_\+multidev\+\_\+req\+\_\+addition}} ()
+\item 
+void \mbox{\hyperlink{classInnerTask_a4d0e6ca1d2c163121a39d7a3e69a1e04}{end\+\_\+multidev\+\_\+req\+\_\+addition}} ()
+\item 
+\mbox{\hyperlink{classPlacementRequirementCollections}{Placement\+Requirement\+Collections}} \& \mbox{\hyperlink{classInnerTask_ae8d3e57f14fe412eaccb2982e77a6fb4}{get\+\_\+placement\+\_\+req\+\_\+options}} ()
+\item 
+bool \mbox{\hyperlink{classInnerTask_a307ea17c1f681f2ff1d79f0da3bf5963}{is\+\_\+data\+\_\+task}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+long long int \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}} = 0
+\item 
+std\+::string \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}} = \char`\"{}\char`\"{}
+\item 
+int \mbox{\hyperlink{classInnerTask_a24e11656f5bb1798a9820c80e465da25}{instance}} = 0
+\item 
+std\+::atomic$<$ \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} $>$ \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}} \{\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}{Task\+::\+CREATED}}\}
+\item 
+std\+::atomic$<$ \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} $>$ \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}} \{\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{Task\+::\+INITIAL}}\}
+\item 
+\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$ \mbox{\hyperlink{classInnerTask_ac91988e27f2b24e428be195d829d2fb0}{scheduler}} = nullptr
+\item 
+\mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} \mbox{\hyperlink{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}{events}}
+\item 
+\mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965}{Task\+::\+Synchronization\+Type}} \mbox{\hyperlink{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}{sync\+\_\+type}} = \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}{Task\+::\+NON\+\_\+\+BLOCKING}}
+\item 
+\mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} \mbox{\hyperlink{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}{streams}}
+\item 
+std\+::mutex \mbox{\hyperlink{classInnerTask_afac78233adfa6535bff82895fe4cd285}{mtx}}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}{priority}} \{0\}
+\item 
+void $\ast$ \mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\+\_\+task}} = nullptr
+\item 
+\mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} \mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}
+\item 
+\mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} \mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}
+\item 
+\mbox{\hyperlink{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}{Space\+List}} \mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\+\_\+buffer}} = std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$()
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_acb01c65ba516df7a307b423242ff8a26}{num\+\_\+blocking\+\_\+compute\+\_\+dependencies}} \{1\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\+\_\+blocking\+\_\+dependencies}} \{1\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\+\_\+unspawned\+\_\+dependencies}} \{1\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\+\_\+unmapped\+\_\+dependencies}} \{1\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\+\_\+unreserved\+\_\+dependencies}} \{1\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}{num\+\_\+persistant\+\_\+instances}} \{1\}
+\item 
+bool \mbox{\hyperlink{classInnerTask_a12d4bf530fa1cbb8f1861af45edd6f09}{removed\+\_\+reserved}} \{false\}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerTask_a8c4a0f32a041690b814314d71059af71}{num\+\_\+runtime\+\_\+instances}} \{1\}
+\item 
+bool \mbox{\hyperlink{classInnerTask_afab4e64aa800a0d6d1dbf9cfc1cf4aff}{removed\+\_\+runtime}} \{false\}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classDevice}{Device}} $\ast$ $>$ \mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\+\_\+devices}}
+\item 
+std\+::unordered\+\_\+map$<$ int, \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} $>$ \mbox{\hyperlink{classInnerTask_af5a4e559f41e09788e672a88ac6f0d14}{device\+\_\+constraints}}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\+\_\+data}} \{false\}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{classInnerTask_a393d70b200a10e27007ccb6a4018b7ed}{processed\+\_\+data}} \{true\}
+\item 
+std\+::vector$<$ std\+::vector$<$ std\+::pair$<$ \mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$, \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} $>$ $>$ $>$ \mbox{\hyperlink{classInnerTask_a88c00f52b9fdae2d157a13ecea6c9bdc}{parray\+\_\+list}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090}{Req\+Addition\+State}} \{ \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{Single\+Dev\+Add}} = 1
+, \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}{Multi\+Dev\+Add}} = 3
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+uint32\+\_\+t \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\+\_\+addition\+\_\+mode\+\_\+}}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classArchitectureRequirement}{Architecture\+Requirement}} $>$ \mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\+\_\+arch\+\_\+req\+\_\+}}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMultiDeviceRequirements}{Multi\+Device\+Requirements}} $>$ \mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\+\_\+multdev\+\_\+reqs\+\_\+}}
+\item 
+\mbox{\hyperlink{classPlacementRequirementCollections}{Placement\+Requirement\+Collections}} \mbox{\hyperlink{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}{placement\+\_\+req\+\_\+options\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The C++ \char`\"{}\+Mirror\char`\"{} of Parla\textquotesingle{}s Python Tasks This class is used to create a C++ representation of a Parla \mbox{\hyperlink{namespaceTask}{Task}} All scheduling logic should be handled by these after creation until launched by the Python callback. 
+
+Definition at line 192 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Member Enumeration Documentation}
+\mbox{\Hypertarget{classInnerTask_a46e620a52e2b903ada6351888b08b090}\label{classInnerTask_a46e620a52e2b903ada6351888b08b090}} 
+\index{InnerTask@{InnerTask}!ReqAdditionState@{ReqAdditionState}}
+\index{ReqAdditionState@{ReqAdditionState}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{ReqAdditionState}{ReqAdditionState}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090}{Inner\+Task\+::\+Req\+Addition\+State}}\hspace{0.3cm}{\ttfamily [protected]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SingleDevAdd@{SingleDevAdd}!InnerTask@{InnerTask}}\index{InnerTask@{InnerTask}!SingleDevAdd@{SingleDevAdd}}}\mbox{\Hypertarget{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}\label{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}} 
+Single\+Dev\+Add&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MultiDevAdd@{MultiDevAdd}!InnerTask@{InnerTask}}\index{InnerTask@{InnerTask}!MultiDevAdd@{MultiDevAdd}}}\mbox{\Hypertarget{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}\label{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}} 
+Multi\+Dev\+Add&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 583 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{583                         \{}
+\DoxyCodeLine{584     \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}} = 1,}
+\DoxyCodeLine{585     \textcolor{comment}{/* SingleArchAdd == 2, */}}
+\DoxyCodeLine{586     \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}{MultiDevAdd}} = 3}
+\DoxyCodeLine{587   \};}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classInnerTask_af32062a9097ed548c0eaa95311ae302a}\label{classInnerTask_af32062a9097ed548c0eaa95311ae302a}} 
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{InnerTask()}{InnerTask()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily Inner\+Task\+::\+Inner\+Task (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 13 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{14     : \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}}(\mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}}), \mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}}(\textcolor{keyword}{nullptr}),}
+\DoxyCodeLine{15       \mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}}(\textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{16   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.reserve(\mbox{\hyperlink{task_8cpp_afaca15c5dbc4b2ddf9a98ba51cc8fc1f}{DEPENDENCY\_BUFFER\_SIZE}});}
+\DoxyCodeLine{17   this-\/>\textcolor{keywordtype}{id} = 0;}
+\DoxyCodeLine{18   this-\/>\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}} = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{19 \}}
+
+\end{DoxyCode}
+
+
+References id, Inner\+Task(), and py\+\_\+task.
+
+
+
+Referenced by Inner\+Task().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_af32062a9097ed548c0eaa95311ae302a_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_af32062a9097ed548c0eaa95311ae302a_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a68487337ad0ee0aad74ebddfc6fba090}\label{classInnerTask_a68487337ad0ee0aad74ebddfc6fba090}} 
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{InnerTask()}{InnerTask()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily Inner\+Task\+::\+Inner\+Task (\begin{DoxyParamCaption}\item[{long long int}]{id,  }\item[{void $\ast$}]{py\+\_\+task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 21 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{22     : \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}}(\mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}}) \{}
+\DoxyCodeLine{23   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.reserve(\mbox{\hyperlink{task_8cpp_afaca15c5dbc4b2ddf9a98ba51cc8fc1f}{DEPENDENCY\_BUFFER\_SIZE}});}
+\DoxyCodeLine{24   this-\/>\textcolor{keywordtype}{id} = \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}};}
+\DoxyCodeLine{25   this-\/>\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}} = \mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}};}
+\DoxyCodeLine{26 \}}
+
+\end{DoxyCode}
+
+
+References id, Inner\+Task(), and py\+\_\+task.
+
+
+
+Referenced by Inner\+Task().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_a68487337ad0ee0aad74ebddfc6fba090_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_a68487337ad0ee0aad74ebddfc6fba090_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a921c52df269a5f8cc3fabe223a360406}\label{classInnerTask_a921c52df269a5f8cc3fabe223a360406}} 
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\index{InnerTask@{InnerTask}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{InnerTask()}{InnerTask()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily Inner\+Task\+::\+Inner\+Task (\begin{DoxyParamCaption}\item[{std\+::string}]{name,  }\item[{long long int}]{id,  }\item[{void $\ast$}]{py\+\_\+task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 28 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{29     : \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}}(\mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}}) \{}
+\DoxyCodeLine{30   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.reserve(\mbox{\hyperlink{task_8cpp_afaca15c5dbc4b2ddf9a98ba51cc8fc1f}{DEPENDENCY\_BUFFER\_SIZE}});}
+\DoxyCodeLine{31   this-\/>\mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}} = \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}};}
+\DoxyCodeLine{32   this-\/>\textcolor{keywordtype}{id} = \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}};}
+\DoxyCodeLine{33   this-\/>\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}} = \mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}};}
+\DoxyCodeLine{34 \}}
+
+\end{DoxyCode}
+
+
+References id, Inner\+Task(), and py\+\_\+task.
+
+
+
+Referenced by Inner\+Task().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_a921c52df269a5f8cc3fabe223a360406_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classInnerTask_a921c52df269a5f8cc3fabe223a360406_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classInnerTask_ac706288b8bd57400afe204d51793adc7}\label{classInnerTask_ac706288b8bd57400afe204d51793adc7}} 
+\index{InnerTask@{InnerTask}!add\_assigned\_device@{add\_assigned\_device}}
+\index{add\_assigned\_device@{add\_assigned\_device}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_assigned\_device()}{add\_assigned\_device()}}
+{\footnotesize\ttfamily void Inner\+Task\+::add\+\_\+assigned\+\_\+device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{device }\end{DoxyParamCaption})}
+
+
+
+Definition at line 380 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{380                                                   \{}
+\DoxyCodeLine{381   this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}}.push\_back(device);}
+\DoxyCodeLine{382 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a1bef1f662fd0defd174abb674b961227}\label{classInnerTask_a1bef1f662fd0defd174abb674b961227}} 
+\index{InnerTask@{InnerTask}!add\_dependencies@{add\_dependencies}}
+\index{add\_dependencies@{add\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_dependencies()}{add\_dependencies()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} Inner\+Task\+::add\+\_\+dependencies (\begin{DoxyParamCaption}\item[{std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&}]{tasks,  }\item[{bool}]{data\+\_\+tasks = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 121 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{122                                                                \{}
+\DoxyCodeLine{123   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Adding dependencies to \{\}. D=\{\}"{}}, \textcolor{keyword}{this}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}});}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{125   \textcolor{comment}{// TODO: Change all of this to lock free.}}
+\DoxyCodeLine{126   \textcolor{comment}{//       Handle phase events}}
+\DoxyCodeLine{127 }
+\DoxyCodeLine{128   \textcolor{keywordflow}{if} (data\_tasks == \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{129     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_add(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size());}
+\DoxyCodeLine{130     this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_add(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size());}
+\DoxyCodeLine{131     this-\/>\mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\_unreserved\_dependencies}}.fetch\_add(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size());}
+\DoxyCodeLine{132     this-\/>\mbox{\hyperlink{classInnerTask_acb01c65ba516df7a307b423242ff8a26}{num\_blocking\_compute\_dependencies}}.fetch\_add(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size());}
+\DoxyCodeLine{133   \}}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135   \textcolor{comment}{// CHECKME: Is this still correct on the subsequent call (should be}}
+\DoxyCodeLine{136   \textcolor{comment}{// tasks.size()+1 to prevent finishing while adding)}}
+\DoxyCodeLine{137   this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.fetch\_add(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size());}
+\DoxyCodeLine{138 }
+\DoxyCodeLine{139   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.size(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{140     this-\/>\mbox{\hyperlink{classInnerTask_a166cf746eef96f669121bd0aa08938b4}{add\_dependency}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]);}
+\DoxyCodeLine{141   \}}
+\DoxyCodeLine{142 }
+\DoxyCodeLine{143   \textcolor{comment}{// Decrement overcount to free this region}}
+\DoxyCodeLine{144   \textcolor{keywordtype}{bool} spawnable = this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1) == 1;}
+\DoxyCodeLine{145   \textcolor{keywordtype}{bool} mappable = this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_sub(1) == 1;}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{147   \textcolor{comment}{// Other counters are 'freed' in each phase before entering the next phase}}
+\DoxyCodeLine{148 }
+\DoxyCodeLine{149   \mbox{\hyperlink{classTask_1_1StatusFlags}{Task::StatusFlags}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}} = \mbox{\hyperlink{classTask_1_1StatusFlags}{Task::StatusFlags}}();}
+\DoxyCodeLine{150   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.spawnable = spawnable;}
+\DoxyCodeLine{151   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.mappable = mappable;}
+\DoxyCodeLine{152 }
+\DoxyCodeLine{153   \textcolor{comment}{// Task::Status status =}}
+\DoxyCodeLine{154   \textcolor{comment}{//     this-\/>determine\_status(spawnable, mappable, reservable, ready);}}
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Added dependencies to \{\}. Status = \{\}"{}}, \textcolor{keyword}{this}, \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}});}
+\DoxyCodeLine{157 }
+\DoxyCodeLine{158   \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{159 }
+\DoxyCodeLine{160   \textcolor{comment}{// If true, this task is ready to launch. Launching must be handled}}
+\DoxyCodeLine{161   \textcolor{comment}{// Otherwise launching will be handled by another task's notify\_dependents}}
+\DoxyCodeLine{162 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a166cf746eef96f669121bd0aa08938b4}\label{classInnerTask_a166cf746eef96f669121bd0aa08938b4}} 
+\index{InnerTask@{InnerTask}!add\_dependency@{add\_dependency}}
+\index{add\_dependency@{add\_dependency}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_dependency()}{add\_dependency()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} Inner\+Task\+::add\+\_\+dependency (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 71 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{71                                                    \{}
+\DoxyCodeLine{72 }
+\DoxyCodeLine{73   \textcolor{comment}{// Store all added dependencies for bookkeeping}}
+\DoxyCodeLine{74   \textcolor{comment}{// I cannot think of a scenario when multiple writers would be adding}}
+\DoxyCodeLine{75   \textcolor{comment}{// dependencies NOTE: Please make this thread safe if we have one}}
+\DoxyCodeLine{76   this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}{push\_back\_unsafe}}(task);}
+\DoxyCodeLine{77 }
+\DoxyCodeLine{78   \textcolor{comment}{// If the task is already complete, we don't need to add it to the dependency}}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80   \textcolor{keywordtype}{bool} dependency\_complete = \textcolor{keyword}{false};}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} dependent\_state = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>add\_dependent\_task(\textcolor{keyword}{this});}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{84   \textcolor{keywordflow}{if} (dependent\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}{Task::RUNAHEAD}}) \{}
+\DoxyCodeLine{85     this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{86     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{87     this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{88     this-\/>\mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\_unreserved\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{89   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependent\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}{Task::RESERVED}}) \{}
+\DoxyCodeLine{90     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{91     this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{92     this-\/>\mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\_unreserved\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{93   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependent\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{Task::MAPPED}}) \{}
+\DoxyCodeLine{94     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{95     this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{96   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependent\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}{Task::SPAWNED}}) \{}
+\DoxyCodeLine{97     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1);}
+\DoxyCodeLine{98   \}}
+\DoxyCodeLine{99 }
+\DoxyCodeLine{100   \textcolor{keywordflow}{return} dependent\_state;}
+\DoxyCodeLine{101 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_aa52944fe1683ab8414f2ae7e11b6f3a8}\label{classInnerTask_aa52944fe1683ab8414f2ae7e11b6f3a8}} 
+\index{InnerTask@{InnerTask}!add\_dependent\_space@{add\_dependent\_space}}
+\index{add\_dependent\_space@{add\_dependent\_space}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_dependent\_space()}{add\_dependent\_space()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} Inner\+Task\+::add\+\_\+dependent\+\_\+space (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classTaskBarrier}{Task\+Barrier}} $\ast$}]{barrier }\end{DoxyParamCaption})}
+
+
+
+Definition at line 216 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{216                                                              \{}
+\DoxyCodeLine{217   this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{218   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}} = this-\/>\mbox{\hyperlink{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}{get\_state}}();}
+\DoxyCodeLine{219   this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}{push\_back\_unsafe}}(barrier);}
+\DoxyCodeLine{220   this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{221 }
+\DoxyCodeLine{222   \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}};}
+\DoxyCodeLine{223 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a760a6663548fc20fe09686aebfd9f480}\label{classInnerTask_a760a6663548fc20fe09686aebfd9f480}} 
+\index{InnerTask@{InnerTask}!add\_dependent\_task@{add\_dependent\_task}}
+\index{add\_dependent\_task@{add\_dependent\_task}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_dependent\_task()}{add\_dependent\_task()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} Inner\+Task\+::add\+\_\+dependent\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 193 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{193                                                        \{}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{195   \textcolor{comment}{// Store all dependents for bookkeeping}}
+\DoxyCodeLine{196   \textcolor{comment}{// Dependents can be written to by multiple threads calling this function}}
+\DoxyCodeLine{197   \textcolor{comment}{// Dependents is read when the task is in cleanup, which can overlap with this}}
+\DoxyCodeLine{198   \textcolor{comment}{// function This write needs to be thread-\/safe}}
+\DoxyCodeLine{199 }
+\DoxyCodeLine{200   \textcolor{comment}{// NOTE: This is not a lock free implementation. I don't know how to make it}}
+\DoxyCodeLine{201   \textcolor{comment}{// lock free}}
+\DoxyCodeLine{202   \textcolor{comment}{//       This lock and its match in notify\_dependents ensures correctness,}}
+\DoxyCodeLine{203   \textcolor{comment}{//       explained above. A tasks "{}completeness"{} cannot change while we are}}
+\DoxyCodeLine{204   \textcolor{comment}{//       adding a dependent to the list This means notify dependents has not}}
+\DoxyCodeLine{205   \textcolor{comment}{//       run yet.}}
+\DoxyCodeLine{206   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{207 }
+\DoxyCodeLine{208   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}} = this-\/>\mbox{\hyperlink{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}{get\_state}}();   \textcolor{comment}{// s1}}
+\DoxyCodeLine{209   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}{push\_back\_unsafe}}(task); \textcolor{comment}{// s3}}
+\DoxyCodeLine{210 }
+\DoxyCodeLine{211   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{212 }
+\DoxyCodeLine{213   \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}};}
+\DoxyCodeLine{214 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a6880648eef3e2a4604f5ff0d7e9aabe4}\label{classInnerTask_a6880648eef3e2a4604f5ff0d7e9aabe4}} 
+\index{InnerTask@{InnerTask}!add\_device\_req@{add\_device\_req}}
+\index{add\_device\_req@{add\_device\_req}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_device\_req()}{add\_device\_req()}}
+{\footnotesize\ttfamily void Inner\+Task\+::add\+\_\+device\+\_\+req (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{dev\+\_\+ptr,  }\item[{\mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}}}]{mem\+\_\+sz,  }\item[{\mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}}}]{num\+\_\+vcus }\end{DoxyParamCaption})}
+
+
+
+Definition at line 414 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{415                                                \{}
+\DoxyCodeLine{416   \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} res\_req;}
+\DoxyCodeLine{417   res\_req.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, mem\_sz);}
+\DoxyCodeLine{418   res\_req.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}, num\_vcus);}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{420   std::shared\_ptr<DeviceRequirement> dev\_req =}
+\DoxyCodeLine{421       std::make\_shared<DeviceRequirement>(dev\_ptr, res\_req);}
+\DoxyCodeLine{422   \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} == \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}}) \{}
+\DoxyCodeLine{423     \mbox{\hyperlink{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}{placement\_req\_options\_}}.\mbox{\hyperlink{classPlacementRequirementCollections_a0b212b22f68f46a9c8529070b811a56f}{append\_placement\_req\_opt}}(std::move(dev\_req));}
+\DoxyCodeLine{424   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} \% 2 == 0) \{ \textcolor{comment}{/* Architecture requirement */}}
+\DoxyCodeLine{425     \mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}}-\/>append\_placement\_req\_opt(std::move(dev\_req));}
+\DoxyCodeLine{426   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} == \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}{MultiDevAdd}}) \{}
+\DoxyCodeLine{427     \mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}}-\/>append\_placement\_req(std::move(dev\_req));}
+\DoxyCodeLine{428   \}}
+\DoxyCodeLine{429 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_addec9d65a5a0930417233f4ac070a0bf}\label{classInnerTask_addec9d65a5a0930417233f4ac070a0bf}} 
+\index{InnerTask@{InnerTask}!add\_event@{add\_event}}
+\index{add\_event@{add\_event}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_event()}{add\_event()}}
+{\footnotesize\ttfamily void Inner\+Task\+::add\+\_\+event (\begin{DoxyParamCaption}\item[{uintptr\+\_\+t}]{event }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 448 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{448 \{ this-\/>\mbox{\hyperlink{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}{events}}.\mbox{\hyperlink{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}{push\_back}}(event); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a842e0e2fafb6c4449920d89fbf2ccde7}\label{classInnerTask_a842e0e2fafb6c4449920d89fbf2ccde7}} 
+\index{InnerTask@{InnerTask}!add\_parray@{add\_parray}}
+\index{add\_parray@{add\_parray}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_parray()}{add\_parray()}}
+{\footnotesize\ttfamily void Inner\+Task\+::add\+\_\+parray (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$}]{parray,  }\item[{int}]{access\+\_\+mode,  }\item[{int}]{dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Definition at line 225 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{225                                                                         \{}
+\DoxyCodeLine{226   \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{AccessMode}} access\_mode = \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{AccessMode}}\textcolor{keyword}{>}(am);}
+\DoxyCodeLine{227   \textcolor{keywordflow}{if} (access\_mode != \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40af3180515f5867a29932df1dc207b31ad}{AccessMode::IN}}) \{}
+\DoxyCodeLine{228     \mbox{\hyperlink{namespaceparray}{parray}}-\/>get\_parent\_parray()-\/>add\_task(\textcolor{keyword}{this});}
+\DoxyCodeLine{229   \}}
+\DoxyCodeLine{230   this-\/>\mbox{\hyperlink{classInnerTask_a88c00f52b9fdae2d157a13ecea6c9bdc}{parray\_list}}[dev\_id].emplace\_back(std::make\_pair(\mbox{\hyperlink{namespaceparray}{parray}}, access\_mode));}
+\DoxyCodeLine{231 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_aa91d270a3bc4820fdd322addb8259aa9}\label{classInnerTask_aa91d270a3bc4820fdd322addb8259aa9}} 
+\index{InnerTask@{InnerTask}!add\_stream@{add\_stream}}
+\index{add\_stream@{add\_stream}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{add\_stream()}{add\_stream()}}
+{\footnotesize\ttfamily void Inner\+Task\+::add\+\_\+stream (\begin{DoxyParamCaption}\item[{uintptr\+\_\+t}]{stream }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 451 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{451 \{ this-\/>\mbox{\hyperlink{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}{streams}}.\mbox{\hyperlink{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}{push\_back}}(stream); \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ab857102bb62ac3c84ce480a52a185325}\label{classInnerTask_ab857102bb62ac3c84ce480a52a185325}} 
+\index{InnerTask@{InnerTask}!begin\_arch\_req\_addition@{begin\_arch\_req\_addition}}
+\index{begin\_arch\_req\_addition@{begin\_arch\_req\_addition}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{begin\_arch\_req\_addition()}{begin\_arch\_req\_addition()}}
+{\footnotesize\ttfamily void Inner\+Task\+::begin\+\_\+arch\+\_\+req\+\_\+addition (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 431 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{431                                         \{}
+\DoxyCodeLine{432   \textcolor{comment}{// Setting architecture resource requirement}}
+\DoxyCodeLine{433   \textcolor{comment}{// could be called within multi-\/device requirement}}
+\DoxyCodeLine{434   \textcolor{comment}{// setup.}}
+\DoxyCodeLine{435   ++\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}};}
+\DoxyCodeLine{436   assert(\mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}} == \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{437   \mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}} = std::make\_shared<ArchitectureRequirement>();}
+\DoxyCodeLine{438 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a497996831ce081ea69da5284ef88fcb5}\label{classInnerTask_a497996831ce081ea69da5284ef88fcb5}} 
+\index{InnerTask@{InnerTask}!begin\_multidev\_req\_addition@{begin\_multidev\_req\_addition}}
+\index{begin\_multidev\_req\_addition@{begin\_multidev\_req\_addition}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{begin\_multidev\_req\_addition()}{begin\_multidev\_req\_addition()}}
+{\footnotesize\ttfamily void Inner\+Task\+::begin\+\_\+multidev\+\_\+req\+\_\+addition (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 450 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{450                                             \{}
+\DoxyCodeLine{451   assert(\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} == \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}});}
+\DoxyCodeLine{452   assert(\mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}} == \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{453   \mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}} = std::make\_shared<MultiDeviceRequirements>();}
+\DoxyCodeLine{454   \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} = \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a861cda9d63d28bd08eae6cef86ee19de}{MultiDevAdd}};}
+\DoxyCodeLine{455 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ac871790e45902c8b9b0c7d74cccd013f}\label{classInnerTask_ac871790e45902c8b9b0c7d74cccd013f}} 
+\index{InnerTask@{InnerTask}!blocked@{blocked}}
+\index{blocked@{blocked}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{blocked()}{blocked()}}
+{\footnotesize\ttfamily bool Inner\+Task\+::blocked (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 333 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{333 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.load() > 0; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a67facd59a35d1108729ba2163a9e9cba}\label{classInnerTask_a67facd59a35d1108729ba2163a9e9cba}} 
+\index{InnerTask@{InnerTask}!clear\_dependencies@{clear\_dependencies}}
+\index{clear\_dependencies@{clear\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{clear\_dependencies()}{clear\_dependencies()}}
+{\footnotesize\ttfamily void Inner\+Task\+::clear\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 65 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{65                                    \{}
+\DoxyCodeLine{66   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.clear();}
+\DoxyCodeLine{67   this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}{clear}}();}
+\DoxyCodeLine{68   \textcolor{comment}{// this-\/>dependency\_buffer.reserve(DEPENDENCY\_BUFFER\_SIZE);}}
+\DoxyCodeLine{69 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a3f2718d7ae69f555edbb7aed10f9ca75}\label{classInnerTask_a3f2718d7ae69f555edbb7aed10f9ca75}} 
+\index{InnerTask@{InnerTask}!copy\_assigned\_devices@{copy\_assigned\_devices}}
+\index{copy\_assigned\_devices@{copy\_assigned\_devices}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{copy\_assigned\_devices()}{copy\_assigned\_devices()}}
+{\footnotesize\ttfamily void Inner\+Task\+::copy\+\_\+assigned\+\_\+devices (\begin{DoxyParamCaption}\item[{const std\+::vector$<$ \mbox{\hyperlink{classDevice}{Device}} $\ast$ $>$ \&}]{others }\end{DoxyParamCaption})}
+
+
+
+Definition at line 376 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{376                                                                        \{}
+\DoxyCodeLine{377   this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}} = others;}
+\DoxyCodeLine{378 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a099f5ca5253155bd90f0dadc45e8d3ac}\label{classInnerTask_a099f5ca5253155bd90f0dadc45e8d3ac}} 
+\index{InnerTask@{InnerTask}!decrement\_num\_instances@{decrement\_num\_instances}}
+\index{decrement\_num\_instances@{decrement\_num\_instances}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{decrement\_num\_instances()}{decrement\_num\_instances()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+int Inner\+Task\+::decrement\+\_\+num\+\_\+instances (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 409 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{409                                                                             \{}
+\DoxyCodeLine{410     \textcolor{keywordflow}{if} constexpr (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}} == \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{ResourceCategory::Persistent}}) \{}
+\DoxyCodeLine{411       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}{num\_persistant\_instances}}.fetch\_sub(1);}
+\DoxyCodeLine{412     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{413       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a8c4a0f32a041690b814314d71059af71}{num\_runtime\_instances}}.fetch\_sub(1);}
+\DoxyCodeLine{414     \}}
+\DoxyCodeLine{415   \};}
+
+\end{DoxyCode}
+
+
+References Persistent.
+
+\mbox{\Hypertarget{classInnerTask_a11102077e4e860c6acb1e799c7fa9b1a}\label{classInnerTask_a11102077e4e860c6acb1e799c7fa9b1a}} 
+\index{InnerTask@{InnerTask}!determine\_status@{determine\_status}}
+\index{determine\_status@{determine\_status}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{determine\_status()}{determine\_status()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} Inner\+Task\+::determine\+\_\+status (\begin{DoxyParamCaption}\item[{bool}]{spawnable,  }\item[{bool}]{mappable,  }\item[{bool}]{reservable,  }\item[{bool}]{ready }\end{DoxyParamCaption})}
+
+
+
+Definition at line 103 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{105                                                             \{}
+\DoxyCodeLine{106   \textcolor{keywordflow}{if} (new\_runnable and this-\/>\mbox{\hyperlink{classInnerTask_a393d70b200a10e27007ccb6a4018b7ed}{processed\_data}}) \{}
+\DoxyCodeLine{107     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a04bbf98db0e5595240e01fa33ead9ffc}{Task::RUNNABLE}};}
+\DoxyCodeLine{108   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (new\_runnable and !this-\/>processed\_data) \{}
+\DoxyCodeLine{109     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ae865302700082363878d1604c1500cf0}{Task::COMPUTE\_RUNNABLE}};}
+\DoxyCodeLine{110   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (new\_reservable) \{}
+\DoxyCodeLine{111     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}{Task::RESERVABLE}};}
+\DoxyCodeLine{112   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (new\_mappable) \{}
+\DoxyCodeLine{113     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ab0580381772c6ea171fdc0bfb68c580b}{Task::MAPPABLE}};}
+\DoxyCodeLine{114   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (new\_spawnable) \{}
+\DoxyCodeLine{115     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a8a195fe5faa32576d55fa985ce026e56}{Task::SPAWNABLE}};}
+\DoxyCodeLine{116   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{117     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{Task::INITIAL}};}
+\DoxyCodeLine{118   \}}
+\DoxyCodeLine{119 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ab2170bf7fcf3a2b3cd83513afe62f889}\label{classInnerTask_ab2170bf7fcf3a2b3cd83513afe62f889}} 
+\index{InnerTask@{InnerTask}!end\_arch\_req\_addition@{end\_arch\_req\_addition}}
+\index{end\_arch\_req\_addition@{end\_arch\_req\_addition}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{end\_arch\_req\_addition()}{end\_arch\_req\_addition()}}
+{\footnotesize\ttfamily void Inner\+Task\+::end\+\_\+arch\+\_\+req\+\_\+addition (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 440 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{440                                       \{}
+\DoxyCodeLine{441   assert(\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} \% 2 == 0);}
+\DoxyCodeLine{442   \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} == 4) \{}
+\DoxyCodeLine{443     \mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}}-\/>append\_placement\_req(std::move(\mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}}));}
+\DoxyCodeLine{444   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{445     \mbox{\hyperlink{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}{placement\_req\_options\_}}.\mbox{\hyperlink{classPlacementRequirementCollections_a0b212b22f68f46a9c8529070b811a56f}{append\_placement\_req\_opt}}(std::move(\mbox{\hyperlink{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}{tmp\_arch\_req\_}}));}
+\DoxyCodeLine{446   \}}
+\DoxyCodeLine{447   -\/-\/\mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}};}
+\DoxyCodeLine{448 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a4d0e6ca1d2c163121a39d7a3e69a1e04}\label{classInnerTask_a4d0e6ca1d2c163121a39d7a3e69a1e04}} 
+\index{InnerTask@{InnerTask}!end\_multidev\_req\_addition@{end\_multidev\_req\_addition}}
+\index{end\_multidev\_req\_addition@{end\_multidev\_req\_addition}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{end\_multidev\_req\_addition()}{end\_multidev\_req\_addition()}}
+{\footnotesize\ttfamily void Inner\+Task\+::end\+\_\+multidev\+\_\+req\+\_\+addition (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 457 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{457                                           \{}
+\DoxyCodeLine{458   assert(\mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}} != \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{459   \mbox{\hyperlink{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}{placement\_req\_options\_}}.\mbox{\hyperlink{classPlacementRequirementCollections_a0b212b22f68f46a9c8529070b811a56f}{append\_placement\_req\_opt}}(std::move(\mbox{\hyperlink{classInnerTask_a22265b3d504865e7b918e5940a686524}{tmp\_multdev\_reqs\_}}));}
+\DoxyCodeLine{460   \mbox{\hyperlink{classInnerTask_a9ace9f5659b95b7963850ad81d852646}{req\_addition\_mode\_}} = \mbox{\hyperlink{classInnerTask_a46e620a52e2b903ada6351888b08b090a291247cf5f002d61772ead2e7c93aa40}{SingleDevAdd}};}
+\DoxyCodeLine{461 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a99274c711b7adf37acab061cfec05ff4}\label{classInnerTask_a99274c711b7adf37acab061cfec05ff4}} 
+\index{InnerTask@{InnerTask}!get\_assigned\_devices@{get\_assigned\_devices}}
+\index{get\_assigned\_devices@{get\_assigned\_devices}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_assigned\_devices()}{get\_assigned\_devices()}}
+{\footnotesize\ttfamily std\+::vector$<$ \mbox{\hyperlink{classDevice}{Device}} $\ast$ $>$ \& Inner\+Task\+::get\+\_\+assigned\+\_\+devices (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 372 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{372                                                      \{}
+\DoxyCodeLine{373   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}};}
+\DoxyCodeLine{374 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a14a24dc3f5497608ec6e3289e3af48b2}\label{classInnerTask_a14a24dc3f5497608ec6e3289e3af48b2}} 
+\index{InnerTask@{InnerTask}!get\_complete@{get\_complete}}
+\index{get\_complete@{get\_complete}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_complete()}{get\_complete()}}
+{\footnotesize\ttfamily bool Inner\+Task\+::get\+\_\+complete (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 409 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{409 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}{get\_state}}(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a4e348d9d71133dddb79fa6aeb7ae60f1}\label{classInnerTask_a4e348d9d71133dddb79fa6aeb7ae60f1}} 
+\index{InnerTask@{InnerTask}!get\_dependencies@{get\_dependencies}}
+\index{get\_dependencies@{get\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_dependencies()}{get\_dependencies()}}
+{\footnotesize\ttfamily std\+::vector$<$ void $\ast$ $>$ Inner\+Task\+::get\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 343 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{343                                               \{}
+\DoxyCodeLine{344   std::vector<void *> \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a793a0823accf582df8d045b936f20758}{dependency\_list}};}
+\DoxyCodeLine{345   this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{346   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{347     dependency\_list.push\_back(this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}{get\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}));}
+\DoxyCodeLine{348   \}}
+\DoxyCodeLine{349   this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{350   \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a793a0823accf582df8d045b936f20758}{dependency\_list}};}
+\DoxyCodeLine{351 \}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::py\+\_\+handle\+\_\+runahead\+\_\+dependencies().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a4e348d9d71133dddb79fa6aeb7ae60f1_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_aef5da089b467b38d091214558a9e0a3e}\label{classInnerTask_aef5da089b467b38d091214558a9e0a3e}} 
+\index{InnerTask@{InnerTask}!get\_dependents@{get\_dependents}}
+\index{get\_dependents@{get\_dependents}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_dependents()}{get\_dependents()}}
+{\footnotesize\ttfamily std\+::vector$<$ void $\ast$ $>$ Inner\+Task\+::get\+\_\+dependents (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 353 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{353                                             \{}
+\DoxyCodeLine{354   std::vector<void *> dependent\_list;}
+\DoxyCodeLine{355   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{356   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{357     dependent\_list.push\_back(this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}{get\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}));}
+\DoxyCodeLine{358   \}}
+\DoxyCodeLine{359   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{360   \textcolor{keywordflow}{return} dependent\_list;}
+\DoxyCodeLine{361 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a6c71683548513cb6a4138f904dd06277}\label{classInnerTask_a6c71683548513cb6a4138f904dd06277}} 
+\index{InnerTask@{InnerTask}!get\_name@{get\_name}}
+\index{get\_name@{get\_name}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_name()}{get\_name()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily std\+::string Inner\+Task\+::get\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 335 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{335 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}}; \}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Printable\+Frozen\+Set\+::\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a6c71683548513cb6a4138f904dd06277_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a54222594991bf9e9726d10dd1c1afad2}\label{classInnerTask_a54222594991bf9e9726d10dd1c1afad2}} 
+\index{InnerTask@{InnerTask}!get\_name@{get\_name}}
+\index{get\_name@{get\_name}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_name()}{get\_name()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily const std\+::string\& Inner\+Task\+::get\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 297 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{297 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}}; \};}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Printable\+Frozen\+Set\+::\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a54222594991bf9e9726d10dd1c1afad2_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a40fa8c9aeb9ff43b1f8c5f9a350f0fb7}\label{classInnerTask_a40fa8c9aeb9ff43b1f8c5f9a350f0fb7}} 
+\index{InnerTask@{InnerTask}!get\_num\_blocking\_dependencies@{get\_num\_blocking\_dependencies}}
+\index{get\_num\_blocking\_dependencies@{get\_num\_blocking\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_num\_blocking\_dependencies()}{get\_num\_blocking\_dependencies()}}
+{\footnotesize\ttfamily int Inner\+Task\+::get\+\_\+num\+\_\+blocking\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 393 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{393                                                    \{}
+\DoxyCodeLine{394     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.load();}
+\DoxyCodeLine{395   \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ac2d1dd58dc30b93b6a3f963142884ce1}\label{classInnerTask_ac2d1dd58dc30b93b6a3f963142884ce1}} 
+\index{InnerTask@{InnerTask}!get\_num\_dependencies@{get\_num\_dependencies}}
+\index{get\_num\_dependencies@{get\_num\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_num\_dependencies()}{get\_num\_dependencies()}}
+{\footnotesize\ttfamily int Inner\+Task\+::get\+\_\+num\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 337 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{337                                     \{}
+\DoxyCodeLine{338   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a0688fe32eabc5e9984130716c153c07f}{atomic\_size}}();}
+\DoxyCodeLine{339 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a4f763eede4997ac272b56740bbd7d62b}\label{classInnerTask_a4f763eede4997ac272b56740bbd7d62b}} 
+\index{InnerTask@{InnerTask}!get\_num\_dependents@{get\_num\_dependents}}
+\index{get\_num\_dependents@{get\_num\_dependents}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_num\_dependents()}{get\_num\_dependents()}}
+{\footnotesize\ttfamily int Inner\+Task\+::get\+\_\+num\+\_\+dependents (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 341 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{341 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a0688fe32eabc5e9984130716c153c07f}{atomic\_size}}(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_aae444d7812a83003fa806fea715f6083}\label{classInnerTask_aae444d7812a83003fa806fea715f6083}} 
+\index{InnerTask@{InnerTask}!get\_num\_instances@{get\_num\_instances}}
+\index{get\_num\_instances@{get\_num\_instances}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_num\_instances()}{get\_num\_instances()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+int Inner\+Task\+::get\+\_\+num\+\_\+instances (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 417 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{417                                                                       \{}
+\DoxyCodeLine{418     \textcolor{keywordflow}{if} constexpr (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}} == \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{ResourceCategory::Persistent}}) \{}
+\DoxyCodeLine{419       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}{num\_persistant\_instances}}.load();}
+\DoxyCodeLine{420     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{421       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a8c4a0f32a041690b814314d71059af71}{num\_runtime\_instances}}.load();}
+\DoxyCodeLine{422     \}}
+\DoxyCodeLine{423   \};}
+
+\end{DoxyCode}
+
+
+References Persistent.
+
+\mbox{\Hypertarget{classInnerTask_af5b4e1cff7ce98efefa16c714d0ef1aa}\label{classInnerTask_af5b4e1cff7ce98efefa16c714d0ef1aa}} 
+\index{InnerTask@{InnerTask}!get\_num\_unmapped\_dependencies@{get\_num\_unmapped\_dependencies}}
+\index{get\_num\_unmapped\_dependencies@{get\_num\_unmapped\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_num\_unmapped\_dependencies()}{get\_num\_unmapped\_dependencies()}}
+{\footnotesize\ttfamily int Inner\+Task\+::get\+\_\+num\+\_\+unmapped\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 397 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{397                                                    \{}
+\DoxyCodeLine{398     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.load();}
+\DoxyCodeLine{399   \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ae8d3e57f14fe412eaccb2982e77a6fb4}\label{classInnerTask_ae8d3e57f14fe412eaccb2982e77a6fb4}} 
+\index{InnerTask@{InnerTask}!get\_placement\_req\_options@{get\_placement\_req\_options}}
+\index{get\_placement\_req\_options@{get\_placement\_req\_options}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_placement\_req\_options()}{get\_placement\_req\_options()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classPlacementRequirementCollections}{Placement\+Requirement\+Collections}}\& Inner\+Task\+::get\+\_\+placement\+\_\+req\+\_\+options (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 571 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{571                                                                \{}
+\DoxyCodeLine{572     \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}{placement\_req\_options\_}};}
+\DoxyCodeLine{573   \}}
+
+\end{DoxyCode}
+
+
+References placement\+\_\+req\+\_\+options\+\_\+.
+
+\mbox{\Hypertarget{classInnerTask_abf6c0d665eff487ed2a56e37d7a34ef4}\label{classInnerTask_abf6c0d665eff487ed2a56e37d7a34ef4}} 
+\index{InnerTask@{InnerTask}!get\_py\_task@{get\_py\_task}}
+\index{get\_py\_task@{get\_py\_task}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_py\_task()}{get\_py\_task()}}
+{\footnotesize\ttfamily void $\ast$ Inner\+Task\+::get\+\_\+py\+\_\+task (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 363 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{363 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a79fe5d8de56c41d252b40c1bed83c5dd}\label{classInnerTask_a79fe5d8de56c41d252b40c1bed83c5dd}} 
+\index{InnerTask@{InnerTask}!get\_removed@{get\_removed}}
+\index{get\_removed@{get\_removed}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_removed()}{get\_removed()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+bool Inner\+Task\+::get\+\_\+removed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 425 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{425                                                                  \{}
+\DoxyCodeLine{426     \textcolor{keywordflow}{if} constexpr (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}} == \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{ResourceCategory::Persistent}}) \{}
+\DoxyCodeLine{427       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a12d4bf530fa1cbb8f1861af45edd6f09}{removed\_reserved}};}
+\DoxyCodeLine{428     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{429       \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_afab4e64aa800a0d6d1dbf9cfc1cf4aff}{removed\_runtime}};}
+\DoxyCodeLine{430     \}}
+\DoxyCodeLine{431   \}}
+
+\end{DoxyCode}
+
+
+References Persistent, removed\+\_\+reserved, and removed\+\_\+runtime.
+
+\mbox{\Hypertarget{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}\label{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506}} 
+\index{InnerTask@{InnerTask}!get\_state@{get\_state}}
+\index{get\_state@{get\_state}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_state()}{get\_state()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} Inner\+Task\+::get\+\_\+state (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 540 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{540                               \{}
+\DoxyCodeLine{541     \textcolor{keyword}{const} \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}} = this-\/>state.load();}
+\DoxyCodeLine{542     \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}};}
+\DoxyCodeLine{543   \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::enqueue\+\_\+task().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_aa145e4d3c6d3b84644ac85b248a4a506_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a1869f40c560a8b0044797053477144c8}\label{classInnerTask_a1869f40c560a8b0044797053477144c8}} 
+\index{InnerTask@{InnerTask}!get\_status@{get\_status}}
+\index{get\_status@{get\_status}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{get\_status()}{get\_status()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} Inner\+Task\+::get\+\_\+status (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 554 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{554                                 \{}
+\DoxyCodeLine{555     \textcolor{keyword}{const} \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task::Status}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}} = this-\/>status.load();}
+\DoxyCodeLine{556     \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{557   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a92079518210c802ecc161be46b9de603}\label{classInnerTask_a92079518210c802ecc161be46b9de603}} 
+\index{InnerTask@{InnerTask}!handle\_runahead\_dependencies@{handle\_runahead\_dependencies}}
+\index{handle\_runahead\_dependencies@{handle\_runahead\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{handle\_runahead\_dependencies()}{handle\_runahead\_dependencies()}}
+{\footnotesize\ttfamily void Inner\+Task\+::handle\+\_\+runahead\+\_\+dependencies (\begin{DoxyParamCaption}\item[{int}]{sync\+\_\+type }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 469 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{469                                                    \{}
+\DoxyCodeLine{470     \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}{sync\_type}} == \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a4c322932fc42ce9b9765b98483e9dc2a}{Task::BLOCKING}}) \{}
+\DoxyCodeLine{471       this-\/>\mbox{\hyperlink{classInnerTask_a70138c1916ed55664ca86bf70792628b}{synchronize\_dependency\_events}}();}
+\DoxyCodeLine{472     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}{sync\_type}} == \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}{Task::NON\_BLOCKING}}) \{}
+\DoxyCodeLine{473       this-\/>\mbox{\hyperlink{classInnerTask_a45106317784b3e5485d8dfcb75896aec}{wait\_dependency\_events}}();}
+\DoxyCodeLine{474     \}}
+\DoxyCodeLine{475   \}}
+
+\end{DoxyCode}
+
+
+References Task\+::\+BLOCKING, Task\+::\+NON\+\_\+\+BLOCKING, synchronize\+\_\+dependency\+\_\+events(), and wait\+\_\+dependency\+\_\+events().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a92079518210c802ecc161be46b9de603_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a307ea17c1f681f2ff1d79f0da3bf5963}\label{classInnerTask_a307ea17c1f681f2ff1d79f0da3bf5963}} 
+\index{InnerTask@{InnerTask}!is\_data\_task@{is\_data\_task}}
+\index{is\_data\_task@{is\_data\_task}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{is\_data\_task()}{is\_data\_task()}}
+{\footnotesize\ttfamily bool Inner\+Task\+::is\+\_\+data\+\_\+task (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 463 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{463                              \{}
+\DoxyCodeLine{464   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\_data}}.load(std::memory\_order\_relaxed);}
+\DoxyCodeLine{465 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Worker\+::get\+\_\+task(), and Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a307ea17c1f681f2ff1d79f0da3bf5963_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a484600de6c72fd5faf467b31dedbb842}\label{classInnerTask_a484600de6c72fd5faf467b31dedbb842}} 
+\index{InnerTask@{InnerTask}!notify@{notify}}
+\index{notify@{notify}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{notify()}{notify()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} Inner\+Task\+::notify (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}}}]{dependency\+\_\+state,  }\item[{bool}]{is\+\_\+data = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 295 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{296                                                   \{}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{298   \textcolor{keywordtype}{bool} spawnable = \textcolor{keyword}{false};}
+\DoxyCodeLine{299   \textcolor{keywordtype}{bool} mappable = \textcolor{keyword}{false};}
+\DoxyCodeLine{300   \textcolor{keywordtype}{bool} reservable = \textcolor{keyword}{false};}
+\DoxyCodeLine{301   \textcolor{keywordtype}{bool} compute\_runnable = \textcolor{keyword}{false};}
+\DoxyCodeLine{302   \textcolor{keywordtype}{bool} runnable = \textcolor{keyword}{false};}
+\DoxyCodeLine{303 }
+\DoxyCodeLine{304   \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\_data}}) \{}
+\DoxyCodeLine{305     \textcolor{keywordflow}{if} (dependency\_state == \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}{Task::RUNAHEAD}}) \{}
+\DoxyCodeLine{306       \textcolor{comment}{// A data task never notifies for the other stages}}
+\DoxyCodeLine{307       runnable = (this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{308     \}}
+\DoxyCodeLine{309   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{310     \textcolor{keywordflow}{if} (dependency\_state == \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}{Task::RUNAHEAD}}) \{}
+\DoxyCodeLine{311       compute\_runnable =}
+\DoxyCodeLine{312           (this-\/>\mbox{\hyperlink{classInnerTask_acb01c65ba516df7a307b423242ff8a26}{num\_blocking\_compute\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{313       runnable = (this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{314     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependency\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}{Task::RESERVED}}) \{}
+\DoxyCodeLine{315       reservable = (this-\/>\mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\_unreserved\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{316     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependency\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{Task::MAPPED}}) \{}
+\DoxyCodeLine{317       mappable = (this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{318     \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (dependency\_state >= \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}{Task::SPAWNED}}) \{}
+\DoxyCodeLine{319       spawnable = (this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.fetch\_sub(1) == 1);}
+\DoxyCodeLine{320     \}}
+\DoxyCodeLine{321   \}}
+\DoxyCodeLine{322 }
+\DoxyCodeLine{323   \mbox{\hyperlink{classTask_1_1StatusFlags}{Task::StatusFlags}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{324   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.spawnable = spawnable;}
+\DoxyCodeLine{325   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.mappable = mappable;}
+\DoxyCodeLine{326   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.reservable = reservable;}
+\DoxyCodeLine{327   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.compute\_runnable = compute\_runnable;}
+\DoxyCodeLine{328   \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.runnable = runnable;}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330   \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{331 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a49c7c3e4a3fb0fe97c73e6795f485f30}\label{classInnerTask_a49c7c3e4a3fb0fe97c73e6795f485f30}} 
+\index{InnerTask@{InnerTask}!notify\_dependents@{notify\_dependents}}
+\index{notify\_dependents@{notify\_dependents}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{notify\_dependents()}{notify\_dependents()}}
+{\footnotesize\ttfamily void Inner\+Task\+::notify\+\_\+dependents (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{runtime_8hpp_a171f42e65e96e59208fe7f526af5586a}{Task\+State\+List}} \&}]{tasks,  }\item[{\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}}}]{new\+\_\+state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 253 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{254                                                        \{}
+\DoxyCodeLine{255   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Notifying dependents of \{\}: \{\}"{}}, \textcolor{keyword}{this}, buffer);}
+\DoxyCodeLine{256   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}InnerTask::notify\_dependents"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{257 }
+\DoxyCodeLine{258   \textcolor{comment}{// NOTE: I changed this to queue up ready tasks instead of enqueing them one}}
+\DoxyCodeLine{259   \textcolor{comment}{// at a time}}
+\DoxyCodeLine{260   \textcolor{comment}{//       This is possibly worse, but splits out scheduler dependency.}}
+\DoxyCodeLine{261   \textcolor{comment}{//       May need to change back to call scheduler.enqueue(task) here instead}}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{263   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{264   \textcolor{comment}{// std::cout << "{}Notifying dependents of "{} << this-\/>name << "{}: "{} <<}}
+\DoxyCodeLine{265   \textcolor{comment}{// this-\/>dependents.size\_unsafe() << std::endl;}}
+\DoxyCodeLine{266 }
+\DoxyCodeLine{267   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{268 }
+\DoxyCodeLine{269     \textcolor{keyword}{auto} \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}} = this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}{get\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{270     \mbox{\hyperlink{classTask_1_1StatusFlags}{Task::StatusFlags}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}} = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>notify(new\_state, this-\/>\mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\_data}}.load());}
+\DoxyCodeLine{271 }
+\DoxyCodeLine{272     \textcolor{comment}{// std::cout << "{}Dependent Task is notified: "{} << task-\/>name << std::endl;}}
+\DoxyCodeLine{273     \textcolor{keywordflow}{if} (status.\mbox{\hyperlink{classTask_1_1StatusFlags_a850f316d05ac85c18f4a6d6876b733c9}{any}}()) \{}
+\DoxyCodeLine{274       \textcolor{comment}{// std::cout << "{}Dependent Task Ready: "{} << task-\/>name << std::endl;}}
+\DoxyCodeLine{275       buffer.push\_back(std::make\_pair(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}));}
+\DoxyCodeLine{276     \}}
+\DoxyCodeLine{277   \}}
+\DoxyCodeLine{278 }
+\DoxyCodeLine{279   this-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(new\_state);}
+\DoxyCodeLine{280 }
+\DoxyCodeLine{281   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{282 }
+\DoxyCodeLine{283   \textcolor{comment}{// std::cout << "{}Notified dependents of "{} << this-\/>name << "{}. Ready tasks: "{}}}
+\DoxyCodeLine{284   \textcolor{comment}{// << buffer.size() << std::endl;}}
+\DoxyCodeLine{285 }
+\DoxyCodeLine{286   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Notified dependents of \{\}. Ready tasks: \{\}"{}}, \textcolor{keyword}{this}, buffer);}
+\DoxyCodeLine{287 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ad61553584936bbeec62d1dd39c371863}\label{classInnerTask_ad61553584936bbeec62d1dd39c371863}} 
+\index{InnerTask@{InnerTask}!notify\_dependents\_completed@{notify\_dependents\_completed}}
+\index{notify\_dependents\_completed@{notify\_dependents\_completed}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{notify\_dependents\_completed()}{notify\_dependents\_completed()}}
+{\footnotesize\ttfamily void Inner\+Task\+::notify\+\_\+dependents\+\_\+completed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 233 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{233                                             \{}
+\DoxyCodeLine{234   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Notifying dependents of \{\}."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{235   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}InnerTask::notify\_dependents"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{236 }
+\DoxyCodeLine{237   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{238   this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}}();}
+\DoxyCodeLine{239 }
+\DoxyCodeLine{240   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{241     \textcolor{keyword}{auto} space = this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}{get\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{242     space-\/>\mbox{\hyperlink{classTaskBarrier_aa1bd621360c4b81af231890dc886f3f2}{notify}}();}
+\DoxyCodeLine{243   \}}
+\DoxyCodeLine{244 }
+\DoxyCodeLine{245   this-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}{Task::COMPLETED}});}
+\DoxyCodeLine{246 }
+\DoxyCodeLine{247   this-\/>\mbox{\hyperlink{classInnerTask_a09813825848944128068badc9a5a9eb0}{spaces}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{248   this-\/>\mbox{\hyperlink{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}{dependents}}.\mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}}();}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_af0d589fbe2b26bdee7a8c36ce4446a24}{TASK}}, \textcolor{stringliteral}{"{}Notified dependents of \{\}."{}}, \textcolor{keyword}{this});}
+\DoxyCodeLine{251 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_ad61553584936bbeec62d1dd39c371863_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a1ec3cb4d1d2f669f12f7673a2062e323}\label{classInnerTask_a1ec3cb4d1d2f669f12f7673a2062e323}} 
+\index{InnerTask@{InnerTask}!notify\_dependents\_wrapper@{notify\_dependents\_wrapper}}
+\index{notify\_dependents\_wrapper@{notify\_dependents\_wrapper}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{notify\_dependents\_wrapper()}{notify\_dependents\_wrapper()}}
+{\footnotesize\ttfamily bool Inner\+Task\+::notify\+\_\+dependents\+\_\+wrapper (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 289 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{289                                           \{}
+\DoxyCodeLine{290   \mbox{\hyperlink{runtime_8hpp_a171f42e65e96e59208fe7f526af5586a}{TaskStateList}} buffer = \mbox{\hyperlink{runtime_8hpp_a171f42e65e96e59208fe7f526af5586a}{TaskStateList}}();}
+\DoxyCodeLine{291   this-\/>\mbox{\hyperlink{classInnerTask_a49c7c3e4a3fb0fe97c73e6795f485f30}{notify\_dependents}}(buffer, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{Task::MAPPED}});}
+\DoxyCodeLine{292   \textcolor{keywordflow}{return} buffer.size() > 0;}
+\DoxyCodeLine{293 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ae23d1c1c1c7d998a7c4ac7acd6834f25}\label{classInnerTask_ae23d1c1c1c7d998a7c4ac7acd6834f25}} 
+\index{InnerTask@{InnerTask}!process\_dependencies@{process\_dependencies}}
+\index{process\_dependencies@{process\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{process\_dependencies()}{process\_dependencies()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTask_1_1StatusFlags}{Task\+::\+Status\+Flags}} Inner\+Task\+::process\+\_\+dependencies (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 57 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{57                                                 \{}
+\DoxyCodeLine{58   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}InnerTask::process\_dependencies"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{59   \mbox{\hyperlink{classTask_1_1StatusFlags}{Task::StatusFlags}} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}} = this-\/>\mbox{\hyperlink{classInnerTask_a1bef1f662fd0defd174abb674b961227}{add\_dependencies}}(this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}});}
+\DoxyCodeLine{60   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.clear();}
+\DoxyCodeLine{61   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.reserve(\mbox{\hyperlink{task_8cpp_afaca15c5dbc4b2ddf9a98ba51cc8fc1f}{DEPENDENCY\_BUFFER\_SIZE}});}
+\DoxyCodeLine{62   \textcolor{keywordflow}{return} \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{63 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::spawn\+\_\+task(), and Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_ae23d1c1c1c7d998a7c4ac7acd6834f25_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a70e6fe79e7e3fa4c02e3c966f9703502}\label{classInnerTask_a70e6fe79e7e3fa4c02e3c966f9703502}} 
+\index{InnerTask@{InnerTask}!queue\_dependency@{queue\_dependency}}
+\index{queue\_dependency@{queue\_dependency}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{queue\_dependency()}{queue\_dependency()}}
+{\footnotesize\ttfamily void Inner\+Task\+::queue\+\_\+dependency (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 53 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{53                                                 \{}
+\DoxyCodeLine{54   this-\/>\mbox{\hyperlink{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}{dependency\_buffer}}.push\_back(task);}
+\DoxyCodeLine{55 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ace88fd5b0348a0fc5e7a436a6d662ea4}\label{classInnerTask_ace88fd5b0348a0fc5e7a436a6d662ea4}} 
+\index{InnerTask@{InnerTask}!reset@{reset}}
+\index{reset@{reset}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{reset()}{reset()}}
+{\footnotesize\ttfamily void Inner\+Task\+::reset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 366 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{366                \{}
+\DoxyCodeLine{367     \textcolor{comment}{// TODO(wlr): Should this be done with set\_state and assert old==RUNNING?}}
+\DoxyCodeLine{368     this-\/>\mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}}.store(\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}{Task::SPAWNED}});}
+\DoxyCodeLine{369     this-\/>\mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.store(\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{Task::INITIAL}});}
+\DoxyCodeLine{370     this-\/>\mbox{\hyperlink{classInnerTask_a24e11656f5bb1798a9820c80e465da25}{instance}}++;}
+\DoxyCodeLine{371     this-\/>\mbox{\hyperlink{classInnerTask_acb01c65ba516df7a307b423242ff8a26}{num\_blocking\_compute\_dependencies}}.store(1);}
+\DoxyCodeLine{372     this-\/>\mbox{\hyperlink{classInnerTask_a085e94990bd28c65c38859625794bbce}{num\_blocking\_dependencies}}.store(1);}
+\DoxyCodeLine{373     this-\/>\mbox{\hyperlink{classInnerTask_acf27413d6cec7ba669e529efe51644b8}{num\_unspawned\_dependencies}}.store(1);}
+\DoxyCodeLine{374     this-\/>\mbox{\hyperlink{classInnerTask_a0461310ee978628caec72207026560b8}{num\_unmapped\_dependencies}}.store(1);}
+\DoxyCodeLine{375     this-\/>\mbox{\hyperlink{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}{num\_unreserved\_dependencies}}.store(1);}
+\DoxyCodeLine{376     this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}}.clear();}
+\DoxyCodeLine{377     \textcolor{comment}{// this-\/>reset\_events\_streams();}}
+\DoxyCodeLine{378   \}}
+
+\end{DoxyCode}
+
+
+References Task\+::\+INITIAL, instance, and Task\+::\+SPAWNED.
+
+
+
+Referenced by Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_ace88fd5b0348a0fc5e7a436a6d662ea4_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a0e78f4fcbc8699e35796f3e38c29ee73}\label{classInnerTask_a0e78f4fcbc8699e35796f3e38c29ee73}} 
+\index{InnerTask@{InnerTask}!reset\_events\_streams@{reset\_events\_streams}}
+\index{reset\_events\_streams@{reset\_events\_streams}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{reset\_events\_streams()}{reset\_events\_streams()}}
+{\footnotesize\ttfamily void Inner\+Task\+::reset\+\_\+events\+\_\+streams (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 454 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{454                               \{}
+\DoxyCodeLine{455     this-\/>\mbox{\hyperlink{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}{events}}.\mbox{\hyperlink{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}{clear}}();}
+\DoxyCodeLine{456     this-\/>\mbox{\hyperlink{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}{streams}}.\mbox{\hyperlink{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}{clear}}();}
+\DoxyCodeLine{457   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a957761bf8d56241e0c25d80f81750f1f}\label{classInnerTask_a957761bf8d56241e0c25d80f81750f1f}} 
+\index{InnerTask@{InnerTask}!set\_complete@{set\_complete}}
+\index{set\_complete@{set\_complete}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_complete()}{set\_complete()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+complete (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 407 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{407 \{ this-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}{Task::COMPLETED}}); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_acf0bd7a060a4a216e22f38feba2f1a99}\label{classInnerTask_acf0bd7a060a4a216e22f38feba2f1a99}} 
+\index{InnerTask@{InnerTask}!set\_id@{set\_id}}
+\index{set\_id@{set\_id}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_id()}{set\_id()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+id (\begin{DoxyParamCaption}\item[{long long int}]{name }\end{DoxyParamCaption})}
+
+
+
+Definition at line 47 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{47 \{ this-\/>\textcolor{keywordtype}{id} = \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a27bd7ba93036e722fe3ca7dffe86c6a2}\label{classInnerTask_a27bd7ba93036e722fe3ca7dffe86c6a2}} 
+\index{InnerTask@{InnerTask}!set\_name@{set\_name}}
+\index{set\_name@{set\_name}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_name()}{set\_name()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+name (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+Definition at line 42 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{42                                        \{}
+\DoxyCodeLine{43   \textcolor{comment}{// std::cout << "{}Setting name to "{} << name << std::endl;}}
+\DoxyCodeLine{44   this-\/>\mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}} = \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}};}
+\DoxyCodeLine{45 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a36525688381150dd62a44f24aa67cb98}\label{classInnerTask_a36525688381150dd62a44f24aa67cb98}} 
+\index{InnerTask@{InnerTask}!set\_num\_instances@{set\_num\_instances}}
+\index{set\_num\_instances@{set\_num\_instances}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_num\_instances()}{set\_num\_instances()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+void Inner\+Task\+::set\+\_\+num\+\_\+instances (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 401 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{401                                                                        \{}
+\DoxyCodeLine{402     \textcolor{keywordflow}{if} constexpr (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}} == \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{ResourceCategory::Persistent}}) \{}
+\DoxyCodeLine{403       this-\/>\mbox{\hyperlink{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}{num\_persistant\_instances}}.store(this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}}.size());}
+\DoxyCodeLine{404     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{405       this-\/>\mbox{\hyperlink{classInnerTask_a8c4a0f32a041690b814314d71059af71}{num\_runtime\_instances}}.store(this-\/>\mbox{\hyperlink{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}{assigned\_devices}}.size());}
+\DoxyCodeLine{406     \}}
+\DoxyCodeLine{407   \};}
+
+\end{DoxyCode}
+
+
+References Persistent.
+
+\mbox{\Hypertarget{classInnerTask_a06d6b22d27026185432dafc22e098046}\label{classInnerTask_a06d6b22d27026185432dafc22e098046}} 
+\index{InnerTask@{InnerTask}!set\_priority@{set\_priority}}
+\index{set\_priority@{set\_priority}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_priority()}{set\_priority()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+priority (\begin{DoxyParamCaption}\item[{int}]{priority }\end{DoxyParamCaption})}
+
+
+
+Definition at line 51 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{51 \{ this-\/>\mbox{\hyperlink{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}{priority}} = \mbox{\hyperlink{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}{priority}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a7a4cd577b5c324f889284f6be288285c}\label{classInnerTask_a7a4cd577b5c324f889284f6be288285c}} 
+\index{InnerTask@{InnerTask}!set\_py\_task@{set\_py\_task}}
+\index{set\_py\_task@{set\_py\_task}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_py\_task()}{set\_py\_task()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+py\+\_\+task (\begin{DoxyParamCaption}\item[{void $\ast$}]{py\+\_\+task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 49 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{49 \{ this-\/>\mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}} = \mbox{\hyperlink{classInnerTask_acf6700da9a9eae0e972f05776519963d}{py\_task}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_ad7950bdcca7577bcf67e4fb8ee06948b}\label{classInnerTask_ad7950bdcca7577bcf67e4fb8ee06948b}} 
+\index{InnerTask@{InnerTask}!set\_removed@{set\_removed}}
+\index{set\_removed@{set\_removed}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_removed()}{set\_removed()}}
+{\footnotesize\ttfamily template$<$Resource\+Category category$>$ \\
+void Inner\+Task\+::set\+\_\+removed (\begin{DoxyParamCaption}\item[{bool}]{waiting }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 433 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{433                                                                              \{}
+\DoxyCodeLine{434     \textcolor{keywordflow}{if} constexpr (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a96040cd272a435ca8983e3f3ad50066b}{category}} == \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{ResourceCategory::Persistent}}) \{}
+\DoxyCodeLine{435       this-\/>\mbox{\hyperlink{classInnerTask_a12d4bf530fa1cbb8f1861af45edd6f09}{removed\_reserved}} = waiting;}
+\DoxyCodeLine{436     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{437       this-\/>\mbox{\hyperlink{classInnerTask_afab4e64aa800a0d6d1dbf9cfc1cf4aff}{removed\_runtime}} = waiting;}
+\DoxyCodeLine{438     \}}
+\DoxyCodeLine{439   \}}
+
+\end{DoxyCode}
+
+
+References Persistent, removed\+\_\+reserved, and removed\+\_\+runtime.
+
+\mbox{\Hypertarget{classInnerTask_a6b1dd2496910ad8342e5ed7758579ccf}\label{classInnerTask_a6b1dd2496910ad8342e5ed7758579ccf}} 
+\index{InnerTask@{InnerTask}!set\_scheduler@{set\_scheduler}}
+\index{set\_scheduler@{set\_scheduler}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_scheduler()}{set\_scheduler()}}
+{\footnotesize\ttfamily void Inner\+Task\+::set\+\_\+scheduler (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$}]{scheduler }\end{DoxyParamCaption})}
+
+
+
+Definition at line 36 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{36                                                        \{}
+\DoxyCodeLine{37   this-\/>scheduler = \mbox{\hyperlink{classInnerTask_ac91988e27f2b24e428be195d829d2fb0}{scheduler}};}
+\DoxyCodeLine{38   \textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8ca84ad01ff6bcb51c8063646d6470c1}{num\_devices}} = this-\/>scheduler-\/>\mbox{\hyperlink{classInnerScheduler_ad2fa4cc6ee8b95e4b25e67d0ca6991bb}{get\_device\_manager}}()-\/>\mbox{\hyperlink{classDeviceManager_ad3dba27b05b965eba693d8fecd89f9c7}{get\_num\_devices}}();}
+\DoxyCodeLine{39   this-\/>\mbox{\hyperlink{classInnerTask_a88c00f52b9fdae2d157a13ecea6c9bdc}{parray\_list}}.resize(num\_devices);}
+\DoxyCodeLine{40 \}}
+
+\end{DoxyCode}
+
+
+References Inner\+Scheduler\+::get\+\_\+device\+\_\+manager(), and scheduler.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a6b1dd2496910ad8342e5ed7758579ccf_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}\label{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}} 
+\index{InnerTask@{InnerTask}!set\_state@{set\_state}}
+\index{set\_state@{set\_state}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_state()}{set\_state()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily int Inner\+Task\+::set\+\_\+state (\begin{DoxyParamCaption}\item[{int}]{state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 365 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{365                                   \{}
+\DoxyCodeLine{366   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} new\_state = \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}}\textcolor{keyword}{>}(\mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}});}
+\DoxyCodeLine{367   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} old\_state = this-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(new\_state);}
+\DoxyCodeLine{368   \textcolor{keywordtype}{int} old\_state\_id = \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(new\_state);}
+\DoxyCodeLine{369   \textcolor{keywordflow}{return} old\_state\_id;}
+\DoxyCodeLine{370 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTask_a55800effc9c14226703f7997e2fb62ea}\label{classInnerTask_a55800effc9c14226703f7997e2fb62ea}} 
+\index{InnerTask@{InnerTask}!set\_state@{set\_state}}
+\index{set\_state@{set\_state}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_state()}{set\_state()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}} Inner\+Task\+::set\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}}}]{state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 384 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{384                                               \{}
+\DoxyCodeLine{385   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} new\_state = \mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}};}
+\DoxyCodeLine{386   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task::State}} old\_state;}
+\DoxyCodeLine{387 }
+\DoxyCodeLine{388   \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{389     old\_state = this-\/>\mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}}.load();}
+\DoxyCodeLine{390   \} \textcolor{keywordflow}{while} (!this-\/>\mbox{\hyperlink{classInnerTask_a59aae1db3b13f083128b4598487f44ff}{state}}.compare\_exchange\_weak(old\_state, new\_state));}
+\DoxyCodeLine{391 }
+\DoxyCodeLine{392   \textcolor{keywordflow}{return} old\_state;}
+\DoxyCodeLine{393 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::spawn\+\_\+task().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a55800effc9c14226703f7997e2fb62ea_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a5cb0eb8638f9e7ae7eacadbac4e820ff}\label{classInnerTask_a5cb0eb8638f9e7ae7eacadbac4e820ff}} 
+\index{InnerTask@{InnerTask}!set\_status@{set\_status}}
+\index{set\_status@{set\_status}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{set\_status()}{set\_status()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}} Inner\+Task\+::set\+\_\+status (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}}}]{status }\end{DoxyParamCaption})}
+
+
+
+Definition at line 395 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{395                                                   \{}
+\DoxyCodeLine{396   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task::Status}} new\_status = \mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}};}
+\DoxyCodeLine{397   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task::Status}} old\_status;}
+\DoxyCodeLine{398 }
+\DoxyCodeLine{399   \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{400     old\_status = this-\/>\mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.load();}
+\DoxyCodeLine{401   \} \textcolor{keywordflow}{while} (!this-\/>\mbox{\hyperlink{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}{status}}.compare\_exchange\_weak(old\_status, new\_status));}
+\DoxyCodeLine{402 }
+\DoxyCodeLine{403   \textcolor{keywordflow}{return} old\_status;}
+\DoxyCodeLine{404 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::enqueue\+\_\+task().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a5cb0eb8638f9e7ae7eacadbac4e820ff_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a70138c1916ed55664ca86bf70792628b}\label{classInnerTask_a70138c1916ed55664ca86bf70792628b}} 
+\index{InnerTask@{InnerTask}!synchronize\_dependency\_events@{synchronize\_dependency\_events}}
+\index{synchronize\_dependency\_events@{synchronize\_dependency\_events}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{synchronize\_dependency\_events()}{synchronize\_dependency\_events()}}
+{\footnotesize\ttfamily void Inner\+Task\+::synchronize\+\_\+dependency\+\_\+events (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 478 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{478                                        \{}
+\DoxyCodeLine{479     \textcolor{keywordtype}{size\_t} num\_dependencies = this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}();}
+\DoxyCodeLine{480     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < num\_dependencies; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{481       \mbox{\hyperlink{classInnerTask}{InnerTask}} *\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a82cc47fc5c9d4bba41ac5f3031d1e8fc}{dependency}} = this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}{at\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{482       dependency-\/>\mbox{\hyperlink{classInnerTask_adb90cbdc396b22a13de1e0840defbf4b}{synchronize\_events}}();}
+\DoxyCodeLine{483     \}}
+\DoxyCodeLine{484   \}}
+
+\end{DoxyCode}
+
+
+References synchronize\+\_\+events().
+
+
+
+Referenced by handle\+\_\+runahead\+\_\+dependencies().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a70138c1916ed55664ca86bf70792628b_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a70138c1916ed55664ca86bf70792628b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_adb90cbdc396b22a13de1e0840defbf4b}\label{classInnerTask_adb90cbdc396b22a13de1e0840defbf4b}} 
+\index{InnerTask@{InnerTask}!synchronize\_events@{synchronize\_events}}
+\index{synchronize\_events@{synchronize\_events}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{synchronize\_events()}{synchronize\_events()}}
+{\footnotesize\ttfamily void Inner\+Task\+::synchronize\+\_\+events (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 460 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{460                             \{}
+\DoxyCodeLine{461     \textcolor{keywordtype}{size\_t} num\_events = this-\/>\mbox{\hyperlink{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}{events}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}();}
+\DoxyCodeLine{462     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < num\_events; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{463       uintptr\_t event\_ptr = this-\/>\mbox{\hyperlink{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}{events}}.\mbox{\hyperlink{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}{at\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{464       \mbox{\hyperlink{utility_8cpp_a103c1b3c466bb969bff0352087486a36}{event\_synchronize}}(event\_ptr);}
+\DoxyCodeLine{465     \}}
+\DoxyCodeLine{466   \}}
+
+\end{DoxyCode}
+
+
+Referenced by synchronize\+\_\+dependency\+\_\+events(), and Inner\+Scheduler\+::task\+\_\+cleanup().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_adb90cbdc396b22a13de1e0840defbf4b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTask_a45106317784b3e5485d8dfcb75896aec}\label{classInnerTask_a45106317784b3e5485d8dfcb75896aec}} 
+\index{InnerTask@{InnerTask}!wait\_dependency\_events@{wait\_dependency\_events}}
+\index{wait\_dependency\_events@{wait\_dependency\_events}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{wait\_dependency\_events()}{wait\_dependency\_events()}}
+{\footnotesize\ttfamily void Inner\+Task\+::wait\+\_\+dependency\+\_\+events (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 491 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{491                                 \{}
+\DoxyCodeLine{492 }
+\DoxyCodeLine{493     std::cout << \textcolor{stringliteral}{"{}Setting wait triggers for dependencies of "{}}}
+\DoxyCodeLine{494               << this-\/>\mbox{\hyperlink{classInnerTask_a54222594991bf9e9726d10dd1c1afad2}{get\_name}}() << std::endl;}
+\DoxyCodeLine{495 }
+\DoxyCodeLine{496     \textcolor{comment}{// For each dependency, wait on all of its events on all of our streams}}
+\DoxyCodeLine{497     \textcolor{keywordtype}{size\_t} num\_dependencies = this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}();}
+\DoxyCodeLine{498     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < num\_dependencies; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{499       \mbox{\hyperlink{classInnerTask}{InnerTask}} *\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a82cc47fc5c9d4bba41ac5f3031d1e8fc}{dependency}} = this-\/>\mbox{\hyperlink{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}{dependencies}}.\mbox{\hyperlink{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}{at\_unsafe}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{500       \textcolor{keyword}{auto} \&dependency\_events = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a82cc47fc5c9d4bba41ac5f3031d1e8fc}{dependency}}-\/>events;}
+\DoxyCodeLine{501 }
+\DoxyCodeLine{502       std::cout << \textcolor{stringliteral}{"{}Waiting for event from dependency: "{}}}
+\DoxyCodeLine{503                 << \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a82cc47fc5c9d4bba41ac5f3031d1e8fc}{dependency}}-\/>get\_name() << std::endl;}
+\DoxyCodeLine{504       \textcolor{keywordtype}{size\_t} num\_events = dependency\_events.size\_unsafe();}
+\DoxyCodeLine{505       \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} j = 0; j < num\_events; j++) \{}
+\DoxyCodeLine{506         uintptr\_t event\_ptr = dependency\_events.at\_unsafe(j);}
+\DoxyCodeLine{507         \textcolor{comment}{// Wait on the event on all of our streams}}
+\DoxyCodeLine{508         \textcolor{keywordtype}{size\_t} num\_streams = this-\/>\mbox{\hyperlink{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}{streams}}.\mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\_unsafe}}();}
+\DoxyCodeLine{509         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} k = 0; k < num\_streams; k++) \{}
+\DoxyCodeLine{510           uintptr\_t stream\_ptr = this-\/>\mbox{\hyperlink{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}{streams}}.\mbox{\hyperlink{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}{at\_unsafe}}(k);}
+\DoxyCodeLine{511           \mbox{\hyperlink{utility_8cpp_ac495adf1b9a015e55da7b78fd5911a87}{event\_wait}}(event\_ptr, stream\_ptr);}
+\DoxyCodeLine{512         \}}
+\DoxyCodeLine{513       \}}
+\DoxyCodeLine{514     \}}
+\DoxyCodeLine{515   \}}
+
+\end{DoxyCode}
+
+
+Referenced by handle\+\_\+runahead\+\_\+dependencies().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTask_a45106317784b3e5485d8dfcb75896aec_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}\label{classInnerTask_a232da08bc8cca3776cc5317612f7eaaf}} 
+\index{InnerTask@{InnerTask}!assigned\_devices@{assigned\_devices}}
+\index{assigned\_devices@{assigned\_devices}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{assigned\_devices}{assigned\_devices}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classDevice}{Device}} $\ast$$>$ Inner\+Task\+::assigned\+\_\+devices}
+
+
+
+Definition at line 268 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Data\+Movement\+Task\+::\+\_\+execute\+\_\+task().
+
+\mbox{\Hypertarget{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}\label{classInnerTask_aeeef65c3b09b11194c8fabaebcac27cd}} 
+\index{InnerTask@{InnerTask}!dependencies@{dependencies}}
+\index{dependencies@{dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{dependencies}{dependencies}}
+{\footnotesize\ttfamily \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} Inner\+Task\+::dependencies}
+
+
+
+Definition at line 233 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Running\+::clear\+\_\+dependencies().
+
+\mbox{\Hypertarget{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}\label{classInnerTask_a6c30456401f420a5c11583f1e1d5d044}} 
+\index{InnerTask@{InnerTask}!dependency\_buffer@{dependency\_buffer}}
+\index{dependency\_buffer@{dependency\_buffer}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{dependency\_buffer}{dependency\_buffer}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$ Inner\+Task\+::dependency\+\_\+buffer = std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$()}
+
+
+
+Definition at line 242 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}\label{classInnerTask_a0fd15a1a166ff4d6cbe3012f81615a87}} 
+\index{InnerTask@{InnerTask}!dependents@{dependents}}
+\index{dependents@{dependents}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{dependents}{dependents}}
+{\footnotesize\ttfamily \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} Inner\+Task\+::dependents}
+
+
+
+Definition at line 236 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_af5a4e559f41e09788e672a88ac6f0d14}\label{classInnerTask_af5a4e559f41e09788e672a88ac6f0d14}} 
+\index{InnerTask@{InnerTask}!device\_constraints@{device\_constraints}}
+\index{device\_constraints@{device\_constraints}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{device\_constraints}{device\_constraints}}
+{\footnotesize\ttfamily std\+::unordered\+\_\+map$<$int, \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}$>$ Inner\+Task\+::device\+\_\+constraints}
+
+
+
+Definition at line 271 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}\label{classInnerTask_a5ce5f5e40b17624a4bee2a7e2dc6fbc0}} 
+\index{InnerTask@{InnerTask}!events@{events}}
+\index{events@{events}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{events}{events}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} Inner\+Task\+::events}
+
+
+
+Definition at line 215 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}\label{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}} 
+\index{InnerTask@{InnerTask}!id@{id}}
+\index{id@{id}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{id}{id}}
+{\footnotesize\ttfamily long long int Inner\+Task\+::id = 0}
+
+
+
+Definition at line 197 of file runtime.\+hpp.
+
+
+
+Referenced by Inner\+Task().
+
+\mbox{\Hypertarget{classInnerTask_a24e11656f5bb1798a9820c80e465da25}\label{classInnerTask_a24e11656f5bb1798a9820c80e465da25}} 
+\index{InnerTask@{InnerTask}!instance@{instance}}
+\index{instance@{instance}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{instance}{instance}}
+{\footnotesize\ttfamily int Inner\+Task\+::instance = 0}
+
+
+
+Definition at line 203 of file runtime.\+hpp.
+
+
+
+Referenced by reset().
+
+\mbox{\Hypertarget{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}\label{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}} 
+\index{InnerTask@{InnerTask}!is\_data@{is\_data}}
+\index{is\_data@{is\_data}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{is\_data}{is\_data}}
+{\footnotesize\ttfamily std\+::atomic$<$bool$>$ Inner\+Task\+::is\+\_\+data \{false\}}
+
+
+
+Definition at line 274 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_afac78233adfa6535bff82895fe4cd285}\label{classInnerTask_afac78233adfa6535bff82895fe4cd285}} 
+\index{InnerTask@{InnerTask}!mtx@{mtx}}
+\index{mtx@{mtx}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{mtx}{mtx}}
+{\footnotesize\ttfamily std\+::mutex Inner\+Task\+::mtx}
+
+
+
+Definition at line 224 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_acb61a5fe433a54450591008fcb215521}\label{classInnerTask_acb61a5fe433a54450591008fcb215521}} 
+\index{InnerTask@{InnerTask}!name@{name}}
+\index{name@{name}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily std\+::string Inner\+Task\+::name = \char`\"{}\char`\"{}}
+
+
+
+Definition at line 200 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+::get\+\_\+name(), parla.\+cython.\+tasks.\+Task\+::unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task\+::update\+\_\+name().
+
+\mbox{\Hypertarget{classInnerTask_acb01c65ba516df7a307b423242ff8a26}\label{classInnerTask_acb01c65ba516df7a307b423242ff8a26}} 
+\index{InnerTask@{InnerTask}!num\_blocking\_compute\_dependencies@{num\_blocking\_compute\_dependencies}}
+\index{num\_blocking\_compute\_dependencies@{num\_blocking\_compute\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_blocking\_compute\_dependencies}{num\_blocking\_compute\_dependencies}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+blocking\+\_\+compute\+\_\+dependencies \{1\}}
+
+
+
+Definition at line 245 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a085e94990bd28c65c38859625794bbce}\label{classInnerTask_a085e94990bd28c65c38859625794bbce}} 
+\index{InnerTask@{InnerTask}!num\_blocking\_dependencies@{num\_blocking\_dependencies}}
+\index{num\_blocking\_dependencies@{num\_blocking\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_blocking\_dependencies}{num\_blocking\_dependencies}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+blocking\+\_\+dependencies \{1\}}
+
+
+
+Definition at line 248 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}\label{classInnerTask_aa983edeb649e9bf4149eee1ba96e2f23}} 
+\index{InnerTask@{InnerTask}!num\_persistant\_instances@{num\_persistant\_instances}}
+\index{num\_persistant\_instances@{num\_persistant\_instances}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_persistant\_instances}{num\_persistant\_instances}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+persistant\+\_\+instances \{1\}}
+
+
+
+Definition at line 260 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a8c4a0f32a041690b814314d71059af71}\label{classInnerTask_a8c4a0f32a041690b814314d71059af71}} 
+\index{InnerTask@{InnerTask}!num\_runtime\_instances@{num\_runtime\_instances}}
+\index{num\_runtime\_instances@{num\_runtime\_instances}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_runtime\_instances}{num\_runtime\_instances}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+runtime\+\_\+instances \{1\}}
+
+
+
+Definition at line 264 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a0461310ee978628caec72207026560b8}\label{classInnerTask_a0461310ee978628caec72207026560b8}} 
+\index{InnerTask@{InnerTask}!num\_unmapped\_dependencies@{num\_unmapped\_dependencies}}
+\index{num\_unmapped\_dependencies@{num\_unmapped\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_unmapped\_dependencies}{num\_unmapped\_dependencies}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+unmapped\+\_\+dependencies \{1\}}
+
+
+
+Definition at line 254 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}\label{classInnerTask_a38d2a4d587256af47e95df82df7ef3a7}} 
+\index{InnerTask@{InnerTask}!num\_unreserved\_dependencies@{num\_unreserved\_dependencies}}
+\index{num\_unreserved\_dependencies@{num\_unreserved\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_unreserved\_dependencies}{num\_unreserved\_dependencies}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+unreserved\+\_\+dependencies \{1\}}
+
+
+
+Definition at line 257 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_acf27413d6cec7ba669e529efe51644b8}\label{classInnerTask_acf27413d6cec7ba669e529efe51644b8}} 
+\index{InnerTask@{InnerTask}!num\_unspawned\_dependencies@{num\_unspawned\_dependencies}}
+\index{num\_unspawned\_dependencies@{num\_unspawned\_dependencies}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{num\_unspawned\_dependencies}{num\_unspawned\_dependencies}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::num\+\_\+unspawned\+\_\+dependencies \{1\}}
+
+
+
+Definition at line 251 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a88c00f52b9fdae2d157a13ecea6c9bdc}\label{classInnerTask_a88c00f52b9fdae2d157a13ecea6c9bdc}} 
+\index{InnerTask@{InnerTask}!parray\_list@{parray\_list}}
+\index{parray\_list@{parray\_list}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{parray\_list}{parray\_list}}
+{\footnotesize\ttfamily std\+::vector$<$std\+::vector$<$std\+::pair$<$\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$, \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}}$>$ $>$ $>$ Inner\+Task\+::parray\+\_\+list}
+
+
+
+Definition at line 284 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}\label{classInnerTask_a5cb2cfd49a183bed5f87abbea2b5075f}} 
+\index{InnerTask@{InnerTask}!placement\_req\_options\_@{placement\_req\_options\_}}
+\index{placement\_req\_options\_@{placement\_req\_options\_}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{placement\_req\_options\_}{placement\_req\_options\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classPlacementRequirementCollections}{Placement\+Requirement\+Collections}} Inner\+Task\+::placement\+\_\+req\+\_\+options\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 592 of file runtime.\+hpp.
+
+
+
+Referenced by get\+\_\+placement\+\_\+req\+\_\+options().
+
+\mbox{\Hypertarget{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}\label{classInnerTask_a73d3e27f05ff1c1f0b06fa0351c4e0c0}} 
+\index{InnerTask@{InnerTask}!priority@{priority}}
+\index{priority@{priority}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{priority}{priority}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Task\+::priority \{0\}}
+
+
+
+Definition at line 227 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a393d70b200a10e27007ccb6a4018b7ed}\label{classInnerTask_a393d70b200a10e27007ccb6a4018b7ed}} 
+\index{InnerTask@{InnerTask}!processed\_data@{processed\_data}}
+\index{processed\_data@{processed\_data}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{processed\_data}{processed\_data}}
+{\footnotesize\ttfamily std\+::atomic$<$bool$>$ Inner\+Task\+::processed\+\_\+data \{true\}}
+
+
+
+Definition at line 278 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_acf6700da9a9eae0e972f05776519963d}\label{classInnerTask_acf6700da9a9eae0e972f05776519963d}} 
+\index{InnerTask@{InnerTask}!py\_task@{py\_task}}
+\index{py\_task@{py\_task}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{py\_task}{py\_task}}
+{\footnotesize\ttfamily void$\ast$ Inner\+Task\+::py\+\_\+task = nullptr}
+
+
+
+Definition at line 230 of file runtime.\+hpp.
+
+
+
+Referenced by Inner\+Task().
+
+\mbox{\Hypertarget{classInnerTask_a12d4bf530fa1cbb8f1861af45edd6f09}\label{classInnerTask_a12d4bf530fa1cbb8f1861af45edd6f09}} 
+\index{InnerTask@{InnerTask}!removed\_reserved@{removed\_reserved}}
+\index{removed\_reserved@{removed\_reserved}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{removed\_reserved}{removed\_reserved}}
+{\footnotesize\ttfamily bool Inner\+Task\+::removed\+\_\+reserved \{false\}}
+
+
+
+Definition at line 261 of file runtime.\+hpp.
+
+
+
+Referenced by get\+\_\+removed(), and set\+\_\+removed().
+
+\mbox{\Hypertarget{classInnerTask_afab4e64aa800a0d6d1dbf9cfc1cf4aff}\label{classInnerTask_afab4e64aa800a0d6d1dbf9cfc1cf4aff}} 
+\index{InnerTask@{InnerTask}!removed\_runtime@{removed\_runtime}}
+\index{removed\_runtime@{removed\_runtime}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{removed\_runtime}{removed\_runtime}}
+{\footnotesize\ttfamily bool Inner\+Task\+::removed\+\_\+runtime \{false\}}
+
+
+
+Definition at line 265 of file runtime.\+hpp.
+
+
+
+Referenced by get\+\_\+removed(), and set\+\_\+removed().
+
+\mbox{\Hypertarget{classInnerTask_a9ace9f5659b95b7963850ad81d852646}\label{classInnerTask_a9ace9f5659b95b7963850ad81d852646}} 
+\index{InnerTask@{InnerTask}!req\_addition\_mode\_@{req\_addition\_mode\_}}
+\index{req\_addition\_mode\_@{req\_addition\_mode\_}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{req\_addition\_mode\_}{req\_addition\_mode\_}}
+{\footnotesize\ttfamily uint32\+\_\+t Inner\+Task\+::req\+\_\+addition\+\_\+mode\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 588 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_ac91988e27f2b24e428be195d829d2fb0}\label{classInnerTask_ac91988e27f2b24e428be195d829d2fb0}} 
+\index{InnerTask@{InnerTask}!scheduler@{scheduler}}
+\index{scheduler@{scheduler}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{scheduler}{scheduler}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}}$\ast$ Inner\+Task\+::scheduler = nullptr}
+
+
+
+Definition at line 212 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler\+Context\+::\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Data\+Movement\+Task\+::\+\_\+execute\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::\+\_\+initialize(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::run(), set\+\_\+scheduler(), and parla.\+cython.\+tasks.\+Task\+::set\+\_\+scheduler().
+
+\mbox{\Hypertarget{classInnerTask_a09813825848944128068badc9a5a9eb0}\label{classInnerTask_a09813825848944128068badc9a5a9eb0}} 
+\index{InnerTask@{InnerTask}!spaces@{spaces}}
+\index{spaces@{spaces}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{spaces}{spaces}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}{Space\+List}} Inner\+Task\+::spaces}
+
+
+
+Definition at line 239 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a59aae1db3b13f083128b4598487f44ff}\label{classInnerTask_a59aae1db3b13f083128b4598487f44ff}} 
+\index{InnerTask@{InnerTask}!state@{state}}
+\index{state@{state}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{state}{state}}
+{\footnotesize\ttfamily std\+::atomic$<$\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}}$>$ Inner\+Task\+::state \{\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}{Task\+::\+CREATED}}\}}
+
+
+
+Definition at line 206 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::result(), and parla.\+cython.\+tasks.\+Task\+::run().
+
+\mbox{\Hypertarget{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}\label{classInnerTask_a5c2ce35674eb2d1bf203d098f6b944af}} 
+\index{InnerTask@{InnerTask}!status@{status}}
+\index{status@{status}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily std\+::atomic$<$\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}}$>$ Inner\+Task\+::status \{\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{Task\+::\+INITIAL}}\}}
+
+
+
+Definition at line 209 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread\+::run().
+
+\mbox{\Hypertarget{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}\label{classInnerTask_ab6775e18d3ae26a4f95ba12f8e7d9d5f}} 
+\index{InnerTask@{InnerTask}!streams@{streams}}
+\index{streams@{streams}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{streams}{streams}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} Inner\+Task\+::streams}
+
+
+
+Definition at line 221 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment\+::stream(), parla.\+cython.\+tasks.\+Terminal\+Environment\+::write\+\_\+streams\+\_\+to\+\_\+task(), and parla.\+cython.\+tasks.\+Terminal\+Environment\+::write\+\_\+to\+\_\+task().
+
+\mbox{\Hypertarget{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}\label{classInnerTask_acb33580af79cbe33d52f0f15eb7b17d1}} 
+\index{InnerTask@{InnerTask}!sync\_type@{sync\_type}}
+\index{sync\_type@{sync\_type}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{sync\_type}{sync\_type}}
+{\footnotesize\ttfamily \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965}{Task\+::\+Synchronization\+Type}} Inner\+Task\+::sync\+\_\+type = \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}{Task\+::\+NON\+\_\+\+BLOCKING}}}
+
+
+
+Definition at line 218 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}\label{classInnerTask_aa7ca767c6af7ddb87491c207b737acda}} 
+\index{InnerTask@{InnerTask}!tmp\_arch\_req\_@{tmp\_arch\_req\_}}
+\index{tmp\_arch\_req\_@{tmp\_arch\_req\_}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{tmp\_arch\_req\_}{tmp\_arch\_req\_}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classArchitectureRequirement}{Architecture\+Requirement}}$>$ Inner\+Task\+::tmp\+\_\+arch\+\_\+req\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 589 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerTask_a22265b3d504865e7b918e5940a686524}\label{classInnerTask_a22265b3d504865e7b918e5940a686524}} 
+\index{InnerTask@{InnerTask}!tmp\_multdev\_reqs\_@{tmp\_multdev\_reqs\_}}
+\index{tmp\_multdev\_reqs\_@{tmp\_multdev\_reqs\_}!InnerTask@{InnerTask}}
+\doxysubsubsection{\texorpdfstring{tmp\_multdev\_reqs\_}{tmp\_multdev\_reqs\_}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classMultiDeviceRequirements}{Multi\+Device\+Requirements}}$>$ Inner\+Task\+::tmp\+\_\+multdev\+\_\+reqs\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 590 of file runtime.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{task_8cpp}{task.\+cpp}}\end{DoxyCompactItemize}

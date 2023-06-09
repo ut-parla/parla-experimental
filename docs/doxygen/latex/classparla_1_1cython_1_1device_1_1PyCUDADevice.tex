@@ -1,0 +1,142 @@
+\hypertarget{classparla_1_1cython_1_1device_1_1PyCUDADevice}{}\doxysection{parla.\+cython.\+device.\+Py\+CUDADevice Class Reference}
+\label{classparla_1_1cython_1_1device_1_1PyCUDADevice}\index{parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}}
+
+
+Inheritance diagram for parla.\+cython.\+device.\+Py\+CUDADevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{classparla_1_1cython_1_1device_1_1PyCUDADevice__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+device.\+Py\+CUDADevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{classparla_1_1cython_1_1device_1_1PyCUDADevice__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCUDADevice_ad2c0ad72a807d231f6b2bd4137d8b2c5}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, int dev\+\_\+id, long mem\+\_\+sz, long num\+\_\+vcus)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCUDADevice_a9d1c9cae1b8d8353d7a8ce9c9f6ad9a1}{device}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCUDADevice_a1b25c6fac450ce538a0146f4a535c519}{\+\_\+cy\+\_\+device}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCUDADevice_ae8f421c3bc33c910277ef4e909356d6d}{\+\_\+device}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}An inherited class from `PyDevice` for a device object specialized to CUDA.
+\end{DoxyVerb}
+ 
+
+Definition at line 217 of file device.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCUDADevice_ad2c0ad72a807d231f6b2bd4137d8b2c5}\label{classparla_1_1cython_1_1device_1_1PyCUDADevice_ad2c0ad72a807d231f6b2bd4137d8b2c5}} 
+\index{parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{dev\+\_\+id,  }\item[{long}]{mem\+\_\+sz,  }\item[{long}]{num\+\_\+vcus }\end{DoxyParamCaption})}
+
+
+
+Definition at line 221 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{221     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, dev\_id: int, mem\_sz: long, num\_vcus: long):}
+\DoxyCodeLine{222         super().\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(DeviceType.CUDA, \textcolor{stringliteral}{"{}CUDA"{}}, dev\_id)}
+\DoxyCodeLine{223         \textcolor{comment}{\#TODO(wlr): If we ever support VECs, we might need to move this device initialization}}
+\DoxyCodeLine{224         self.\_cy\_device = CyCUDADevice(dev\_id, mem\_sz, num\_vcus, self)}
+\DoxyCodeLine{225 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCUDADevice_a9d1c9cae1b8d8353d7a8ce9c9f6ad9a1}\label{classparla_1_1cython_1_1device_1_1PyCUDADevice_a9d1c9cae1b8d8353d7a8ce9c9f6ad9a1}} 
+\index{parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}!device@{device}}
+\index{device@{device}!parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{device()}{device()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Py\+CUDADevice.\+device (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Returns the external library device object if it exists (e.g. cupy for GPU devices).
+Otherwise, return the Parla device object (self).
+\end{DoxyVerb}
+ 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyDevice_a5b6dbb7b3f450243bded8426f2b724e9}{parla.\+cython.\+device.\+Py\+Device}}.
+
+
+
+Definition at line 227 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{227     \textcolor{keyword}{def }device(self):}
+\DoxyCodeLine{228         \textcolor{keywordflow}{if} CUPY\_ENABLED:}
+\DoxyCodeLine{229             self.\_device = cupy.cuda.Device(self.device\_id)}
+\DoxyCodeLine{230         \textcolor{keywordflow}{return} self.\_device}
+\DoxyCodeLine{231 }
+\DoxyCodeLine{232 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement.\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device_1_1PyCUDADevice_a9d1c9cae1b8d8353d7a8ce9c9f6ad9a1_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCUDADevice_a1b25c6fac450ce538a0146f4a535c519}\label{classparla_1_1cython_1_1device_1_1PyCUDADevice_a1b25c6fac450ce538a0146f4a535c519}} 
+\index{parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}!\_cy\_device@{\_cy\_device}}
+\index{\_cy\_device@{\_cy\_device}!parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_cy\_device}{\_cy\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+cy\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 224 of file device.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device.\+Py\+Device.\+\_\+\+\_\+dealloc\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Device.\+get\+\_\+cy\+\_\+device(), parla.\+cython.\+device.\+Py\+Device.\+get\+\_\+global\+\_\+id(), parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+mapped\+\_\+resource(), parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+reserved\+\_\+resource(), and parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+resource().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCUDADevice_ae8f421c3bc33c910277ef4e909356d6d}\label{classparla_1_1cython_1_1device_1_1PyCUDADevice_ae8f421c3bc33c910277ef4e909356d6d}} 
+\index{parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}!\_device@{\_device}}
+\index{\_device@{\_device}!parla.cython.device.PyCUDADevice@{parla.cython.device.PyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_device}{\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 229 of file device.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+call\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+eq\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Device.\+device(), parla.\+cython.\+device.\+Stream.\+device(), parla.\+cython.\+device.\+Cupy\+Stream.\+device(), parla.\+cython.\+tasks.\+Task\+Environment.\+get\+\_\+library\+\_\+device(), and parla.\+cython.\+tasks.\+Task\+Environment.\+get\+\_\+parla\+\_\+device().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device_8pyx}{device.\+pyx}}\end{DoxyCompactItemize}

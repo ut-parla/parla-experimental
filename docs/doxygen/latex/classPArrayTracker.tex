@@ -1,0 +1,319 @@
+\hypertarget{classPArrayTracker}{}\doxysection{PArray\+Tracker Class Reference}
+\label{classPArrayTracker}\index{PArrayTracker@{PArrayTracker}}
+
+
+{\ttfamily \#include $<$parray\+\_\+tracker.\+hpp$>$}
+
+
+
+Collaboration diagram for PArray\+Tracker\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=217pt]{classPArrayTracker__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPArrayTracker_a5e7f6c0a64259bae413ab15b58c9ad85}{PArray\+Tracker}} (\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$deivce\+\_\+manage)
+\item 
+void \mbox{\hyperlink{classPArrayTracker_aa9a05db408dffbca42719c0bded773e6}{track\+\_\+parray}} (const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&parray, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em It the passed PArray instance, either as a slice or a complete array, is not being tracked but is instantiated or moved to a specific device, register the instance to the PArray tracking table and track its states. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPArrayTracker_af76c1440ab54030de48b0f913a4c272c}{untrack\+\_\+parray}} (const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&parray, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Remove a PArray from the PArray tracking table and does not track that until a task attempts to use that. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPArrayTracker_a59b544edce17171c9731c950c603af85}{reserve\+\_\+parray}} (const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&parray, \mbox{\hyperlink{classDevice}{Device}} $\ast$device)
+\begin{DoxyCompactList}\small\item\em Reserve PArray usage in a specified device. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPArrayTracker_a2b40aadf78c88fac068b5fe500665539}{release\+\_\+parray}} (const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&parray, \mbox{\hyperlink{classDevice}{Device}} $\ast$device)
+\begin{DoxyCompactList}\small\item\em Release a PArray from a specified device. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classPArrayTracker_af30dd11bb2cd542a82916aab560e1840}{get\+\_\+parray\+\_\+state}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+idx, uint64\+\_\+t parray\+\_\+parent\+\_\+id)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$ \mbox{\hyperlink{classPArrayTracker_a5887318fa9a54967f5744bc9800d317b}{device\+\_\+manager\+\_\+}}
+\item 
+std\+::vector$<$ std\+::unordered\+\_\+map$<$ uint64\+\_\+t, bool $>$ $>$ \mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\+\_\+parrays\+\_\+}}
+\begin{DoxyCompactList}\small\item\em Vetor index\+: a device global ID Map\textquotesingle{}s key\+: a PArray ID (NOTE that this is the ID of the complete array) Map\textquotesingle{}s value\+: true if the PArray instance exists on/will be mapped to the device Using a device ID as the first key is time efficient since we don\textquotesingle{}t need to create device keys whenever we add a new PArray to the table. \end{DoxyCompactList}\item 
+std\+::mutex \mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}
+\begin{DoxyCompactList}\small\item\em Any worker thread can update states of PArrays. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 13 of file parray\+\_\+tracker.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPArrayTracker_a5e7f6c0a64259bae413ab15b58c9ad85}\label{classPArrayTracker_a5e7f6c0a64259bae413ab15b58c9ad85}} 
+\index{PArrayTracker@{PArrayTracker}!PArrayTracker@{PArrayTracker}}
+\index{PArrayTracker@{PArrayTracker}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{PArrayTracker()}{PArrayTracker()}}
+{\footnotesize\ttfamily PArray\+Tracker\+::\+PArray\+Tracker (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$}]{deivce\+\_\+manage }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3 of file parray\+\_\+tracker.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{4     : \mbox{\hyperlink{classPArrayTracker_a5887318fa9a54967f5744bc9800d317b}{device\_manager\_}}(device\_manager) \{}
+\DoxyCodeLine{5   this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}.resize(}
+\DoxyCodeLine{6       device\_manager-\/>template get\_num\_devices<DeviceType::All>());}
+\DoxyCodeLine{7 \}}
+
+\end{DoxyCode}
+
+
+References All, and device\+\_\+manager\+\_\+.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPArrayTracker_af30dd11bb2cd542a82916aab560e1840}\label{classPArrayTracker_af30dd11bb2cd542a82916aab560e1840}} 
+\index{PArrayTracker@{PArrayTracker}!get\_parray\_state@{get\_parray\_state}}
+\index{get\_parray\_state@{get\_parray\_state}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{get\_parray\_state()}{get\_parray\_state()}}
+{\footnotesize\ttfamily bool PArray\+Tracker\+::get\+\_\+parray\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+idx,  }\item[{uint64\+\_\+t}]{parray\+\_\+parent\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 48 of file parray\+\_\+tracker.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{48                                                                            \{}
+\DoxyCodeLine{49     \mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.lock();}
+\DoxyCodeLine{50     \textcolor{keywordtype}{bool} state = this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[global\_dev\_idx][parray\_parent\_id];}
+\DoxyCodeLine{51     \mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.unlock();}
+\DoxyCodeLine{52     \textcolor{keywordflow}{return} state;}
+\DoxyCodeLine{53   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classPArrayTracker_a2b40aadf78c88fac068b5fe500665539}\label{classPArrayTracker_a2b40aadf78c88fac068b5fe500665539}} 
+\index{PArrayTracker@{PArrayTracker}!release\_parray@{release\_parray}}
+\index{release\_parray@{release\_parray}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{release\_parray()}{release\_parray()}}
+{\footnotesize\ttfamily void PArray\+Tracker\+::release\+\_\+parray (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&}]{parray,  }\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{device }\end{DoxyParamCaption})}
+
+
+
+Release a PArray from a specified device. 
+
+A PArray is released from a device when its instance does not exist and also there is no plan (none of tasks that use the PArray is mapped to the device) to be referenced in the device. 
+
+Definition at line 50 of file parray\+\_\+tracker.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{50                                                                             \{}
+\DoxyCodeLine{51   \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{DevID\_t}} dev\_global\_id = device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}();}
+\DoxyCodeLine{52   this-\/>\mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.lock();}
+\DoxyCodeLine{53   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id].find(\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id) ==}
+\DoxyCodeLine{54       this-\/>managed\_parrays\_[dev\_global\_id].end()) \{}
+\DoxyCodeLine{55     \textcolor{keywordflow}{return};}
+\DoxyCodeLine{56   \}}
+\DoxyCodeLine{57   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id][\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id] == \textcolor{keyword}{true}) \{}
+\DoxyCodeLine{58     this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id][\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id] = \textcolor{keyword}{false};}
+\DoxyCodeLine{59     \textcolor{comment}{// Release memory for a PArray to a specified device.}}
+\DoxyCodeLine{60     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} \&dev\_mapped\_pool = device-\/>\mbox{\hyperlink{classDevice_a58ea9a4b43eae80532697371cb2f62b5}{get\_mapped\_pool}}();}
+\DoxyCodeLine{61     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} parray\_resource;}
+\DoxyCodeLine{62     parray\_resource.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, \mbox{\hyperlink{namespaceparray}{parray}}.get\_size());}
+\DoxyCodeLine{63     \textcolor{comment}{// XXX It is possible that the memory size of the PArray is bigger than}}
+\DoxyCodeLine{64     \textcolor{comment}{// the allocated memory size in the device. This is because in the PArray}}
+\DoxyCodeLine{65     \textcolor{comment}{// coherency protocol, a parent PArray of the slice evicts its slices}}
+\DoxyCodeLine{66     \textcolor{comment}{// from a device and in this case, the coherency protocol can only view}}
+\DoxyCodeLine{67     \textcolor{comment}{// the parent, not its subarrays, so to speak slices.}}
+\DoxyCodeLine{68     \textcolor{comment}{// Therefore, it is possible that the tracker allocates the memory size of}}
+\DoxyCodeLine{69     \textcolor{comment}{// the slice, as it is set at \_\_init\_\_() of the slice PArray and can be}}
+\DoxyCodeLine{70     \textcolor{comment}{// seen, but deallocates the memory byte size of its parent PArray. This}}
+\DoxyCodeLine{71     \textcolor{comment}{// makes the mapped memory size counter to a negative number, which we do}}
+\DoxyCodeLine{72     \textcolor{comment}{// not prefer. Instead, we set 0 if the counter could be a negative number.}}
+\DoxyCodeLine{73     \textcolor{comment}{// This is more accurate than just using parent PArray size for allocation}}
+\DoxyCodeLine{74     \textcolor{comment}{// and deallocation.}}
+\DoxyCodeLine{75     \textcolor{comment}{// TODO(hc): To resolve this, we may need another slice control layer for}}
+\DoxyCodeLine{76     \textcolor{comment}{//           each PArray that tracks the slices.}}
+\DoxyCodeLine{77     \textcolor{keywordflow}{if} (dev\_mapped\_pool.template check\_greater<ResourceCategory::Persistent>(}
+\DoxyCodeLine{78             parray\_resource)) \{}
+\DoxyCodeLine{79       dev\_mapped\_pool.template decrease<ResourceCategory::Persistent>(}
+\DoxyCodeLine{80           parray\_resource);}
+\DoxyCodeLine{81     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{82       dev\_mapped\_pool.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, 0);}
+\DoxyCodeLine{83     \}}
+\DoxyCodeLine{84     \textcolor{comment}{// std::cout << "{}[PArrayTracker] PArray ID:"{} << parray.id << "{}(parent id:"{}}}
+\DoxyCodeLine{85     \textcolor{comment}{// <<}}
+\DoxyCodeLine{86     \textcolor{comment}{//   parray.parent\_id << "{}) releases "{}}}
+\DoxyCodeLine{87     \textcolor{comment}{//   << parray.get\_size() << "{}Bytes in Device "{} << device-\/>get\_name() <<}}
+\DoxyCodeLine{88     \textcolor{comment}{//   "{}\(\backslash\)n"{};}}
+\DoxyCodeLine{89   \}}
+\DoxyCodeLine{90   this-\/>\mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.unlock();}
+\DoxyCodeLine{91 \}}
+
+\end{DoxyCode}
+
+
+References Device\+::get\+\_\+mapped\+\_\+pool(), Memory, and Persistent.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classPArrayTracker_a2b40aadf78c88fac068b5fe500665539_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classPArrayTracker_a59b544edce17171c9731c950c603af85}\label{classPArrayTracker_a59b544edce17171c9731c950c603af85}} 
+\index{PArrayTracker@{PArrayTracker}!reserve\_parray@{reserve\_parray}}
+\index{reserve\_parray@{reserve\_parray}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{reserve\_parray()}{reserve\_parray()}}
+{\footnotesize\ttfamily void PArray\+Tracker\+::reserve\+\_\+parray (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&}]{parray,  }\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{device }\end{DoxyParamCaption})}
+
+
+
+Reserve PArray usage in a specified device. 
+
+If a PArray is reserved to a specific device, it implies that the corresponding PArray instance is planned to be instantiated or is already instantiated in the device. 
+
+Definition at line 23 of file parray\+\_\+tracker.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{23                                                                             \{}
+\DoxyCodeLine{24   \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{DevID\_t}} dev\_global\_id = device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}();}
+\DoxyCodeLine{25   \textcolor{keywordtype}{bool} first\_reservation\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{26   this-\/>\mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.lock();}
+\DoxyCodeLine{27   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id].find(\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id) ==}
+\DoxyCodeLine{28       this-\/>managed\_parrays\_[dev\_global\_id].end()) \{}
+\DoxyCodeLine{29     this-\/>\mbox{\hyperlink{classPArrayTracker_aa9a05db408dffbca42719c0bded773e6}{track\_parray}}(parray, dev\_global\_id);}
+\DoxyCodeLine{30     first\_reservation = \textcolor{keyword}{true};}
+\DoxyCodeLine{31   \}}
+\DoxyCodeLine{32   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id][\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id] == \textcolor{keyword}{false} or}
+\DoxyCodeLine{33       first\_reservation) \{}
+\DoxyCodeLine{34     this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_global\_id][\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id] = \textcolor{keyword}{true};}
+\DoxyCodeLine{35     \textcolor{comment}{// Allocate memory for a PArray to a specified device.}}
+\DoxyCodeLine{36     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} \&dev\_mapped\_pool = device-\/>\mbox{\hyperlink{classDevice_a58ea9a4b43eae80532697371cb2f62b5}{get\_mapped\_pool}}();}
+\DoxyCodeLine{37     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} parray\_resource;}
+\DoxyCodeLine{38     parray\_resource.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, \mbox{\hyperlink{namespaceparray}{parray}}.get\_size());}
+\DoxyCodeLine{39     dev\_mapped\_pool.template increase<ResourceCategory::Persistent>(}
+\DoxyCodeLine{40         parray\_resource);}
+\DoxyCodeLine{41     \textcolor{comment}{// std::cout << "{}[PArrayTracker] PArray ID:"{} << parray.id << "{}(parent id:"{}}}
+\DoxyCodeLine{42     \textcolor{comment}{// <<}}
+\DoxyCodeLine{43     \textcolor{comment}{//   parray.parent\_id << "{}) allocates "{}}}
+\DoxyCodeLine{44     \textcolor{comment}{//   << parray.get\_size() << "{}Bytes in Device "{} << device-\/>get\_name() <<}}
+\DoxyCodeLine{45     \textcolor{comment}{//   "{}\(\backslash\)n"{};}}
+\DoxyCodeLine{46   \}}
+\DoxyCodeLine{47   this-\/>\mbox{\hyperlink{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}{mtx}}.unlock();}
+\DoxyCodeLine{48 \}}
+
+\end{DoxyCode}
+
+
+References Device\+::get\+\_\+mapped\+\_\+pool(), Memory, and Persistent.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classPArrayTracker_a59b544edce17171c9731c950c603af85_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classPArrayTracker_aa9a05db408dffbca42719c0bded773e6}\label{classPArrayTracker_aa9a05db408dffbca42719c0bded773e6}} 
+\index{PArrayTracker@{PArrayTracker}!track\_parray@{track\_parray}}
+\index{track\_parray@{track\_parray}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{track\_parray()}{track\_parray()}}
+{\footnotesize\ttfamily void PArray\+Tracker\+::track\+\_\+parray (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&}]{parray,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+It the passed PArray instance, either as a slice or a complete array, is not being tracked but is instantiated or moved to a specific device, register the instance to the PArray tracking table and track its states. 
+
+
+
+Definition at line 9 of file parray\+\_\+tracker.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{9                                                                           \{}
+\DoxyCodeLine{10   \textcolor{comment}{// This function is called when a PArray is mapped to a device.}}
+\DoxyCodeLine{11   \textcolor{comment}{// Since `managed\_parrays\_` holds information of the PArrays that}}
+\DoxyCodeLine{12   \textcolor{comment}{// have already instantiated or will be moved, set its state to "{}true"{}.}}
+\DoxyCodeLine{13   this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_id].insert(\{\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id, \textcolor{keyword}{true}\});}
+\DoxyCodeLine{14 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classPArrayTracker_af76c1440ab54030de48b0f913a4c272c}\label{classPArrayTracker_af76c1440ab54030de48b0f913a4c272c}} 
+\index{PArrayTracker@{PArrayTracker}!untrack\_parray@{untrack\_parray}}
+\index{untrack\_parray@{untrack\_parray}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{untrack\_parray()}{untrack\_parray()}}
+{\footnotesize\ttfamily void PArray\+Tracker\+::untrack\+\_\+parray (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} \&}]{parray,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Remove a PArray from the PArray tracking table and does not track that until a task attempts to use that. 
+
+This can improve look-\/up operation performance. 
+
+Definition at line 16 of file parray\+\_\+tracker.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{16                                                                             \{}
+\DoxyCodeLine{17   \textcolor{comment}{// TODO(hc): as we don't have policy regarding this, we are not using}}
+\DoxyCodeLine{18   \textcolor{comment}{//           it. we may need this if look-\/up operation is not cheap}}
+\DoxyCodeLine{19   \textcolor{comment}{//           anymore.}}
+\DoxyCodeLine{20   this-\/>\mbox{\hyperlink{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}{managed\_parrays\_}}[dev\_id].erase(\mbox{\hyperlink{namespaceparray}{parray}}.parent\_id);}
+\DoxyCodeLine{21 \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classPArrayTracker_a5887318fa9a54967f5744bc9800d317b}\label{classPArrayTracker_a5887318fa9a54967f5744bc9800d317b}} 
+\index{PArrayTracker@{PArrayTracker}!device\_manager\_@{device\_manager\_}}
+\index{device\_manager\_@{device\_manager\_}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{device\_manager\_}{device\_manager\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDeviceManager}{Device\+Manager}}$\ast$ PArray\+Tracker\+::device\+\_\+manager\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 56 of file parray\+\_\+tracker.\+hpp.
+
+
+
+Referenced by PArray\+Tracker().
+
+\mbox{\Hypertarget{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}\label{classPArrayTracker_a1efc0e8e4808f2466f2a26725707798f}} 
+\index{PArrayTracker@{PArrayTracker}!managed\_parrays\_@{managed\_parrays\_}}
+\index{managed\_parrays\_@{managed\_parrays\_}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{managed\_parrays\_}{managed\_parrays\_}}
+{\footnotesize\ttfamily std\+::vector$<$std\+::unordered\+\_\+map$<$uint64\+\_\+t, bool$>$ $>$ PArray\+Tracker\+::managed\+\_\+parrays\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Vetor index\+: a device global ID Map\textquotesingle{}s key\+: a PArray ID (NOTE that this is the ID of the complete array) Map\textquotesingle{}s value\+: true if the PArray instance exists on/will be mapped to the device Using a device ID as the first key is time efficient since we don\textquotesingle{}t need to create device keys whenever we add a new PArray to the table. 
+
+
+
+Definition at line 65 of file parray\+\_\+tracker.\+hpp.
+
+\mbox{\Hypertarget{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}\label{classPArrayTracker_abc979812aede5ca3cf6dd90d1c5d1cfd}} 
+\index{PArrayTracker@{PArrayTracker}!mtx@{mtx}}
+\index{mtx@{mtx}!PArrayTracker@{PArrayTracker}}
+\doxysubsubsection{\texorpdfstring{mtx}{mtx}}
+{\footnotesize\ttfamily std\+::mutex PArray\+Tracker\+::mtx\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Any worker thread can update states of PArrays. 
+
+Guard operations by this lock. TODO(hc)\+: This will be replaced with parallel hash map. 
+
+Definition at line 69 of file parray\+\_\+tracker.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{parray__tracker_8hpp}{parray\+\_\+tracker.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{parray__tracker_8cpp}{parray\+\_\+tracker.\+cpp}}\end{DoxyCompactItemize}

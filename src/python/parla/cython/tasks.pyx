@@ -1,4 +1,9 @@
 
+"""!
+@file tasks.pyx
+@brief Contains the Task and TaskEnvironment classes, which are used to represent tasks and their execution environments.
+"""
+
 from collections import namedtuple, defaultdict
 import functools 
 
@@ -43,6 +48,10 @@ cpu = device_manager.cpu
 
 
 class TaskState(object, metaclass=ABCMeta):
+    """!
+    @brief Abstract base class for Task State.
+    """
+
     __slots__ = []
 
     @property
@@ -57,9 +66,10 @@ class TaskState(object, metaclass=ABCMeta):
 
 
 class TaskCreated(TaskState):
+    """!
+    @brief This state specifies that a task has been created but not yet spawned.
     """
-    This state specifies that a task is waiting for dependencies' spawnings
-    """
+
     @property
     def value(self):
         return 0
@@ -70,8 +80,8 @@ class TaskCreated(TaskState):
 
 
 class TaskSpawned(TaskState):
-    """
-    This state specifies that a task is ready to be mapped to a specific device set for execution
+    """!
+    @brief This state specifies that a task is ready to be mapped to a specific device set
     """
     @property
     def value(self):
@@ -83,8 +93,8 @@ class TaskSpawned(TaskState):
 
 
 class TaskMapped(TaskState):
-    """
-    This state specifies that a task has been mapped to a device set.
+    """!
+    @brief This state specifies that a task has been mapped to a device set, but not yet resered its resources there
     """
     @property
     def value(self):
@@ -96,8 +106,8 @@ class TaskMapped(TaskState):
 
 
 class TaskReserved(TaskState):
-    """
-    This state specifies that a task has had its persistent resources (e.g. memory) reserved on its device set
+    """!
+    @brief This state specifies that a task has reserved its persistent resources (e.g. memory) on its device set. Data movement tasks have been created
     """
     @property
     def value(self):
@@ -109,8 +119,8 @@ class TaskReserved(TaskState):
 
 
 class TaskReady(TaskState):
-    """
-    This state specifies that a task is "ready" to be launched. Its dependencies have been dispatched to hardware queues (or have completed)
+    """!
+    @brief This state specifies that a task is "ready" to be launched. Its dependencies have been dispatched to hardware queues (or have completed)
     """
     @property
     def value(self):
@@ -122,6 +132,10 @@ class TaskReady(TaskState):
 
 
 class TaskRunning(TaskState):
+    """!
+    @brief This state specifies that a task is executing in a stream.
+    """
+
     __slots__ = ["func", "args", "dependencies"]
 
     @property
@@ -163,8 +177,8 @@ class TaskRunning(TaskState):
 
 
 class TaskRunahead(TaskState):
-    """
-    This state specifies that a task is executing in a stream but the body has completed.
+    """!
+    @brief State: A task is executing in a stream but the body has completed.
     """
     __slots__ = ["return_value"]
 
@@ -183,6 +197,10 @@ class TaskRunahead(TaskState):
         return "TaskRunahead({})".format(self.return_value)
 
 class TaskCompleted(TaskState):
+    """!
+    @brief This state specifies that a task has completed execution.
+    """
+
     __slots__ = ["return_value"]
 
     @property
@@ -201,6 +219,10 @@ class TaskCompleted(TaskState):
 
 
 class TaskException(TaskState):
+    """!
+    @brief This state specifies that a task has completed execution with an exception.
+    """
+
     __slots__ = ["exception", "traceback"]
 
     @property
@@ -217,6 +239,7 @@ class TaskException(TaskState):
 
     def __repr__(self):
         return "TaskException({})".format(self.exception)
+
 
 TaskAwaitTasks = namedtuple("AwaitTasks", ["dependencies", "value_task"])
 
@@ -248,11 +271,24 @@ class _TaskLocals(threading.local):
 task_locals = _TaskLocals()
 
 class Task:
+    """!
+    @brief Python Task interface. This class is used to represent a task in the task graph.
+
+    A task is a unit of work that can be executed asynchronously. Tasks are created by calling the spawn decorator on a python code block.
+    Tasks are scheduled for execution as soon as they are created.
+
+    The task class is a wrapper around a C++ task object. The C++ task object is created when the task is spawned and is destroyed when all references to the task are gone.
+    The python interface stores the Python function task body and passes all metadata (mapping and precedence constraints) to the C++ runtime on creations.
+    """
 
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
+        """!
+        @brief Create a new task empty object. Task objects are always created empty on first reference and are populated by the runtime when they are spawned. 
+        """
+
         self.id = id(self)
 
-        #TODO(wlr): Should this be a stack for continuation tasks?
+        #TODO(wlr): Should this be a stack for continuation tasks? (so the task has a memory of where it executed from)
         self._environment = None
 
         self.taskspace = taskspace
@@ -277,13 +313,20 @@ class Task:
 
     @property
     def env(self):
+        """!
+        @brief The active TaskEnvironment of the task.
+        """
         return self._env
 
     @env.setter
     def env(self, v):
         self._env = v
 
-    def unpack_name(self):
+    def unpack_name(self) -> str:
+        """!
+        @brief Create the name of the task from the taskspace and index.
+        @return The name of the task.
+        """
 
         if self.taskspace is not None:
             space_name = self.taskspace._name
@@ -298,17 +341,27 @@ class Task:
         return task_name
 
     def update_name(self):
+        """!
+        @brief Update the name of the task from the taskspace and index.
+        """
         name = self.unpack_name()
         self.name = name
 
         name = name.encode('utf-8')
         self.inner_task.update_name(name)
 
-    def get_name(self):
+    def get_name(self) -> str:
+        """!
+        @brief Get the name of the task.
+        @return The name of the task.
+        """
         return self.name
 
     @property
     def environment(self):
+        """!
+        @brief The active TaskEnvironment of the task.
+        """
         return self._environment
 
     @environment.setter
@@ -316,6 +369,11 @@ class Task:
         self._environment = env
 
     def handle_runahead_dependencies(self):
+        """!
+        @brief Wait (or synchronize) on all events that the task depends on.
+
+        This handles the synchronization through the C++ interface.
+        """
 
         if self.runahead == SyncType.NONE:
             return
@@ -331,6 +389,11 @@ class Task:
         
 
     def py_handle_runahead_dependencies(self):
+        """!
+        @brief Wait (or synchronize) on all events that the task depends on.
+
+        This handles the synchronization through the Python interface.
+        """
         #print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
         assert(self.environment is not None)
 
@@ -360,6 +423,14 @@ class Task:
             sync_events(task_env)
 
     def instantiate(self, dependencies=None, list_of_dev_reqs=[], priority=None, dataflow=None, runahead=SyncType.BLOCKING):
+        """!
+        @brief Add metadata to a blank task object. Includes dependencies, device requirements, priority, and dataflow.
+        @param dependencies A list of tasks that this task depends on.
+        @param list_of_dev_reqs A list of device requirements/constraints for this task.
+        @param priority The priority of the task.
+        @param dataflow The collection of CrossPy objects and dependence direction (IN/OUT/INOUT).
+        @param runahead The runahead synchronization type of the task. Defaults to SyncType.BLOCKING.
+        """
 
         self.dependencies = dependencies
         self.priority = priority
@@ -380,6 +451,11 @@ class Task:
 
     @property
     def result(self):
+        """!
+        @brief The return value of the task body. This is only valid after the task has completed.
+
+        @return The return value of the task body or an exception if the task threw an exception. Returns None if the task has not completed.
+        """
 
         if isinstance(self.state, TaskCompleted):
             return self.state.return_value
@@ -397,6 +473,10 @@ class Task:
         raise NotImplementedError()
 
     def run(self):
+        """!
+        @brief Run the task body.
+        """
+
         #assert self.assigned, "Task was not assigned to a device before execution"
         #assert isinstance(self.req, EnvironmentRequirements), "Task was not assigned to a enviornment before execution"
 
@@ -474,24 +554,41 @@ class Task:
                     AccessMode.INOUT, inout_parray_devid)
 
     def notify_dependents_wrapper(self):
-        """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
+        """!
+        @brief Mock dependents interface only used for testing. Notify dependents should be called internall by the scheduler
+        """
         status = self.inner_task.notify_dependents_wrapper()
         return status
 
     def set_scheduler(self, scheduler):
+        """!
+        @brief Set the scheduler the task has been spawned by.
+        """
         self.scheduler = scheduler
         self.inner_task.set_scheduler(scheduler.inner_scheduler)
 
     def set_state(self, state):
+        """!
+        @brief Set the state of the task (passed to the C++ runtime)
+        """
         self.inner_task.set_state(state)
 
     def get_state(self):
+        """!
+        @brief Get the state of the task (from the C++ runtime)
+        """
         return self.inner_task.get_state()
 
     def set_complete(self):
         self.inner_task.set_complete()
 
     def set_device_reqs(self, device_reqs):
+
+        """!
+        @brief Set the device requirements of the task.
+        @param device_reqs A list of device requirements. Each device requirement can be a single device, a single architecture, or a tuple of devices and architectures.
+        """
+
         # device_reqs: a list of device requirements,
         # a list of list of devices and frozensets
         # a list of a single frozenset
@@ -526,18 +623,38 @@ class Task:
         return (yield TaskAwaitTasks([self], self))
 
     def add_stream(self, stream):
+        """
+        @brief Record a python managed cupy stream to the task.
+        """
         self.inner_task.add_stream(stream)
 
     def add_event(self, event):
+        """
+        @brief Record a python managed cupy event to the task.
+        """
         self.inner_task.add_event(event)
 
 
 class ComputeTask(Task):
+    """!
+    @brief A compute task is a task that executes a user defined Python function on a device.
+    """
+
 
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
 
     def instantiate(self, function, args, dependencies=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):
+        """!
+        @brief Instantiate the task with a function and arguments.
+        @param function The function to execute.
+        @param args The arguments to the function.
+        @param dependencies A list of tasks that this task depends on.
+        @param dataflow The dataflow object that describes the data dependencies of the task. (Crosspy and data direction (IN/OUT/INOUT))
+        @param priority The priority of the task.
+        @param runahead The type of synchronization the task uses for runahead scheduling.
+        """
+
         #Holds the original function
         self.base_function = function
 
@@ -553,9 +670,15 @@ class ComputeTask(Task):
         super().instantiate(dependencies=dependencies, priority=priority, dataflow=dataflow, runahead=runahead)
 
     def _execute_task(self):
+        """!
+        @brief Run the task body with the saved arguments. If the body is a continuation, run the continuation.
+        """
         return self.func(self, *self.args)
 
     def cleanup(self):
+        """!
+        @brief Cleanup the task by removing the function, arguments, and references to its data objects.
+        """
         self.func = None
         self.args = None
         self.dataflow = None
@@ -565,6 +688,9 @@ class ComputeTask(Task):
 
 
 class DataMovementTask(Task):
+    """!
+    @brief A data movement task is a task that moves data between devices. It is not user defined.
+    """
 
     def __init__(self, parray: PArray=None, access_mode=None, \
         assigned_devices: List[PyDevice]=None, taskspace=None, \
@@ -575,6 +701,12 @@ class DataMovementTask(Task):
         self.assigned_devices = assigned_devices
 
     def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
+        """!
+        @brief Instantiate the data movement task with attributes from the C++ runtime.
+        @param attrs The attributes of the data movement task.
+        @param scheduler The scheduler that the task is created under.
+        @param runahead The type of synchronization the task uses for runahead scheduling.
+        """
         self.name = attrs.name
         self.parray = attrs.parray
         self.access_mode = attrs.access_mode
@@ -586,7 +718,13 @@ class DataMovementTask(Task):
         self.runahead = runahead
 
     def _execute_task(self):
+        """!
+        @brief Run the data movement task. Calls the PArray interface to move the data to the assigned devices.
+        Devices are given by the local relative device id within the TaskEnvironment.
+        """
         write_flag = True if self.access_mode != AccessMode.IN else False
+
+        #TODO: Get device manager from task environment instead of scheduler at creation time
         device_manager = self.scheduler.device_manager
         """
         for device in self.assigned_devices:
@@ -609,12 +747,21 @@ class DataMovementTask(Task):
 ######
 
 def create_device_env(device):
+    """!
+    @brief Create a terminal device environment from a PyDevice.
+    @param device The PyDevice to create the environment from.
+    """
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
     elif isinstance(device, PyCUDADevice):
         return GPUEnvironment(device), DeviceType.CUDA
 
 def create_env(sources):
+    """!
+    @brief Create the union  TaskEnvironment from a list of TaskEnvironments or PyDevices.
+    @param sources The list of PyDevices (or Environments) to create the new environment from.
+    """
+
     targets = []
 
     for env in sources:
@@ -629,6 +776,10 @@ def create_env(sources):
         return TaskEnvironment(targets)
 
 class TaskEnvironment:
+
+    """!
+    @brief A TaskEnvironment is a collection of devices or other TaskEnvironments used to coordinate and synchronize kernels in the Task body.
+    """
 
     def __init__(self, environment_list, blocking=False):
 
@@ -821,6 +972,7 @@ class TaskEnvironment:
         for stream in self.stream_list:
             stream_pool.return_stream(stream)
 
+    #TODO: MOVE THIS TO C++!!!!
     def finalize(self):
         stream_pool = get_stream_pool()
 
@@ -959,6 +1111,13 @@ class TaskEnvironment:
       
 
 class TerminalEnvironment(TaskEnvironment):
+
+    """!
+    @brief An endpoint TaskEnvironment representing a single device. These are where most actual computation will take place.
+
+    @details A TerminalEnviornment is an edpoint TaskEnvironment that is made of a single device (CPU or GPU). If they are a GPU they will set the current CuPy context accordingly.
+    """
+
     def  __init__(self,  device, blocking=False):
         super(TerminalEnvironment, self).__init__([], blocking=blocking)
         self.device_dict[device.architecture].append(self)
@@ -1012,8 +1171,8 @@ class TerminalEnvironment(TaskEnvironment):
             raise IndexError("TerminalEnvironment only has one device.")
 
     def record_event(self, stream=None, tag='default'):
-        """
-        Record a CUDA event on the current stream. 
+        """!
+        @brief Record a CUDA event on the current stream. 
         """
 
         if stream is None:
@@ -1028,8 +1187,8 @@ class TerminalEnvironment(TaskEnvironment):
             event.record(stream.stream)
 
     def synchronize_event(self, tag='default'):
-        """
-        Synchronize host thread to the tagged CUDA event (sleep or waiting). 
+        """!
+        @brief Synchronize host thread to the tagged CUDA event (sleep or waiting). 
         """
 
         if tag not in self.event_dict:
@@ -1042,9 +1201,8 @@ class TerminalEnvironment(TaskEnvironment):
             event.synchronize()
 
     def wait_event(self, stream=None, tag='default'):
-        """
-        Submit a cross-stream wait on the tagged CUDA event to the current stream. 
-        All further work submitted on the current stream will wait until the tagged event is recorded.
+        """!
+        @brief Submit a cross-stream wait on the tagged CUDA event to the current stream. All further work submitted on the current stream will wait until the tagged event is recorded.
         """
         if tag not in self.event_dict:
             raise RuntimeError("Event must be created before waiting.")
@@ -1056,17 +1214,16 @@ class TerminalEnvironment(TaskEnvironment):
             stream.wait_event(event)
 
     def create_event(self, stream=None, tag='default'):
-        """
-        Create a CUDA event on the current stream.  It can be used for synchronization or cross-stream waiting.
-        It is not recorded by default at creation.
+        """!
+        @brief Create a CUDA event on the current stream.  It can be used for synchronization or cross-stream waiting. It is not recorded by default at creation.
         """
         if stream is None:
             stream = Locals.stream
         self.event_dict[tag] = stream.create_event()
 
     def write_to_task(self, task):
-        """
-        Store stream and event pointers in C++ task
+        """!
+        @brief Store stream and event pointers in C++ task
         """
         for stream in self.streams:
             task.add_stream(stream.stream)
@@ -1076,15 +1233,15 @@ class TerminalEnvironment(TaskEnvironment):
         task.add_event(self.event_dict['default'])
 
     def write_streams_to_task(self, task):
-        """
-        Store stream pointers in C++ task
+        """!
+        @brief Record stream pointers into C++ task
         """
         for stream in self.streams:
             task.add_stream(stream.stream)
 
     def write_events_to_task(self, task):
-        """
-        Store event pointers in C++ task
+        """!
+        @brief Record event pointers in C++ task
         """
         #for event in self.event_dict.values():
                 #    task.add_event(event)

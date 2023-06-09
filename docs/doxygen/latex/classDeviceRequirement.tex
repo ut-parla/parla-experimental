@@ -1,0 +1,270 @@
+\hypertarget{classDeviceRequirement}{}\doxysection{Device\+Requirement Class Reference}
+\label{classDeviceRequirement}\index{DeviceRequirement@{DeviceRequirement}}
+
+
+{\ttfamily \#include $<$resource\+\_\+requirements.\+hpp$>$}
+
+
+
+Inheritance diagram for Device\+Requirement\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=265pt]{classDeviceRequirement__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Device\+Requirement\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDeviceRequirement__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDeviceRequirement_aea42a6c1f29e2fcbd0aaf08fd486a983}{Device\+Requirement}} (\mbox{\hyperlink{classDevice}{Device}} $\ast$dev, \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \mbox{\hyperlink{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}{res\+\_\+req}})
+\item 
+bool \mbox{\hyperlink{classDeviceRequirement_a858711720fda4c6fb57a2dd18f3bd4de}{is\+\_\+multidev\+\_\+req}} () override
+\item 
+bool \mbox{\hyperlink{classDeviceRequirement_aa892865d61be0cec3d7a44134a40963c}{is\+\_\+arch\+\_\+req}} () override
+\item 
+bool \mbox{\hyperlink{classDeviceRequirement_acd62d3ac8fe993696d2f866a4bcc3d31}{is\+\_\+dev\+\_\+req}} () override
+\item 
+\mbox{\hyperlink{classDevice}{Device}} $\ast$ \mbox{\hyperlink{classDeviceRequirement_ab14777030002f8830b91c36a41deb130}{device}} ()
+\item 
+const \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \& \mbox{\hyperlink{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}{res\+\_\+req}} () const
+\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \& \mbox{\hyperlink{classDeviceRequirement_acba627b6f4055fa0516876802dd3e3c5}{res\+\_\+req}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDevice}{Device}} $\ast$ \mbox{\hyperlink{classDeviceRequirement_a8e0546ac377259aab2c33343e666fbe9}{dev\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \mbox{\hyperlink{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}{res\+\_\+req\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 51 of file resource\+\_\+requirements.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classDeviceRequirement_aea42a6c1f29e2fcbd0aaf08fd486a983}\label{classDeviceRequirement_aea42a6c1f29e2fcbd0aaf08fd486a983}} 
+\index{DeviceRequirement@{DeviceRequirement}!DeviceRequirement@{DeviceRequirement}}
+\index{DeviceRequirement@{DeviceRequirement}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{DeviceRequirement()}{DeviceRequirement()}}
+{\footnotesize\ttfamily Device\+Requirement\+::\+Device\+Requirement (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDevice}{Device}} $\ast$}]{dev,  }\item[{\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}}]{res\+\_\+req }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 53 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{54       : \mbox{\hyperlink{classDeviceRequirement_a8e0546ac377259aab2c33343e666fbe9}{dev\_}}(dev), \mbox{\hyperlink{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}{res\_req\_}}(\mbox{\hyperlink{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}{res\_req}}) \{\}}
+
+\end{DoxyCode}
+
+
+References dev\+\_\+, res\+\_\+req\+\_\+, and Resource\+Pool\+::\+Resource\+Pool().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDeviceRequirement_aea42a6c1f29e2fcbd0aaf08fd486a983_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classDeviceRequirement_ab14777030002f8830b91c36a41deb130}\label{classDeviceRequirement_ab14777030002f8830b91c36a41deb130}} 
+\index{DeviceRequirement@{DeviceRequirement}!device@{device}}
+\index{device@{device}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{device()}{device()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDevice}{Device}}$\ast$ Device\+Requirement\+::device (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 60 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{60 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceRequirement_a8e0546ac377259aab2c33343e666fbe9}{dev\_}}; \}}
+
+\end{DoxyCode}
+
+
+References dev\+\_\+.
+
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement\+::\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDeviceRequirement_ab14777030002f8830b91c36a41deb130_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDeviceRequirement_aa892865d61be0cec3d7a44134a40963c}\label{classDeviceRequirement_aa892865d61be0cec3d7a44134a40963c}} 
+\index{DeviceRequirement@{DeviceRequirement}!is\_arch\_req@{is\_arch\_req}}
+\index{is\_arch\_req@{is\_arch\_req}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{is\_arch\_req()}{is\_arch\_req()}}
+{\footnotesize\ttfamily bool Device\+Requirement\+::is\+\_\+arch\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_ac829bf2b6291c15a2ec4d4d8393d885c}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 57 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{57 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDeviceRequirement_acd62d3ac8fe993696d2f866a4bcc3d31}\label{classDeviceRequirement_acd62d3ac8fe993696d2f866a4bcc3d31}} 
+\index{DeviceRequirement@{DeviceRequirement}!is\_dev\_req@{is\_dev\_req}}
+\index{is\_dev\_req@{is\_dev\_req}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{is\_dev\_req()}{is\_dev\_req()}}
+{\footnotesize\ttfamily bool Device\+Requirement\+::is\+\_\+dev\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_ad53d4a8c2ac44c5116f90d3dbb5b3102}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 58 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{58 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDeviceRequirement_a858711720fda4c6fb57a2dd18f3bd4de}\label{classDeviceRequirement_a858711720fda4c6fb57a2dd18f3bd4de}} 
+\index{DeviceRequirement@{DeviceRequirement}!is\_multidev\_req@{is\_multidev\_req}}
+\index{is\_multidev\_req@{is\_multidev\_req}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{is\_multidev\_req()}{is\_multidev\_req()}}
+{\footnotesize\ttfamily bool Device\+Requirement\+::is\+\_\+multidev\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_a0105e190d361bdf1bd4f73e2880eb487}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 56 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{56 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDeviceRequirement_acba627b6f4055fa0516876802dd3e3c5}\label{classDeviceRequirement_acba627b6f4055fa0516876802dd3e3c5}} 
+\index{DeviceRequirement@{DeviceRequirement}!res\_req@{res\_req}}
+\index{res\_req@{res\_req}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{res\_req()}{res\_req()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}\& Device\+Requirement\+::res\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 63 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{63 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}{res\_req\_}}; \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+req\+\_\+.
+
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement\+::\+\_\+\+\_\+repr\+\_\+\+\_\+(), and Device\+::check\+\_\+resource\+\_\+availability().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDeviceRequirement_acba627b6f4055fa0516876802dd3e3c5_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}\label{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}} 
+\index{DeviceRequirement@{DeviceRequirement}!res\_req@{res\_req}}
+\index{res\_req@{res\_req}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{res\_req()}{res\_req()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}\& Device\+Requirement\+::res\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 62 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{62 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}{res\_req\_}}; \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+req\+\_\+.
+
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement\+::\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classDeviceRequirement_a8e0546ac377259aab2c33343e666fbe9}\label{classDeviceRequirement_a8e0546ac377259aab2c33343e666fbe9}} 
+\index{DeviceRequirement@{DeviceRequirement}!dev\_@{dev\_}}
+\index{dev\_@{dev\_}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{dev\_}{dev\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDevice}{Device}}$\ast$ Device\+Requirement\+::dev\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 66 of file resource\+\_\+requirements.\+hpp.
+
+
+
+Referenced by device(), and Device\+Requirement().
+
+\mbox{\Hypertarget{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}\label{classDeviceRequirement_af063c5275197f000e385f29a131b08fa}} 
+\index{DeviceRequirement@{DeviceRequirement}!res\_req\_@{res\_req\_}}
+\index{res\_req\_@{res\_req\_}!DeviceRequirement@{DeviceRequirement}}
+\doxysubsubsection{\texorpdfstring{res\_req\_}{res\_req\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} Device\+Requirement\+::res\+\_\+req\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 67 of file resource\+\_\+requirements.\+hpp.
+
+
+
+Referenced by Device\+Requirement(), and res\+\_\+req().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{resource__requirements_8hpp}{resource\+\_\+requirements.\+hpp}}\end{DoxyCompactItemize}

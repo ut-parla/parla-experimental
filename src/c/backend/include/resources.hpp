@@ -1,3 +1,7 @@
+/*! @file resources.hpp
+ *  @brief Provides a resource pool for tracking resource usage.
+ */
+
 #ifndef RESOURCES_HPP
 #define RESOURCES_HPP
 
@@ -77,8 +81,8 @@ class ResourcePool {
 
 public:
   ResourcePool(){
-      //std::cout << "Resource Initialized:" << std::endl;
-      //for (int i = 0; i < resource_names.size(); i++) {
+      // std::cout << "Resource Initialized:" << std::endl;
+      // for (int i = 0; i < resource_names.size(); i++) {
       //  std::cout << this->resources[i].load() << std::endl;
       //}
   };

@@ -1,0 +1,106 @@
+site_name: Parla MkDoxy
+#site_url: 
+site_author: UT Parla Team
+site_description: >-
+  A heterogenous parallel programming framework for Python.
+
+# Repository
+repo_name: ut-parla/parla-experimental
+repo_url: https://github.com/ut-parla/parla-experimental
+
+theme:
+  name: material
+  language: en
+  #logo: assets/logo.png
+  #favicon: assets/logo.png
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: orange
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: orange
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ut-parla/parla-experimental
+
+use_directory_urls: True
+#use_directory_urls: False
+
+plugins:
+  - search
+  - glightbox
+  - open-in-new-tab
+  - mkdoxy:
+      projects:
+        runtime:
+          src-dirs: src/
+          full-doc: True
+          doxy-cfg:
+            FILE_PATTERNS: "*.cpp *.h* *.pyx"
+            EXAMPLE_PATH: examples
+            CLASS_DIAGRAMS: YES
+            HAVE_DOT: YES
+            CALL_GRAPH: YES
+            RECURSIVE: True
+            JAVADOC_AUTOBRIEF: YES
+            EXTENSION_MAPPING: "py=Python pyx=Python"
+
+      save-api: .mkdoxy
+      full-doc: True
+      debug: False
+      ignore-errors: False
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - "Home": "README.md"
+  - "Tutorials": "tutorial/0_hello_world/README.md"
+  - Runtime:
+      - runtime/index.md
+      - "Links": "runtime/links.md"
+      - "Classes":
+          - "Class List": "runtime/annotated.md"
+          - "Class Index": "runtime/classes.md"
+          - "Class Hierarchy": "runtime/hierarchy.md"
+          - "Class Members": "runtime/class_members.md"
+          - "Class Member Functions": "runtime/class_member_functions.md"
+          - "Class Member Variables": "runtime/class_member_variables.md"
+          - "Class Member Typedefs": "runtime/class_member_typedefs.md"
+          - "Class Member Enumerations": "runtime/class_member_enums.md"
+      - "Namespaces":
+          - "Namespace List": "runtime/namespaces.md"
+          - "Namespace Members": "runtime/namespace_members.md"
+          - "Namespace Member Functions": "runtime/namespace_member_functions.md"
+          - "Namespace Member Variables": "runtime/namespace_member_variables.md"
+          - "Namespace Member Typedefs": "runtime/namespace_member_typedefs.md"
+          - "Namespace Member Enumerations": "runtime/namespace_member_enums.md"
+      - "Functions": "runtime/functions.md"
+      - "Variables": "runtime/variables.md"
+      - "Macros": "runtime/macros.md"
+      - "Files": "runtime/files.md"

@@ -1,3 +1,8 @@
+/*! @file gpu_utility.hpp
+ *  @brief Provides architecture independent interface to event and stream
+ * creation & synchronization.
+ */
+
 #ifndef PARLA_CUDA_UTILITY_H
 #define PARLA_CUDA_UTILITY_H
 

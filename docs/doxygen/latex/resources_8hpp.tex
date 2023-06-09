@@ -1,0 +1,220 @@
+\hypertarget{resources_8hpp}{}\doxysection{src/c/backend/include/resources.hpp File Reference}
+\label{resources_8hpp}\index{src/c/backend/include/resources.hpp@{src/c/backend/include/resources.hpp}}
+
+
+Provides a resource pool for tracking resource usage.  
+
+
+{\ttfamily \#include $<$array$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$type\+\_\+traits$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string\+\_\+view$>$}\newline
+Include dependency graph for resources.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resources_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{resources_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classResourcePool}{Resource\+Pool}}
+\begin{DoxyCompactList}\small\item\em A pool of resources, allows for comparisons and updates of current values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} = int64\+\_\+t
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} \{ \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Memory}} = 0
+, \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{VCU}} = 1
+, \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Copy}} = 2
+, \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a26a4b44a837bf97b972628509912b4a5}{MAX}} = 3
+ \}
+\item 
+enum class \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436}{Resource\+Category}} \{ \newline
+\mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436ab1c94ca2fbc3e78fc30069c8d0f01680}{All}} = 0
+, \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{Persistent}} = 1
+, \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a7614275fbaf0a47eea0c100334a57d93}{Non\+Persistent}} = 2
+, \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a4642e767f9251fa40afadbc963f80b7a}{Movement}} = 3
+, \newline
+\mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a26a4b44a837bf97b972628509912b4a5}{MAX}} = 4
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+constexpr std\+::array \mbox{\hyperlink{resources_8hpp_a4ba97032b12b225fab07466b735aea41}{resource\+\_\+names}} = \{\char`\"{}memory\char`\"{}sv, \char`\"{}vcu\char`\"{}sv, \char`\"{}copy\char`\"{}sv\}
+\item 
+constexpr std\+::array$<$ \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1 $>$ \mbox{\hyperlink{resources_8hpp_a890467d4665059c8b16395764234772c}{persistent\+\_\+resources}}
+\item 
+constexpr std\+::array$<$ \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1 $>$ \mbox{\hyperlink{resources_8hpp_ac020a460a1a6fc5859f4ca5226724596}{non\+\_\+persistent\+\_\+resources}}
+\item 
+constexpr std\+::array$<$ \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1 $>$ \mbox{\hyperlink{resources_8hpp_aec07dd39acd96fcf476c2597d3d3708c}{movement\+\_\+resources}} = \{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Resource\+::\+Copy}}\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides a resource pool for tracking resource usage. 
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{resources_8hpp_af7b216c3232c4a212aba859a02f42004}\label{resources_8hpp_af7b216c3232c4a212aba859a02f42004}} 
+\index{resources.hpp@{resources.hpp}!Resource\_t@{Resource\_t}}
+\index{Resource\_t@{Resource\_t}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{Resource\_t}{Resource\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} =  int64\+\_\+t}
+
+
+
+Definition at line 19 of file resources.\+hpp.
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}\label{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}} 
+\index{resources.hpp@{resources.hpp}!Resource@{Resource}}
+\index{Resource@{Resource}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{Resource}{Resource}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Memory@{Memory}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!Memory@{Memory}}}\mbox{\Hypertarget{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}\label{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}} 
+Memory&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{VCU@{VCU}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!VCU@{VCU}}}\mbox{\Hypertarget{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}\label{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}} 
+VCU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Copy@{Copy}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!Copy@{Copy}}}\mbox{\Hypertarget{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}\label{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}} 
+Copy&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAX@{MAX}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!MAX@{MAX}}}\mbox{\Hypertarget{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a26a4b44a837bf97b972628509912b4a5}\label{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a26a4b44a837bf97b972628509912b4a5}} 
+MAX&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 25 of file resources.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{25 \{ \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Memory}} = 0, \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{VCU}} = 1, \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Copy}} = 2, \mbox{\hyperlink{phases_8hpp_a5da4f7b622a37457b3277300c6a523b4a26a4b44a837bf97b972628509912b4a5}{MAX}} = 3 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436}} 
+\index{resources.hpp@{resources.hpp}!ResourceCategory@{ResourceCategory}}
+\index{ResourceCategory@{ResourceCategory}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{ResourceCategory}{ResourceCategory}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436}{Resource\+Category}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{All@{All}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!All@{All}}}\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436ab1c94ca2fbc3e78fc30069c8d0f01680}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436ab1c94ca2fbc3e78fc30069c8d0f01680}} 
+All&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Persistent@{Persistent}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!Persistent@{Persistent}}}\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}} 
+Persistent&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NonPersistent@{NonPersistent}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!NonPersistent@{NonPersistent}}}\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a7614275fbaf0a47eea0c100334a57d93}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a7614275fbaf0a47eea0c100334a57d93}} 
+Non\+Persistent&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Movement@{Movement}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!Movement@{Movement}}}\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a4642e767f9251fa40afadbc963f80b7a}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a4642e767f9251fa40afadbc963f80b7a}} 
+Movement&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAX@{MAX}!resources.hpp@{resources.hpp}}\index{resources.hpp@{resources.hpp}!MAX@{MAX}}}\mbox{\Hypertarget{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a26a4b44a837bf97b972628509912b4a5}\label{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a26a4b44a837bf97b972628509912b4a5}} 
+MAX&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 26 of file resources.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{26                             \{}
+\DoxyCodeLine{27   \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9ab1c94ca2fbc3e78fc30069c8d0f01680}{All}} = 0,}
+\DoxyCodeLine{28   \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a5fe7b9358c9cb1b9eaa8d5aec000def4}{Persistent}} = 1,}
+\DoxyCodeLine{29   \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a7614275fbaf0a47eea0c100334a57d93}{NonPersistent}} = 2,}
+\DoxyCodeLine{30   \mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436a4642e767f9251fa40afadbc963f80b7a}{Movement}} = 3,}
+\DoxyCodeLine{31   \mbox{\hyperlink{phases_8hpp_a5da4f7b622a37457b3277300c6a523b4a26a4b44a837bf97b972628509912b4a5}{MAX}} = 4}
+\DoxyCodeLine{32 \};}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{resources_8hpp_aec07dd39acd96fcf476c2597d3d3708c}\label{resources_8hpp_aec07dd39acd96fcf476c2597d3d3708c}} 
+\index{resources.hpp@{resources.hpp}!movement\_resources@{movement\_resources}}
+\index{movement\_resources@{movement\_resources}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{movement\_resources}{movement\_resources}}
+{\footnotesize\ttfamily constexpr std\+::array$<$\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1$>$ movement\+\_\+resources = \{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Resource\+::\+Copy}}\}\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+
+
+Definition at line 66 of file resources.\+hpp.
+
+\mbox{\Hypertarget{resources_8hpp_ac020a460a1a6fc5859f4ca5226724596}\label{resources_8hpp_ac020a460a1a6fc5859f4ca5226724596}} 
+\index{resources.hpp@{resources.hpp}!non\_persistent\_resources@{non\_persistent\_resources}}
+\index{non\_persistent\_resources@{non\_persistent\_resources}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{non\_persistent\_resources}{non\_persistent\_resources}}
+{\footnotesize\ttfamily constexpr std\+::array$<$\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1$>$ non\+\_\+persistent\+\_\+resources\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}\}}
+
+\end{DoxyCode}
+
+
+Definition at line 64 of file resources.\+hpp.
+
+\mbox{\Hypertarget{resources_8hpp_a890467d4665059c8b16395764234772c}\label{resources_8hpp_a890467d4665059c8b16395764234772c}} 
+\index{resources.hpp@{resources.hpp}!persistent\_resources@{persistent\_resources}}
+\index{persistent\_resources@{persistent\_resources}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{persistent\_resources}{persistent\_resources}}
+{\footnotesize\ttfamily constexpr std\+::array$<$\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}, 1$>$ persistent\+\_\+resources\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}\}}
+
+\end{DoxyCode}
+
+
+Definition at line 62 of file resources.\+hpp.
+
+\mbox{\Hypertarget{resources_8hpp_a4ba97032b12b225fab07466b735aea41}\label{resources_8hpp_a4ba97032b12b225fab07466b735aea41}} 
+\index{resources.hpp@{resources.hpp}!resource\_names@{resource\_names}}
+\index{resource\_names@{resource\_names}!resources.hpp@{resources.hpp}}
+\doxysubsubsection{\texorpdfstring{resource\_names}{resource\_names}}
+{\footnotesize\ttfamily constexpr std\+::array resource\+\_\+names = \{\char`\"{}memory\char`\"{}sv, \char`\"{}vcu\char`\"{}sv, \char`\"{}copy\char`\"{}sv\}\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+
+
+Definition at line 57 of file resources.\+hpp.
+

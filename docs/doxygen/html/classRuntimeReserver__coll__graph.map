@@ -1,0 +1,24 @@
+<map id="RuntimeReserver" name="RuntimeReserver">
+<area shape="rect" id="node1" title="RuntimeReserver phase of the scheduler." alt="" coords="663,233,797,260"/>
+<area shape="rect" id="node4" href="$classInnerScheduler.html" title="The C++ &quot;Mirror&quot; of Parla&#39;s Python Scheduler This class is used to create a C++ representation of a P..." alt="" coords="1051,353,1170,380"/>
+<area shape="rect" id="node2" href="$classSchedulerPhase.html" title="Abstract Interface for general scheduler runtime phase." alt="" coords="1401,349,1526,376"/>
+<area shape="rect" id="node5" href="$classLauncher.html" title=" " alt="" coords="1772,107,1853,133"/>
+<area shape="rect" id="node14" href="$classMemoryReserver.html" title="MemoryReserver phase of the scheduler." alt="" coords="1745,288,1880,315"/>
+<area shape="rect" id="node17" href="$classMapper.html" title="Mapper phase of the scheduler." alt="" coords="1777,425,1848,452"/>
+<area shape="rect" id="node3" href="$classDeviceManager.html" title="DeviceManager registers/provides devices and their information on the current system to the Parla run..." alt="" coords="311,509,435,536"/>
+<area shape="rect" id="node10" href="$classPArrayTracker.html" title=" " alt="" coords="675,457,785,484"/>
+<area shape="rect" id="node6" href="$classProtectedVector.html" title=" " alt="" coords="1341,107,1585,133"/>
+<area shape="rect" id="node7" href="$classLauncherStatus.html" title=" " alt="" coords="1402,5,1525,32"/>
+<area shape="rect" id="node8" href="$classPhaseStatus.html" title=" " alt="" coords="998,5,1223,32"/>
+<area shape="rect" id="node9" href="$classProtectedVector.html" title=" " alt="" coords="1349,56,1577,83"/>
+<area shape="rect" id="node11" href="$classScheduler_1_1Status.html" title=" " alt="" coords="663,289,797,316"/>
+<area shape="rect" id="node12" title=" " alt="" coords="687,340,773,367"/>
+<area shape="rect" id="node13" href="$classWorkerPool.html" title=" " alt="" coords="629,391,831,433"/>
+<area shape="rect" id="node15" href="$classMemoryReserverStatus.html" title=" " alt="" coords="1376,157,1551,184"/>
+<area shape="rect" id="node16" href="$classPhaseStatus.html" title=" " alt="" coords="996,150,1225,191"/>
+<area shape="rect" id="node18" href="$classProtectedQueue.html" title=" " alt="" coords="1349,400,1578,427"/>
+<area shape="rect" id="node19" href="$classMapperStatus.html" title=" " alt="" coords="1407,569,1519,596"/>
+<area shape="rect" id="node20" href="$classPhaseStatus.html" title=" " alt="" coords="1003,621,1218,648"/>
+<area shape="rect" id="node21" href="$classRuntimeReserverStatus.html" title=" " alt="" coords="285,233,461,260"/>
+<area shape="rect" id="node22" href="$classPhaseStatus.html" title=" " alt="" coords="5,226,236,267"/>
+</map>

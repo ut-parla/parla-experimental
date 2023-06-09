@@ -1,3 +1,7 @@
+/*! @file parray_tracker.hpp
+ *  @brief Provides interface to scheduler tracking of parray data objects.
+ */
+
 #ifndef PARLA_PARRAY_TRACKER_HPP
 #define PARLA_PARRAY_TRACKER_HPP
 
@@ -8,7 +12,7 @@ using namespace parray;
 
 class PArrayTracker {
 public:
-  PArrayTracker(DeviceManager *deivce_manage);
+  PArrayTracker(DeviceManager *device_manager);
 
   /**
    * @brief It the passed PArray instance, either as a slice or

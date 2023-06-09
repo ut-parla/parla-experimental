@@ -1,0 +1,239 @@
+\hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool}{}\doxysection{parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool Class Reference}
+\label{classparla_1_1cython_1_1device__manager_1_1StreamPool}\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a69af1cfc6b4dab04390738d17e0f7bf5}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, device\+\_\+list, per\+\_\+device=8)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a1c7523be669de353036fc35791c954bd}{get\+\_\+stream}} (self, device)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_abf8b17ac03bb0f48e689083839ad4535}{return\+\_\+stream}} (self, stream)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a6fcf6cab72c8f96523b3a3c93c077f67}{\+\_\+\+\_\+summarize\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_aba8741897a2a2f7ed26a2af9c078d260}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a020fe67166e73bccb16fcb54664892a1}{Stream\+Class}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a7ee78b35805bc8382fc97a44168fe987}{\+\_\+device\+\_\+list}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a873566539b171adbd5cf1e2000fc4588}{\+\_\+per\+\_\+device}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1StreamPool_a5c64d7eb9dda89c68ed98ba2c4603a8e}{\+\_\+pool}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 80 of file device\+\_\+manager.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a69af1cfc6b4dab04390738d17e0f7bf5}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a69af1cfc6b4dab04390738d17e0f7bf5}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+list,  }\item[{}]{per\+\_\+device = {\ttfamily 8} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 82 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{82     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, device\_list, per\_device=8):}
+\DoxyCodeLine{83 }
+\DoxyCodeLine{84         \textcolor{keywordflow}{if} CUPY\_ENABLED:}
+\DoxyCodeLine{85             self.StreamClass = CupyStream }
+\DoxyCodeLine{86         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{87             self.StreamClass = Stream}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89         self.\_device\_list = device\_list}
+\DoxyCodeLine{90         self.\_per\_device = per\_device}
+\DoxyCodeLine{91         self.\_pool = \{\}}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93         \textcolor{keywordflow}{for} device \textcolor{keywordflow}{in} self.\_device\_list:}
+\DoxyCodeLine{94             self.\_pool[device] = []}
+\DoxyCodeLine{95             }
+\DoxyCodeLine{96             \textcolor{keyword}{with} device.device \textcolor{keyword}{as} d:}
+\DoxyCodeLine{97                 \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(self.\_per\_device):}
+\DoxyCodeLine{98                     self.\_pool[device].append(self.StreamClass(device=device))}
+\DoxyCodeLine{99 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_aba8741897a2a2f7ed26a2af9c078d260}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_aba8741897a2a2f7ed26a2af9c078d260}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 118 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{118     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{119         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}StreamPool(\{self.\_\_summarize\_\_()\})"{}}}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122 \textcolor{comment}{\#TODO(wlr):  -\/ Allow device manager to initialize non-\/contiguous gpu ids. }}
+\DoxyCodeLine{123 \textcolor{comment}{\#TODO(wlr):  -\/ Provide a way to iterate over these real device ids}}
+\DoxyCodeLine{124            }
+\DoxyCodeLine{125 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1StreamPool_aba8741897a2a2f7ed26a2af9c078d260_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a6fcf6cab72c8f96523b3a3c93c077f67}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a6fcf6cab72c8f96523b3a3c93c077f67}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_\_summarize\_\_@{\_\_summarize\_\_}}
+\index{\_\_summarize\_\_@{\_\_summarize\_\_}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_\_summarize\_\_()}{\_\_summarize\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+\+\_\+summarize\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 111 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{111     \textcolor{keyword}{def }\_\_summarize\_\_(self):}
+\DoxyCodeLine{112         summary  = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{113         \textcolor{keywordflow}{for} device \textcolor{keywordflow}{in} self.\_device\_list:}
+\DoxyCodeLine{114             summary += f\textcolor{stringliteral}{"{}(\{device\} : \{len(self.\_pool[device])\})"{}}}
+\DoxyCodeLine{115 }
+\DoxyCodeLine{116         \textcolor{keywordflow}{return} summary}
+\DoxyCodeLine{117 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+device\+\_\+list.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a1c7523be669de353036fc35791c954bd}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a1c7523be669de353036fc35791c954bd}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!get\_stream@{get\_stream}}
+\index{get\_stream@{get\_stream}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{get\_stream()}{get\_stream()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+get\+\_\+stream (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device }\end{DoxyParamCaption})}
+
+
+
+Definition at line 100 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{100     \textcolor{keyword}{def }get\_stream(self, device):}
+\DoxyCodeLine{101         \textcolor{keywordflow}{if} len(self.\_pool[device]) == 0:}
+\DoxyCodeLine{102             \textcolor{comment}{\#Create a new stream if the pool is empty.}}
+\DoxyCodeLine{103             new\_stream = self.StreamClass(device=device)}
+\DoxyCodeLine{104             \textcolor{keywordflow}{return} new\_stream}
+\DoxyCodeLine{105 }
+\DoxyCodeLine{106         \textcolor{keywordflow}{return} self.\_pool[device].pop()}
+\DoxyCodeLine{107 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+pool, and parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+Stream\+Class.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_abf8b17ac03bb0f48e689083839ad4535}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_abf8b17ac03bb0f48e689083839ad4535}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!return\_stream@{return\_stream}}
+\index{return\_stream@{return\_stream}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{return\_stream()}{return\_stream()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+return\+\_\+stream (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{stream }\end{DoxyParamCaption})}
+
+
+
+Definition at line 108 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{108     \textcolor{keyword}{def }return\_stream(self, stream):}
+\DoxyCodeLine{109         self.\_pool[stream.device].append(stream)}
+\DoxyCodeLine{110 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+pool.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a7ee78b35805bc8382fc97a44168fe987}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a7ee78b35805bc8382fc97a44168fe987}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_device\_list@{\_device\_list}}
+\index{\_device\_list@{\_device\_list}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_device\_list}{\_device\_list}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+device\+\_\+list\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 89 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+\+\_\+summarize\+\_\+\+\_\+().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a873566539b171adbd5cf1e2000fc4588}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a873566539b171adbd5cf1e2000fc4588}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_per\_device@{\_per\_device}}
+\index{\_per\_device@{\_per\_device}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_per\_device}{\_per\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+per\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 90 of file device\+\_\+manager.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a5c64d7eb9dda89c68ed98ba2c4603a8e}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a5c64d7eb9dda89c68ed98ba2c4603a8e}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!\_pool@{\_pool}}
+\index{\_pool@{\_pool}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{\_pool}{\_pool}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+pool\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 91 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+get\+\_\+stream(), and parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+return\+\_\+stream().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1StreamPool_a020fe67166e73bccb16fcb54664892a1}\label{classparla_1_1cython_1_1device__manager_1_1StreamPool_a020fe67166e73bccb16fcb54664892a1}} 
+\index{parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}!StreamClass@{StreamClass}}
+\index{StreamClass@{StreamClass}!parla.cython.device\_manager.StreamPool@{parla.cython.device\_manager.StreamPool}}
+\doxysubsubsection{\texorpdfstring{StreamClass}{StreamClass}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+Stream\+Class}
+
+
+
+Definition at line 85 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+get\+\_\+stream().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device__manager_8pyx}{device\+\_\+manager.\+pyx}}\end{DoxyCompactItemize}

@@ -54,9 +54,9 @@ void InnerTask::queue_dependency(InnerTask *task) {
   this->dependency_buffer.push_back(task);
 }
 
-Task::StatusFlags InnerTask::process_dependencies() {
+TaskStatusFlags InnerTask::process_dependencies() {
   NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
-  Task::StatusFlags status = this->add_dependencies(this->dependency_buffer);
+  TaskStatusFlags status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
   return status;
@@ -68,7 +68,7 @@ void InnerTask::clear_dependencies() {
   // this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
 }
 
-Task::State InnerTask::add_dependency(InnerTask *task) {
+TaskState InnerTask::add_dependency(InnerTask *task) {
 
   // Store all added dependencies for bookkeeping
   // I cannot think of a scenario when multiple writers would be adding
@@ -79,47 +79,46 @@ Task::State InnerTask::add_dependency(InnerTask *task) {
 
   bool dependency_complete = false;
 
-  Task::State dependent_state = task->add_dependent_task(this);
+  TaskState dependent_state = task->add_dependent_task(this);
 
-  if (dependent_state >= Task::RUNAHEAD) {
+  if (dependent_state >= TaskState::RUNAHEAD) {
     this->num_blocking_dependencies.fetch_sub(1);
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
     this->num_unreserved_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::RESERVED) {
+  } else if (dependent_state >= TaskState::RESERVED) {
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
     this->num_unreserved_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::MAPPED) {
+  } else if (dependent_state >= TaskState::MAPPED) {
     this->num_unspawned_dependencies.fetch_sub(1);
     this->num_unmapped_dependencies.fetch_sub(1);
-  } else if (dependent_state >= Task::SPAWNED) {
+  } else if (dependent_state >= TaskState::SPAWNED) {
     this->num_unspawned_dependencies.fetch_sub(1);
   }
 
   return dependent_state;
 }
 
-Task::Status InnerTask::determine_status(bool new_spawnable, bool new_mappable,
-                                         bool new_reservable,
-                                         bool new_runnable) {
+TaskStatus InnerTask::determine_status(bool new_spawnable, bool new_mappable,
+                                       bool new_reservable, bool new_runnable) {
   if (new_runnable and this->processed_data) {
-    return Task::RUNNABLE;
+    return TaskStatus::RUNNABLE;
   } else if (new_runnable and !this->processed_data) {
-    return Task::COMPUTE_RUNNABLE;
+    return TaskStatus::COMPUTE_RUNNABLE;
   } else if (new_reservable) {
-    return Task::RESERVABLE;
+    return TaskStatus::RESERVABLE;
   } else if (new_mappable) {
-    return Task::MAPPABLE;
+    return TaskStatus::MAPPABLE;
   } else if (new_spawnable) {
-    return Task::SPAWNABLE;
+    return TaskStatus::SPAWNABLE;
   } else {
-    return Task::INITIAL;
+    return TaskStatus::INITIAL;
   }
 }
 
-Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
-                                              bool data_tasks) {
+TaskStatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
+                                            bool data_tasks) {
   LOG_INFO(TASK, "Adding dependencies to {}. D={}", this, tasks);
 
   // TODO: Change all of this to lock free.
@@ -146,11 +145,11 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
 
   // Other counters are 'freed' in each phase before entering the next phase
 
-  Task::StatusFlags status = Task::StatusFlags();
+  TaskStatusFlags status = TaskStatusFlags();
   status.spawnable = spawnable;
   status.mappable = mappable;
 
-  // Task::Status status =
+  // TaskStatus status =
   //     this->determine_status(spawnable, mappable, reservable, ready);
 
   LOG_INFO(TASK, "Added dependencies to {}. Status = {}", this, status);
@@ -190,7 +189,7 @@ Task::StatusFlags InnerTask::add_dependencies(std::vector<InnerTask *> &tasks,
  *    I am sure there is a better implementation of this.
  */
 
-Task::State InnerTask::add_dependent_task(InnerTask *task) {
+TaskState InnerTask::add_dependent_task(InnerTask *task) {
 
   // Store all dependents for bookkeeping
   // Dependents can be written to by multiple threads calling this function
@@ -205,7 +204,7 @@ Task::State InnerTask::add_dependent_task(InnerTask *task) {
   //       run yet.
   this->dependents.lock();
 
-  Task::State state = this->get_state();   // s1
+  TaskState state = this->get_state();     // s1
   this->dependents.push_back_unsafe(task); // s3
 
   this->dependents.unlock();
@@ -213,9 +212,9 @@ Task::State InnerTask::add_dependent_task(InnerTask *task) {
   return state;
 }
 
-Task::State InnerTask::add_dependent_space(TaskBarrier *barrier) {
+TaskState InnerTask::add_dependent_space(TaskBarrier *barrier) {
   this->spaces.lock();
-  Task::State state = this->get_state();
+  TaskState state = this->get_state();
   this->spaces.push_back_unsafe(barrier);
   this->spaces.unlock();
 
@@ -242,7 +241,7 @@ void InnerTask::notify_dependents_completed() {
     space->notify();
   }
 
-  this->set_state(Task::COMPLETED);
+  this->set_state(TaskState::COMPLETED);
 
   this->spaces.unlock();
   this->dependents.unlock();
@@ -250,8 +249,7 @@ void InnerTask::notify_dependents_completed() {
   LOG_INFO(TASK, "Notified dependents of {}.", this);
 }
 
-void InnerTask::notify_dependents(TaskStateList &buffer,
-                                  Task::State new_state) {
+void InnerTask::notify_dependents(TaskStatusList &buffer, TaskState new_state) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
   NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
 
@@ -267,7 +265,7 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
 
     auto task = this->dependents.get_unsafe(i);
-    Task::StatusFlags status = task->notify(new_state, this->is_data.load());
+    TaskStatusFlags status = task->notify(new_state, this->is_data.load());
 
     // std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
@@ -287,13 +285,12 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
 }
 
 bool InnerTask::notify_dependents_wrapper() {
-  TaskStateList buffer = TaskStateList();
-  this->notify_dependents(buffer, Task::MAPPED);
+  TaskStatusList buffer = TaskStatusList();
+  this->notify_dependents(buffer, TaskState::MAPPED);
   return buffer.size() > 0;
 }
 
-Task::StatusFlags InnerTask::notify(Task::State dependency_state,
-                                    bool is_data) {
+TaskStatusFlags InnerTask::notify(TaskState dependency_state, bool is_data) {
 
   bool spawnable = false;
   bool mappable = false;
@@ -302,25 +299,25 @@ Task::StatusFlags InnerTask::notify(Task::State dependency_state,
   bool runnable = false;
 
   if (is_data) {
-    if (dependency_state == Task::RUNAHEAD) {
+    if (dependency_state == TaskState::RUNAHEAD) {
       // A data task never notifies for the other stages
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
     }
   } else {
-    if (dependency_state == Task::RUNAHEAD) {
+    if (dependency_state == TaskState::RUNAHEAD) {
       compute_runnable =
           (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
-    } else if (dependency_state >= Task::RESERVED) {
+    } else if (dependency_state >= TaskState::RESERVED) {
       reservable = (this->num_unreserved_dependencies.fetch_sub(1) == 1);
-    } else if (dependency_state >= Task::MAPPED) {
+    } else if (dependency_state >= TaskState::MAPPED) {
       mappable = (this->num_unmapped_dependencies.fetch_sub(1) == 1);
-    } else if (dependency_state >= Task::SPAWNED) {
+    } else if (dependency_state >= TaskState::SPAWNED) {
       spawnable = (this->num_unspawned_dependencies.fetch_sub(1) == 1);
     }
   }
 
-  Task::StatusFlags status;
+  TaskStatusFlags status;
   status.spawnable = spawnable;
   status.mappable = mappable;
   status.reservable = reservable;
@@ -363,8 +360,8 @@ std::vector<void *> InnerTask::get_dependents() {
 void *InnerTask::get_py_task() { return this->py_task; }
 
 int InnerTask::set_state(int state) {
-  Task::State new_state = static_cast<Task::State>(state);
-  Task::State old_state = this->set_state(new_state);
+  TaskState new_state = static_cast<TaskState>(state);
+  TaskState old_state = this->set_state(new_state);
   int old_state_id = static_cast<int>(new_state);
   return old_state_id;
 }
@@ -381,9 +378,9 @@ void InnerTask::add_assigned_device(Device *device) {
   this->assigned_devices.push_back(device);
 }
 
-Task::State InnerTask::set_state(Task::State state) {
-  Task::State new_state = state;
-  Task::State old_state;
+TaskState InnerTask::set_state(TaskState state) {
+  TaskState new_state = state;
+  TaskState old_state;
 
   do {
     old_state = this->state.load();
@@ -392,9 +389,9 @@ Task::State InnerTask::set_state(Task::State state) {
   return old_state;
 }
 
-Task::Status InnerTask::set_status(Task::Status status) {
-  Task::Status new_status = status;
-  Task::Status old_status;
+TaskStatus InnerTask::set_status(TaskStatus status) {
+  TaskStatus new_status = status;
+  TaskStatus old_status;
 
   do {
     old_status = this->status.load();
@@ -403,10 +400,12 @@ Task::Status InnerTask::set_status(Task::Status status) {
   return old_status;
 }
 
-/*TODO(wlr): Deprecate this before merge.Need to update pxd and tests*/
-void InnerTask::set_complete() { this->set_state(Task::COMPLETED); }
+/*TODO(wlr): Deprecate this before merge. Need to update pxd and tests*/
+void InnerTask::set_complete() { this->set_state(TaskState::COMPLETED); }
 
-bool InnerTask::get_complete() { return this->get_state(); }
+bool InnerTask::get_complete() {
+  return this->get_state() == TaskState::COMPLETED;
+}
 
 // TODO(hc): The current Parla exploits two types of resources,
 //           memory and vcus. Later, this can be extended with
@@ -466,12 +465,14 @@ bool InnerTask::is_data_task() {
 
 void *InnerDataTask::get_py_parray() { return this->parray_->get_py_parray(); }
 
-AccessMode InnerDataTask::get_access_mode() { return this->access_mode_; }
+int InnerDataTask::get_access_mode() {
+  return static_cast<int>(this->access_mode_);
+}
 
-Task::State TaskBarrier::_add_task(InnerTask *task) {
-  Task::State dependent_state = task->add_dependent_space(this);
+TaskState TaskBarrier::_add_task(InnerTask *task) {
+  TaskState dependent_state = task->add_dependent_space(this);
 
-  if (dependent_state == Task::COMPLETED) {
+  if (dependent_state == TaskState::COMPLETED) {
     this->num_incomplete_tasks.fetch_sub(1, std::memory_order_relaxed);
   }
 

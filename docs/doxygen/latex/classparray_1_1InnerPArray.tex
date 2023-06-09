@@ -1,0 +1,528 @@
+\hypertarget{classparray_1_1InnerPArray}{}\doxysection{parray\+::Inner\+PArray Class Reference}
+\label{classparray_1_1InnerPArray}\index{parray::InnerPArray@{parray::InnerPArray}}
+
+
+{\ttfamily \#include $<$parray.\+hpp$>$}
+
+
+
+Collaboration diagram for parray\+::Inner\+PArray\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparray_1_1InnerPArray__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparray_1_1InnerPArray_a0dd8b88700e91a31dd8a8546525193f3}{Inner\+PArray}} ()=delete
+\item 
+\mbox{\hyperlink{classparray_1_1InnerPArray_a57a2b7efaf82f5b2b3e6cb7fd2b7fb80}{Inner\+PArray}} (void $\ast$, uint64\+\_\+t, uint64\+\_\+t, \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} $\ast$, \mbox{\hyperlink{classparray_1_1PArrayState}{PArray\+State}} $\ast$, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}})
+\item 
+const uint64\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_a5b7b63dba94c1919957722b0c695a6d1}{get\+\_\+size}} () const
+\begin{DoxyCompactList}\small\item\em Get current size (in bytes) of each copy of the PArray if it is a subarray, return the subarray\textquotesingle{}s size. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classparray_1_1InnerPArray_aea4c95c9801047db392c433cdc7d3b66}{set\+\_\+size}} (uint64\+\_\+t new\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Set the size of the PArray. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classparray_1_1InnerPArray_a9cb537eeff4060a71b1699da8cced998}{exists\+\_\+on\+\_\+device}} (uint64\+\_\+t device\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Return True if there is an PArray copy (possibly invalid) on this device. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classparray_1_1InnerPArray_a816b0fcc17926697c90e3625786aabf6}{valid\+\_\+on\+\_\+device}} (uint64\+\_\+t device\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Return True if there is an PArray copy and its coherence state is valid on this device. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classparray_1_1InnerPArray_a340f4917bfa91760f58337f44ae9094b}{add\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\begin{DoxyCompactList}\small\item\em Add a pointer of the task that will use this PArray to the task list. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classparray_1_1InnerPArray_ad308ee60a8eb63dc3778a70fb6a2413d}{incr\+\_\+num\+\_\+active\+\_\+tasks}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Increase the counter for the active tasks that use this PArray. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classparray_1_1InnerPArray_aa2370a684b0668602b40080e621d82a7}{decr\+\_\+num\+\_\+active\+\_\+tasks}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Decrease the counter for the active tasks that use this PArray. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_a0ad48310d1c3adc95672dc75bffa6387}{get\+\_\+num\+\_\+active\+\_\+tasks}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Get the number of counter for the active tasks that use this PArray. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} \& \mbox{\hyperlink{classparray_1_1InnerPArray_a15951f6640a749bb538403a5dc3d4404}{get\+\_\+task\+\_\+list\+\_\+ref}} ()
+\begin{DoxyCompactList}\small\item\em Get a reference to a list of tasks who are using this PArray. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{classparray_1_1InnerPArray_ad8004b6b791cd01e834239cbed51a7ef}{get\+\_\+py\+\_\+parray}} ()
+\begin{DoxyCompactList}\small\item\em Return the instance of Python PArray. \end{DoxyCompactList}\item 
+uint64\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_ac69a8a0234d7cfa0c64c97b00183ed39}{get\+\_\+parray\+\_\+parentid}} ()
+\begin{DoxyCompactList}\small\item\em Return the parent id of the current instance. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} $\ast$ \mbox{\hyperlink{classparray_1_1InnerPArray_a9be0bbeed258d6f68726701b5d27bb27}{get\+\_\+parent\+\_\+parray}} ()
+\begin{DoxyCompactList}\small\item\em Return a pointer of the parent PArray. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_a831c08430f1e356bc701aaf90dcb1c41}{id}}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}{parent\+\_\+id}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classCopyableAtomic}{Copyable\+Atomic}}$<$ size\+\_\+t $>$ $>$ \mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\+\_\+active\+\_\+tasks}}
+\begin{DoxyCompactList}\small\item\em Track the number of tasks that are using or are planning to use this PArray. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{classparray_1_1InnerPArray_a4cb477f3304045f3ec8c54a1b0cdc7cc}{\+\_\+size}}
+\item 
+\mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} $\ast$ \mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\+\_\+parent\+\_\+parray}}
+\item 
+\mbox{\hyperlink{classparray_1_1PArrayState}{PArray\+State}} $\ast$ \mbox{\hyperlink{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}{\+\_\+state}}
+\item 
+\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} \mbox{\hyperlink{classparray_1_1InnerPArray_a368aab11db50a51897fbc5fa0e09c856}{\+\_\+num\+\_\+devices}}
+\item 
+\mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} \mbox{\hyperlink{classparray_1_1InnerPArray_adc6c9d33ebab04458836f84b99cc4bf2}{\+\_\+task\+\_\+lists}}
+\item 
+void $\ast$ \mbox{\hyperlink{classparray_1_1InnerPArray_a75d95eb1dab30e276df44971206e3463}{\+\_\+py\+\_\+parray}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 25 of file parray.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a0dd8b88700e91a31dd8a8546525193f3}\label{classparray_1_1InnerPArray_a0dd8b88700e91a31dd8a8546525193f3}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!InnerPArray@{InnerPArray}}
+\index{InnerPArray@{InnerPArray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{InnerPArray()}{InnerPArray()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily parray\+::\+Inner\+PArray\+::\+Inner\+PArray (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a57a2b7efaf82f5b2b3e6cb7fd2b7fb80}\label{classparray_1_1InnerPArray_a57a2b7efaf82f5b2b3e6cb7fd2b7fb80}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!InnerPArray@{InnerPArray}}
+\index{InnerPArray@{InnerPArray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{InnerPArray()}{InnerPArray()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily parray\+::\+Inner\+PArray\+::\+Inner\+PArray (\begin{DoxyParamCaption}\item[{void $\ast$}]{py\+\_\+parray,  }\item[{uint64\+\_\+t}]{id,  }\item[{uint64\+\_\+t}]{parent\+\_\+id,  }\item[{\mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} $\ast$}]{parent\+\_\+parray,  }\item[{\mbox{\hyperlink{classparray_1_1PArrayState}{PArray\+State}} $\ast$}]{state,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{num\+\_\+devices }\end{DoxyParamCaption})}
+
+
+
+Definition at line 7 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{10     : \mbox{\hyperlink{classparray_1_1InnerPArray_a75d95eb1dab30e276df44971206e3463}{\_py\_parray}}(py\_parray), \mbox{\hyperlink{classparray_1_1InnerPArray_a831c08430f1e356bc701aaf90dcb1c41}{id}}(\textcolor{keywordtype}{id}), \mbox{\hyperlink{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}{parent\_id}}(\mbox{\hyperlink{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}{parent\_id}}),}
+\DoxyCodeLine{11       \mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}}(parent\_parray), \mbox{\hyperlink{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}{\_state}}(state), \mbox{\hyperlink{classparray_1_1InnerPArray_a368aab11db50a51897fbc5fa0e09c856}{\_num\_devices}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8ca84ad01ff6bcb51c8063646d6470c1}{num\_devices}}) \{}
+\DoxyCodeLine{12   \mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}.resize(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8ca84ad01ff6bcb51c8063646d6470c1}{num\_devices}});}
+\DoxyCodeLine{13 \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+parent\+\_\+parray, \+\_\+py\+\_\+parray, \+\_\+state, and Inner\+PArray().
+
+
+
+Referenced by Inner\+PArray().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classparray_1_1InnerPArray_a57a2b7efaf82f5b2b3e6cb7fd2b7fb80_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classparray_1_1InnerPArray_a57a2b7efaf82f5b2b3e6cb7fd2b7fb80_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a340f4917bfa91760f58337f44ae9094b}\label{classparray_1_1InnerPArray_a340f4917bfa91760f58337f44ae9094b}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!add\_task@{add\_task}}
+\index{add\_task@{add\_task}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{add\_task()}{add\_task()}}
+{\footnotesize\ttfamily void parray\+::\+Inner\+PArray\+::add\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+Add a pointer of the task that will use this PArray to the task list. 
+
+
+
+Definition at line 27 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{27                                           \{}
+\DoxyCodeLine{28   \textcolor{comment}{// This pushing is thread-\/safe.}}
+\DoxyCodeLine{29   this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_adc6c9d33ebab04458836f84b99cc4bf2}{\_task\_lists}}.\mbox{\hyperlink{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}{push\_back}}(task);}
+\DoxyCodeLine{30 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_aa2370a684b0668602b40080e621d82a7}\label{classparray_1_1InnerPArray_aa2370a684b0668602b40080e621d82a7}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!decr\_num\_active\_tasks@{decr\_num\_active\_tasks}}
+\index{decr\_num\_active\_tasks@{decr\_num\_active\_tasks}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{decr\_num\_active\_tasks()}{decr\_num\_active\_tasks()}}
+{\footnotesize\ttfamily void parray\+::\+Inner\+PArray\+::decr\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Decrease the counter for the active tasks that use this PArray. 
+
+
+
+Definition at line 42 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{42                                                              \{}
+\DoxyCodeLine{43   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}} != \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{44     this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}}-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].fetch\_sub(}
+\DoxyCodeLine{45         1, std::memory\_order\_relaxed);}
+\DoxyCodeLine{46   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{47     this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].fetch\_sub(1,}
+\DoxyCodeLine{48                                                     std::memory\_order\_relaxed);}
+\DoxyCodeLine{49   \}}
+\DoxyCodeLine{50 \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+parent\+\_\+parray.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a9cb537eeff4060a71b1699da8cced998}\label{classparray_1_1InnerPArray_a9cb537eeff4060a71b1699da8cced998}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!exists\_on\_device@{exists\_on\_device}}
+\index{exists\_on\_device@{exists\_on\_device}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{exists\_on\_device()}{exists\_on\_device()}}
+{\footnotesize\ttfamily bool parray\+::\+Inner\+PArray\+::exists\+\_\+on\+\_\+device (\begin{DoxyParamCaption}\item[{uint64\+\_\+t}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Return True if there is an PArray copy (possibly invalid) on this device. 
+
+
+
+Definition at line 19 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{19                                                      \{}
+\DoxyCodeLine{20   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}{\_state}}-\/>\mbox{\hyperlink{classparray_1_1PArrayState_a9ebc3de63050cb4da5d31945bb75e544}{exists\_on\_device}}(device\_id);}
+\DoxyCodeLine{21 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a0ad48310d1c3adc95672dc75bffa6387}\label{classparray_1_1InnerPArray_a0ad48310d1c3adc95672dc75bffa6387}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_num\_active\_tasks@{get\_num\_active\_tasks}}
+\index{get\_num\_active\_tasks@{get\_num\_active\_tasks}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_num\_active\_tasks()}{get\_num\_active\_tasks()}}
+{\footnotesize\ttfamily size\+\_\+t parray\+::\+Inner\+PArray\+::get\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Get the number of counter for the active tasks that use this PArray. 
+
+
+
+Definition at line 52 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{52                                                               \{}
+\DoxyCodeLine{53   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}} != \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{54     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}}-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].load(}
+\DoxyCodeLine{55         std::memory\_order\_relaxed);}
+\DoxyCodeLine{56   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{57     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].load(}
+\DoxyCodeLine{58         std::memory\_order\_relaxed);}
+\DoxyCodeLine{59   \}}
+\DoxyCodeLine{60 \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+parent\+\_\+parray.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a9be0bbeed258d6f68726701b5d27bb27}\label{classparray_1_1InnerPArray_a9be0bbeed258d6f68726701b5d27bb27}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_parent\_parray@{get\_parent\_parray}}
+\index{get\_parent\_parray@{get\_parent\_parray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_parent\_parray()}{get\_parent\_parray()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}} $\ast$ parray\+::\+Inner\+PArray\+::get\+\_\+parent\+\_\+parray (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Return a pointer of the parent PArray. 
+
+
+
+Definition at line 68 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{68                                             \{}
+\DoxyCodeLine{69   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}} == \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{70     \textcolor{keywordflow}{return} \textcolor{keyword}{this};}
+\DoxyCodeLine{71   \}}
+\DoxyCodeLine{72   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}};}
+\DoxyCodeLine{73 \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+parent\+\_\+parray.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_ac69a8a0234d7cfa0c64c97b00183ed39}\label{classparray_1_1InnerPArray_ac69a8a0234d7cfa0c64c97b00183ed39}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_parray\_parentid@{get\_parray\_parentid}}
+\index{get\_parray\_parentid@{get\_parray\_parentid}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_parray\_parentid()}{get\_parray\_parentid()}}
+{\footnotesize\ttfamily uint64\+\_\+t parray\+::\+Inner\+PArray\+::get\+\_\+parray\+\_\+parentid (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Return the parent id of the current instance. 
+
+
+
+Definition at line 66 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{66 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}{parent\_id}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_ad8004b6b791cd01e834239cbed51a7ef}\label{classparray_1_1InnerPArray_ad8004b6b791cd01e834239cbed51a7ef}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_py\_parray@{get\_py\_parray}}
+\index{get\_py\_parray@{get\_py\_parray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_py\_parray()}{get\_py\_parray()}}
+{\footnotesize\ttfamily void $\ast$ parray\+::\+Inner\+PArray\+::get\+\_\+py\+\_\+parray (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Return the instance of Python PArray. 
+
+
+
+Definition at line 64 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{64 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a75d95eb1dab30e276df44971206e3463}{\_py\_parray}}; \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+py\+\_\+parray.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a5b7b63dba94c1919957722b0c695a6d1}\label{classparray_1_1InnerPArray_a5b7b63dba94c1919957722b0c695a6d1}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_size@{get\_size}}
+\index{get\_size@{get\_size}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_size()}{get\_size()}}
+{\footnotesize\ttfamily const uint64\+\_\+t parray\+::\+Inner\+PArray\+::get\+\_\+size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Get current size (in bytes) of each copy of the PArray if it is a subarray, return the subarray\textquotesingle{}s size. 
+
+
+
+Definition at line 15 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{15 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a4cb477f3304045f3ec8c54a1b0cdc7cc}{\_size}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a15951f6640a749bb538403a5dc3d4404}\label{classparray_1_1InnerPArray_a15951f6640a749bb538403a5dc3d4404}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!get\_task\_list\_ref@{get\_task\_list\_ref}}
+\index{get\_task\_list\_ref@{get\_task\_list\_ref}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{get\_task\_list\_ref()}{get\_task\_list\_ref()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} \& parray\+::\+Inner\+PArray\+::get\+\_\+task\+\_\+list\+\_\+ref (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Get a reference to a list of tasks who are using this PArray. 
+
+
+
+Definition at line 62 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{62 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_adc6c9d33ebab04458836f84b99cc4bf2}{\_task\_lists}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_ad308ee60a8eb63dc3778a70fb6a2413d}\label{classparray_1_1InnerPArray_ad308ee60a8eb63dc3778a70fb6a2413d}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!incr\_num\_active\_tasks@{incr\_num\_active\_tasks}}
+\index{incr\_num\_active\_tasks@{incr\_num\_active\_tasks}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{incr\_num\_active\_tasks()}{incr\_num\_active\_tasks()}}
+{\footnotesize\ttfamily void parray\+::\+Inner\+PArray\+::incr\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Increase the counter for the active tasks that use this PArray. 
+
+
+
+Definition at line 32 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{32                                                              \{}
+\DoxyCodeLine{33   \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}} != \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{34     this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}{\_parent\_parray}}-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].fetch\_add(}
+\DoxyCodeLine{35         1, std::memory\_order\_relaxed);}
+\DoxyCodeLine{36   \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{37     this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}{num\_active\_tasks}}[global\_dev\_id].fetch\_add(1,}
+\DoxyCodeLine{38                                                     std::memory\_order\_relaxed);}
+\DoxyCodeLine{39   \}}
+\DoxyCodeLine{40 \}}
+
+\end{DoxyCode}
+
+
+References \+\_\+parent\+\_\+parray.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_aea4c95c9801047db392c433cdc7d3b66}\label{classparray_1_1InnerPArray_aea4c95c9801047db392c433cdc7d3b66}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!set\_size@{set\_size}}
+\index{set\_size@{set\_size}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{set\_size()}{set\_size()}}
+{\footnotesize\ttfamily void parray\+::\+Inner\+PArray\+::set\+\_\+size (\begin{DoxyParamCaption}\item[{uint64\+\_\+t}]{new\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Set the size of the PArray. 
+
+
+
+Definition at line 17 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{17 \{ this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a4cb477f3304045f3ec8c54a1b0cdc7cc}{\_size}} = new\_size; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a816b0fcc17926697c90e3625786aabf6}\label{classparray_1_1InnerPArray_a816b0fcc17926697c90e3625786aabf6}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!valid\_on\_device@{valid\_on\_device}}
+\index{valid\_on\_device@{valid\_on\_device}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{valid\_on\_device()}{valid\_on\_device()}}
+{\footnotesize\ttfamily bool parray\+::\+Inner\+PArray\+::valid\+\_\+on\+\_\+device (\begin{DoxyParamCaption}\item[{uint64\+\_\+t}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Return True if there is an PArray copy and its coherence state is valid on this device. 
+
+
+
+Definition at line 23 of file parray.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{23                                                     \{}
+\DoxyCodeLine{24   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}{\_state}}-\/>\mbox{\hyperlink{classparray_1_1PArrayState_aaf23dd6b0c91a16c4c530fa1100dd200}{valid\_on\_device}}(device\_id);}
+\DoxyCodeLine{25 \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a368aab11db50a51897fbc5fa0e09c856}\label{classparray_1_1InnerPArray_a368aab11db50a51897fbc5fa0e09c856}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_num\_devices@{\_num\_devices}}
+\index{\_num\_devices@{\_num\_devices}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_num\_devices}{\_num\_devices}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} parray\+::\+Inner\+PArray\+::\+\_\+num\+\_\+devices\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 88 of file parray.\+hpp.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}\label{classparray_1_1InnerPArray_a62942ee993ed5cca043931cb24f1f67a}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_parent\_parray@{\_parent\_parray}}
+\index{\_parent\_parray@{\_parent\_parray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_parent\_parray}{\_parent\_parray}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classparray_1_1InnerPArray}{Inner\+PArray}}$\ast$ parray\+::\+Inner\+PArray\+::\+\_\+parent\+\_\+parray\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 85 of file parray.\+hpp.
+
+
+
+Referenced by decr\+\_\+num\+\_\+active\+\_\+tasks(), get\+\_\+num\+\_\+active\+\_\+tasks(), get\+\_\+parent\+\_\+parray(), incr\+\_\+num\+\_\+active\+\_\+tasks(), and Inner\+PArray().
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a75d95eb1dab30e276df44971206e3463}\label{classparray_1_1InnerPArray_a75d95eb1dab30e276df44971206e3463}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_py\_parray@{\_py\_parray}}
+\index{\_py\_parray@{\_py\_parray}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_py\_parray}{\_py\_parray}}
+{\footnotesize\ttfamily void$\ast$ parray\+::\+Inner\+PArray\+::\+\_\+py\+\_\+parray\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 96 of file parray.\+hpp.
+
+
+
+Referenced by get\+\_\+py\+\_\+parray(), and Inner\+PArray().
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a4cb477f3304045f3ec8c54a1b0cdc7cc}\label{classparray_1_1InnerPArray_a4cb477f3304045f3ec8c54a1b0cdc7cc}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_size@{\_size}}
+\index{\_size@{\_size}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_size}{\_size}}
+{\footnotesize\ttfamily uint64\+\_\+t parray\+::\+Inner\+PArray\+::\+\_\+size\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 84 of file parray.\+hpp.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}\label{classparray_1_1InnerPArray_a381f220dbc70409906e82d31646e1db8}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_state@{\_state}}
+\index{\_state@{\_state}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_state}{\_state}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classparray_1_1PArrayState}{PArray\+State}}$\ast$ parray\+::\+Inner\+PArray\+::\+\_\+state\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 87 of file parray.\+hpp.
+
+
+
+Referenced by Inner\+PArray().
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_adc6c9d33ebab04458836f84b99cc4bf2}\label{classparray_1_1InnerPArray_adc6c9d33ebab04458836f84b99cc4bf2}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!\_task\_lists@{\_task\_lists}}
+\index{\_task\_lists@{\_task\_lists}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{\_task\_lists}{\_task\_lists}}
+{\footnotesize\ttfamily \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} parray\+::\+Inner\+PArray\+::\+\_\+task\+\_\+lists\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 94 of file parray.\+hpp.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a831c08430f1e356bc701aaf90dcb1c41}\label{classparray_1_1InnerPArray_a831c08430f1e356bc701aaf90dcb1c41}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!id@{id}}
+\index{id@{id}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{id}{id}}
+{\footnotesize\ttfamily uint64\+\_\+t parray\+::\+Inner\+PArray\+::id}
+
+
+
+Definition at line 27 of file parray.\+hpp.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}\label{classparray_1_1InnerPArray_acabbd8a141379914010dcf0ddf7a9fa2}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!num\_active\_tasks@{num\_active\_tasks}}
+\index{num\_active\_tasks@{num\_active\_tasks}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{num\_active\_tasks}{num\_active\_tasks}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classCopyableAtomic}{Copyable\+Atomic}}$<$size\+\_\+t$>$ $>$ parray\+::\+Inner\+PArray\+::num\+\_\+active\+\_\+tasks}
+
+
+
+Track the number of tasks that are using or are planning to use this PArray. 
+
+NOTE that this counter is not necessarily matching to the size of the {\ttfamily \+\_\+task\+\_\+lists}. This is because {\ttfamily \+\_\+task\+\_\+lists} does not remove a task after it is completed (since it is not worth to remove that compared to restructuring overheads), but this counter is decreased. This is used to provide more accurate PArray placement information to the task mapping step. 
+
+Definition at line 38 of file parray.\+hpp.
+
+\mbox{\Hypertarget{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}\label{classparray_1_1InnerPArray_a1916a0caa1b06cf4cbf395736633e4ec}} 
+\index{parray::InnerPArray@{parray::InnerPArray}!parent\_id@{parent\_id}}
+\index{parent\_id@{parent\_id}!parray::InnerPArray@{parray::InnerPArray}}
+\doxysubsubsection{\texorpdfstring{parent\_id}{parent\_id}}
+{\footnotesize\ttfamily uint64\+\_\+t parray\+::\+Inner\+PArray\+::parent\+\_\+id}
+
+
+
+Definition at line 28 of file parray.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{parray_8hpp}{parray.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{parray_8cpp}{parray.\+cpp}}\end{DoxyCompactItemize}

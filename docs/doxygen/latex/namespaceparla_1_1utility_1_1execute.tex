@@ -1,0 +1,1241 @@
+\hypertarget{namespaceparla_1_1utility_1_1execute}{}\doxysection{parla.\+utility.\+execute Namespace Reference}
+\label{namespaceparla_1_1utility_1_1execute}\index{parla.utility.execute@{parla.utility.execute}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo}{GPUInfo}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext}{Graph\+Context}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}{make\+\_\+parrays}} (data\+\_\+list)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}{estimate\+\_\+frequency}} (n\+\_\+samples=10, ticks=1900000000)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{get\+\_\+placement\+\_\+set\+\_\+from}} (ps\+\_\+str\+\_\+set, num\+\_\+gpus)
+\item 
+List\mbox{[}np.\+ndarray\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}{generate\+\_\+data}} (Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]} data\+\_\+config, float data\+\_\+scale, data\+\_\+movement\+\_\+type)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{synthetic\+\_\+kernel}} (int total\+\_\+time, Union\mbox{[}Fraction, float\mbox{]} gil\+\_\+fraction, int gil\+\_\+accesses, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} config)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f}{synthetic\+\_\+kernel\+\_\+gpu}} (int total\+\_\+time, Union\mbox{[}Fraction, float\mbox{]} gil\+\_\+fraction, int gil\+\_\+accesses, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} config)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}{create\+\_\+task\+\_\+no\+\_\+data}} (task, taskspaces, config, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}{create\+\_\+task\+\_\+eager\+\_\+data}} (task, taskspaces, config=None, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}{create\+\_\+task\+\_\+lazy\+\_\+data}} (task, taskspaces, config=None, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}{execute\+\_\+tasks}} (taskspaces, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} tasks, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} run\+\_\+config, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}{execute\+\_\+graph}} (Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]} data\+\_\+config, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} tasks, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} run\+\_\+config, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{Time\+Sample}}\mbox{]} timing)
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{Time\+Sample}} \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{run}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} tasks, Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]} data\+\_\+config=None, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} run\+\_\+config=None)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a3557769ccde07f9ad874f8d684ee5fd2}{verify\+\_\+order}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]} log\+\_\+times, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a21f8962cb471483e18d353cfd071f601}{verify\+\_\+dependencies}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} log\+\_\+graph, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ae075017f43eee3460ed598223f75b4b3}{verify\+\_\+complete}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} log\+\_\+graph, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a45f94ff549e58e310bb868bce281af42}{verify\+\_\+time}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]} log\+\_\+times, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} truth\+\_\+graph, float factor=2.\+0)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a40d72166f4771e543dc1ca324bb26244}{verify\+\_\+ntasks}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]} log\+\_\+times, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aab877c9e9e838f5e2acfcfa72c8fdf84}{verify\+\_\+states}} (log\+\_\+states)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a50e9b92625105e162489118fb319f9e0}{timeout}} (seconds\+\_\+before\+\_\+timeout)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a77cf484a209c81a25d537fd8ba9601a2}{PArray}} = parray.\+core.\+PArray
+\item 
+list \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a5a4a9e11ae8733e45bef229c55240a42}{\+\_\+\+\_\+all\+\_\+\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}\label{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}} 
+\index{parla.utility.execute@{parla.utility.execute}!create\_task\_eager\_data@{create\_task\_eager\_data}}
+\index{create\_task\_eager\_data@{create\_task\_eager\_data}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{create\_task\_eager\_data()}{create\_task\_eager\_data()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+create\+\_\+task\+\_\+eager\+\_\+data (\begin{DoxyParamCaption}\item[{}]{task,  }\item[{}]{taskspaces,  }\item[{}]{config = {\ttfamily None},  }\item[{}]{data\+\_\+list = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 283 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{283 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}{create\_task\_eager\_data}}(task, taskspaces, config=None, data\_list=None):}
+\DoxyCodeLine{284 }
+\DoxyCodeLine{285     \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{286         \textcolor{comment}{\# Task ID}}
+\DoxyCodeLine{287         task\_idx = task.task\_id.task\_idx}
+\DoxyCodeLine{288         taskspace = taskspaces[task.task\_id.taskspace]}
+\DoxyCodeLine{289 }
+\DoxyCodeLine{290         \textcolor{comment}{\# Dependency Info}}
+\DoxyCodeLine{291         dependencies = [taskspaces[dep.taskspace][dep.task\_idx]}
+\DoxyCodeLine{292                         \textcolor{keywordflow}{for} dep \textcolor{keywordflow}{in} task.task\_dependencies]}
+\DoxyCodeLine{293 }
+\DoxyCodeLine{294         \textcolor{comment}{\# Valid Placement Set}}
+\DoxyCodeLine{295         num\_gpus = config.num\_gpus}
+\DoxyCodeLine{296         placement\_key = task.task\_runtime.keys()}
+\DoxyCodeLine{297         placement\_set\_str = list(placement\_key)}
+\DoxyCodeLine{298         placement\_set = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{get\_placement\_set\_from}}(placement\_set\_str, num\_gpus)}
+\DoxyCodeLine{299 }
+\DoxyCodeLine{300         \textcolor{comment}{\# In/out/inout data information}}
+\DoxyCodeLine{301         \textcolor{comment}{\# read: list, write: list, read\_write: list}}
+\DoxyCodeLine{302         data\_information = task.data\_dependencies}
+\DoxyCodeLine{303         read\_data\_list = data\_information.read}
+\DoxyCodeLine{304         write\_data\_list = data\_information.write}
+\DoxyCodeLine{305         rw\_data\_list = data\_information.read\_write}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307         \textcolor{comment}{\# Remove duplicated data blocks between in/out and inout}}
+\DoxyCodeLine{308         \textcolor{keywordflow}{if} len(read\_data\_list) > 0 \textcolor{keywordflow}{and} len(rw\_data\_list) > 0:}
+\DoxyCodeLine{309             read\_data\_list = list(set(read\_data\_list).difference(set(rw\_data\_list)))}
+\DoxyCodeLine{310         \textcolor{keywordflow}{if} len(write\_data\_list) > 0 \textcolor{keywordflow}{and} len(rw\_data\_list) > 0:}
+\DoxyCodeLine{311             write\_data\_list = list(set(write\_data\_list).difference(set(rw\_data\_list)))}
+\DoxyCodeLine{312 }
+\DoxyCodeLine{313         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{314 \textcolor{stringliteral}{        print("{}RW data list:"{}, rw\_data\_list)}}
+\DoxyCodeLine{315 \textcolor{stringliteral}{        print("{}R data list:"{}, read\_data\_list)}}
+\DoxyCodeLine{316 \textcolor{stringliteral}{        print("{}W data list:"{}, write\_data\_list)}}
+\DoxyCodeLine{317 \textcolor{stringliteral}{        print("{}Data list:"{}, data\_list)}}
+\DoxyCodeLine{318 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{319 }
+\DoxyCodeLine{320         \textcolor{comment}{\# Construct data blocks.}}
+\DoxyCodeLine{321         INOUT = [] \textcolor{keywordflow}{if} len(rw\_data\_list) == 0 \textcolor{keywordflow}{else} [(data\_list[d], 0) \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} rw\_data\_list]}
+\DoxyCodeLine{322         IN = [] \textcolor{keywordflow}{if} len(read\_data\_list) == 0 \textcolor{keywordflow}{else} [(data\_list[d], 0) \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} read\_data\_list]}
+\DoxyCodeLine{323         OUT = [] \textcolor{keywordflow}{if} len(write\_data\_list) == 0 \textcolor{keywordflow}{else} [(data\_list[d], 0) \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} write\_data\_list]}
+\DoxyCodeLine{324 }
+\DoxyCodeLine{325         \textcolor{comment}{\# TODO: This needs rework with Device support}}
+\DoxyCodeLine{326         \textcolor{comment}{\# TODO(hc): This assumes that this task is a single task}}
+\DoxyCodeLine{327         \textcolor{comment}{\#           and does not have multiple placement options. }}
+\DoxyCodeLine{328         runtime\_info = task.task\_runtime[placement\_set\_str[0]]}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330         \textcolor{comment}{\# Task Constraints}}
+\DoxyCodeLine{331         device\_fraction = runtime\_info.device\_fraction}
+\DoxyCodeLine{332         \textcolor{keywordflow}{if} config.device\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{333             device\_fraction = config.device\_fraction}
+\DoxyCodeLine{334 }
+\DoxyCodeLine{335         \textcolor{comment}{\# Task Work}}
+\DoxyCodeLine{336         total\_time = runtime\_info.task\_time}
+\DoxyCodeLine{337         gil\_accesses = runtime\_info.gil\_accesses}
+\DoxyCodeLine{338         gil\_fraction = runtime\_info.gil\_fraction}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{340         \textcolor{keywordflow}{if} config.task\_time \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{341             total\_time = config.task\_time}
+\DoxyCodeLine{342 }
+\DoxyCodeLine{343         \textcolor{keywordflow}{if} config.gil\_accesses \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{344             gil\_accesses = config.gil\_accesses}
+\DoxyCodeLine{345 }
+\DoxyCodeLine{346         \textcolor{keywordflow}{if} config.gil\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{347             gil\_fraction = config.gil\_fraction}
+\DoxyCodeLine{348 }
+\DoxyCodeLine{349         \textcolor{comment}{\#print("{}Eager data in:"{}, IN, "{} out:"{}, OUT, "{} inout:"{}, INOUT, flush=True)}}
+\DoxyCodeLine{350         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{351 \textcolor{stringliteral}{        print("{}task idx:"{}, task\_idx, "{} dependencies:"{}, dependencies, "{} vcu:"{}, device\_fraction,}}
+\DoxyCodeLine{352 \textcolor{stringliteral}{            "{} placement:"{}, placement\_set)}}
+\DoxyCodeLine{353 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{354 }
+\DoxyCodeLine{355         \textcolor{comment}{\# TODO(hc): Add data checking.}}
+\DoxyCodeLine{356         \textcolor{preprocessor}{@spawn(taskspace[task\_idx], dependencies=dependencies, vcus=device\_fraction, placement=[placement\_set], input=IN, output=OUT, inout=INOUT)}}
+\DoxyCodeLine{357         async \textcolor{keyword}{def }task\_func():}
+\DoxyCodeLine{358             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{359                 print(f\textcolor{stringliteral}{"{}+\{task.task\_id\} Running"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{360 }
+\DoxyCodeLine{361             elapsed = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{synthetic\_kernel}}(total\_time, gil\_fraction,}
+\DoxyCodeLine{362                                        gil\_accesses, config=config)}
+\DoxyCodeLine{363 }
+\DoxyCodeLine{364             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{365                 print(f\textcolor{stringliteral}{"{}-\/\{task.task\_id\} Finished: \{elapsed\} seconds"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{366 }
+\DoxyCodeLine{367     \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{368         print(f\textcolor{stringliteral}{"{}Failed creating Task \{task.task\_id\}: \{e\}"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{369     \textcolor{keywordflow}{finally}:}
+\DoxyCodeLine{370         \textcolor{keywordflow}{return}}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{372 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+get\+\_\+placement\+\_\+set\+\_\+from(), and parla.\+utility.\+execute.\+synthetic\+\_\+kernel().
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+tasks().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}\label{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}} 
+\index{parla.utility.execute@{parla.utility.execute}!create\_task\_lazy\_data@{create\_task\_lazy\_data}}
+\index{create\_task\_lazy\_data@{create\_task\_lazy\_data}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{create\_task\_lazy\_data()}{create\_task\_lazy\_data()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+create\+\_\+task\+\_\+lazy\+\_\+data (\begin{DoxyParamCaption}\item[{}]{task,  }\item[{}]{taskspaces,  }\item[{}]{config = {\ttfamily None},  }\item[{}]{data\+\_\+list = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 373 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{373 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}{create\_task\_lazy\_data}}(task, taskspaces, config=None, data\_list=None):}
+\DoxyCodeLine{374 }
+\DoxyCodeLine{375     \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{376         \textcolor{comment}{\# Task ID}}
+\DoxyCodeLine{377         task\_idx = task.task\_id.task\_idx}
+\DoxyCodeLine{378         taskspace = taskspaces[task.task\_id.taskspace]}
+\DoxyCodeLine{379 }
+\DoxyCodeLine{380         \textcolor{comment}{\# Dependency Info}}
+\DoxyCodeLine{381         dependencies = [taskspaces[dep.taskspace][dep.task\_idx]}
+\DoxyCodeLine{382                         \textcolor{keywordflow}{for} dep \textcolor{keywordflow}{in} task.task\_dependencies]}
+\DoxyCodeLine{383 }
+\DoxyCodeLine{384         \textcolor{comment}{\# Valid Placement Set}}
+\DoxyCodeLine{385         num\_gpus = config.num\_gpus}
+\DoxyCodeLine{386         placement\_key = task.task\_runtime.keys()}
+\DoxyCodeLine{387         placement\_set\_str = list(placement\_key)}
+\DoxyCodeLine{388         placement\_set = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{get\_placement\_set\_from}}(placement\_set\_str, num\_gpus)}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390         \textcolor{comment}{\# In/out/inout data information}}
+\DoxyCodeLine{391         \textcolor{comment}{\# read: list, write: list, read\_write: list}}
+\DoxyCodeLine{392         data\_information = task.data\_dependencies}
+\DoxyCodeLine{393         read\_data\_list = data\_information.read}
+\DoxyCodeLine{394         write\_data\_list = data\_information.write}
+\DoxyCodeLine{395         rw\_data\_list = data\_information.read\_write}
+\DoxyCodeLine{396 }
+\DoxyCodeLine{397         \textcolor{comment}{\# Remove duplicated data blocks between in/out and inout}}
+\DoxyCodeLine{398         \textcolor{keywordflow}{if} len(read\_data\_list) > 0 \textcolor{keywordflow}{and} len(rw\_data\_list) > 0:}
+\DoxyCodeLine{399             read\_data\_list = list(set(read\_data\_list).difference(set(rw\_data\_list)))}
+\DoxyCodeLine{400         \textcolor{keywordflow}{if} len(write\_data\_list) > 0 \textcolor{keywordflow}{and} len(rw\_data\_list) > 0:}
+\DoxyCodeLine{401             write\_data\_list = list(set(write\_data\_list).difference(set(rw\_data\_list)))}
+\DoxyCodeLine{402 }
+\DoxyCodeLine{403         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{404 \textcolor{stringliteral}{        print("{}RW data list:"{}, rw\_data\_list)}}
+\DoxyCodeLine{405 \textcolor{stringliteral}{        print("{}R data list:"{}, read\_data\_list)}}
+\DoxyCodeLine{406 \textcolor{stringliteral}{        print("{}W data list:"{}, write\_data\_list)}}
+\DoxyCodeLine{407 \textcolor{stringliteral}{        print("{}Data list:"{}, data\_list)}}
+\DoxyCodeLine{408 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{409 }
+\DoxyCodeLine{410         \textcolor{comment}{\# TODO: This needs rework with Device support}}
+\DoxyCodeLine{411         \textcolor{comment}{\# TODO(hc): This assumes that this task is a single task}}
+\DoxyCodeLine{412         \textcolor{comment}{\#           and does not have multiple placement options. }}
+\DoxyCodeLine{413         runtime\_info = task.task\_runtime[placement\_set\_str[0]]}
+\DoxyCodeLine{414 }
+\DoxyCodeLine{415         \textcolor{comment}{\# Task Constraints}}
+\DoxyCodeLine{416         device\_fraction = runtime\_info.device\_fraction}
+\DoxyCodeLine{417         \textcolor{keywordflow}{if} config.device\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{418             device\_fraction = config.device\_fraction}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{420         \textcolor{comment}{\# Task Work}}
+\DoxyCodeLine{421         total\_time = runtime\_info.task\_time}
+\DoxyCodeLine{422         gil\_accesses = runtime\_info.gil\_accesses}
+\DoxyCodeLine{423         gil\_fraction = runtime\_info.gil\_fraction}
+\DoxyCodeLine{424 }
+\DoxyCodeLine{425         \textcolor{keywordflow}{if} config.task\_time \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{426             total\_time = config.task\_time}
+\DoxyCodeLine{427 }
+\DoxyCodeLine{428         \textcolor{keywordflow}{if} config.gil\_accesses \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{429             gil\_accesses = config.gil\_accesses}
+\DoxyCodeLine{430 }
+\DoxyCodeLine{431         \textcolor{keywordflow}{if} config.gil\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{432             gil\_fraction = config.gil\_fraction}
+\DoxyCodeLine{433         print(\textcolor{stringliteral}{"{}task idx:"{}}, task\_idx, \textcolor{stringliteral}{"{} dependencies:"{}}, dependencies, \textcolor{stringliteral}{"{} vcu:"{}}, device\_fraction,}
+\DoxyCodeLine{434             \textcolor{stringliteral}{"{} placement:"{}}, placement\_set)}
+\DoxyCodeLine{435         \textcolor{preprocessor}{@spawn(taskspace[task\_idx], dependencies=dependencies, vcus=device\_fraction, placement=[placement\_set])}}
+\DoxyCodeLine{436         async \textcolor{keyword}{def }task\_func():}
+\DoxyCodeLine{437             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{438                 print(f\textcolor{stringliteral}{"{}+\{task.task\_id\} Running"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{439 }
+\DoxyCodeLine{440             local\_data = dict()}
+\DoxyCodeLine{441 }
+\DoxyCodeLine{442             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} itertools.chain(read\_data\_list, rw\_data\_list):}
+\DoxyCodeLine{443                 data = data\_list[d]}
+\DoxyCodeLine{444                 where = -\/1 \textcolor{keywordflow}{if} isinstance(data, np.ndarray) \textcolor{keywordflow}{else} data.device.id}
+\DoxyCodeLine{445                 local\_data[d] = \mbox{\hyperlink{namespaceparla_1_1common_1_1array_a2fb98621d2f781a43f8922f7b5015cac}{clone\_here}}(data)}
+\DoxyCodeLine{446                 old = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{447                 \textcolor{keywordflow}{if} config.do\_check:}
+\DoxyCodeLine{448                     old = np.copy(data[0,1])}
+\DoxyCodeLine{449                     local\_data[d][0,1] = -\/old}
+\DoxyCodeLine{450                 \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{451                     print(f\textcolor{stringliteral}{"{}=Task \{task\_idx\} moved Data[\{d\}] from Device[\{where\}]. Block=[\{local\_data[d][0, 0]\}] | Value=[\{local\_data[d][0, 1]\}], <\{old\}>"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{452 }
+\DoxyCodeLine{453             elapsed = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{synthetic\_kernel}}(total\_time, gil\_fraction,}
+\DoxyCodeLine{454                                        gil\_accesses, config=config)}
+\DoxyCodeLine{455 }
+\DoxyCodeLine{456             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} itertools.chain(write\_data\_list, rw\_data\_list):}
+\DoxyCodeLine{457                 data\_list[d] = local\_data[d]}
+\DoxyCodeLine{458 }
+\DoxyCodeLine{459             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{460                 print(f\textcolor{stringliteral}{"{}-\/\{task.task\_id\} Finished: \{elapsed\} seconds"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{461 }
+\DoxyCodeLine{462     \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{463         print(f\textcolor{stringliteral}{"{}Failed creating Task \{task.task\_id\}: \{e\}"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{464     \textcolor{keywordflow}{finally}:}
+\DoxyCodeLine{465         \textcolor{keywordflow}{return}}
+\DoxyCodeLine{466 }
+\DoxyCodeLine{467 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+array.\+clone\+\_\+here(), parla.\+utility.\+execute.\+get\+\_\+placement\+\_\+set\+\_\+from(), and parla.\+utility.\+execute.\+synthetic\+\_\+kernel().
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+tasks().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}\label{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}} 
+\index{parla.utility.execute@{parla.utility.execute}!create\_task\_no\_data@{create\_task\_no\_data}}
+\index{create\_task\_no\_data@{create\_task\_no\_data}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{create\_task\_no\_data()}{create\_task\_no\_data()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+create\+\_\+task\+\_\+no\+\_\+data (\begin{DoxyParamCaption}\item[{}]{task,  }\item[{}]{taskspaces,  }\item[{}]{config,  }\item[{}]{data\+\_\+list = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 222 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{222 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}{create\_task\_no\_data}}(task, taskspaces, config, data\_list=None):}
+\DoxyCodeLine{223 }
+\DoxyCodeLine{224     \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{225         \textcolor{comment}{\# Task ID}}
+\DoxyCodeLine{226         task\_idx = task.task\_id.task\_idx}
+\DoxyCodeLine{227         taskspace = taskspaces[task.task\_id.taskspace]}
+\DoxyCodeLine{228 }
+\DoxyCodeLine{229         \textcolor{comment}{\# Dependency Info}}
+\DoxyCodeLine{230         dependencies = [taskspaces[dep.taskspace][dep.task\_idx]}
+\DoxyCodeLine{231                         \textcolor{keywordflow}{for} dep \textcolor{keywordflow}{in} task.task\_dependencies]}
+\DoxyCodeLine{232 }
+\DoxyCodeLine{233         \textcolor{comment}{\# Valid Placement Set}}
+\DoxyCodeLine{234         num\_gpus = config.num\_gpus}
+\DoxyCodeLine{235         placement\_key = task.task\_runtime.keys()}
+\DoxyCodeLine{236         placement\_set\_str = list(placement\_key)}
+\DoxyCodeLine{237         placement\_set = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{get\_placement\_set\_from}}(placement\_set\_str, num\_gpus)}
+\DoxyCodeLine{238 }
+\DoxyCodeLine{239         \textcolor{comment}{\# TODO: This needs rework with Device support}}
+\DoxyCodeLine{240         \textcolor{comment}{\# TODO(hc): This assumes that this task is a single task}}
+\DoxyCodeLine{241         \textcolor{comment}{\#           and does not have multiple placement options. }}
+\DoxyCodeLine{242         runtime\_info = task.task\_runtime[placement\_set\_str[0]]}
+\DoxyCodeLine{243 }
+\DoxyCodeLine{244         \textcolor{comment}{\# Task Constraints}}
+\DoxyCodeLine{245         device\_fraction = runtime\_info.device\_fraction}
+\DoxyCodeLine{246         \textcolor{keywordflow}{if} config.device\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{247             device\_fraction = config.device\_fraction}
+\DoxyCodeLine{248 }
+\DoxyCodeLine{249         \textcolor{comment}{\# Task Work}}
+\DoxyCodeLine{250         total\_time = runtime\_info.task\_time}
+\DoxyCodeLine{251         gil\_accesses = runtime\_info.gil\_accesses}
+\DoxyCodeLine{252         gil\_fraction = runtime\_info.gil\_fraction}
+\DoxyCodeLine{253 }
+\DoxyCodeLine{254         \textcolor{keywordflow}{if} config.task\_time \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{255             total\_time = config.task\_time}
+\DoxyCodeLine{256 }
+\DoxyCodeLine{257         \textcolor{keywordflow}{if} config.gil\_accesses \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{258             gil\_accesses = config.gil\_accesses}
+\DoxyCodeLine{259 }
+\DoxyCodeLine{260         \textcolor{keywordflow}{if} config.gil\_fraction \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{261             gil\_fraction = config.gil\_fraction}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{263         \textcolor{comment}{\#print("{}task idx:"{}, task\_idx, "{} dependencies:"{}, dependencies, "{} vcu:"{}, device\_fraction,}}
+\DoxyCodeLine{264         \textcolor{comment}{\#      "{} placement:"{}, placement\_set, "{} placement key:"{}, placement\_set\_str)}}
+\DoxyCodeLine{265 }
+\DoxyCodeLine{266         \textcolor{preprocessor}{@spawn(taskspace[task\_idx], dependencies=dependencies, vcus=device\_fraction, placement=[placement\_set])}}
+\DoxyCodeLine{267         async \textcolor{keyword}{def }task\_func():}
+\DoxyCodeLine{268             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{269                 print(f\textcolor{stringliteral}{"{}+\{task.task\_id\} Running"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271             elapsed = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{synthetic\_kernel}}(total\_time, gil\_fraction,}
+\DoxyCodeLine{272                                        gil\_accesses, config=config)}
+\DoxyCodeLine{273 }
+\DoxyCodeLine{274             \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{275                 print(f\textcolor{stringliteral}{"{}-\/\{task.task\_id\} Finished: \{elapsed\} seconds"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{276 }
+\DoxyCodeLine{277     \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{278         print(f\textcolor{stringliteral}{"{}Failed creating Task \{task.task\_id\}: \{e\}"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{279     \textcolor{keywordflow}{finally}:}
+\DoxyCodeLine{280         \textcolor{keywordflow}{return}}
+\DoxyCodeLine{281 }
+\DoxyCodeLine{282 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+get\+\_\+placement\+\_\+set\+\_\+from(), and parla.\+utility.\+execute.\+synthetic\+\_\+kernel().
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+tasks().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}\label{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}} 
+\index{parla.utility.execute@{parla.utility.execute}!estimate\_frequency@{estimate\_frequency}}
+\index{estimate\_frequency@{estimate\_frequency}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{estimate\_frequency()}{estimate\_frequency()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+estimate\+\_\+frequency (\begin{DoxyParamCaption}\item[{}]{n\+\_\+samples = {\ttfamily 10},  }\item[{}]{ticks = {\ttfamily 1900000000} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 48 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{48 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}{estimate\_frequency}}(n\_samples= 10, ticks=1900000000):}
+\DoxyCodeLine{49     \textcolor{keyword}{import} cupy \textcolor{keyword}{as} cp}
+\DoxyCodeLine{50     stream = cp.cuda.get\_current\_stream()}
+\DoxyCodeLine{51     cycles = ticks}
+\DoxyCodeLine{52     device\_id = 0}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54     print(f\textcolor{stringliteral}{"{}Starting GPU Frequency benchmark."{}})}
+\DoxyCodeLine{55     times = np.zeros(n\_samples)}
+\DoxyCodeLine{56     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(n\_samples):}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{58         start = time.perf\_counter()}
+\DoxyCodeLine{59         gpu\_bsleep\_nogil(device\_id, int(ticks), stream)}
+\DoxyCodeLine{60         stream.synchronize()}
+\DoxyCodeLine{61         end = time.perf\_counter()}
+\DoxyCodeLine{62         print(f\textcolor{stringliteral}{"{}...collected frequency sample \{i\} "{}}, end-\/start)}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64         times[i] = (end-\/start)}
+\DoxyCodeLine{65 }
+\DoxyCodeLine{66     times = times[2:]}
+\DoxyCodeLine{67     elapsed = np.mean(times)}
+\DoxyCodeLine{68     estimated\_speed = cycles/np.mean(times)}
+\DoxyCodeLine{69     median\_speed = cycles/np.median(times)}
+\DoxyCodeLine{70 }
+\DoxyCodeLine{71     print(\textcolor{stringliteral}{"{}Finished Benchmark."{}})}
+\DoxyCodeLine{72     print(\textcolor{stringliteral}{"{}Estimated GPU Frequency: Mean: "{}}, estimated\_speed, \textcolor{stringliteral}{"{}, Median: "{}}, median\_speed, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{73     \textcolor{keywordflow}{return} estimated\_speed}
+\DoxyCodeLine{74 }
+\DoxyCodeLine{75 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}\label{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}} 
+\index{parla.utility.execute@{parla.utility.execute}!execute\_graph@{execute\_graph}}
+\index{execute\_graph@{execute\_graph}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{execute\_graph()}{execute\_graph()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+execute\+\_\+graph (\begin{DoxyParamCaption}\item[{Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]}}]{data\+\_\+config,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}}]{tasks,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}}]{run\+\_\+config,  }\item[{List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{Time\+Sample}}\mbox{]}}]{timing }\end{DoxyParamCaption})}
+
+
+
+Definition at line 490 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{490 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}{execute\_graph}}(data\_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run\_config: RunConfig, timing: List[TimeSample]):}
+\DoxyCodeLine{491 }
+\DoxyCodeLine{492     \textcolor{preprocessor}{@spawn(vcus=0)}}
+\DoxyCodeLine{493     async \textcolor{keyword}{def }main\_task():}
+\DoxyCodeLine{494 }
+\DoxyCodeLine{495         graph\_times = []}
+\DoxyCodeLine{496 }
+\DoxyCodeLine{497         \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(run\_config.inner\_iterations):}
+\DoxyCodeLine{498             data\_list = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}{generate\_data}}(data\_config, run\_config.data\_scale, run\_config.movement\_type)}
+\DoxyCodeLine{499 }
+\DoxyCodeLine{500             \textcolor{comment}{\# Initialize task spaces}}
+\DoxyCodeLine{501             taskspaces = \{\}}
+\DoxyCodeLine{502 }
+\DoxyCodeLine{503             \textcolor{keywordflow}{for} task, details \textcolor{keywordflow}{in} tasks.items():}
+\DoxyCodeLine{504                 space\_name = details.task\_id.taskspace}
+\DoxyCodeLine{505                 \textcolor{keywordflow}{if} space\_name \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} taskspaces:}
+\DoxyCodeLine{506                     taskspaces[space\_name] = \mbox{\hyperlink{namespaceparla_a36622c3f1023c843a2106d70e9807281}{TaskSpace}}(space\_name)}
+\DoxyCodeLine{507 }
+\DoxyCodeLine{508             graph\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{509 }
+\DoxyCodeLine{510             \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}{execute\_tasks}}(taskspaces, tasks, run\_config, data\_list=data\_list)}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{512             \textcolor{keywordflow}{for} taskspace \textcolor{keywordflow}{in} taskspaces.values():}
+\DoxyCodeLine{513                 await taskspace}
+\DoxyCodeLine{514 }
+\DoxyCodeLine{515             graph\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{516 }
+\DoxyCodeLine{517             graph\_elapsed = graph\_end\_t -\/ graph\_start\_t}
+\DoxyCodeLine{518             graph\_times.append(graph\_elapsed)}
+\DoxyCodeLine{519 }
+\DoxyCodeLine{520         graph\_times = np.asarray(graph\_times)}
+\DoxyCodeLine{521         graph\_t = TimeSample(np.mean(graph\_times), np.median(graph\_times), np.std(}
+\DoxyCodeLine{522             graph\_times), np.min(graph\_times), np.max(graph\_times), len(graph\_times))}
+\DoxyCodeLine{523 }
+\DoxyCodeLine{524         timing.append(graph\_t)}
+\DoxyCodeLine{525 }
+\DoxyCodeLine{526 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+execute\+\_\+tasks(), parla.\+utility.\+execute.\+generate\+\_\+data(), and parla.\+Task\+Space.
+
+
+
+Referenced by parla.\+utility.\+execute.\+run().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}\label{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}} 
+\index{parla.utility.execute@{parla.utility.execute}!execute\_tasks@{execute\_tasks}}
+\index{execute\_tasks@{execute\_tasks}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{execute\_tasks()}{execute\_tasks()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+execute\+\_\+tasks (\begin{DoxyParamCaption}\item[{}]{taskspaces,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}}]{tasks,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}}]{run\+\_\+config,  }\item[{}]{data\+\_\+list = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 468 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{468 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}{execute\_tasks}}(taskspaces, tasks: Dict[TaskID, TaskInfo], run\_config: RunConfig, data\_list=\textcolor{keywordtype}{None}):}
+\DoxyCodeLine{469 }
+\DoxyCodeLine{470     spawn\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{471 }
+\DoxyCodeLine{472     \textcolor{comment}{\# Spawn tasks}}
+\DoxyCodeLine{473     \textcolor{keywordflow}{for} task, details \textcolor{keywordflow}{in} tasks.items():}
+\DoxyCodeLine{474         \textcolor{comment}{\#print("{}task:"{}, task, "{}, details:"{}, details)}}
+\DoxyCodeLine{475         \textcolor{keywordflow}{if} run\_config.movement\_type == MovementType.NO\_MOVEMENT:}
+\DoxyCodeLine{476             \textcolor{comment}{\#print("{}No data movement"{})}}
+\DoxyCodeLine{477             \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}{create\_task\_no\_data}}(details, taskspaces, config=run\_config, data\_list=data\_list)}
+\DoxyCodeLine{478         \textcolor{keywordflow}{elif} run\_config.movement\_type == MovementType.EAGER\_MOVEMENT:}
+\DoxyCodeLine{479             \textcolor{comment}{\#print("{}Eager data movement"{})}}
+\DoxyCodeLine{480             \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}{create\_task\_eager\_data}}(details, taskspaces, config=run\_config, data\_list=data\_list)}
+\DoxyCodeLine{481         \textcolor{keywordflow}{elif} run\_config.movement\_type == MovementType.LAZY\_MOVEMENT:}
+\DoxyCodeLine{482             \textcolor{comment}{\#print("{}Lazy data movement"{})}}
+\DoxyCodeLine{483             \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}{create\_task\_lazy\_data}}(details, taskspaces, config=run\_config, data\_list=data\_list)}
+\DoxyCodeLine{484 }
+\DoxyCodeLine{485     spawn\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{486 }
+\DoxyCodeLine{487     \textcolor{keywordflow}{return} taskspaces}
+\DoxyCodeLine{488 }
+\DoxyCodeLine{489 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+create\+\_\+task\+\_\+eager\+\_\+data(), parla.\+utility.\+execute.\+create\+\_\+task\+\_\+lazy\+\_\+data(), and parla.\+utility.\+execute.\+create\+\_\+task\+\_\+no\+\_\+data().
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+graph().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}\label{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}} 
+\index{parla.utility.execute@{parla.utility.execute}!generate\_data@{generate\_data}}
+\index{generate\_data@{generate\_data}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{generate\_data()}{generate\_data()}}
+{\footnotesize\ttfamily  List\mbox{[}np.\+ndarray\mbox{]} parla.\+utility.\+execute.\+generate\+\_\+data (\begin{DoxyParamCaption}\item[{Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]}}]{data\+\_\+config,  }\item[{float}]{data\+\_\+scale,  }\item[{}]{data\+\_\+movement\+\_\+type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 116 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{116 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}{generate\_data}}(data\_config: Dict[int, DataInfo], data\_scale: float, data\_movement\_type) -\/> List[np.ndarray]:}
+\DoxyCodeLine{117     value = 0}
+\DoxyCodeLine{118     data\_list = []}
+\DoxyCodeLine{119     \textcolor{comment}{\# If data does not exist, this loop will not be iterated.}}
+\DoxyCodeLine{120     \textcolor{keywordflow}{for} data\_idx \textcolor{keywordflow}{in} data\_config:}
+\DoxyCodeLine{121         data\_location = data\_config[data\_idx].location}
+\DoxyCodeLine{122         data\_size = data\_config[data\_idx].size}
+\DoxyCodeLine{123         \textcolor{keywordflow}{if} data\_location == DeviceType.CPU\_DEVICE:}
+\DoxyCodeLine{124             data = np.zeros([data\_size, data\_scale], dtype=np.float32) + value + 1}
+\DoxyCodeLine{125             data\_list.append(data)}
+\DoxyCodeLine{126         \textcolor{keywordflow}{elif} data\_location > DeviceType.ANY\_GPU\_DEVICE:}
+\DoxyCodeLine{127             \textcolor{keyword}{import} cupy \textcolor{keyword}{as} cp}
+\DoxyCodeLine{128             \textcolor{keyword}{with} cp.cuda.Device(data\_location -\/ 1) \textcolor{keyword}{as} device:}
+\DoxyCodeLine{129                 data = cp.zeros([data\_size, data\_scale], dtyp=np.float32) + value + 1}
+\DoxyCodeLine{130                 device.synchronize()}
+\DoxyCodeLine{131                 data\_list.append(data)}
+\DoxyCodeLine{132         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{133             \textcolor{keywordflow}{raise} NotImplementedError(\textcolor{stringliteral}{"{}This device is not supported for data"{}})}
+\DoxyCodeLine{134         value += 1 }
+\DoxyCodeLine{135     \textcolor{keywordflow}{if} data\_movement\_type == MovementType.EAGER\_MOVEMENT:}
+\DoxyCodeLine{136         data\_list = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}{make\_parrays}}(data\_list)}
+\DoxyCodeLine{137         \textcolor{keywordflow}{if} len(data\_list) > 0:}
+\DoxyCodeLine{138             \textcolor{keyword}{assert} isinstance(data\_list[0], PArray)}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140     \textcolor{stringliteral}{'''}}
+\DoxyCodeLine{141 \textcolor{stringliteral}{    if len(data\_list) > 0:}}
+\DoxyCodeLine{142 \textcolor{stringliteral}{        print("{}[validation] Generated data type:"{}, type(data\_list[0]))}}
+\DoxyCodeLine{143 \textcolor{stringliteral}{    '''}}
+\DoxyCodeLine{144     \textcolor{keywordflow}{return} data\_list}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146 \textcolor{preprocessor}{@specialize}}
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+make\+\_\+parrays().
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+graph().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}\label{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}} 
+\index{parla.utility.execute@{parla.utility.execute}!get\_placement\_set\_from@{get\_placement\_set\_from}}
+\index{get\_placement\_set\_from@{get\_placement\_set\_from}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{get\_placement\_set\_from()}{get\_placement\_set\_from()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+get\+\_\+placement\+\_\+set\+\_\+from (\begin{DoxyParamCaption}\item[{}]{ps\+\_\+str\+\_\+set,  }\item[{}]{num\+\_\+gpus }\end{DoxyParamCaption})}
+
+
+
+Definition at line 91 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{91 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{get\_placement\_set\_from}}(ps\_str\_set, num\_gpus):}
+\DoxyCodeLine{92     ps\_set = []}
+\DoxyCodeLine{93     \textcolor{comment}{\# TODO(hc): This assumes a single device task.}}
+\DoxyCodeLine{94     \textcolor{keywordflow}{for} ps\_str \textcolor{keywordflow}{in} ps\_str\_set[0]:}
+\DoxyCodeLine{95         dev\_type = int(ps\_str)}
+\DoxyCodeLine{96         \textcolor{keywordflow}{if} dev\_type == DeviceType.ANY\_GPU\_DEVICE:}
+\DoxyCodeLine{97             ps\_set.append(gpu)}
+\DoxyCodeLine{98         \textcolor{keywordflow}{elif} dev\_type == DeviceType.CPU\_DEVICE:}
+\DoxyCodeLine{99             ps\_set.append(cpu)}
+\DoxyCodeLine{100         \textcolor{comment}{\# TODO(hc): just assume that system has 4 gpus.}}
+\DoxyCodeLine{101         \textcolor{keywordflow}{elif} dev\_type == DeviceType.GPU\_0:}
+\DoxyCodeLine{102             ps\_set.append(\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_af1099b0145d8f42a9cf040ef2b4b67cf}{gpu}}(0))}
+\DoxyCodeLine{103         \textcolor{keywordflow}{elif} dev\_type == DeviceType.GPU\_1:}
+\DoxyCodeLine{104             ps\_set.append(\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_af1099b0145d8f42a9cf040ef2b4b67cf}{gpu}}(1))}
+\DoxyCodeLine{105         \textcolor{keywordflow}{elif} dev\_type == DeviceType.GPU\_2:}
+\DoxyCodeLine{106             ps\_set.append(\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_af1099b0145d8f42a9cf040ef2b4b67cf}{gpu}}(2))}
+\DoxyCodeLine{107         \textcolor{keywordflow}{elif} dev\_type == DeviceType.GPU\_3:}
+\DoxyCodeLine{108             ps\_set.append(\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_af1099b0145d8f42a9cf040ef2b4b67cf}{gpu}}(3))}
+\DoxyCodeLine{109         \textcolor{keywordflow}{elif} dev\_type >= DeviceType.USER\_CHOSEN\_DEVICE:}
+\DoxyCodeLine{110             gpu\_idx = (dev\_type -\/ DeviceType.USER\_CHOSEN\_DEVICE) \% num\_gpus}
+\DoxyCodeLine{111             ps\_set.append(\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_af1099b0145d8f42a9cf040ef2b4b67cf}{gpu}}(gpu\_idx))}
+\DoxyCodeLine{112         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{113             \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Does not support this placement:"{}}, dev\_type)}
+\DoxyCodeLine{114     \textcolor{keywordflow}{return} tuple(ps\_set)}
+\DoxyCodeLine{115 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+gpu.
+
+
+
+Referenced by parla.\+utility.\+execute.\+create\+\_\+task\+\_\+eager\+\_\+data(), parla.\+utility.\+execute.\+create\+\_\+task\+\_\+lazy\+\_\+data(), and parla.\+utility.\+execute.\+create\+\_\+task\+\_\+no\+\_\+data().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}\label{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}} 
+\index{parla.utility.execute@{parla.utility.execute}!make\_parrays@{make\_parrays}}
+\index{make\_parrays@{make\_parrays}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{make\_parrays()}{make\_parrays()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+make\+\_\+parrays (\begin{DoxyParamCaption}\item[{}]{data\+\_\+list }\end{DoxyParamCaption})}
+
+
+
+Definition at line 41 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{41 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}{make\_parrays}}(data\_list):}
+\DoxyCodeLine{42     l = list()}
+\DoxyCodeLine{43     \textcolor{keywordflow}{for} i, data \textcolor{keywordflow}{in} enumerate(data\_list):}
+\DoxyCodeLine{44         l.append(\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1from__data_a8632d3fcf2de6f3858522c7730a85fc2}{asarray}}(data))}
+\DoxyCodeLine{45     \textcolor{keywordflow}{return} l}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+from\+\_\+data.\+asarray().
+
+
+
+Referenced by parla.\+utility.\+execute.\+generate\+\_\+data().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}\label{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}} 
+\index{parla.utility.execute@{parla.utility.execute}!run@{run}}
+\index{run@{run}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily  \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{Time\+Sample}} parla.\+utility.\+execute.\+run (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}}]{tasks,  }\item[{Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]} }]{data\+\_\+config = {\ttfamily None},  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} }]{run\+\_\+config = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 527 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{527 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{run}}(tasks: Dict[TaskID, TaskInfo], data\_config: Dict[int, DataInfo] = \textcolor{keywordtype}{None}, run\_config: RunConfig = \textcolor{keywordtype}{None}) -\/> TimeSample:}
+\DoxyCodeLine{528 }
+\DoxyCodeLine{529     \textcolor{keywordflow}{if} run\_config \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{530         run\_config = RunConfig(outer\_iterations=1, inner\_iterations=1,}
+\DoxyCodeLine{531                                verbose=\textcolor{keyword}{False}, threads=1, data\_scale=1)}
+\DoxyCodeLine{532 }
+\DoxyCodeLine{533     timing = []}
+\DoxyCodeLine{534 }
+\DoxyCodeLine{535     \textcolor{keywordflow}{for} outer \textcolor{keywordflow}{in} range(run\_config.outer\_iterations):}
+\DoxyCodeLine{536 }
+\DoxyCodeLine{537         outer\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{538 }
+\DoxyCodeLine{539         \textcolor{keyword}{with} Parla(logfile=run\_config.logfile):}
+\DoxyCodeLine{540             internal\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{541             \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}{execute\_graph}}(data\_config, tasks, run\_config, timing)}
+\DoxyCodeLine{542             internal\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{543 }
+\DoxyCodeLine{544         outer\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{545 }
+\DoxyCodeLine{546         parla\_total\_elapsed = outer\_end\_t -\/ outer\_start\_t}
+\DoxyCodeLine{547         parla\_internal\_elapsed = internal\_end\_t -\/ internal\_start\_t}
+\DoxyCodeLine{548 }
+\DoxyCodeLine{549     \textcolor{keywordflow}{return} timing[0]}
+\DoxyCodeLine{550 }
+\DoxyCodeLine{551 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+execute\+\_\+graph().
+
+
+
+Referenced by parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+dealloc\+\_\+\+\_\+().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}\label{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}} 
+\index{parla.utility.execute@{parla.utility.execute}!synthetic\_kernel@{synthetic\_kernel}}
+\index{synthetic\_kernel@{synthetic\_kernel}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{synthetic\_kernel()}{synthetic\_kernel()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+synthetic\+\_\+kernel (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+time,  }\item[{Union\mbox{[}Fraction, float\mbox{]}}]{gil\+\_\+fraction,  }\item[{int}]{gil\+\_\+accesses,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}}]{config }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}A simple synthetic kernel that simulates a task that takes a given amount of time
+and accesses the GIL a given number of times. The GIL is accessed in a fraction of
+the total time given.
+\end{DoxyVerb}
+ 
+
+Definition at line 147 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{147 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{synthetic\_kernel}}(total\_time: int, gil\_fraction: Union[Fraction, float], gil\_accesses: int, config: RunConfig):}
+\DoxyCodeLine{148     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{149 \textcolor{stringliteral}{    A simple synthetic kernel that simulates a task that takes a given amount of time}}
+\DoxyCodeLine{150 \textcolor{stringliteral}{    and accesses the GIL a given number of times. The GIL is accessed in a fraction of}}
+\DoxyCodeLine{151 \textcolor{stringliteral}{    the total time given.}}
+\DoxyCodeLine{152 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{153     \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{154         task\_internal\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156     \textcolor{comment}{\# Simulate task work}}
+\DoxyCodeLine{157     kernel\_time = total\_time / gil\_accesses}
+\DoxyCodeLine{158     free\_time = kernel\_time * (1 -\/ gil\_fraction)}
+\DoxyCodeLine{159     gil\_time = kernel\_time * gil\_fraction}
+\DoxyCodeLine{160 }
+\DoxyCodeLine{161     gpu\_info = GPUInfo()}
+\DoxyCodeLine{162     cycles\_per\_second = gpu\_info.get()}
+\DoxyCodeLine{163     dev\_id = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a83710360ea14a327e05355fcddd2d557}{get\_current\_devices}}()[0]}
+\DoxyCodeLine{164     stream = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_ae0422799c7ddb4298fd0adea38e72ec7}{get\_current\_stream}}()}
+\DoxyCodeLine{165 }
+\DoxyCodeLine{166     print(f\textcolor{stringliteral}{"{}gil accesses: \{gil\_accesses\}, free time: \{free\_time\}, gil time: \{gil\_time\}"{}})}
+\DoxyCodeLine{167     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(gil\_accesses):}
+\DoxyCodeLine{168         free\_sleep(free\_time)}
+\DoxyCodeLine{169         lock\_sleep(gil\_time)}
+\DoxyCodeLine{170 }
+\DoxyCodeLine{171     \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{172         task\_internal\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{173         task\_internal\_duration = task\_internal\_end\_t -\/ task\_internal\_start\_t}
+\DoxyCodeLine{174         \textcolor{keywordflow}{return} task\_internal\_duration}
+\DoxyCodeLine{175 }
+\DoxyCodeLine{176     \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178 }
+\DoxyCodeLine{179 \textcolor{preprocessor}{@synthetic\_kernel.variant(gpu)}}
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+get\+\_\+current\+\_\+devices(), and parla.\+common.\+globals.\+get\+\_\+current\+\_\+stream().
+
+
+
+Referenced by parla.\+utility.\+execute.\+create\+\_\+task\+\_\+eager\+\_\+data(), parla.\+utility.\+execute.\+create\+\_\+task\+\_\+lazy\+\_\+data(), and parla.\+utility.\+execute.\+create\+\_\+task\+\_\+no\+\_\+data().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f}\label{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f}} 
+\index{parla.utility.execute@{parla.utility.execute}!synthetic\_kernel\_gpu@{synthetic\_kernel\_gpu}}
+\index{synthetic\_kernel\_gpu@{synthetic\_kernel\_gpu}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{synthetic\_kernel\_gpu()}{synthetic\_kernel\_gpu()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+synthetic\+\_\+kernel\+\_\+gpu (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+time,  }\item[{Union\mbox{[}Fraction, float\mbox{]}}]{gil\+\_\+fraction,  }\item[{int}]{gil\+\_\+accesses,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}}]{config }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}A simple synthetic kernel that simulates a task that takes a given amount of time
+and accesses the GIL a given number of times. The GIL is accessed in a fraction of
+the total time given.
+\end{DoxyVerb}
+ 
+
+Definition at line 180 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{180 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f}{synthetic\_kernel\_gpu}}(total\_time: int, gil\_fraction: Union[Fraction, float], gil\_accesses: int, config: RunConfig):}
+\DoxyCodeLine{181     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{182 \textcolor{stringliteral}{    A simple synthetic kernel that simulates a task that takes a given amount of time}}
+\DoxyCodeLine{183 \textcolor{stringliteral}{    and accesses the GIL a given number of times. The GIL is accessed in a fraction of}}
+\DoxyCodeLine{184 \textcolor{stringliteral}{    the total time given.}}
+\DoxyCodeLine{185 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{186     \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{187         task\_internal\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{188 }
+\DoxyCodeLine{189     task\_internal\_start\_t = time.perf\_counter()}
+\DoxyCodeLine{190     \textcolor{comment}{\# Simulate task work}}
+\DoxyCodeLine{191     kernel\_time = total\_time / gil\_accesses}
+\DoxyCodeLine{192     free\_time = kernel\_time * (1 -\/ gil\_fraction)}
+\DoxyCodeLine{193     gil\_time = kernel\_time * gil\_fraction}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{195     gpu\_info = GPUInfo()}
+\DoxyCodeLine{196     cycles\_per\_second = gpu\_info.get()}
+\DoxyCodeLine{197     dev\_id = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a83710360ea14a327e05355fcddd2d557}{get\_current\_devices}}()[0]}
+\DoxyCodeLine{198     parla\_cuda\_stream = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_ae0422799c7ddb4298fd0adea38e72ec7}{get\_current\_stream}}()}
+\DoxyCodeLine{199     ticks = int((total\_time/(10**6))*cycles\_per\_second)}
+\DoxyCodeLine{200 }
+\DoxyCodeLine{201     \textcolor{comment}{\#print("{}device id:"{}, dev\_id, "{} ticks:"{}, ticks, "{} stream:"{}, stream, flush=True)}}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{203     \textcolor{comment}{\#print(f"{}gil accesses: \{gil\_accesses\}, free time: \{free\_time\}, gil time: \{gil\_time\}"{})}}
+\DoxyCodeLine{204     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(gil\_accesses):}
+\DoxyCodeLine{205         print(dev\_id[0]().device\_id, parla\_cuda\_stream.stream, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{206         gpu\_bsleep\_nogil(dev\_id[0]().device\_id, int(ticks), parla\_cuda\_stream.stream)}
+\DoxyCodeLine{207         parla\_cuda\_stream.stream.synchronize()}
+\DoxyCodeLine{208         lock\_sleep(gil\_time)}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{210     \textcolor{keywordflow}{if} config.verbose:}
+\DoxyCodeLine{211         task\_internal\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{212         task\_internal\_duration = task\_internal\_end\_t -\/ task\_internal\_start\_t}
+\DoxyCodeLine{213         \textcolor{keywordflow}{return} task\_internal\_duration}
+\DoxyCodeLine{214 }
+\DoxyCodeLine{215     task\_internal\_end\_t = time.perf\_counter()}
+\DoxyCodeLine{216     task\_internal\_duration = task\_internal\_end\_t -\/ task\_internal\_start\_t}
+\DoxyCodeLine{217     \textcolor{comment}{\#print("{}Wall clock duration:"{}, task\_internal\_duration, "{}, user passed total time:"{}, total\_time, "{}, ticks:"{}, ticks , flush=True)}}
+\DoxyCodeLine{218 }
+\DoxyCodeLine{219     \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{220 }
+\DoxyCodeLine{221 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+get\+\_\+current\+\_\+devices(), and parla.\+common.\+globals.\+get\+\_\+current\+\_\+stream().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a50e9b92625105e162489118fb319f9e0}\label{namespaceparla_1_1utility_1_1execute_a50e9b92625105e162489118fb319f9e0}} 
+\index{parla.utility.execute@{parla.utility.execute}!timeout@{timeout}}
+\index{timeout@{timeout}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{timeout()}{timeout()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+timeout (\begin{DoxyParamCaption}\item[{}]{seconds\+\_\+before\+\_\+timeout }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Decorator that raises an exception if the function takes longer than seconds_before_timeout to execute.
+https://stackoverflow.com/questions/21827874/timeout-a-function-windows
+\end{DoxyVerb}
+ 
+
+Definition at line 662 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{662 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a50e9b92625105e162489118fb319f9e0}{timeout}}(seconds\_before\_timeout):}
+\DoxyCodeLine{663     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{664 \textcolor{stringliteral}{    Decorator that raises an exception if the function takes longer than seconds\_before\_timeout to execute.}}
+\DoxyCodeLine{665 \textcolor{stringliteral}{    https://stackoverflow.com/questions/21827874/timeout-\/a-\/function-\/windows}}
+\DoxyCodeLine{666 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{667     \textcolor{keyword}{def }deco(func):}
+\DoxyCodeLine{668         \textcolor{preprocessor}{@functools.wraps(func)}}
+\DoxyCodeLine{669         \textcolor{keyword}{def }wrapper(*args, **kwargs):}
+\DoxyCodeLine{670             res = [Exception(\textcolor{stringliteral}{'function [\%s] timeout [\%s seconds] exceeded!'} \% (}
+\DoxyCodeLine{671                 func.\_\_name\_\_, seconds\_before\_timeout))]}
+\DoxyCodeLine{672 }
+\DoxyCodeLine{673             \textcolor{keyword}{def }newFunc():}
+\DoxyCodeLine{674                 \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{675                     res[0] = func(*args, **kwargs)}
+\DoxyCodeLine{676                 \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{677                     res[0] = e}
+\DoxyCodeLine{678             t = Propagate(target=newFunc)}
+\DoxyCodeLine{679             t.daemon = \textcolor{keyword}{True}}
+\DoxyCodeLine{680             \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{681                 t.start()}
+\DoxyCodeLine{682                 t.join(seconds\_before\_timeout)}
+\DoxyCodeLine{683                 r = t.value}
+\DoxyCodeLine{684             \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{685                 print(\textcolor{stringliteral}{'Unhandled exception in Propagate wrapper'}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{686                 \textcolor{keywordflow}{raise} e}
+\DoxyCodeLine{687             ret = res[0]}
+\DoxyCodeLine{688             \textcolor{keywordflow}{if} isinstance(ret, BaseException):}
+\DoxyCodeLine{689                 \textcolor{keywordflow}{raise} ret}
+\DoxyCodeLine{690             \textcolor{keywordflow}{return} ret}
+\DoxyCodeLine{691         \textcolor{keywordflow}{return} wrapper}
+\DoxyCodeLine{692     \textcolor{keywordflow}{return} deco}
+\DoxyCodeLine{693 }
+\DoxyCodeLine{694 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_ae075017f43eee3460ed598223f75b4b3}\label{namespaceparla_1_1utility_1_1execute_ae075017f43eee3460ed598223f75b4b3}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_complete@{verify\_complete}}
+\index{verify\_complete@{verify\_complete}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_complete()}{verify\_complete()}}
+{\footnotesize\ttfamily  bool parla.\+utility.\+execute.\+verify\+\_\+complete (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{log\+\_\+graph,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{truth\+\_\+graph }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that all tasks in the truth graph have completed exceution in the log graph.
+\end{DoxyVerb}
+ 
+
+Definition at line 587 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{587 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ae075017f43eee3460ed598223f75b4b3}{verify\_complete}}(log\_graph: Dict[TaskID, List[TaskID]], truth\_graph: Dict[TaskID, List[TaskID]]) -\/> bool:}
+\DoxyCodeLine{588     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{589 \textcolor{stringliteral}{    Verify that all tasks in the truth graph have completed exceution in the log graph.}}
+\DoxyCodeLine{590 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{591 }
+\DoxyCodeLine{592     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} truth\_graph:}
+\DoxyCodeLine{593         \textcolor{keywordflow}{if} task \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} log\_graph:}
+\DoxyCodeLine{594             print(f\textcolor{stringliteral}{"{}Task \{task\} not in log graph"{}})}
+\DoxyCodeLine{595             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{596 }
+\DoxyCodeLine{597     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{598 }
+\DoxyCodeLine{599 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a21f8962cb471483e18d353cfd071f601}\label{namespaceparla_1_1utility_1_1execute_a21f8962cb471483e18d353cfd071f601}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_dependencies@{verify\_dependencies}}
+\index{verify\_dependencies@{verify\_dependencies}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_dependencies()}{verify\_dependencies()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+verify\+\_\+dependencies (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{log\+\_\+graph,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{truth\+\_\+graph }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that all dependencies in the truth graph have completed execution in the log graph.
+\end{DoxyVerb}
+ 
+
+Definition at line 569 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{569 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a21f8962cb471483e18d353cfd071f601}{verify\_dependencies}}(log\_graph: Dict[TaskID, List[TaskID]], truth\_graph: Dict[TaskID, List[TaskID]]):}
+\DoxyCodeLine{570     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{571 \textcolor{stringliteral}{    Verify that all dependencies in the truth graph have completed execution in the log graph.}}
+\DoxyCodeLine{572 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{573 }
+\DoxyCodeLine{574     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} truth\_graph:}
+\DoxyCodeLine{575 }
+\DoxyCodeLine{576         details = truth\_graph[task]}
+\DoxyCodeLine{577 }
+\DoxyCodeLine{578         \textcolor{keywordflow}{for} dependency \textcolor{keywordflow}{in} details.task\_dependencies:}
+\DoxyCodeLine{579             \textcolor{keywordflow}{if} dependency \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} log\_graph:}
+\DoxyCodeLine{580                 print(}
+\DoxyCodeLine{581                     f\textcolor{stringliteral}{"{}Dependency \{dependency\} of task \{task\} not in log graph"{}})}
+\DoxyCodeLine{582                 \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{583 }
+\DoxyCodeLine{584     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{585 }
+\DoxyCodeLine{586 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a40d72166f4771e543dc1ca324bb26244}\label{namespaceparla_1_1utility_1_1execute_a40d72166f4771e543dc1ca324bb26244}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_ntasks@{verify\_ntasks}}
+\index{verify\_ntasks@{verify\_ntasks}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_ntasks()}{verify\_ntasks()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+verify\+\_\+ntasks (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]}}]{log\+\_\+times,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{truth\+\_\+graph }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that the number of tasks in the log graph is the same as the number of tasks in the truth graph.
+\end{DoxyVerb}
+ 
+
+Definition at line 621 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{621 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a40d72166f4771e543dc1ca324bb26244}{verify\_ntasks}}(log\_times: Dict[TaskID, TaskTime], truth\_graph: Dict[TaskID, List[TaskID]]):}
+\DoxyCodeLine{622     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{623 \textcolor{stringliteral}{    Verify that the number of tasks in the log graph is the same as the number of tasks in the truth graph.}}
+\DoxyCodeLine{624 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{625 }
+\DoxyCodeLine{626     \textcolor{keywordflow}{if} len(log\_times) != len(truth\_graph)+1:}
+\DoxyCodeLine{627         print(}
+\DoxyCodeLine{628             f\textcolor{stringliteral}{"{}Number of tasks in log graph (\{len(log\_times)\}) does not match number of tasks in truth graph (\{len(truth\_graph)\})"{}})}
+\DoxyCodeLine{629         \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{630 }
+\DoxyCodeLine{631     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{632 }
+\DoxyCodeLine{633 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a3557769ccde07f9ad874f8d684ee5fd2}\label{namespaceparla_1_1utility_1_1execute_a3557769ccde07f9ad874f8d684ee5fd2}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_order@{verify\_order}}
+\index{verify\_order@{verify\_order}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_order()}{verify\_order()}}
+{\footnotesize\ttfamily  bool parla.\+utility.\+execute.\+verify\+\_\+order (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]}}]{log\+\_\+times,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{truth\+\_\+graph }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that all tasks have run in the correct order in the log graph.
+\end{DoxyVerb}
+ 
+
+Definition at line 552 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{552 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a3557769ccde07f9ad874f8d684ee5fd2}{verify\_order}}(log\_times: Dict[TaskID, TaskTime], truth\_graph: Dict[TaskID, List[TaskID]]) -\/> bool:}
+\DoxyCodeLine{553     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{554 \textcolor{stringliteral}{    Verify that all tasks have run in the correct order in the log graph.}}
+\DoxyCodeLine{555 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{556 }
+\DoxyCodeLine{557     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} truth\_graph:}
+\DoxyCodeLine{558 }
+\DoxyCodeLine{559         details = truth\_graph[task]}
+\DoxyCodeLine{560 }
+\DoxyCodeLine{561         \textcolor{keywordflow}{for} dependency \textcolor{keywordflow}{in} details.task\_dependencies:}
+\DoxyCodeLine{562             \textcolor{keywordflow}{if} log\_times[task].start\_t < log\_times[dependency].end\_t:}
+\DoxyCodeLine{563                 print(\textcolor{stringliteral}{"{}Task \{task\} started before dependency \{dependency\}"{}})}
+\DoxyCodeLine{564                 \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{565 }
+\DoxyCodeLine{566     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{567 }
+\DoxyCodeLine{568 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_aab877c9e9e838f5e2acfcfa72c8fdf84}\label{namespaceparla_1_1utility_1_1execute_aab877c9e9e838f5e2acfcfa72c8fdf84}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_states@{verify\_states}}
+\index{verify\_states@{verify\_states}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_states()}{verify\_states()}}
+{\footnotesize\ttfamily  bool parla.\+utility.\+execute.\+verify\+\_\+states (\begin{DoxyParamCaption}\item[{}]{log\+\_\+states }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that all tasks have visited all states in a valid order.
+\end{DoxyVerb}
+ 
+
+Definition at line 634 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{634 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aab877c9e9e838f5e2acfcfa72c8fdf84}{verify\_states}}(log\_states) -\/> bool:}
+\DoxyCodeLine{635     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{636 \textcolor{stringliteral}{    Verify that all tasks have visited all states in a valid order.}}
+\DoxyCodeLine{637 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{638 }
+\DoxyCodeLine{639     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} log\_states:}
+\DoxyCodeLine{640         states = log\_states[task]}
+\DoxyCodeLine{641         instance = task.instance}
+\DoxyCodeLine{642 }
+\DoxyCodeLine{643         \textcolor{comment}{\# if ('SPAWNED' not in states):}}
+\DoxyCodeLine{644         \textcolor{comment}{\#    print(f"{}Task \{task\} did not spawn"{}, flush=True)}}
+\DoxyCodeLine{645         \textcolor{comment}{\#    return False}}
+\DoxyCodeLine{646         \textcolor{keywordflow}{if} (\textcolor{stringliteral}{'MAPPED'} \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} states):}
+\DoxyCodeLine{647             print(f\textcolor{stringliteral}{"{}Task \{task\} was not mapped."{}}, states, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{648             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{649         \textcolor{keywordflow}{if} (\textcolor{stringliteral}{'RESERVED'} \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} states):}
+\DoxyCodeLine{650             print(f\textcolor{stringliteral}{"{}Task \{task\} was not reserved."{}}, states, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{651             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{652         \textcolor{comment}{\# if ('RUNNING' not in states):}}
+\DoxyCodeLine{653         \textcolor{comment}{\#    print(f"{}Task \{task\} did not run."{}, states, flush=True)}}
+\DoxyCodeLine{654         \textcolor{comment}{\#    return False}}
+\DoxyCodeLine{655         \textcolor{keywordflow}{if} (\textcolor{stringliteral}{'RUNAHEAD'} \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} states):}
+\DoxyCodeLine{656             print(f\textcolor{stringliteral}{"{}Task \{task\} was not runahead"{}}, states, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{657             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{658 }
+\DoxyCodeLine{659     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{660 }
+\DoxyCodeLine{661 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a45f94ff549e58e310bb868bce281af42}\label{namespaceparla_1_1utility_1_1execute_a45f94ff549e58e310bb868bce281af42}} 
+\index{parla.utility.execute@{parla.utility.execute}!verify\_time@{verify\_time}}
+\index{verify\_time@{verify\_time}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{verify\_time()}{verify\_time()}}
+{\footnotesize\ttfamily  bool parla.\+utility.\+execute.\+verify\+\_\+time (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]}}]{log\+\_\+times,  }\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}}]{truth\+\_\+graph,  }\item[{float }]{factor = {\ttfamily 2.0} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Verify that all tasks execute near their expected time.
+\end{DoxyVerb}
+ 
+
+Definition at line 600 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{600 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a45f94ff549e58e310bb868bce281af42}{verify\_time}}(log\_times: Dict[TaskID, TaskTime], truth\_graph: Dict[TaskID, List[TaskID]], factor: float = 2.0) -\/> bool:}
+\DoxyCodeLine{601     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{602 \textcolor{stringliteral}{    Verify that all tasks execute near their expected time.}}
+\DoxyCodeLine{603 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{604 }
+\DoxyCodeLine{605     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} truth\_graph:}
+\DoxyCodeLine{606         details = truth\_graph[task]}
+\DoxyCodeLine{607 }
+\DoxyCodeLine{608         \textcolor{comment}{\# TODO: This needs to be fixed for device support}}
+\DoxyCodeLine{609         device\_idx = (-\/1,)  \textcolor{comment}{\# CPU}}
+\DoxyCodeLine{610         expected\_time = details.task\_runtime[device\_idx].task\_time}
+\DoxyCodeLine{611         observed\_time = log\_times[task].duration / 1000}
+\DoxyCodeLine{612 }
+\DoxyCodeLine{613         \textcolor{keywordflow}{if} observed\_time > expected\_time * factor:}
+\DoxyCodeLine{614             print(}
+\DoxyCodeLine{615                 f\textcolor{stringliteral}{"{}Task \{task\} took too long to execute. Expected \{expected\_time\} us, took \{observed\_time\} us"{}})}
+\DoxyCodeLine{616             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{617 }
+\DoxyCodeLine{618     \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{619 }
+\DoxyCodeLine{620 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a5a4a9e11ae8733e45bef229c55240a42}\label{namespaceparla_1_1utility_1_1execute_a5a4a9e11ae8733e45bef229c55240a42}} 
+\index{parla.utility.execute@{parla.utility.execute}!\_\_all\_\_@{\_\_all\_\_}}
+\index{\_\_all\_\_@{\_\_all\_\_}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{\_\_all\_\_}{\_\_all\_\_}}
+{\footnotesize\ttfamily list parla.\+utility.\+execute.\+\_\+\+\_\+all\+\_\+\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 =  [run, verify\_order, verify\_dependencies,}
+\DoxyCodeLine{2            verify\_complete, verify\_time, timeout, GraphContext]}
+
+\end{DoxyCode}
+
+
+Definition at line 752 of file execute.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1execute_a77cf484a209c81a25d537fd8ba9601a2}\label{namespaceparla_1_1utility_1_1execute_a77cf484a209c81a25d537fd8ba9601a2}} 
+\index{parla.utility.execute@{parla.utility.execute}!PArray@{PArray}}
+\index{PArray@{PArray}!parla.utility.execute@{parla.utility.execute}}
+\doxysubsubsection{\texorpdfstring{PArray}{PArray}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+PArray = parray.\+core.\+PArray}
+
+
+
+Definition at line 39 of file execute.\+py.
+

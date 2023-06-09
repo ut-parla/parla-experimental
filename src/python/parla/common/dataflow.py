@@ -1,3 +1,8 @@
+"""!
+@file dataflow.py
+@brief Implements internal CrossPy containers for automatic datamovement.
+"""
+
 from crosspy import CrossPyArray
 
 from parla.common.parray.core import PArray
@@ -10,6 +15,7 @@ class DataflowIterator:
     """
     Itrator class for Dataflow.
     """
+
     def __init__(self, df):
         self._df = df
         self._idx = 0
@@ -26,7 +32,8 @@ class DataflowIterator:
                 cur_item = self._df._input[self._idx][0]
             elif self._idx < (len(self._df._input) + len(self._df._output)):
                 # Second, iterate output data operands.
-                cur_item = self._df._output[self._idx - len(self._df._input)][0]
+                cur_item = self._df._output[self._idx -
+                                            len(self._df._input)][0]
             else:
                 # Third, iterate input/output data operands.
                 cur_item = self._df._inout[self._idx - len(self._df._input) -

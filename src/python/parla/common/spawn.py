@@ -1,3 +1,9 @@
+"""!
+@file spawn.py
+@brief Contains the core user-facing API to spawn tasks.
+"""
+
+
 from crosspy import CrossPyArray
 
 from parla.cython import scheduler
@@ -86,7 +92,7 @@ def spawn(task=None,
         nonlocal placement
         nonlocal runahead
 
-        #COMMENT(wlr): Just added this back to revert my commit 30 min ago.
+        # COMMENT(wlr): Just added this back to revert my commit 30 min ago.
         if vcus is not None:
             # Default behavior the same as Parla 0.2.
             # The baseline should not be multiplied when placement is None.
@@ -124,11 +130,12 @@ def spawn(task=None,
         placement = placement if placement is not None else [
             arch[{'vcus': vcus if vcus is not None else 0,
                   'memory': memory if memory is not None else 0}]
-                for arch in device_manager.get_all_architectures()]
-        
-        #print("placement: ", placement)
+            for arch in device_manager.get_all_architectures()]
 
-        device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
+        # print("placement: ", placement)
+
+        device_reqs = scheduler.get_device_reqs_from_placement(
+            placement, vcus, memory)
         task.set_device_reqs(device_reqs)
 
         dataflow = Dataflow(input, output, inout)

@@ -1,5 +1,10 @@
 # distutils: language=c++
 
+"""!
+@file cyparray.pyx
+@brief Contains the core intermediate cython wrapper classes for PArray.
+"""
+
 from .cyparray cimport InnerPArray
 from .cyparray_state cimport CyPArrayState
 from parla.common.parray.core import PArray
