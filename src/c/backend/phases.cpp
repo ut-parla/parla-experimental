@@ -93,6 +93,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
 
+#if 0
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
                 << "\n";
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
@@ -105,6 +106,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
                   << ", vcu:" << res.get(Resource::VCU) << "\n";
         */
       }
+#endif
 
       this->mapped_tasks_buffer.push_back(task);
     }

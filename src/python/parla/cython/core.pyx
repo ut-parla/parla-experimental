@@ -598,6 +598,10 @@ cdef class PyInnerScheduler:
     def __dealloc__(self):
         del self.inner_scheduler
 
+    cpdef get_should_run(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_should_run()
+
     cpdef run(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         with nogil:

@@ -98,8 +98,9 @@ public:
 
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
-    this->remove_unsafe(node);
+    bool rv = this->remove_unsafe(node);
     this->mtx_.unlock();
+    return rv;
   }
 
   /// Remove the node from the list.
@@ -111,6 +112,9 @@ public:
 
     if (this->list_size_ == 1 and (node == this->head_ or node == this->tail_)) {
       is_removed = true;
+      //std::cout << node->parray->id << " was emptified from list: " <<
+      //  this->list_size_ << " [pre] \n";
+
       this->head_ = this->tail_ = node->next = node->prev = nullptr;
       //std::cout << node->parray->id << " was emptified from list: " <<
       //  this->list_size_ << "\n";

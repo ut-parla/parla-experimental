@@ -3,6 +3,7 @@ from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
 from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType
+from parla.common.globals import _global_datas
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -49,6 +50,9 @@ class PArray:
     _cyparray_state: CyPArrayState
 
     def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "NA") -> None:
+        # Maintain a reference to this PArray, and so avoid to release it
+        # before a computation task uses.
+        _global_datas[id(self)] = self
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents

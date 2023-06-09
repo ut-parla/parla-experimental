@@ -527,3 +527,9 @@ class MultiDeviceBuffer:
         self._indices_map[device_id] = None
         self._buffer[device_id] = None
         self._cyparray_state.set_exist_on_device(device_id, False)
+
+    def __del__(self):
+        for i in range(0, len(self._buffer)):
+            self._cyparray_state.set_exist_on_device(i, False)
+        self._indices_map = None
+        self._buffer = None

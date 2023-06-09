@@ -16,6 +16,8 @@ from enum import Enum
 import time
 import itertools
 
+import gc
+
 from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
@@ -131,6 +133,7 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
         if len(data_list) > 0:
             assert isinstance(data_list[0], PArray)
 
+    print("Length of data:", len(data_list))
     '''
     if len(data_list) > 0:
         print("[validation] Generated data type:", type(data_list[0]))
@@ -488,8 +491,44 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
         graph_times = []
 
-        for i in range(run_config.inner_iterations):
+        test_parray = None
+        is_first = True
+        for i in range(0, run_config.inner_iterations):
+            import cupy
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+
             data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
+            if is_first:
+                test_parray = data_list[0]
+                is_first = False
+                referrers = gc.get_referrers(test_parray)
+                print("Test parray reference:", id(test_parray))
+                for j in range(0, len(referrers)):
+                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
+            else:
+                referrers = gc.get_referrers(test_parray)
+                print(i, " Test parray reference:", id(test_parray))
+                for j in range(0, len(referrers)):
+                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
+            """
+            for k in range(0, len(data_list)):
+                print(k, "= ", type(data_list[k]))
+#data_list[i] = None
+                referrers = gc.get_referrers(data_list[k])
+                for j in range(0, len(referrers)):
+                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
+                    sub_referrers = gc.get_referrers(referrers[j])
+                    for k in range(0, len(sub_referrers)):
+                        print("\t\t", k, "= ", type(sub_referrers[k]), "= ", sub_referrers[k])
+            """
+
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
 
             # Initialize task spaces
             taskspaces = {}
@@ -499,30 +538,37 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
                 if space_name not in taskspaces:
                     taskspaces[space_name] = TaskSpace(space_name)
 
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t 11Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+
             graph_start_t = time.perf_counter()
 
-            import cupy
-            for i in range(0, 4):
-                with cupy.cuda.Device(i):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t Before {i} Used GPU{i}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
             execute_tasks(taskspaces, tasks, run_config, data_list=data_list)
-            for i in range(0, 4):
-                with cupy.cuda.Device(i):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t After {i} Used GPU{i}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-            import gc
-            for i in range(0, len(data_list)):
-                print(i, ", ", type(data_list[i]))
-#data_list[i] = None
-                referrers = gc.get_referrers(data_list[i])
-                for j in range(0, len(referrers)):
-                    print("\t", j, ", ", type(referrers[j]), ", ", referrers[j])
-
 
             for taskspace in taskspaces.values():
                 await taskspace
+            taskspace = None
 
+            """
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t After {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+            for k in range(0, len(data_list)):
+                print(k, ", ", type(data_list[k]))
+#data_list[i] = None
+                referrers = gc.get_referrers(data_list[k])
+                for j in range(0, len(referrers)):
+                    print("\t", j, ", ", type(referrers[j]), ", ", referrers[j])
+                    sub_referrers = gc.get_referrers(referrers[j])
+                    for k in range(0, len(sub_referrers)):
+                        print("\t\t", k, ", ", type(sub_referrers[k]), ", ", sub_referrers[k])
+            """
+            for k in range(0, len(data_list)):
+                data_list[k] = None
+            data_list = None
             graph_end_t = time.perf_counter()
 
             graph_elapsed = graph_end_t - graph_start_t

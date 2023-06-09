@@ -15,6 +15,9 @@ from parla.common.globals import AccessMode, Storage
 
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
+from parla.common.globals import _global_data_tasks, _global_datas
+import gc
+
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -531,6 +534,9 @@ class Task:
     def add_event(self, event):
         self.inner_task.add_event(event)
 
+    def cleanup(self):
+        raise NotImplementedError()
+
 
 class ComputeTask(Task):
 
@@ -556,6 +562,13 @@ class ComputeTask(Task):
         return self.func(self, *self.args)
 
     def cleanup(self):
+        """
+        print("referers:")
+        import gc
+        refers = gc.get_referrers(self)
+        for i in range(0, len(refers)):
+            print(i, " = ", type(refers[i]), ", ", refers[i])
+        """
         self.func = None
         self.args = None
         self.dataflow = None
@@ -571,6 +584,7 @@ class DataMovementTask(Task):
         idx=0, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
+
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
@@ -603,20 +617,46 @@ class DataMovementTask(Task):
         removable_parray_size = py_mm.size(global_id)
         #print("removable parray sized:" , removable_parray_size)
         for i in range(0, removable_parray_size):
+            #print(i, " and ",removable_parray_size)
             removable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
             if removable_parray is not None:
-                #print("target parray ID:", removable_parray.ID)
+                py_mm.print_memory_stats(parray_id, "Before Evict "+str(self.name))
+                print("target parray ID:", removable_parray.ID)
+                print("target parray :", removable_parray)
                 #print("Before eviction:")
-                #removable_parray.print_overview()
-                #print("eviction target:", parray_id)
-                py_mm.print_memory_stats(parray_id, "Before "+str(self.name))
+
+                removable_parray.print_overview()
                 removable_parray.evict(parray_id)
-                py_mm.print_memory_stats(parray_id, "After "+str(self.name))
+                print("eviction target:", parray_id)
+                removable_parray.print_overview()
+                py_mm.print_memory_stats(parray_id, "After Evict "+str(self.name))
+                refers = gc.get_referrers(removable_parray)
+                for i in range(0, len(refers)):
+                    print(i, " = ", type(refers[i]), ", ", refers[i])
+
+                # TODO(hc): Needed references, 
+#_global_datas[id(removable_parray)] = None
         self.scheduler.unset_gc_wait_flag()
+        py_mm.print_memory_stats(parray_id, "Before AutoMove "+str(self.name))
         self.parray._auto_move(parray_id, write_flag)
+        py_mm.print_memory_stats(parray_id, "After AutoMove "+str(self.name))
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
+
+    def cleanup(self):
+        _global_data_tasks[id(self)] = None
+        self.parray = None
+
+        """
+        refers = gc.get_referrers(self)
+        for i in range(0, len(refers)):
+            print(i, " = ", type(refers[i]), ", ", refers[i])
+        print("2Print ", id(test_parray), " and ", type(test_parray))
+        parray_referrers = gc.get_referrers(test_parray)
+        for i in range(0, len(parray_referrers)):
+            print("\t", i, " = ", id(parray_referrers[i]), " and ", type(parray_referrers[i]), ", ", parray_referrers[i])
+        """
 
 ######
 # Task Environment

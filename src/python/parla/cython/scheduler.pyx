@@ -201,6 +201,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
                         self.task.instantiate(self.task_attrs, self.scheduler)
+                        self.task_attrs = None
                         #if USE_PYTHON_RUNAHEAD:
                             #This is a back up for testing
                             #Need to keep the python object alive
@@ -225,11 +226,11 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #print("Setting environment for task", active_task, flush=True)
                         active_task.environment = device_context
 
-
                         #Writes all 'default' streams and event pointers to c++ task
                         #This allows their synchronization without the GIL and faster iteration over them
                         #(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
                         device_context.write_to_task(active_task)
+
                         #print("Wrote enviornment to task", active_task, flush=True)
 
                         #handle event wait in python 
@@ -288,6 +289,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
+                        #TODO(wlr): Add better exception handling
                         #print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
@@ -307,11 +309,13 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
+                            active_task.cleanup()
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
 
+                        self.task = None
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
@@ -411,9 +415,13 @@ class Scheduler(ControllableThread, SchedulerContext):
             #print("Runtime Stopped", flush=True)
 
     def run(self):
-        #print("Scheduler: Running", flush=True)
-        self.inner_scheduler.run()
-        #print("Scheduler: Stopped Loop", flush=True)
+        while True:
+            print("Scheduler: Running", flush=True)
+            self.inner_scheduler.run()
+            should_run = self.inner_scheduler.get_should_run()
+            if should_run == False:
+                break
+            print("Scheduler: Stopped Loop", flush=True)
 
     def stop(self):
         #print("Scheduler: Stopping (Called from Python)", flush=True)
@@ -433,7 +441,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_task(self, task):
         #print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
-
     
     def assign_task(self, task, worker):
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)

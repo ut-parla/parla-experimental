@@ -167,6 +167,10 @@ void InnerScheduler::set_stop_callback(stopfunc_t stop_callback) {
   this->stop_callback = stop_callback;
 }
 
+bool InnerScheduler::get_should_run() {
+  return this->should_run.load();
+}
+
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
   unsigned long long iteration_count = 0;
@@ -175,6 +179,7 @@ void InnerScheduler::run() {
     if (this->sleep_flag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
     }
+    //break;
   }
 }
 

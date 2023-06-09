@@ -931,6 +931,8 @@ public:
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
 
+  bool get_should_run();
+
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
   void run();
 

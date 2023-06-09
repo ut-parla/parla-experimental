@@ -17,6 +17,7 @@ print("CUPY_ENABLED: ", CUPY_ENABLED)
 print("PREINIT_THREADS: ", PREINIT_THREADS)
 
 _global_data_tasks = {}
+_global_datas = {}
 
 
 VCU_BASELINE=1000
