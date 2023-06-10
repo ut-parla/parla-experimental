@@ -651,7 +651,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
 
     data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 , -1}\n"
+        data_config_string = f"{1 , -1}"
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
         config.data_partitions = 1
         single_data_block_size = (
@@ -716,7 +716,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
 
     data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = f"{1, -1}"
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError("[Reduction] Data patterns not implemented")
     else:
