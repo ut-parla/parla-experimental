@@ -28,7 +28,8 @@ cdef extern from "include/runtime.hpp" nogil:
 
     cdef enum MappingPolicyType:
         LoadBalancingLocality = 0,
-        RL = 1,
+        RLTraining = 1,
+        RLTest = 2,
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)

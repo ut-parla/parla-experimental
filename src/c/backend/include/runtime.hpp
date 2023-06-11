@@ -79,7 +79,8 @@ inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
 
 enum class MappingPolicyType {
   LoadBalancingLocality = 0,
-  RL = 1
+  RLTraining = 1,
+  RLTest = 2
 };
 
 namespace Task {
