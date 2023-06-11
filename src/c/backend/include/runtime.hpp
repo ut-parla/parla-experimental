@@ -77,6 +77,11 @@ inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
 }
 
+enum class MappingPolicyType {
+  LoadBalancingLocality = 0,
+  RL = 1
+};
+
 namespace Task {
 
 /*State of the task. Shows which part of the runtime the task is in.*/
@@ -908,7 +913,7 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(DeviceManager *device_manager);
+  InnerScheduler(DeviceManager *device_manager, MappingPolicyType policy_type);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 

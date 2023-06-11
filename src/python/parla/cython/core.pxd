@@ -26,6 +26,10 @@ cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
     ctypedef void (*stopfunc_t)(void* scheduler)
 
+    cdef enum MappingPolicyType:
+        LoadBalancingLocality = 0,
+        RL = 1,
+
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
 
@@ -127,7 +131,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
-        InnerScheduler(DeviceManager* cpp_device_manager)
+        InnerScheduler(DeviceManager* cpp_device_manager, MappingPolicyType mapping_policy)
 
         void set_num_workers(int num_workers)
         void set_py_scheduler(void* py_scheduler)

@@ -9,6 +9,7 @@ from .cython import device
 from .cython import variants
 from .common.spawn import spawn
 from .common import parray
+from .common.globals import PyMappingPolicyType
 
 specialize = variants.specialize
 
@@ -49,11 +50,13 @@ else:
 
 class Parla:
 
-    def __init__(self, scheduler_class=scheduler.Scheduler,
+    def __init__(self, mapping_policy: PyMappingPolicyType=PyMappingPolicyType.LoadBalancingLocality,
+                 scheduler_class=scheduler.Scheduler,
                  sig_type=signal.SIGINT, logfile=None, n_workers=None,
                  dev_config_file=None, **kwds):
         assert issubclass(scheduler_class, scheduler.Scheduler)
 
+        self.mapping_policy = mapping_policy
         self.scheduler_class = scheduler_class
         self.kwds = kwds
         self.sig = sig_type
@@ -77,7 +80,7 @@ class Parla:
         if hasattr(self, "_sched"):
             raise ValueError(
                 "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(self._device_manager, **self.kwds)
+        self._sched = self.scheduler_class(self.mapping_policy, self._device_manager, **self.kwds)
 
         self.interuppted = False
         self.released = False

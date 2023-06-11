@@ -123,7 +123,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(DeviceManager *device_manager)
+InnerScheduler::InnerScheduler(DeviceManager *device_manager, MappingPolicyType mapping_policy)
     : device_manager_(device_manager), parray_tracker_(device_manager) {
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -133,7 +133,7 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   this->workers.set_num_workers(1);
 
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, &this->parray_tracker_);
+  this->mapper = new Mapper(this, device_manager, &this->parray_tracker_, mapping_policy);
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);

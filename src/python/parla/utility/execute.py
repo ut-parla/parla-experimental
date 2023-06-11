@@ -39,7 +39,7 @@ def make_parrays(data_list):
     return l
 
 
-def estimate_frequency(n_samples= 10, ticks=1900000000):
+def estimate_frequency(n_samples= 30, ticks=1900000000):
     import cupy as cp
     stream = cp.cuda.get_current_stream()
     cycles = ticks
@@ -73,7 +73,14 @@ class GPUInfo():
     #cycles_per_second = 1919820866.3481758
     #cycles_per_second = 867404498.3008006
     #cycles_per_second = 47994628114801.04
-    cycles_per_second = 1949802881.4819772
+#cycles_per_second = 1949802881.4819772
+    cycles_per_second = 875649327.7713356
+#cycles_per_second = 1002001313000.6014779
+
+    """
+    def __init__(self):
+        self.cycles_per_second = estimate_frequency()
+    """
 
     def update(self, cycles):
         self.cycles_per_second = cycles
@@ -190,9 +197,9 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     cycles_per_second = gpu_info.get()
     dev_id = get_current_devices()[0]
     parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
+    ticks = int((total_time/(10**3))*cycles_per_second)
 
-    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
+    #print(" total time:", total_time, ", cycles_per_second:", cycles_per_second, "device id:", dev_id, " ticks:", ticks, flush=True)
 
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
@@ -204,13 +211,12 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     if config.verbose:
         task_internal_end_t = time.perf_counter()
         task_internal_duration = task_internal_end_t - task_internal_start_t
+        print("Task target duration:", total_time, " Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
         return task_internal_duration
 
     task_internal_end_t = time.perf_counter()
     task_internal_duration = task_internal_end_t - task_internal_start_t
-    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
-
-    return None
+    return task_internal_duration
 
 
 def create_task_no_data(task, taskspaces, config, data_list=None):
@@ -254,8 +260,11 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-        #      " placement:", placement_set, " placement key:", placement_set_str)
+        """
+        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+              " placement:", placement_set, " placement key:", placement_set_str)
+        print("total time:", total_time)
+        """
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set)
         async def task_func():
@@ -266,7 +275,7 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
                                        gil_accesses, config=config)
 
             if config.verbose:
-                print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
+                print(f"-{task.task_id} Total time: {total_time} Finished: {elapsed} seconds", flush=True)
 
     except Exception as e:
         print(f"Failed creating Task {task.task_id}: {e}", flush=True)
@@ -493,7 +502,8 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             @spawn(begin_rl_ts[0])
             def begin_rl_task():
-                print("Start RL")
+                pass
+                #print("Start RL")
             await begin_rl_ts[0]
 
             # Initialize task spaces
@@ -519,7 +529,8 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             @spawn(end_rl_ts[0])
             def end_rl_task():
-                print("End RL")
+                pass
+                #print("End RL")
             await end_rl_ts[0]
 
         graph_times = np.asarray(graph_times)
@@ -699,13 +710,14 @@ def timeout(seconds_before_timeout):
 
 class GraphContext(object):
 
-    def __init__(self, config: GraphConfig, name: str, graph_path = None):
+    def __init__(self, config: GraphConfig, name: str, graph_path = None, graph_generation = True):
         self.config = config
         self.graph = None
         self.data_config = None
 
         self.name = name
         self.graph_function = None
+        self.graph_generation = graph_generation
 
         if isinstance(config, SerialConfig):
             self.graph_function = generate_serial_graph
@@ -733,10 +745,14 @@ class GraphContext(object):
             self.dir, 'test_'+str(self.name)+'_.blog')
 
         print("Graph Path:", self.tmpfilepath)
-        with open(self.tmpfilepath, 'w') as tmpfile:
-            graph = self.graph_function(self.config)
-            #print(graph)
-            tmpfile.write(graph)
+        if self.graph_generation == True:
+            print("Graph write starts")
+            with open(self.tmpfilepath, 'w') as tmpfile:
+                graph = self.graph_function(self.config)
+                #print(graph)
+                tmpfile.write(graph)
+        else:
+            print("Graph read starts")
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)
 
@@ -744,11 +760,11 @@ class GraphContext(object):
 
     def run(self, run_config: RunConfig, max_time: int = 10000):
 
-        @timeout(max_time)
-        def run_with_timeout():
-            return run(self.graph, self.data_config, run_config)
+#@timeout(max_time)
+#def run_with_timeout():
+        return run(self.graph, self.data_config, run_config)
 
-        return run_with_timeout()
+#return run_with_timeout()
 
     def __exit__(self, type, value, traceback):
         self.diro.__exit__(type, value, traceback)

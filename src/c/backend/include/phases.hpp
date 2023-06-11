@@ -95,7 +95,8 @@ protected:
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices, PArrayTracker *parray_tracker);
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices,
+         PArrayTracker *parray_tracker, MappingPolicyType policy_type);
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);

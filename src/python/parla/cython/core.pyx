@@ -582,14 +582,14 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
-    def __cinit__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __cinit__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler, int mapping_policy):
         cdef InnerScheduler* _inner_scheduler
         cdef DeviceManager* _cpp_device_manager = <DeviceManager*> cy_device_manager.get_cpp_device_manager()
 
-        _inner_scheduler = new InnerScheduler(_cpp_device_manager)
+        _inner_scheduler = new InnerScheduler(_cpp_device_manager, <MappingPolicyType> mapping_policy)
         self.inner_scheduler = _inner_scheduler
 
-    def __init__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __init__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler, int mapping_policy):
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 

@@ -19,6 +19,7 @@ from parla.cython.cyparray import CyPArray
 
 from parla.common.globals import _Locals as Locals 
 from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
+from parla.common.globals import PyMappingPolicyType
 from parla.common.parray.core import PArray
 
 Task = tasks.Task
@@ -340,7 +341,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 class Scheduler(ControllableThread, SchedulerContext):
 
-    def __init__(self, device_manager, n_threads=6, period=0.001):
+    def __init__(self, mapping_policy : PyMappingPolicyType, device_manager, n_threads=6, period=0.001):
         super().__init__()
 
         self.start_monitor = threading.Condition(threading.Lock())
@@ -356,7 +357,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         self.device_manager = device_manager
         cy_device_manager = self.device_manager.get_cy_device_manager()
-        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
+        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self, <int> mapping_policy)
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 

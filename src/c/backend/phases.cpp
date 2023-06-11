@@ -16,15 +16,17 @@
 // Mapper Implementation
 
 Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-       PArrayTracker *parray_tracker)
+       PArrayTracker *parray_tracker, MappingPolicyType policy_type)
     : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
   this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
-  if (false) {
+  if (policy_type == MappingPolicyType::LoadBalancingLocality) {
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
         devices, parray_tracker);
-  } else {
+  } else if (policy_type == MappingPolicyType::RL) {
     this->policy_ = std::make_shared<RLTaskMappingPolicy>(
         devices, parray_tracker, this);
+  } else {
+    std::cout << "Unsupported policy type..\n";
   }
 }
 

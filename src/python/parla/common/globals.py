@@ -75,6 +75,12 @@ class AccessMode(IntEnum):
     INOUT = 2
 
 
+class PyMappingPolicyType(IntEnum):
+    LoadBalancingLocality = 0
+    RLTraining = 1
+    RLTest = 2
+
+
 class Storage():
 
     # This is literally just a dictionary wrapper.
