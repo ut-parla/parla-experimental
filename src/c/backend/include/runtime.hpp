@@ -1044,8 +1044,6 @@ protected:
   PArrayTracker parray_tracker_;
 
   LRUGlobalMemoryManager *mm_;
-
-  std::atomic<bool> wait_for_gc_;
 };
 
 #endif // PARLA_BACKEND_HPP

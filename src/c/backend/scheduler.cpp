@@ -126,7 +126,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 InnerScheduler::InnerScheduler(LRUGlobalMemoryManager* memory_manager,
                                DeviceManager *device_manager)
     : device_manager_(device_manager), parray_tracker_(device_manager),
-      mm_(memory_manager), wait_for_gc_(false) {
+      mm_(memory_manager) {
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
