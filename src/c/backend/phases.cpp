@@ -49,9 +49,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // use threshold of the number of tasks to be mapped.
   size_t num_task_mapping_attempt{0};
   while (has_task && num_task_mapping_attempt < 20) {
-    if (this->scheduler->need_to_wait_gc()) {
-      continue;
-    }
     // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
@@ -87,7 +84,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
                                                   1 + (*parray_list)[i].size());
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
-          this->scheduler->reserve_parray(parray, global_dev_id);
+          this->scheduler->reserve_parray_to_tracker(parray, global_dev_id);
           this->scheduler->task_acquire_parray(parray, global_dev_id);
           parray->incr_num_active_tasks(global_dev_id);
         }

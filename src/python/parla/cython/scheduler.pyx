@@ -452,7 +452,7 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
 
-    def reserve_parray(self, cy_parray: CyPArray, global_dev_id: int):
+    def reserve_parray_to_tracker(self, cy_parray: CyPArray, global_dev_id: int):
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
@@ -463,9 +463,9 @@ class Scheduler(ControllableThread, SchedulerContext):
         :param global_dev_id: global logical device id that
                               the PArray will be placed
         """
-        self.inner_scheduler.reserve_parray(cy_parray, global_dev_id)
+        self.inner_scheduler.reserve_parray_to_tracker(cy_parray, global_dev_id)
 
-    def release_parray(self, cy_parray: CyPArray, global_dev_id: int):
+    def release_parray_from_tracker(self, cy_parray: CyPArray, global_dev_id: int):
         """
         Release PArray instances that are evicted.
 
@@ -473,7 +473,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         :param global_dev_id: global logical device id that
                               the PArray will be evicted
         """
-        self.inner_scheduler.release_parray(cy_parray, global_dev_id)
+        self.inner_scheduler.release_parray_from_tracker(cy_parray, global_dev_id)
 
     def get_parray_state(\
         self, global_dev_id: int, parray_parent_id):
@@ -487,12 +487,6 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_parray_state( \
             global_dev_id, parray_parent_id)
-
-    def set_gc_wait_flag(self):
-        self.inner_scheduler.set_gc_wait_flag()
-
-    def unset_gc_wait_flag(self):
-        self.inner_scheduler.unset_gc_wait_flag()
 
 
 def _task_callback(task, body):

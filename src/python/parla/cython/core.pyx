@@ -686,26 +686,18 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.spawn_wait()
 
-    cpdef reserve_parray(self, CyPArray cy_parray, int global_dev_id):
+    cpdef reserve_parray_to_tracker(self, CyPArray cy_parray, int global_dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.reserve_parray(cy_parray.get_cpp_parray(), global_dev_id)
+        c_self.reserve_parray_to_tracker(cy_parray.get_cpp_parray(), global_dev_id)
 
-    cpdef release_parray(self, CyPArray cy_parray, int global_dev_id):
+    cpdef release_parray_from_tracker(self, CyPArray cy_parray, int global_dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.release_parray(cy_parray.get_cpp_parray(), global_dev_id)
+        c_self.release_parray_from_tracker(cy_parray.get_cpp_parray(), global_dev_id)
 
     cpdef get_parray_state(\
         self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
-
-    cpdef set_gc_wait_flag(self):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.set_gc_wait_flag()
-
-    cpdef unset_gc_wait_flag(self):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.unset_gc_wait_flag()
 
 
 class Resources:

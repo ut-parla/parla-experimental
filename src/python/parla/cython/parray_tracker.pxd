@@ -17,5 +17,5 @@ cdef extern from "include/parray_tracker.hpp" nogil:
         PArrayTracker(DeviceManager*) except +
         void track_parray(InnerPArray&, uint32_t) except +
         void untrack_parray(InnerPArray&, uint32_t) except +
-        void reserve_parray(InnerPArray&, Device*) except +
-        void release_parray(InnerPArray&, Device*) except +
+        void reserve_parray_to_tracker(InnerPArray&, Device*) except +
+        void release_parray_from_tracker(InnerPArray&, Device*) except +

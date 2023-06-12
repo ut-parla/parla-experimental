@@ -31,7 +31,7 @@ public:
    * the corresponding PArray instance is planned to be instantiated or is
    * already instantiated in the device.
    */
-  void reserve_parray(const InnerPArray &parray, Device *device);
+  void reserve_parray_to_tracker(const InnerPArray &parray, Device *device);
 
   /**
    * @brief Release a PArray from a specified device.
@@ -39,7 +39,7 @@ public:
    * and also there is no plan (none of tasks that use the PArray is mapped
    * to the device) to be referenced in the device.
    */
-  void release_parray(const InnerPArray &parray, Device *device);
+  void release_parray_from_tracker(const InnerPArray &parray, Device *device);
 
   bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
     mtx.lock();

@@ -611,8 +611,9 @@ class DataMovementTask(Task):
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
+
+        """
         # print("Attempt to Move: ", self.parray.name, " to a device ", parray_id, flush=True)
-        self.scheduler.set_gc_wait_flag()
         py_mm = self.scheduler.memory_manager 
         removable_parray_size = py_mm.size(global_id)
         #print("removable parray sized:" , removable_parray_size)
@@ -636,10 +637,10 @@ class DataMovementTask(Task):
 
                 # TODO(hc): Needed references, 
 #_global_datas[id(removable_parray)] = None
-        self.scheduler.unset_gc_wait_flag()
         py_mm.print_memory_stats(parray_id, "Before AutoMove "+str(self.name))
-        self.parray._auto_move(parray_id, write_flag)
         py_mm.print_memory_stats(parray_id, "After AutoMove "+str(self.name))
+        """
+        self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)

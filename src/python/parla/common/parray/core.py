@@ -134,7 +134,7 @@ class PArray:
             assert isinstance(array, cupy.ndarray)
         target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
             target_dev_id)
-        scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
+        scheduler.reserve_parray_to_tracker(self._cy_parray, target_global_dev_id)
 
     # Properties:
 

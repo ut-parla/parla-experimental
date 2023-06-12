@@ -20,7 +20,7 @@ void PArrayTracker::untrack_parray(const InnerPArray &parray, DevID_t dev_id) {
   this->managed_parrays_[dev_id].erase(parray.parent_id);
 }
 
-void PArrayTracker::reserve_parray(const InnerPArray &parray, Device *device) {
+void PArrayTracker::reserve_parray_to_tracker(const InnerPArray &parray, Device *device) {
   DevID_t dev_global_id = device->get_global_id();
   bool first_reservation{false};
   this->mtx.lock();
@@ -47,7 +47,7 @@ void PArrayTracker::reserve_parray(const InnerPArray &parray, Device *device) {
   this->mtx.unlock();
 }
 
-void PArrayTracker::release_parray(const InnerPArray &parray, Device *device) {
+void PArrayTracker::release_parray_from_tracker(const InnerPArray &parray, Device *device) {
   DevID_t dev_global_id = device->get_global_id();
   this->mtx.lock();
   if (this->managed_parrays_[dev_global_id].find(parray.parent_id) ==

@@ -162,12 +162,8 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void spawn_wait() except +
 
-        void reserve_parray(InnerPArray* parray, int dev_id) except +
-        void release_parray(InnerPArray* parray, int dev_id) except +
-
-        void need_to_wait_gc()
-        void set_gc_wait_flag()
-        void unset_gc_wait_flag()
+        void reserve_parray_to_tracker(InnerPArray* parray, int dev_id) except +
+        void release_parray_from_tracker(InnerPArray* parray, int dev_id) except +
 
 
 cdef extern from "include/profiling.hpp" nogil:

@@ -1001,17 +1001,17 @@ public:
   PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
 
   /* Reserve a PArray in a device */
-  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+  void reserve_parray_to_tracker(parray::InnerPArray *parray, DevID_t global_dev_id) {
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.reserve_parray(*parray, device);
+    this->parray_tracker_.reserve_parray_to_tracker(*parray, device);
   }
 
   /* Release a PArray in a device */
-  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
+  void release_parray_from_tracker(parray::InnerPArray *parray, DevID_t global_dev_id) {
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.release_parray(*parray, device);
+    this->parray_tracker_.release_parray_from_tracker(*parray, device);
   }
 
   void task_acquire_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
@@ -1033,19 +1033,6 @@ public:
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
 
-  bool need_to_wait_gc() {
-    return this->wait_for_gc_.load();
-  }
-
-  void set_gc_wait_flag() {
-    //std::cout << "Set GC wait flag\n";
-    this->wait_for_gc_.store(true);
-  }
-
-  void unset_gc_wait_flag() {
-    //std::cout << "Unset GC wait flag\n";
-    this->wait_for_gc_.store(false);
-  }
 
 protected:
   /// It manages all device instances in C++.
