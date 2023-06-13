@@ -82,11 +82,35 @@ void Mapper::run(SchedulerPhase *next_phase) {
         // since the corresponding data movement tasks will be created.
         this->atomic_incr_num_mapped_tasks_device(global_dev_id,
                                                   1 + (*parray_list)[i].size());
+
+        // TODO(hc): measure the total number of necessary bytes for each device.
+        size_t necessary_memory{0};
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->reserve_parray_to_tracker(parray, global_dev_id);
           this->scheduler->task_acquire_parray(parray, global_dev_id);
           parray->incr_num_active_tasks(global_dev_id);
+          necessary_memory += parray->get_size();
+        }
+
+        // Check if memory consumption on the target device is high.
+        // If it is, invoke memory eviction.
+        // Memory eviction should happen on Python side.
+        // To do this, it sets an eviction flag first, and break the
+        // infinite loop of the scheduler.
+        ResourcePool_t &dev_reserved_pool = chosen_device->get_reserved_pool();
+        necessary_memory *= 10;
+        //necessary_memory = dev_reserved_pool.get(Resource::Memory) - 1000;
+        ResourcePool_t parray_resource;
+        parray_resource.set(Resource::Memory, necessary_memory);
+        if (dev_reserved_pool.check_greater<ResourceCategory::Persistent>(
+            parray_resource)) {
+        /*
+        if (true) {
+        */
+          //std::cout << "Resource is tight..: " << necessary_memory << "\n";
+          this->scheduler->break_for_eviction = true;
+          this->scheduler->set_memory_size_for_eviction(necessary_memory, chosen_device->get_global_id());
         }
       }
 

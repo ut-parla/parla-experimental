@@ -128,6 +128,9 @@ InnerScheduler::InnerScheduler(LRUGlobalMemoryManager* memory_manager,
     : device_manager_(device_manager), parray_tracker_(device_manager),
       mm_(memory_manager) {
 
+  this->memory_size_for_eviction.resize(
+      device_manager->template get_num_devices<DeviceType::CUDA>());
+
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
   // otherwise the runtime will finish immediately
@@ -171,15 +174,26 @@ bool InnerScheduler::get_should_run() {
   return this->should_run.load();
 }
 
+void InnerScheduler::set_memory_size_for_eviction(size_t size, DevID_t dev_id) {
+  this->memory_size_for_eviction[dev_id] = size;
+}
+
+size_t InnerScheduler::get_memory_size_for_eviction(DevID_t dev_id) {
+  return this->memory_size_for_eviction[dev_id];
+}
+
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
   unsigned long long iteration_count = 0;
   while (this->should_run.load()) {
+    this->break_for_eviction = false;
     auto status = this->activate();
     if (this->sleep_flag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
     }
-    //break;
+    if (this->break_for_eviction) {
+      break;
+    }
   }
 }
 

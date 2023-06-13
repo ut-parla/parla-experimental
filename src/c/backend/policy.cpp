@@ -12,6 +12,10 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
   // Check device resource availability.
+  // It does not check availability for PArrays since this phase
+  // is not expecting the future memory status.
+  // If that should be added, either resource reserving or launching phase
+  // should be the location.
   if (!device.check_resource_availability(dev_placement_req.get())) {
     // std::cout << "Device resource failure!" << std::endl;
     return false;

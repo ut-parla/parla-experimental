@@ -414,14 +414,56 @@ class Scheduler(ControllableThread, SchedulerContext):
             pass
             #print("Runtime Stopped", flush=True)
 
+    def eviction(self):
+        py_mm = self.memory_manager
+        print("Eviction policy is activated")
+        for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
+            global_id = cuda_device.get_global_id()
+            parray_id = self.device_manager.globalid_to_parrayid(global_id)
+            memory_size_for_eviction = \
+                self.inner_scheduler.get_memory_size_for_eviction(global_id)
+#memory_size_for_eviction *= 2
+            num_evictable_parray = py_mm.size(global_id)
+            import cupy
+            print("evictable parray:", num_evictable_parray)
+            for i in range(0, num_evictable_parray):
+                evictable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
+                if evictable_parray is not None:
+                    print("Before eviction..", flush=True)
+                    evictable_parray.print_overview()
+                    for k in range(0, 4):
+                        with cupy.cuda.Device(k):
+                            mempool = cupy.get_default_memory_pool()
+                            print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+
+                    if evictable_parray.evict(parray_id):
+                        print("After eviction..", flush=True)
+                        evictable_parray.print_overview()
+                        for k in range(0, 4):
+                            with cupy.cuda.Device(k):
+                                mempool = cupy.get_default_memory_pool()
+                                print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+
+                        memory_size_for_eviction -= evictable_parray.nbytes_at(parray_id)
+                        if memory_size_for_eviction <= 0:
+                            break
+                    else:
+                        # TODO(hc): evict gpu instance to CPU.
+                        pass
+
+        return
+
     def run(self):
-        while True:
-            print("Scheduler: Running", flush=True)
-            self.inner_scheduler.run()
-            should_run = self.inner_scheduler.get_should_run()
-            if should_run == False:
-                break
-            print("Scheduler: Stopped Loop", flush=True)
+        with self:
+            while True:
+                print("Scheduler: Running", flush=True)
+                self.inner_scheduler.run()
+                mm = self.memory_manager
+                self.eviction() 
+                should_run = self.inner_scheduler.get_should_run()
+                if should_run == False:
+                    break
+                print("Scheduler: Stopped Loop", flush=True)
 
     def stop(self):
         #print("Scheduler: Stopping (Called from Python)", flush=True)

@@ -901,6 +901,12 @@ public:
 
   /* Phase: maps tasks to devices */
   Mapper *mapper;
+  /* If it is set, break run() of InnerScheduler
+     and make PythonScheduler invoke memory eviction */
+  bool break_for_eviction = false;
+  std::vector<size_t> memory_size_for_eviction{0};
+  void set_memory_size_for_eviction(size_t, DevID_t);
+  size_t get_memory_size_for_eviction(DevID_t);
 
   /* Phase reserves resources to limit/plan task execution*/
   MemoryReserver *memory_reserver;

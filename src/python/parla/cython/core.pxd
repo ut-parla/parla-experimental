@@ -140,6 +140,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void run() except +
         void stop()
 
+        long long int get_memory_size_for_eviction(int dev_id) except +
+
         void activate_wrapper()
 
         void spawn_task(InnerTask* task)

@@ -87,10 +87,10 @@ public:
     PArrayNode *old_head = this->head_;
     //std::cout << " zr list size:" << this->list_size_ << "\n";
     if (old_head != nullptr) {
-      //std::cout << "old head is not NULL so try to remove this\n";
+      std::cout << "old head is not NULL so try to remove this\n";
       this->remove_unsafe(old_head); 
     } else {
-      //std::cout << "old head is NULL\n";
+      std::cout << "old head is NULL\n";
     }
     this->mtx_.unlock();
     return old_head;
@@ -118,14 +118,14 @@ public:
       this->head_ = this->tail_ = node->next = node->prev = nullptr;
       //std::cout << node->parray->id << " was emptified from list: " <<
       //  this->list_size_ << "\n";
-    } else if (node->prev == nullptr && node->next == nullptr) { 
-      return is_removed;
     }
 
     if (this->head_ == node) {
       this->head_ = node->next;
+      node->next->prev = nullptr;
     } else if ( this->tail_ == node) {
       this->tail_ = node->prev;
+      node->prev->next = nullptr;
     } else {
       // TODO(hc):check it again
       if (node->prev != nullptr) {
@@ -220,16 +220,16 @@ public:
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found == this->parray_reference_counts_.end()) {
-      //std::cout << "This should not happen\n";
+      std::cout << "This should not happen\n";
     } else {
       found->second.ref_count--; 
       if (found->second.ref_count == 0) {
         this->zr_parray_list_.append(found->second.parray_node_ptr);
       }
-      //std::cout << "Parray:" << parray->id << "," <<
-      //  " size:" << parray->get_size() << " was released, "
-      //  << " reference count:" << found->second.ref_count << 
-      //  ", " << &this->zr_parray_list_ << " \n";
+      std::cout << "Parray:" << parray->id << "," <<
+        " size:" << parray->get_size() << " was released, "
+        << " reference count:" << found->second.ref_count << 
+        ", " << &this->zr_parray_list_ << " \n";
     }
     this->mtx_.unlock();
   }
@@ -301,9 +301,9 @@ public:
     if (old_head != nullptr) {
       parray::InnerPArray *c_parray = old_head->parray;
       py_parray = c_parray->get_py_parray();
-      //std::cout << "Return parray:" << c_parray->id << "\n";
+      std::cout << "Return parray:" << c_parray->id << "\n";
     } else {
-      //std::cout << "Return parray is NULL\n";
+      std::cout << "Return parray is NULL on C\n";
     }
     return py_parray;
   }

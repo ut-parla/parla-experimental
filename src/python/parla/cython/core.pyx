@@ -699,6 +699,10 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
 
+    cpdef get_memory_size_for_eviction(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_memory_size_for_eviction(global_dev_id)
+
 
 class Resources:
 

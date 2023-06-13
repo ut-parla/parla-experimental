@@ -467,7 +467,7 @@ class PArray:
                 if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
                     # If none of visible tasks will refer this PArray, release
                     # this PArray instance of the source device from the PArray tracker.
-                    scheduler.release_parray(
+                    scheduler.release_parray_from_tracker(
                         self._cy_parray, src_global_dev_id)
                 # decrement the reference counter, relying on GC to free the memor
                 self._array.clear(op.src)
