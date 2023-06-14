@@ -2,10 +2,10 @@
 
 RLTaskMappingPolicy::RLTaskMappingPolicy(
     DeviceManager *device_manager, PArrayTracker *parray_tracker,
-    Mapper *mapper)
+    Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(num_devices, num_devices, num_devices);
+  this->rl_agent_ = new RLAgent(num_devices, num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, mapper);
 }
 
@@ -180,24 +180,30 @@ void RLTaskMappingPolicy::run_task_mapping(
     std::cout << "Incompatible or unavailable device was chosen: " << chosen_device_gid << " \n";
     return;
   }
-  this->rl_next_state_ = this->rl_env_->make_next_state(
-      this->rl_current_state_, chosen_device_gid);
-  torch::Tensor reward = this->rl_env_->calculate_reward(
-      chosen_device_gid, this->rl_current_state_);
-  this->rl_agent_->append_replay_memory(
-      this->rl_current_state_,
-      torch::tensor({float{chosen_device_gid}}, torch::kInt64),
-      this->rl_next_state_, reward);
-  this->rl_agent_->optimize_model();
-  this->rl_agent_->target_net_soft_update();
+
+  if (this->rl_agent_->is_training_mode()) {
+    this->rl_next_state_ = this->rl_env_->make_next_state(
+        this->rl_current_state_, chosen_device_gid);
+    torch::Tensor reward = this->rl_env_->calculate_reward(
+        chosen_device_gid, this->rl_current_state_);
+    this->rl_agent_->append_replay_memory(
+        this->rl_current_state_,
+        torch::tensor({float{chosen_device_gid}}, torch::kInt64),
+        this->rl_next_state_, reward);
+    this->rl_agent_->optimize_model();
+    this->rl_agent_->target_net_soft_update();
+    std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+      " current state:" << this->rl_current_state_ <<
+      " device id: " << chosen_device_gid << " reward:" <<
+      reward.item<float>() << "\n";
+  } else {
+    std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+      " current state:" << this->rl_current_state_ <<
+      " device id: " << chosen_device_gid <<  "\n";
+  }
+
   chosen_devices->clear();
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
-
-  std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-    " current state:" << this->rl_current_state_ <<
-    " device id: " << chosen_device_gid << " reward:" <<
-    reward.item<float>() << "\n";
-
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
     this->rl_agent_->incr_episode();

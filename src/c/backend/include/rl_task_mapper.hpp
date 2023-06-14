@@ -112,13 +112,12 @@ public:
   using BufferTupleType = typename ExperienceReplay::BufferTupleType;
 
 
-  RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions,
+  RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions, bool is_training_mode = true,
           torch::Device device = torch::kCUDA,
-          std::string rl_mode = "training",
           float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 200,
           size_t batch_size = 100, float gamma = 0.999)
       : policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
-        device_(device), rl_mode_(rl_mode), n_actions_(n_actions),
+        device_(device), n_actions_(n_actions), is_training_mode_(is_training_mode),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
         replay_memory_(1000),
@@ -498,11 +497,7 @@ public:
   }
 
   bool is_training_mode() {
-    if (this->rl_mode_.compare("training") == 0) {
-      return true;
-    } else {
-      return false;
-    }
+    return this->is_training_mode_;
   }
 
 private:
@@ -511,8 +506,8 @@ private:
   FullyConnectedDQNImpl policy_net_;
   FullyConnectedDQNImpl target_net_;
   torch::Device device_;
-  std::string rl_mode_;
   uint32_t n_actions_;
+  bool is_training_mode_;
   float eps_start_, eps_end_, eps_decay_;
   size_t batch_size_;
   float gamma_;
@@ -528,7 +523,7 @@ class RLTaskMappingPolicy : public MappingPolicy {
 public:
   RLTaskMappingPolicy(
       DeviceManager *device_manager, PArrayTracker *parray_tracker,
-      Mapper *mapper);
+      Mapper *mapper, bool is_training_mode);
 
   ~RLTaskMappingPolicy();
 

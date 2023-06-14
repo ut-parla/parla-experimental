@@ -51,8 +51,7 @@ else:
 class Parla:
 
     def __init__(self,
-                 #mapping_policy: PyMappingPolicyType=PyMappingPolicyType.LoadBalancingLocality,
-                 mapping_policy: PyMappingPolicyType=PyMappingPolicyType.RLTest,
+                 mapping_policy: PyMappingPolicyType=PyMappingPolicyType.LoadBalancingLocality,
                  scheduler_class=scheduler.Scheduler,
                  sig_type=signal.SIGINT, logfile=None, n_workers=None,
                  dev_config_file=None, **kwds):

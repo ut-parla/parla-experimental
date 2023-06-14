@@ -21,6 +21,7 @@ from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
 from parla.common.array import clone_here
 from parla.common.globals import get_current_devices, get_current_stream
+from parla.common.globals import PyMappingPolicyType
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
@@ -509,6 +510,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             # Initialize task spaces
             taskspaces = {}
 
+            print("Episode ", i, " starts..")
             for task, details in tasks.items():
                 space_name = details.task_id.taskspace
                 if space_name not in taskspaces:
@@ -540,6 +542,22 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
         timing.append(graph_t)
 
 
+def parse_exec_mode(exec_mode):
+    print("Exec mode:", exec_mode)
+    if exec_mode == "training":
+        return PyMappingPolicyType.RLTraining
+    elif exec_mode == "test":
+        return PyMappingPolicyType.RLTest
+    elif exec_mode == "parla":
+        return PyMappingPolicyType.LoadBalancingLocality
+    elif exec_mode == "random":
+        return PyMappingPolicyType.LoadBalancingLocality
+    else:
+        print("Unsupported mode:", exec_mode, " so use Parla policy")
+        return PyMappingPolicyType.LoadBalancingLocality
+ 
+
+
 def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, run_config: RunConfig = None) -> TimeSample:
 
     if run_config is None:
@@ -548,11 +566,12 @@ def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, 
 
     timing = []
 
+    exec_mode = parse_exec_mode(run_config.exec_mode)
     for outer in range(run_config.outer_iterations):
 
         outer_start_t = time.perf_counter()
 
-        with Parla(logfile=run_config.logfile):
+        with Parla(logfile=run_config.logfile, mapping_policy = exec_mode):
             internal_start_t = time.perf_counter()
             execute_graph(data_config, tasks, run_config, timing)
             internal_end_t = time.perf_counter()

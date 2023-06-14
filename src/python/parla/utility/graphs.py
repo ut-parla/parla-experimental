@@ -246,6 +246,8 @@ class RunConfig:
     logfile: str = "testing.blog"  # The log file location
     do_check: bool = False  # If this is true, validate configuration/execution
     num_gpus: int = 4  # TODO(hc): it is duplicated with GrpahConfig.
+    exec_mode: str = "parla" # "test" for RL test, "training" for RL training,
+                             # "parla" for parla, "random" for random.
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')

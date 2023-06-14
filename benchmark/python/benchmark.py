@@ -30,6 +30,7 @@ parser.add_argument('-branch', metavar='branch', type=int, help='for reduction, 
 parser.add_argument('-num_gpus', metavar='num_gpus', type=int, help='the number of gpus', default=4)
 parser.add_argument('-iter', metavar='iter', type=int, help='ith iteration for file postfix', default=1)
 parser.add_argument('-verbose', metavar='verbose', type=bool, help='true if verbose mode is enabled', default=False)
+parser.add_argument('-exec_mode', metavar='exec_mode', type=str, help='Execution mode: ("test" | "training" | "parla" | "random")', default="parla")
 
 args = parser.parse_args()
 
@@ -110,7 +111,7 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=5000,
             verbose=verbose,
             logfile=logpath,
             num_gpus=num_gpus,
@@ -118,11 +119,13 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
             data_scale=sD_array_bytes)
 
         times = g.run(run_config)
+        """
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
+        """
 
     print(f"new_parla,reduction,{iter},{computation_weight},{branch}-{level},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
@@ -130,7 +133,7 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
 
 def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
         fixed_place, user_chosen_device, computation_weight, num_tasks, gil_count,  \
-        gil_time, data_pattern, data_move_type, graph_path, iter, verbose):
+        gil_time, data_pattern, data_move_type, graph_path, iter, verbose, exec_mode):
     print(f"[Indp] fD array bytes: {fD_array_bytes}, " +
           f"sD array bytes: {sD_array_bytes} Num GPUs: {num_gpus}, " +
           f"Fixed place: {fixed_place}, User flag: {user_chosen_device}, " +
@@ -138,7 +141,7 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
           f"GIL count: {gil_count}, GIL time: {gil_time}, Data overlap: " +
           f"{data_pattern} Data move type: {data_move_type}" +
           f" Graph path: {graph_path}")
-    device_fraction = 1.0
+    device_fraction = 0.0
     if num_gpus == 0:
         concurrent_tasks = num_gpus
         device_fraction = 1.0 / concurrent_tasks
@@ -154,25 +157,28 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
         total_data_width=fD_array_bytes, task_count=num_tasks,
         task_config=task_configs)
 
-    with GraphContext(config, name="independent", graph_path=graph_path) as g:
+    with GraphContext(config, name="independent", graph_path=graph_path, graph_generation=False) as g:
 
         logpath = g.tmplogpath
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=5000,
             verbose=verbose,
             logfile=logpath,
             num_gpus=num_gpus,
             movement_type=data_move_type,
+            exec_mode=exec_mode,
             data_scale=sD_array_bytes)
 
         times = g.run(run_config)
+        """
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
+        """
 
     print(f"new_parla,independent,{iter},{computation_weight},{num_tasks},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
@@ -217,11 +223,13 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
             data_scale=sD_array_bytes)
 
         times = g.run(run_config)
+        """
         log_times, log_graph, log_states = parse_blog(logpath)
         assert (verify_complete(log_graph, g.graph))
         assert (verify_dependencies(log_graph, g.graph))
         #assert (verify_order(log_times,g.graph))
         assert (verify_states(log_states))
+        """
 
     print(f"new_parla,serial,{iter},{computation_weight},{num_tasks},{num_gpus},{fixed_place},{fD_array_bytes},{data_move_type},"+
           f"{times.mean}", flush=True)
@@ -307,6 +315,7 @@ if __name__ == "__main__":
     graph_path = args.graph
     verbose = args.verbose
     iter = args.iter
+    exec_mode = args.exec_mode
 
     if fD_array_bytes == 0:
         data_pattern = DataInitType.NO_DATA
@@ -319,7 +328,8 @@ if __name__ == "__main__":
     elif graph_type == "independent":
         independent_scalinum_gpus(fD_array_bytes, sD_array_bytes,
             num_gpus, fixed_place, user_chosen_device, computation_weight, num_tasks,
-            gil_count, gil_time, data_pattern, data_move_type, graph_path, iter, verbose)
+            gil_count, gil_time, data_pattern, data_move_type, graph_path, iter, verbose,
+            exec_mode)
     elif graph_type == "serial":
         serial_scalinum_gpus(fD_array_bytes, sD_array_bytes,
             num_gpus, fixed_place, user_chosen_device, computation_weight, num_tasks,

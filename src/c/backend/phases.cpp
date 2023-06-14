@@ -20,13 +20,21 @@ Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
     : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
   this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
   if (policy_type == MappingPolicyType::LoadBalancingLocality) {
+    std::cout << "Locality- and load balancing-aware heuristic is enabled\n";
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
         devices, parray_tracker);
-  } else if (policy_type == MappingPolicyType::RL) {
+  } else if (policy_type == MappingPolicyType::RLTraining) {
+    std::cout << "RL Training is enabled\n";
     this->policy_ = std::make_shared<RLTaskMappingPolicy>(
-        devices, parray_tracker, this);
+        devices, parray_tracker, this, true);
+  } else if (policy_type == MappingPolicyType::RLTest) {
+    std::cout << "RL Test is enabled\n";
+    this->policy_ = std::make_shared<RLTaskMappingPolicy>(
+        devices, parray_tracker, this, false);
   } else {
     std::cout << "Unsupported policy type..\n";
+    this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
+        devices, parray_tracker);
   }
 }
 
