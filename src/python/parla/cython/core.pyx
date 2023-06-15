@@ -339,7 +339,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_stream 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_stream, cupy.cuda.Stream):
+        if (py_stream is not None) and isinstance(py_stream, cupy.cuda.Stream):
             i_stream = <uintptr_t> py_stream.ptr
             c_self.add_stream(i_stream)
 
