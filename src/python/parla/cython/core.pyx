@@ -347,7 +347,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_event 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_event, cupy.cuda.Event):
+        if (py_event is not None) and isinstance(py_event, cupy.cuda.Event):
             i_event = <uintptr_t> py_event.ptr
             c_self.add_event(i_event)
 
