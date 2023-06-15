@@ -1,12 +1,25 @@
+from __future__ import annotations # For type hints of unloaded classes
+
 from enum import IntEnum
 import threading
 import os
+
 try:
     import cupy
+    num_gpu = cupy.cuda.runtime.getDeviceCount()
     CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
-except ImportError:
+except Exception as e:
     cupy = None
     CUPY_ENABLED = False
+
+if CUPY_ENABLED:
+    try:
+        import crosspy
+        CROSSPY_ENABLED = (os.getenv("PARLA_ENABLE_CROSSPY", "1") == "1")
+    except ImportError:
+        CROSSPY_ENABLED = False
+else:
+    CROSSPY_ENABLED = False
 
 
 USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")

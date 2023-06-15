@@ -1073,6 +1073,8 @@ class TerminalEnvironment(TaskEnvironment):
         
         #for event in self.event_dict.values():
         #    task.add_event(event)
+
+        #Note: only adding default event for now
         task.add_event(self.event_dict['default'])
 
     def write_streams_to_task(self, task):
