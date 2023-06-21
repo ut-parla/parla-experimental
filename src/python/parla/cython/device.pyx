@@ -107,7 +107,7 @@ class PyDevice:
     This class is to abstract a single device in Python and manages
     a device context as a task runs in Python.
     """
-    def __init__(self, dev_type, dev_type_name, dev_id: int):
+    def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self
@@ -197,9 +197,9 @@ class PyDevice:
         #NOTE: DEVICE NAMES MUST BE UNIQUE INSIDE A SCHEDULER INSTANCE
         return hash(self._device_name)
 
-    def __eq__(self, other):
-        if isinstance(other, int):
-            return self._dev_type == other
+    def __eq__(self, other) -> bool:
+        if isinstance(other, int) or isinstance(other, PyDeviceType):
+            return self.architecture == other
         elif isinstance(other, PyDevice):
             return self._device_name == other._device_name
         else:
@@ -226,6 +226,7 @@ class PyCUDADevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
+
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
@@ -242,6 +243,7 @@ class PyCPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
+
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
@@ -297,6 +299,13 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._id
 
     @property
+    def architecture(self):
+        """
+        Returns the architecture (type) of the device.
+        """
+        return self._id
+
+    @property
     def name(self):
         return self._name
 
@@ -308,15 +317,15 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, int):
+        if isinstance(o, int) or isinstance(o, PyDeviceType):
             return self.id == o
         elif isinstance(o, type(self)):
-            return ( (self.id == o.id) and (self._name == o.name) )
+            return (self.id == o.id) 
         else:
             return False
 
     def __hash__(self):
-        return self._id
+        return hash(self._id)
 
     def __repr__(self):
         return type(self).__name__
@@ -408,7 +417,7 @@ class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
 
 class PyCPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CPUArch", DeviceType.CPU)
+        super().__init__("CPUArch", PyDeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)

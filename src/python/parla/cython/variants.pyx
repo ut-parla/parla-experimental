@@ -20,7 +20,6 @@ class _VariantFunction(object):
         self._variants = {}
         functools.update_wrapper(self, func)
 
-
     def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
 
         if architecture is not None:
@@ -75,7 +74,7 @@ def specialize(func):
     To provide a specialized variant use the `variant` member of the main function:
     .. testsetup::
         from parla.function_decorators import *
-    >>> @specialized
+    >>> @specialize
     ... def f():
     ...     raise NotImplementedError()
     >>> @f.variant(architecture)

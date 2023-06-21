@@ -20,12 +20,12 @@ from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
 from parla.common.array import clone_here
-from parla.common.globals import get_current_devices, get_current_stream
+from parla.common.globals import get_current_devices, get_current_stream, cupy, CUPY_ENABLED, get_current_context
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla import gpu_sleep_nogil
-from parla.cython.core import gpu_bsleep_nogil
+from parla.cython.core import gpu_bsleep_nogil, gpu_bsleep_gil
 import numpy as np
 
 from fractions import Fraction
@@ -33,10 +33,10 @@ from fractions import Fraction
 PArray = parray.core.PArray
 
 def make_parrays(data_list):
-    l = list()
+    parray_list = list()
     for i, data in enumerate(data_list):
-        l.append(asarray(data))
-    return l
+        parray_list.append( asarray(data, name="data"+str(i)) )
+    return parray_list
 
 
 def estimate_frequency(n_samples= 10, ticks=1900000000):
@@ -62,7 +62,7 @@ def estimate_frequency(n_samples= 10, ticks=1900000000):
     estimated_speed = cycles/np.mean(times)
     median_speed = cycles/np.median(times)
 
-    print("Finished Benchmark.")
+    print("Finished Benchmark.", flush=True)
     print("Estimated GPU Frequency: Mean: ", estimated_speed, ", Median: ", median_speed, flush=True)
     return estimated_speed
 
@@ -75,11 +75,17 @@ class GPUInfo():
     #cycles_per_second = 47994628114801.04
     cycles_per_second = 1949802881.4819772
 
-    def update(self, cycles):
+    def update_cycles(self, cycles=None):
+
+        if cycles is None:
+            cycles = estimate_frequency()
+        
         self.cycles_per_second = cycles
 
-    def get(self):
+    def get_cycles_per_second(self):
         return self.cycles_per_second
+    
+_GPUInfo = GPUInfo()
 
 
 def get_placement_set_from(ps_str_set, num_gpus):
@@ -107,30 +113,46 @@ def get_placement_set_from(ps_str_set, num_gpus):
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
 
-def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
-    value = 0
+
+def create_arrays(data_config, data_scale):
     data_list = []
     # If data does not exist, this loop will not be iterated.
     for data_idx in data_config:
-        data_location = data_config[data_idx].location
-        data_size = data_config[data_idx].size
+
+        data_info = data_config[data_idx]
+
+        data_location = data_info.location
+        data_size = data_info.size
+
         if data_location == DeviceType.CPU_DEVICE:
-            data = np.zeros([data_size, data_scale], dtype=np.float32) + value + 1
+            data = np.zeros([data_size, data_scale], dtype=np.float32) + data_idx + 1
             data_list.append(data)
+
         elif data_location > DeviceType.ANY_GPU_DEVICE:
-            import cupy as cp
-            with cp.cuda.Device(data_location - 1) as device:
-                data = cp.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
+            with cupy.cuda.Device(data_location - 1) as device:
+                data = cupy.zeros([data_size, data_scale], dtyp=np.float32) + data_idx + 1
                 device.synchronize()
                 data_list.append(data)
         else:
             raise NotImplementedError("This device is not supported for data")
-        value += 1 
+        
+    return data_list
+
+
+#TODO(wlr): Rewrite this supporting multiple device placement.
+def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
+
+    if data_movement_type == MovementType.NO_MOVEMENT:
+        return None
+    
+    elif data_movement_type == MovementType.LAZY_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
+            
     if data_movement_type == MovementType.EAGER_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
         data_list = make_parrays(data_list)
         if len(data_list) > 0:
             assert isinstance(data_list[0], PArray)
-
     '''
     if len(data_list) > 0:
         print("[validation] Generated data type:", type(data_list[0]))
@@ -152,12 +174,8 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    gpu_info = GPUInfo()
-    cycles_per_second = gpu_info.get()
-    dev_id = get_current_devices()[0]
-    stream = get_current_stream()
+    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}", flush=True)
 
-    print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         free_sleep(free_time)
         lock_sleep(gil_time)
@@ -170,7 +188,7 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     return None
 
 
-@synthetic_kernel.variant(gpu)
+@synthetic_kernel.variant(architecture=gpu)
 def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
@@ -180,35 +198,37 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
-    task_internal_start_t = time.perf_counter()
     # Simulate task work
+    cycles_per_second = _GPUInfo.get_cycles_per_second()
     kernel_time = total_time / gil_accesses
+
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    gpu_info = GPUInfo()
-    cycles_per_second = gpu_info.get()
-    dev_id = get_current_devices()[0]
-    parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
+    free_ticks = int((free_time/(10**6))*cycles_per_second)
+    gil_ticks = int((gil_time/(10**6))*cycles_per_second)
 
-    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
+    context = get_current_context()
 
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
-    for i in range(gil_accesses):
-        print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
-        gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
-        parla_cuda_stream.stream.synchronize()
-        lock_sleep(gil_time)
+    for device in context.loop():
+        device_idx = device.gpu_id
+        stream = device.cupy_stream 
+
+        for i in range(gil_accesses):
+
+            gpu_bsleep_nogil(device_idx, free_ticks, stream)
+            gpu_bsleep_gil(device_idx, gil_ticks, stream)
+
+            if config.inner_sync:
+                stream.synchronize()
+    
+    if config.outer_sync:
+        context.synchronize()
 
     if config.verbose:
         task_internal_end_t = time.perf_counter()
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
-
-    task_internal_end_t = time.perf_counter()
-    task_internal_duration = task_internal_end_t - task_internal_start_t
-    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
 
     return None
 
@@ -229,6 +249,10 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         placement_key = task.task_runtime.keys()
         placement_set_str = list(placement_key)
         placement_set = get_placement_set_from(placement_set_str, num_gpus)
+
+        print("placement key: ", placement_key)
+        print("placement set str: ", placement_set_str)
+        print("placement set: ", placement_set)
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
