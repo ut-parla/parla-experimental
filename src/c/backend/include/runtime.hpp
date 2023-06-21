@@ -899,6 +899,9 @@ public:
   /* Should Run, Stop Condition */
   std::atomic<bool> should_run = true;
 
+  std::atomic<bool> clear_all_parrays = false;
+  std::atomic<bool> clear_all_parrays_in_c = false;
+
   /* Phase: maps tasks to devices */
   Mapper *mapper;
   /* If it is set, break run() of InnerScheduler
@@ -1039,7 +1042,8 @@ public:
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
 
-
+  void invoke_all_parrays_clear();
+  bool get_clear_all_parrays();
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.

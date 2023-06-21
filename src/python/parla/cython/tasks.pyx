@@ -15,7 +15,7 @@ from parla.common.globals import AccessMode, Storage
 
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
-from parla.common.globals import _global_data_tasks, _global_datas
+from parla.common.globals import _global_data_tasks
 import gc
 
 
@@ -463,18 +463,23 @@ class Task:
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.IN, in_parray_devid)
+                self.scheduler.append_active_parray(in_parray)
             for out_parray_tpl in dataflow.output:
                 out_parray = out_parray_tpl[0]
                 out_parray_devid = out_parray_tpl[1]
                 cy_parray = out_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.OUT, out_parray_devid)
+                self.scheduler.append_active_parray(out_parray)
             for inout_parray_tpl in dataflow.inout:
                 inout_parray = inout_parray_tpl[0]
                 inout_parray_devid = inout_parray_tpl[1]
                 cy_parray = inout_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.INOUT, inout_parray_devid)
+                # TODO(hc): Maybe we can pass dataflow to reduce
+                #           lock conflicts.
+                self.scheduler.append_active_parray(inout_parray)
 
     def notify_dependents_wrapper(self):
         """ Mock interface only used for testing. Notify dependents should be called internall by the scheduler """
@@ -611,35 +616,6 @@ class DataMovementTask(Task):
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
-
-        """
-        # print("Attempt to Move: ", self.parray.name, " to a device ", parray_id, flush=True)
-        py_mm = self.scheduler.memory_manager 
-        removable_parray_size = py_mm.size(global_id)
-        #print("removable parray sized:" , removable_parray_size)
-        for i in range(0, removable_parray_size):
-            #print(i, " and ",removable_parray_size)
-            removable_parray: PArray = py_mm.remove_and_return_head_from_zrlist(global_id)
-            if removable_parray is not None:
-                py_mm.print_memory_stats(parray_id, "Before Evict "+str(self.name))
-                print("target parray ID:", removable_parray.ID)
-                print("target parray :", removable_parray)
-                #print("Before eviction:")
-
-                removable_parray.print_overview()
-                removable_parray.evict(parray_id)
-                print("eviction target:", parray_id)
-                removable_parray.print_overview()
-                py_mm.print_memory_stats(parray_id, "After Evict "+str(self.name))
-                refers = gc.get_referrers(removable_parray)
-                for i in range(0, len(refers)):
-                    print(i, " = ", type(refers[i]), ", ", refers[i])
-
-                # TODO(hc): Needed references, 
-#_global_datas[id(removable_parray)] = None
-        py_mm.print_memory_stats(parray_id, "Before AutoMove "+str(self.name))
-        py_mm.print_memory_stats(parray_id, "After AutoMove "+str(self.name))
-        """
         self.parray._auto_move(parray_id, write_flag)
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
@@ -649,15 +625,6 @@ class DataMovementTask(Task):
         _global_data_tasks[id(self)] = None
         self.parray = None
 
-        """
-        refers = gc.get_referrers(self)
-        for i in range(0, len(refers)):
-            print(i, " = ", type(refers[i]), ", ", refers[i])
-        print("2Print ", id(test_parray), " and ", type(test_parray))
-        parray_referrers = gc.get_referrers(test_parray)
-        for i in range(0, len(parray_referrers)):
-            print("\t", i, " = ", id(parray_referrers[i]), " and ", type(parray_referrers[i]), ", ", parray_referrers[i])
-        """
 
 ######
 # Task Environment

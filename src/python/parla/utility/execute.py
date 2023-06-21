@@ -16,8 +16,6 @@ from enum import Enum
 import time
 import itertools
 
-import gc
-
 from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
@@ -28,6 +26,7 @@ from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla import gpu_sleep_nogil
 from parla.cython.core import gpu_bsleep_nogil
+from parla.cython.scheduler import get_scheduler_context
 import numpy as np
 
 from fractions import Fraction
@@ -193,7 +192,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     cycles_per_second = gpu_info.get()
     dev_id = get_current_devices()[0]
     parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
+    ticks = int((total_time/(10**3))*cycles_per_second)
 
     #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
 
@@ -343,14 +342,14 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        #print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
         """
+        print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
             " placement:", placement_set)
         """
 
         # TODO(hc): Add data checking.
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT, memory=800000000)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -485,51 +484,15 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
 
 def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
-
+    print("initial make parray:", psutil.Process().memory_info().rss)
     @spawn(vcus=0)
     async def main_task():
 
         graph_times = []
-
-        test_parray = None
-        is_first = True
         for i in range(0, run_config.inner_iterations):
             import cupy
-            for k in range(0, 4):
-                with cupy.cuda.Device(k):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-
             data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
-            if is_first:
-                test_parray = data_list[0]
-                is_first = False
-                referrers = gc.get_referrers(test_parray)
-                print("Test parray reference:", id(test_parray))
-                for j in range(0, len(referrers)):
-                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
-            else:
-                referrers = gc.get_referrers(test_parray)
-                print(i, " Test parray reference:", id(test_parray))
-                for j in range(0, len(referrers)):
-                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
-            """
-            for k in range(0, len(data_list)):
-                print(k, "= ", type(data_list[k]))
-#data_list[i] = None
-                referrers = gc.get_referrers(data_list[k])
-                for j in range(0, len(referrers)):
-                    print("\t", j, "= ", type(referrers[j]), ", ", referrers[j])
-                    sub_referrers = gc.get_referrers(referrers[j])
-                    for k in range(0, len(sub_referrers)):
-                        print("\t\t", k, "= ", type(sub_referrers[k]), "= ", sub_referrers[k])
-            """
-
-            for k in range(0, 4):
-                with cupy.cuda.Device(k):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-
+            print("after after make parray:", psutil.Process().memory_info().rss)
             # Initialize task spaces
             taskspaces = {}
 
@@ -541,7 +504,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             for k in range(0, 4):
                 with cupy.cuda.Device(k):
                     mempool = cupy.get_default_memory_pool()
-                    print(f"\t 11Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+                    print(f"\t Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
 
             graph_start_t = time.perf_counter()
 
@@ -550,26 +513,17 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             for taskspace in taskspaces.values():
                 await taskspace
             taskspace = None
+            graph_end_t = time.perf_counter()
 
-            """
+            print("Iteration:", i, flush=True)
+            worker_thread = get_scheduler_context()
+            worker_thread.scheduler.invoke_all_parrays_clear()
+
             for k in range(0, 4):
                 with cupy.cuda.Device(k):
                     mempool = cupy.get_default_memory_pool()
-                    print(f"\t After {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-            for k in range(0, len(data_list)):
-                print(k, ", ", type(data_list[k]))
-#data_list[i] = None
-                referrers = gc.get_referrers(data_list[k])
-                for j in range(0, len(referrers)):
-                    print("\t", j, ", ", type(referrers[j]), ", ", referrers[j])
-                    sub_referrers = gc.get_referrers(referrers[j])
-                    for k in range(0, len(sub_referrers)):
-                        print("\t\t", k, ", ", type(sub_referrers[k]), ", ", sub_referrers[k])
-            """
-            for k in range(0, len(data_list)):
-                data_list[k] = None
-            data_list = None
-            graph_end_t = time.perf_counter()
+                    print(f"\t Right After {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+            print("after execution:", psutil.Process().memory_info().rss)
 
             graph_elapsed = graph_end_t - graph_start_t
             graph_times.append(graph_elapsed)
@@ -795,12 +749,14 @@ class GraphContext(object):
         return self
 
     def run(self, run_config: RunConfig, max_time: int = 100):
-
+        return run(self.graph, self.data_config, run_config)
+        """
         @timeout(max_time)
         def run_with_timeout():
             return run(self.graph, self.data_config, run_config)
 
         return run_with_timeout()
+        """
 
     def __exit__(self, type, value, traceback):
         self.diro.__exit__(type, value, traceback)

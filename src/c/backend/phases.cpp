@@ -48,6 +48,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // In order to overlap scheduler phases and task execution,
   // use threshold of the number of tasks to be mapped.
   size_t num_task_mapping_attempt{0};
+  std::vector<size_t> accum_necessary_memory;
+  accum_necessary_memory.resize(this->device_manager->get_num_devices(DeviceType::All));
   while (has_task && num_task_mapping_attempt < 20) {
     // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
@@ -82,15 +84,13 @@ void Mapper::run(SchedulerPhase *next_phase) {
         // since the corresponding data movement tasks will be created.
         this->atomic_incr_num_mapped_tasks_device(global_dev_id,
                                                   1 + (*parray_list)[i].size());
-
         // TODO(hc): measure the total number of necessary bytes for each device.
-        size_t necessary_memory{0};
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->reserve_parray_to_tracker(parray, global_dev_id);
           this->scheduler->task_acquire_parray(parray, global_dev_id);
           parray->incr_num_active_tasks(global_dev_id);
-          necessary_memory += parray->get_size();
+          accum_necessary_memory[global_dev_id] += parray->get_size();
         }
 
         // Check if memory consumption on the target device is high.
@@ -99,16 +99,13 @@ void Mapper::run(SchedulerPhase *next_phase) {
         // To do this, it sets an eviction flag first, and break the
         // infinite loop of the scheduler.
         ResourcePool_t &dev_reserved_pool = chosen_device->get_reserved_pool();
-        necessary_memory *= 10;
-        //necessary_memory = dev_reserved_pool.get(Resource::Memory) - 1000;
         ResourcePool_t parray_resource;
+        // TODO(hc): This is heuristic threshold.
+        //           This could be improved.
+        size_t necessary_memory = accum_necessary_memory[global_dev_id] * 10; 
         parray_resource.set(Resource::Memory, necessary_memory);
-        if (dev_reserved_pool.check_greater<ResourceCategory::Persistent>(
+        if (dev_reserved_pool.check_lesser<ResourceCategory::Persistent>(
             parray_resource)) {
-        /*
-        if (true) {
-        */
-          //std::cout << "Resource is tight..: " << necessary_memory << "\n";
           this->scheduler->break_for_eviction = true;
           this->scheduler->set_memory_size_for_eviction(necessary_memory, chosen_device->get_global_id());
         }

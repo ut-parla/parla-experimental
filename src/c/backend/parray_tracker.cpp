@@ -52,6 +52,7 @@ void PArrayTracker::release_parray_from_tracker(const InnerPArray &parray, Devic
   this->mtx.lock();
   if (this->managed_parrays_[dev_global_id].find(parray.parent_id) ==
       this->managed_parrays_[dev_global_id].end()) {
+    this->mtx.unlock();
     return;
   }
   if (this->managed_parrays_[dev_global_id][parray.parent_id] == true) {

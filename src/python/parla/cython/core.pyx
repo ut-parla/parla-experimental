@@ -703,6 +703,14 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_memory_size_for_eviction(global_dev_id)
 
+    cpdef invoke_all_parrays_clear(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.invoke_all_parrays_clear()
+
+    cpdef get_clear_all_parrays(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_clear_all_parrays()
+
 
 class Resources:
 

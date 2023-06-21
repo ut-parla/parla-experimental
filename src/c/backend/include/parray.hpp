@@ -85,7 +85,7 @@ private:
   //           I will use this map: https://github.com/greg7mdp/parallel-hashmap
   //           I have used this for a while and it is good.
   TaskList _task_lists;
-
+  /// Python PArray address
   void *_py_parray;
 };
 } // namespace parray

@@ -3,7 +3,6 @@ from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
 from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType
-from parla.common.globals import _global_datas
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -52,7 +51,6 @@ class PArray:
     def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "NA") -> None:
         # Maintain a reference to this PArray, and so avoid to release it
         # before a computation task uses.
-        _global_datas[id(self)] = self
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents
@@ -291,7 +289,7 @@ class PArray:
               f"Parent_ID: {self.parent_ID if self.ID != self.parent_ID else None}, "
               f"Slice: {self._slices[0] if self.ID != self.parent_ID else None}, "
               f"Bytes: {self.subarray_nbytes}, "
-              f"Owner: {'GPU ' + str(self._coherence.owner) if self._coherence.owner != CPU_INDEX else 'CPU'}")
+              f"Owner: {'GPU ' + str(self._coherence.owner) if self._coherence.owner != CPU_INDEX else 'CPU'}", flush=True)
         for device_id, state in self._coherence._local_states.items():
             if device_id == CPU_INDEX:
                 device_name = "CPU"
@@ -301,13 +299,13 @@ class PArray:
 
             if isinstance(state, dict):
                 print(
-                    f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices")
+                    f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices", flush=True)
                 for slice, slice_id in zip(self._array._indices_map[device_id], range(len(self._array._indices_map[device_id]))):
                     print(
-                        f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}")
+                        f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}", flush=True)
             else:
-                print(f"state: {state_str_map[state]}")
-        print("---End of Overview")
+                print(f"state: {state_str_map[state]}", flush=True)
+        print("---End of Overview", flush=True)
 
     # slicing/indexing
 
@@ -388,7 +386,7 @@ class PArray:
             if len(operations) != 0 and operations[0].inst == MemoryOperation.ERROR:
                 return False # cannot perform the eviction
             self._process_operations(operations) 
-    
+
         return True
 
     # Coherence update operations:

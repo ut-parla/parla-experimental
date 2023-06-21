@@ -167,6 +167,9 @@ cdef extern from "include/runtime.hpp" nogil:
         void reserve_parray_to_tracker(InnerPArray* parray, int dev_id) except +
         void release_parray_from_tracker(InnerPArray* parray, int dev_id) except +
 
+        void invoke_all_parrays_clear()
+        bool get_clear_all_parrays()
+
 
 cdef extern from "include/profiling.hpp" nogil:
     void initialize_log(string filename)

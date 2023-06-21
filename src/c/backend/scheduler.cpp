@@ -174,6 +174,11 @@ bool InnerScheduler::get_should_run() {
   return this->should_run.load();
 }
 
+bool InnerScheduler::get_clear_all_parrays() {
+  std::cout << "get clear all parrays\n" << std::flush;
+  return this->clear_all_parrays.load();
+}
+
 void InnerScheduler::set_memory_size_for_eviction(size_t size, DevID_t dev_id) {
   this->memory_size_for_eviction[dev_id] = size;
 }
@@ -184,7 +189,8 @@ size_t InnerScheduler::get_memory_size_for_eviction(DevID_t dev_id) {
 
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
-  unsigned long long iteration_count = 0;
+  this->clear_all_parrays_in_c = false;
+  this->clear_all_parrays = false;
   while (this->should_run.load()) {
     this->break_for_eviction = false;
     auto status = this->activate();
@@ -194,23 +200,31 @@ void InnerScheduler::run() {
     if (this->break_for_eviction) {
       break;
     }
+    if (this->clear_all_parrays_in_c.load()) {
+      std::cout << "Clear all parrays..\n";
+      this->mm_->clear_all_instances();
+      this->clear_all_parrays = true;
+      break;
+    }
   }
 }
 
 void InnerScheduler::stop() {
   LOG_INFO(SCHEDULER, "Stopping scheduler");
   this->should_run = false;
-  launch_stop_callback(this->stop_callback, this->py_scheduler);
+  //launch_stop_callback(this->stop_callback, this->py_scheduler);
   LOG_INFO(SCHEDULER, "Stopped scheduler");
+}
+
+void InnerScheduler::invoke_all_parrays_clear() {
+  this->clear_all_parrays_in_c = true; 
 }
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-
   this->mapper->run(this->memory_reserver);
   this->memory_reserver->run(this->runtime_reserver);
   this->runtime_reserver->run(this->launcher);
-
   // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->runtime_reserver);
   return this->status;
 }

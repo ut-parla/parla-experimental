@@ -33,6 +33,17 @@ public:
 
 class DoubleLinkedList {
 public:
+  void print() {
+    PArrayNode *node = this->head_;
+    while (node != nullptr) {
+      std::cout << node->parray->id << " -> \n"; 
+      node = node->next;
+    }
+
+    if (this->tail_ != nullptr) {
+      std::cout << "Final tail:" << this->tail_->parray->id << "\n\n";
+    }
+  }
 
   /// Append a node to the tail.
   void append(PArrayNode *node) {
@@ -47,6 +58,8 @@ public:
       node->prev = this->tail_;
       this->tail_ = node;
     }
+    //std::cout << "Append :" << node->parray->id << "\n";
+    //this->print();
     this->list_size_ += 1;
     this->mtx_.unlock();
   }
@@ -78,6 +91,8 @@ public:
     }
     node->prev = new_node;
     new_node->next = node;
+    //this->print();
+
     this->mtx_.unlock();
   }
 
@@ -87,11 +102,10 @@ public:
     PArrayNode *old_head = this->head_;
     //std::cout << " zr list size:" << this->list_size_ << "\n";
     if (old_head != nullptr) {
-      std::cout << "old head is not NULL so try to remove this\n";
       this->remove_unsafe(old_head); 
-    } else {
-      std::cout << "old head is NULL\n";
     }
+    //this->print();
+
     this->mtx_.unlock();
     return old_head;
   }
@@ -99,51 +113,44 @@ public:
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
     bool rv = this->remove_unsafe(node);
+    //this->print();
     this->mtx_.unlock();
     return rv;
   }
 
   /// Remove the node from the list.
   bool remove_unsafe(PArrayNode *node) {
-    bool is_removed{false};
-    if (node->prev == nullptr && node->next == nullptr) {
-      return is_removed;
+    if (node->prev == nullptr && node->next == nullptr &&
+        node != this->head_ && node != this->tail_) {
+      return false;
     }
 
-    if (this->list_size_ == 1 and (node == this->head_ or node == this->tail_)) {
-      is_removed = true;
-      //std::cout << node->parray->id << " was emptified from list: " <<
-      //  this->list_size_ << " [pre] \n";
-
-      this->head_ = this->tail_ = node->next = node->prev = nullptr;
-      //std::cout << node->parray->id << " was emptified from list: " <<
-      //  this->list_size_ << "\n";
-    }
-
-    if (this->head_ == node) {
-      this->head_ = node->next;
-      node->next->prev = nullptr;
-    } else if ( this->tail_ == node) {
-      this->tail_ = node->prev;
-      node->prev->next = nullptr;
+    if (this->list_size_ == 1) {
+      if (node == this->head_ || node == this->tail_) {
+        this->head_ = this->tail_ = nullptr;
+      }
     } else {
-      // TODO(hc):check it again
-      if (node->prev != nullptr) {
-        node->prev->next = node->next;
-      }
-      if (node->next != nullptr) {
-        node->next->prev = node->prev;
+      if (this->head_ == node) {
+        this->head_ = node->next;
+        node->next->prev = nullptr;
+      } else if (this->tail_ == node) {
+        this->tail_ = node->prev;
+        node->prev->next = nullptr;
+      } else {
+        // TODO(hc):check it again
+        if (node->prev != nullptr) {
+          node->prev->next = node->next;
+        }
+        if (node->next != nullptr) {
+          node->next->prev = node->prev;
+        }
       }
     }
-    is_removed = true;
-
     node->prev = node->next = nullptr;
-    if (is_removed) {
-      this->list_size_ -= 1;
-      //std::cout << node->parray->id << " was removed from list: " <<
-      //  this->list_size_ << "\n";
-    }
-    return is_removed;
+    this->list_size_ -= 1;
+    //std::cout << node->parray->id << " was removed from list: " <<
+    //  this->list_size_ << "\n";
+    return true;
   }
 
   size_t size() {
@@ -181,15 +188,15 @@ public:
 
   LRUDeviceMemoryManager(DevID_t dev_id) : dev_id_(dev_id) {}
 
+  /**
+   * @brief This function is called when a task acquires
+   * a PArray. It increases a reference count of the PArray
+   * and removes it from a zero-referenced list if it exists.
+   */
   void acquire_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
-    //std::cout << "acquire data: " << &this->zr_parray_list_ << "\n";
-    //std::cout << "Parray:" << parray->id << "," <<
-    //  " size:" << parray->get_size() << " was acquired\n";
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
-    //std::cout << "Parray:" << parray_id << "," <<
-    //  " was found\n";
     if (found == this->parray_reference_counts_.end()) {
       //std::cout << "Parray:" << parray_id << "," <<
       //  " was not found\n";
@@ -200,12 +207,7 @@ public:
       //  " size:" << parray->get_size() << " was ceated, "
       //  << " reference count: 1 \n";
     } else {
-      //std::cout << "Parray:" << parray_id << "," <<
-      //  " increase ! \n";
       found->second.ref_count++; 
-      //std::cout << "Parray:" << parray_id << "," <<
-      //  " increase to " << found->second.ref_count << "! \n";
-      this->zr_parray_list_.remove(found->second.parray_node_ptr);
       //std::cout << "Parray:" << parray->id << "," <<
       //  " size:" << parray->get_size() << " was referenced, "
       //  << " reference count: " << found->second.ref_count << 
@@ -214,22 +216,33 @@ public:
     this->mtx_.unlock();
   }
 
+  /**
+   * @brief This function is called when a task releases 
+   * a PArray. It decreases a reference count of the PArray
+   * and adds it to a zero-referenced list if its reference 
+   * count became 0.
+   */
   void release_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
-    //std::cout << "release data: " << &this->zr_parray_list_ << "\n";
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
-    if (found == this->parray_reference_counts_.end()) {
-      std::cout << "This should not happen\n";
-    } else {
+    if (found != this->parray_reference_counts_.end()) {
+      /*
+      std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
+        << " size:" << parray->get_size() << " was released, "
+        << " reference count:" << found->second.ref_count << 
+        ", " << &this->zr_parray_list_ << " \n";
+      */
       found->second.ref_count--; 
       if (found->second.ref_count == 0) {
         this->zr_parray_list_.append(found->second.parray_node_ptr);
       }
-      std::cout << "Parray:" << parray->id << "," <<
-        " size:" << parray->get_size() << " was released, "
+      /*
+      std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
+        << " size:" << parray->get_size() << " was released, "
         << " reference count:" << found->second.ref_count << 
-        ", " << &this->zr_parray_list_ << " \n";
+        ", " << &this->zr_parray_list_ << " [done] \n";
+      */
     }
     this->mtx_.unlock();
   }
@@ -242,20 +255,48 @@ public:
     return zr_parray_list_size;
   }
 
+  /**
+   * @brief Remove and return a head of the zero-referenced list.
+   *        This function is not thread safe since it assumes that only
+   *        the memory manager calls into this function during eviction. 
+   */
   PArrayNode *remove_and_return_head_from_zrlist() {
-    //std::cout << "remove and return head:" << &this->zr_parray_list_ << "\n";
-    //std::cout << "call remove head:" << &this->zr_parray_list_ << " \n";
     return this->zr_parray_list_.remove_head();
   }
 
-  /*
-  void evict_data(parray:::InnerPArray *target_parray) {}
-  void run_eviction() {}
-  */
+  /**
+   * @brief This function clears all existing PArrays in the
+   *        zero-referenced list. This function has two purposes.
+   *        First, it is used to fix unlinked Python and C++ PArray
+   *        instances. It is possible that Python PArrays are destroyed
+   *        due to, for example, out-of-scope. Then, C++ PArrays
+   *        start to hold invalid Python PArray pointers.
+   *        When a scheduler starts PArray eviction, it is possible that
+   *        the C++ PArrays holding invalid Python PArrays are chosen 
+   *        as evictable PArrays and causes segmentation fault.
+   *        This function removes those PArrays in advance to avoid
+   *        this issue.
+   *        The second purpose is to allow users to clear all memory
+   *        related states managed by the Parla runtime.
+   */
+  // TODO(hc): This bulk flushing is not ideal IMO. The Parla runtime
+  //           should provide a function that flushes only a single PArray.
+  //           I am postponing this work since we need to take care of
+  //           the zero-referenced list, but I have higher priorities.
+  void clear_all_instances() {
+    this->mtx_.lock();
+    PArrayNode* head{nullptr};
+    do {
+      head = this->zr_parray_list_.remove_head(); 
+    } while (head != nullptr);
+    this->mtx_.unlock();
+  }
 
 private:
   DevID_t dev_id_;
   std::mutex mtx_;
+  /// Key: PArray ID, Value: Meta information including reference
+  /// count of a PArray
   std::unordered_map<uint64_t, PArrayMetaInfo> parray_reference_counts_;
   /// A list of zero-referenced PArrays.
   DoubleLinkedList zr_parray_list_;
@@ -268,22 +309,16 @@ public:
     device_manager_(device_manager) {
     this->device_mm_.resize(
         device_manager->template get_num_devices<DeviceType::All>());
-    //std::cout << "LRUDeviceMemoryManager was resized:" << this->device_mm_.size() << "\n";
-    //std::cout << "vector addr:" << &this->device_mm_ << "\n";
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
       this->device_mm_[i] = new LRUDeviceMemoryManager(i);
     }
   }
 
   void acquire_data(parray::InnerPArray *parray, DevID_t dev_id) {
-    //std::cout << dev_id << " starts acquiring zrlist head\n";
-    //std::cout << "Parray:" << parray->id << "\n";
     this->device_mm_[dev_id]->acquire_data(parray);
   }
 
   void release_data(parray::InnerPArray *parray, DevID_t dev_id) {
-    //std::cout << dev_id << " starts releasing zrlist head\n";
-    //std::cout << "Parray:" << parray->id << "\n";
     this->device_mm_[dev_id]->release_data(parray);
   }
 
@@ -292,20 +327,20 @@ public:
   }
 
   void *remove_and_return_head_from_zrlist(DevID_t dev_id) {
-    //std::cout << dev_id << " starts removing and returning zrlist head\n";
-    //std::cout << " device mm size:" <<
-    //  this->device_mm_.size() << "\n" << std::flush;
     PArrayNode *old_head =
         this->device_mm_[dev_id]->remove_and_return_head_from_zrlist();
     void *py_parray{nullptr};
     if (old_head != nullptr) {
       parray::InnerPArray *c_parray = old_head->parray;
       py_parray = c_parray->get_py_parray();
-      std::cout << "Return parray:" << c_parray->id << "\n";
-    } else {
-      std::cout << "Return parray is NULL on C\n";
     }
     return py_parray;
+  }
+
+  void clear_all_instances() {
+    for (size_t i = 0; i < device_mm_.size(); ++i) {
+      device_mm_[i]->clear_all_instances();
+    }
   }
 
 private:
