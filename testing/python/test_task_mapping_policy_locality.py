@@ -41,7 +41,7 @@ def test_task_mapping_policy():
                 ctx = get_current_context()
                 assert ctx().get_global_id() == 4
 
-            @spawn(ts[4], placement=[(gpu(1), gpu(2)), (gpu(1), gpu(4)), (gpu(0), gpu(1)), (cpu(0), gpu(1)), (gpu(1), gpu(3))], dependencies=[ts[3]], input=[(a, 0), (b, 1)])
+            @spawn(ts[4], placement=[(gpu(1), gpu(2)), (gpu(1), gpu(3)), (gpu(0), gpu(1)), (cpu(0), gpu(1)), (gpu(1), gpu(3))], dependencies=[ts[3]], input=[(a, 0), (b, 1)])
             def t4():
                 devs = get_current_devices()
                 assert devs[0]().get_global_id() == 2

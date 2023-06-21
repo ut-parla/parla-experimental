@@ -5,7 +5,7 @@ from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
 from parla.cython.cyparray cimport InnerPArray
 
-from libc.stdint cimport uint32_t, uint64_t
+from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -83,14 +83,23 @@ cdef extern from "include/runtime.hpp" nogil:
         void synchronize_events()   except +
 
 
-        
-
-
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
         int get_device_id()
 
+    cdef cppclass TaskBarrier:
+        TaskBarrier() except +
+        void add_tasks(vector[InnerTask*] tasks) except +
+        void wait() except +
+        void set_id(int64_t i) except +
+
+    cdef cppclass InnerTaskSpace:
+        InnerTaskSpace() except +
+        void add_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
+        void wait() except +
+        void set_id(int64_t i) except +
+        void get_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
 
     cdef cppclass InnerWorker:
         void* py_worker
@@ -169,8 +178,3 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_scheduler_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
-
-
-
-
-

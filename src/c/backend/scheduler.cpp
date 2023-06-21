@@ -144,7 +144,13 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
   // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
-  //  TODO: Clean these up
+}
+
+InnerScheduler::~InnerScheduler() {
+  delete this->mapper;
+  delete this->memory_reserver;
+  delete this->runtime_reserver;
+  delete this->launcher;
 }
 
 void InnerScheduler::set_num_workers(int nworkers) {
@@ -265,7 +271,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();
-    task->set_state(Task::COMPLETED);
+    task->notify_dependents_completed();
   }
 
   // Release all resources for this task on all devices
@@ -291,6 +297,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         // and will be released if that is 0.
       }
     }
+    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
   }
 
   // Clear all assigned streams from the task

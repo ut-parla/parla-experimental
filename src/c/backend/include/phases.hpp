@@ -103,35 +103,29 @@ public:
   void run(SchedulerPhase *next_phase);
   size_t get_count();
 
-  /// Increase the number of the total mapped tasks to the whole devices.
-  ///
-  /// @return The number of the total mapped tasks
-  size_t atomic_incr_num_mapped_tasks() {
-    return total_num_mapped_tasks_.fetch_add(1, std::memory_order_relaxed);
-  }
-
   /// Increase the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The number of the tasks mapped to a device
-  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id) {
-    return dev_num_mapped_tasks_[dev_id].fetch_add(1,
+  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    // Increase the number of the total mapped tasks to the whole devices.
+    // We do not get the old total number of mapped tasks.
+    total_num_mapped_tasks_.fetch_add(weight, std::memory_order_relaxed);
+    return dev_num_mapped_tasks_[dev_id].fetch_add(weight,
                                                    std::memory_order_relaxed);
-  }
-
-  /// Decrease the number of the total mapped tasks to the whole devices.
-  ///
-  /// @return The number of the total mapped tasks
-  size_t atomic_decr_num_mapped_tasks() {
-    return total_num_mapped_tasks_.fetch_sub(1, std::memory_order_relaxed);
   }
 
   /// Decrease the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The number of the tasks mapped to a device
-  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id) {
-    return dev_num_mapped_tasks_[dev_id].fetch_sub(1,
+  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    // Decrease the number of the total mapped tasks to the whole devices.
+    // We do not get the old total number of mapped tasks.
+    total_num_mapped_tasks_.fetch_sub(weight, std::memory_order_relaxed);
+    return dev_num_mapped_tasks_[dev_id].fetch_sub(weight,
                                                    std::memory_order_relaxed);
   }
 
@@ -177,7 +171,7 @@ public:
       : SchedulerPhase(scheduler, devices) {
     // std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
-        new PhaseManager<ResourceCategory::Persistent>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::Persistent>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -187,7 +181,7 @@ public:
 
 protected:
   // std::string name{"Memory Reserver"};
-  PhaseManager<ResourceCategory::Persistent> *reservable_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::Persistent>> reservable_tasks;
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
   std::vector<InnerTask *> reserved_tasks_buffer;
@@ -212,9 +206,10 @@ public:
     // std::cout << "RuntimeReserver created" << std::endl;
     // FIXME: This leaks memory. Need to add deconstructor.
     this->runnable_tasks =
-        new PhaseManager<ResourceCategory::NonPersistent>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::NonPersistent>>(
+            devices);
     this->movement_tasks =
-        new PhaseManager<ResourceCategory::Movement>(devices);
+        std::make_shared<PhaseManager<ResourceCategory::Movement>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -223,17 +218,14 @@ public:
   size_t get_count();
   size_t get_compute_count();
   size_t get_movement_count();
-  PhaseManager<ResourceCategory::NonPersistent> *get_runnable_tasks() {
-    return this->runnable_tasks;
-  }
 
   const std::string &get_name() const { return this->name; }
   const RuntimeReserverStatus &get_status() const { return this->status; }
   const void print_status() const { this->status.print(); }
 
 protected:
-  PhaseManager<ResourceCategory::NonPersistent> *runnable_tasks;
-  PhaseManager<ResourceCategory::Movement> *movement_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::NonPersistent>> runnable_tasks;
+  std::shared_ptr<PhaseManager<ResourceCategory::Movement>> movement_tasks;
 
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};

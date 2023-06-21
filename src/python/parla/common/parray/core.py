@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
-from parla.common.globals import get_current_devices, get_scheduler, has_environment
+from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType, CUPY_ENABLED
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -11,12 +11,10 @@ from parla.cython.cyparray import CyPArray
 
 import threading
 import numpy
-try:  # if the system has no GPU
+if CUPY_ENABLED:  # if the system has no GPU
     import cupy
     num_gpu = cupy.cuda.runtime.getDeviceCount()
-except ImportError:
-    # PArray only considers numpy or cupy array
-    # work around of checking cupy.ndarray when cupy could not be imported
+else:
     cupy = numpy
     num_gpu = 0
 
@@ -259,9 +257,9 @@ class PArray:
         self.nbytes = array.nbytes
         self.subarray_nbytes = self.nbytes
         self._cy_parray.set_size(self.nbytes)
-        
+
         self._slices = []
-        
+
         # reset coherence
         self._coherence.reset(this_device)
 
@@ -360,7 +358,7 @@ class PArray:
         self._array = None
         self._coherence = None
 
-    def evict(self, device_id: int = None, keep_one_copy: bool = True) -> None:
+    def evict(self, device_id: int = None, keep_one_copy: bool = True) -> bool:
         """
         Evict a device's copy and update coherence states.
 
@@ -369,17 +367,21 @@ class PArray:
                     else move to current device
             keep_one_copy: if it is True and this is the last copy, 
                     write it back to CPU before evict.
-
-        Note: if this device has the last copy and `keep_one_copy` is false, 
-            the whole protocol state will be INVALID then.
-            And the system will lose the copy. Be careful when evict the last copy.
+        Return:
+            true if the copy is evicted successfully
+            false if the eviction cannot be performed since it has last copy
+                and `keep_one_copy` is false
         """
         if device_id is None:
             device_id = self._current_device_index
 
         with self._coherence_cv[device_id]:
             operations = self._coherence.evict(device_id, keep_one_copy)
-            self._process_operations(operations)
+            if operations[0].inst == MemoryOperation.ERROR:
+                return False # cannot perform the eviction
+            self._process_operations(operations) 
+    
+        return True
 
     # Coherence update operations:
 
@@ -479,6 +481,16 @@ class PArray:
         """
         if has_environment():
             return get_current_devices()[0].get_parla_device()
+        return None
+
+    def _get_compute_device_for_crosspy(self, index: int = 0):
+        """
+        Get the active device context for crosspy.
+        Returns None if not called from within a task. 
+        """
+        if has_environment():
+            current_device = get_current_devices()[index]
+            return current_device
         return None
 
     def _auto_move(self, device_id: int = None, do_write: bool = False) -> None:

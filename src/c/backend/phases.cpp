@@ -28,7 +28,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
-  //std::cout << "Mapper::run" << std::endl;
+  // std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
@@ -36,93 +36,38 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   // This is a non-critical region
   // Comment(wlr): Why is this a noncritical region?
+  // Comment(lhc): Only one thread performs this function.
 
   // Assumptions:
   // Scheduler maps a task to a device.
   // Scheduler does not reserve any resource at this phase.
 
-  // TODO(hc): for now, I'm planning task mapping without policy.
-
   bool has_task = true;
 
   has_task = this->get_count() > 0;
-  while (has_task) {
-    //Comment(wlr): this assumes the task is always able to be mapped.
+  // In order to overlap scheduler phases and task execution,
+  // use threshold of the number of tasks to be mapped.
+  size_t num_task_mapping_attempt{0};
+  while (has_task && num_task_mapping_attempt < 20) {
+    // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
         task->get_placement_req_options();
     std::vector<std::shared_ptr<PlacementRequirementBase>>
         placement_req_options_vec =
             placement_req_options.get_placement_req_opts_ref();
-    std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
-    // A set of chosen devices to a task.
-    Score_t best_score{-1};
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
-    // Iterate all placement requirements passed by users and calculate
-    // scores based on a policy.
-    for (std::shared_ptr<PlacementRequirementBase> base_req :
-         placement_req_options_vec) {
-      if (base_req->is_multidev_req()) {
-        // Multi-device placement requirements.
-        // std::cout << "[Multi-device requirement]\n";
-        MultiDeviceRequirements *mdev_reqs =
-            dynamic_cast<MultiDeviceRequirements *>(base_req.get());
-        std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
-        Score_t score{0};
-        bool is_req_available = policy_->calc_score_mdevplacement(
-            task, mdev_reqs, *this, &mdev_reqs_vec, &score, parray_list);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= score) {
-          best_score = score;
-          chosen_devices.swap(mdev_reqs_vec);
-        }
-      } else if (base_req->is_dev_req()) {
-        // A single device placement requirement.
-        std::shared_ptr<DeviceRequirement> dev_req =
-            std::dynamic_pointer_cast<DeviceRequirement>(base_req);
-        Score_t score{0};
-        bool is_req_available = policy_->calc_score_devplacement(
-            task, dev_req, *this, &score, parray_list[0]);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= score) {
-          assert(dev_req != nullptr);
-          best_score = score;
-          chosen_devices.clear();
-          chosen_devices.emplace_back(dev_req);
-        }
-      } else if (base_req->is_arch_req()) {
-        // A single architecture placement requirement.
-        ArchitectureRequirement *arch_req =
-            dynamic_cast<ArchitectureRequirement *>(base_req.get());
-        std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
-        Score_t chosen_dev_score{0};
-        bool is_req_available = policy_->calc_score_archplacement(
-            task, arch_req, *this, chosen_dev_req, &chosen_dev_score,
-            parray_list[0]);
-        if (!is_req_available) {
-          continue;
-        }
-        if (best_score <= chosen_dev_score) {
-          assert(chosen_dev_req != nullptr);
-          best_score = chosen_dev_score;
-          chosen_devices.clear();
-          chosen_devices.emplace_back(chosen_dev_req);
-        }
-      }
-    }
-
+    policy_->run_task_mapping(task, *this, &chosen_devices, parray_list,
+        &placement_req_options_vec);
 
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
-      //std::cout << "Task has not been mapped" << std::endl;
+      // std::cout << "Task has not been mapped" << std::endl;
     } else {
       std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           *parray_list = &(task->parray_list);
@@ -133,8 +78,10 @@ void Mapper::run(SchedulerPhase *next_phase) {
         task->assigned_devices.push_back(chosen_device);
         task->device_constraints.insert(
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
-        this->atomic_incr_num_mapped_tasks_device(
-            chosen_device->get_global_id());
+        // Increase the number of mapped tasks as the number of PArrays
+        // since the corresponding data movement tasks will be created.
+        this->atomic_incr_num_mapped_tasks_device(global_dev_id,
+                                                  1 + (*parray_list)[i].size());
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(*parray,
@@ -159,9 +106,9 @@ void Mapper::run(SchedulerPhase *next_phase) {
 #endif
 
       this->mapped_tasks_buffer.push_back(task);
-      this->atomic_incr_num_mapped_tasks();
     }
     has_task = this->get_count() > 0;
+    ++num_task_mapping_attempt;
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
@@ -257,8 +204,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
         // The task list in PArray is currently thread safe since
         // we do not remove tasks from the list but just keep even completed
         // task as its implementation is easier.
-        for (size_t t = 0; t < parray_task_list.size_unsafe(); ++t) {
-          if (parray_task_list.at_unsafe(t)->id == parray_dependency->id) {
+        for (size_t t = 0; t < parray_task_list.size(); ++t) {
+          if (parray_task_list.at(t)->id == parray_dependency->id) {
             data_task_dependencies.push_back(parray_dependency);
           }
         }
@@ -291,7 +238,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  //std::cout << "MemoryReserver::run" << std::endl;
+  // std::cout << "MemoryReserver::run" << std::endl;
 
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
@@ -437,7 +384,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  //std::cout << "RuntimeReserver::run" << std::endl;
+  // std::cout << "RuntimeReserver::run" << std::endl;
 
   Launcher *launcher = dynamic_cast<Launcher *>(next_phase);
 
@@ -468,17 +415,17 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         } else {
           this->status.increase(RuntimeReserverState::NoWorker);
           fail_count++; // += max_fail;
-          //break;        // No more workers available
+          // break;        // No more workers available
         }
       } else {
         this->status.increase(RuntimeReserverState::NoResource);
         fail_count++;
-        //break; // No more resources available
+        // break; // No more resources available
       }
     } else {
       this->status.increase(RuntimeReserverState::NoTask);
       fail_count++; //+= max_fail;
-      //break;        // No more tasks available
+      // break;        // No more tasks available
     }
   }
 
@@ -523,7 +470,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  //std::cout << "Launcher::enqueue" << std::endl;
+  // std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
   task->set_state(Task::RUNNING);
