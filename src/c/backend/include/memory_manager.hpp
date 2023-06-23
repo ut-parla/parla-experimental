@@ -35,6 +35,7 @@ class DoubleLinkedList {
 public:
   void print() {
     PArrayNode *node = this->head_;
+    std::cout << "\n";
     while (node != nullptr) {
       std::cout << node->parray->id << " -> \n"; 
       node = node->next;
@@ -43,6 +44,7 @@ public:
     if (this->tail_ != nullptr) {
       std::cout << "Final tail:" << this->tail_->parray->id << "\n\n";
     }
+    std::cout << "\n";
   }
 
   /// Append a node to the tail.
@@ -138,12 +140,8 @@ public:
         node->prev->next = nullptr;
       } else {
         // TODO(hc):check it again
-        if (node->prev != nullptr) {
-          node->prev->next = node->next;
-        }
-        if (node->next != nullptr) {
-          node->next->prev = node->prev;
-        }
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
       }
     }
     node->prev = node->next = nullptr;
@@ -212,6 +210,7 @@ public:
       //  " size:" << parray->get_size() << " was referenced, "
       //  << " reference count: " << found->second.ref_count << 
       //  ", " << &this->zr_parray_list_ << "\n";
+      this->zr_parray_list_.remove(found->second.parray_node_ptr);
     }
     this->mtx_.unlock();
   }
@@ -227,12 +226,10 @@ public:
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found != this->parray_reference_counts_.end()) {
-      /*
-      std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
-        << " size:" << parray->get_size() << " was released, "
-        << " reference count:" << found->second.ref_count << 
-        ", " << &this->zr_parray_list_ << " \n";
-      */
+      //std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
+      //  << " size:" << parray->get_size() << " was released, "
+      //  << " reference count:" << found->second.ref_count << 
+      //  ", " << &this->zr_parray_list_ << " \n";
       found->second.ref_count--; 
       if (found->second.ref_count == 0) {
         this->zr_parray_list_.append(found->second.parray_node_ptr);
@@ -261,7 +258,11 @@ public:
    *        the memory manager calls into this function during eviction. 
    */
   PArrayNode *remove_and_return_head_from_zrlist() {
-    return this->zr_parray_list_.remove_head();
+    PArrayNode* old_head{nullptr};
+    this->mtx_.lock();
+    old_head = this->zr_parray_list_.remove_head();
+    this->mtx_.unlock();
+    return old_head;
   }
 
   /**

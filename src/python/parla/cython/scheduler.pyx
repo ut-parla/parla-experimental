@@ -443,7 +443,6 @@ class Scheduler(ControllableThread, SchedulerContext):
             #           a thread and a scheduler..
             #           The main thread can allocate new data while or before the scheduler
             #           deallocates the old PArrays through this.
-            self.active_parrays = {}
             for k in range(0, 4):
                 with cupy.cuda.Device(k):
                     mempool = cupy.get_default_memory_pool()
@@ -492,32 +491,40 @@ class Scheduler(ControllableThread, SchedulerContext):
             num_evictable_parray = py_mm.size(global_id)
             import cupy
             for i in range(0, num_evictable_parray):
-                # Get a PArray to evict from a memory manager.
-                evictable_parray = py_mm.remove_and_return_head_from_zrlist(global_id)
-                if evictable_parray is not None:
-                    #evictable_parray.print_overview()
-                    for k in range(0, 4):
-                        with cupy.cuda.Device(k):
-                            mempool = cupy.get_default_memory_pool()
-                            print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
-                    """
-                    if evictable_parray.num_zr_instances() <= 0:
-                        print("remove active parray", flush=True)
-                        self.remove_active_parray(evictable_parray)
-                        print("remove active parray [don]", flush=True)
-                    """
-                    if evictable_parray.evict(parray_id):
-                        print("After eviction..: global: ", global_id, " parray id: ", parray_id, flush=True)
+                try:
+                    # Get a PArray to evict from a memory manager
+                    print("Before fetching", flush=True)
+                    evictable_parray = py_mm.remove_and_return_head_from_zrlist(global_id)
+                    print("After fetching", flush=True)
+                    if evictable_parray is not None:
                         #evictable_parray.print_overview()
                         for k in range(0, 4):
                             with cupy.cuda.Device(k):
                                 mempool = cupy.get_default_memory_pool()
-                                print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
-                        memory_size_for_eviction -= evictable_parray.nbytes_at(parray_id)
-                        if memory_size_for_eviction <= 0:
-                            break
-                    else:
-                        pass
+                                print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
+                        """
+                        if evictable_parray.num_zr_instances() <= 0:
+                            print("remove active parray", flush=True)
+                            self.remove_active_parray(evictable_parray)
+                            print("remove active parray [don]", flush=True)
+                        """
+                        if evictable_parray.evict(parray_id):
+                            print("After eviction..: global: ", global_id, " parray id: ", parray_id, flush=True)
+                            #evictable_parray.print_overview()
+                            for k in range(0, 4):
+                                with cupy.cuda.Device(k):
+                                    mempool = cupy.get_default_memory_pool()
+                                    print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
+                            memory_size_for_eviction -= evictable_parray.nbytes_at(parray_id)
+                            if memory_size_for_eviction <= 0:
+                                break
+                        else:
+                            pass
+                except Exception as e:
+                    print("Failed to find parray evictable", flush=True)
+            if num_evictable_parray > 0:
+                mempool = cupy.get_default_memory_pool()
+                mempool.free_all_blocks()
         return
 
     def run(self):
@@ -537,6 +544,7 @@ class Scheduler(ControllableThread, SchedulerContext):
                     #           over memory allocation/deallocation.
                     self.clear_active_parrays()
                 else:
+                    #pass
                     self.eviction() 
                 should_run = self.inner_scheduler.get_should_run()
                 if should_run == False:

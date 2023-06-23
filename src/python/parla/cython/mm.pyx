@@ -16,6 +16,7 @@ class PyMM:
         return self._cy_mm.size(dev_id)
 
     def remove_and_return_head_from_zrlist(self, dev_id: int):
+        print("request head of zrlist", flush=True)
         return self._cy_mm.remove_and_return_head_from_zrlist(dev_id)
 
     def get_cy_memory_manager(self):
@@ -55,7 +56,9 @@ cdef class CyMM:
 
     cpdef remove_and_return_head_from_zrlist(self, int dev_id):
         cdef LRUGlobalMemoryManager* c_self = self._inner_mm
+        print("cpp request head of zrlist", flush=True)
         cdef void* py_parray = c_self.remove_and_return_head_from_zrlist(dev_id)
+        print("cpp requested head ", flush=True)
         if py_parray == NULL:
             return None
         else:

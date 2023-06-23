@@ -31,6 +31,8 @@ import numpy as np
 
 from fractions import Fraction
 
+import psutil
+
 PArray = parray.core.PArray
 
 def make_parrays(data_list):
@@ -72,9 +74,10 @@ class GPUInfo():
 
     #approximate average on frontera RTX
     #cycles_per_second = 1919820866.3481758
-    #cycles_per_second = 867404498.3008006
+    cycles_per_second = 875649327.7713356
     #cycles_per_second = 47994628114801.04
-    cycles_per_second = 1949802881.4819772
+#cycles_per_second = 1949802881.4819772
+#cycles_per_second = 117668195391.90903
 
     def update(self, cycles):
         self.cycles_per_second = cycles
@@ -276,15 +279,15 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         return
 
 
-def create_task_eager_data(task, taskspaces, config=None, data_list=None):
+def create_task_eager_data(taskspace_postfix, task, taskspaces, config=None, data_list=None):
 
     try:
         # Task ID
         task_idx = task.task_id.task_idx
-        taskspace = taskspaces[task.task_id.taskspace]
+        taskspace = taskspaces[task.task_id.taskspace + taskspace_postfix]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
+        dependencies = [taskspaces[dep.taskspace + taskspace_postfix][dep.task_idx]
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
@@ -349,13 +352,16 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         """
 
         # TODO(hc): Add data checking.
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT, memory=800000000)
+        print("Memory:", IN[0][0].nbytes)
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT, memory=IN[0][0].nbytes)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
 
+            print(taskspace, ", ", task_idx, " is running", flush=True)
             elapsed = synthetic_kernel(total_time, gil_fraction,
                                        gil_accesses, config=config)
+            print(taskspace, ", ", task_idx, " completed", flush=True)
 
             if config.verbose:
                 print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
@@ -461,7 +467,7 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         return
 
 
-def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
+def execute_tasks(taskspace_postfix: str, taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
     spawn_start_t = time.perf_counter()
 
@@ -473,7 +479,7 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
             create_task_no_data(details, taskspaces, config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
             #print("Eager data movement")
-            create_task_eager_data(details, taskspaces, config=run_config, data_list=data_list)
+            create_task_eager_data(taskspace_postfix, details, taskspaces, config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
             #print("Lazy data movement")
             create_task_lazy_data(details, taskspaces, config=run_config, data_list=data_list)
@@ -489,9 +495,9 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
     async def main_task():
 
         graph_times = []
+        data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
         for i in range(0, run_config.inner_iterations):
             import cupy
-            data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
             print("after after make parray:", psutil.Process().memory_info().rss)
             # Initialize task spaces
             taskspaces = {}
@@ -508,7 +514,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             graph_start_t = time.perf_counter()
 
-            execute_tasks(taskspaces, tasks, run_config, data_list=data_list)
+            execute_tasks("", taskspaces, tasks, run_config, data_list=data_list)
 
             for taskspace in taskspaces.values():
                 await taskspace
@@ -516,8 +522,8 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             graph_end_t = time.perf_counter()
 
             print("Iteration:", i, flush=True)
-            worker_thread = get_scheduler_context()
-            worker_thread.scheduler.invoke_all_parrays_clear()
+            #worker_thread = get_scheduler_context()
+            #worker_thread.scheduler.invoke_all_parrays_clear()
 
             for k in range(0, 4):
                 with cupy.cuda.Device(k):
@@ -535,6 +541,62 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
         timing.append(graph_t)
 
 
+def execute_graph_memory_test(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
+    print("initial make parray:", psutil.Process().memory_info().rss)
+    @spawn(vcus=0)
+    async def main_task():
+
+        graph_times = []
+        data_list = []
+        max_memory = 0
+        for i in range(0, run_config.inner_iterations):
+            import cupy
+            print("after after make parray:", psutil.Process().memory_info().rss)
+            # Initialize task spaces
+            taskspaces = {}
+
+            data_list.append(generate_data(data_config, run_config.data_scale, run_config.movement_type))
+            for task, details in tasks.items():
+                space_name = details.task_id.taskspace
+                space_name += "-"+str(i)
+                if space_name not in taskspaces:
+                    taskspaces[space_name] = TaskSpace(space_name)
+
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+
+            graph_start_t = time.perf_counter()
+
+            execute_tasks("-"+str(i), taskspaces, tasks, run_config, data_list=data_list[i])
+
+            for taskspace in taskspaces.values():
+                await taskspace
+            taskspace = None
+            graph_end_t = time.perf_counter()
+
+            #worker_thread = get_scheduler_context()
+            #worker_thread.scheduler.invoke_all_parrays_clear()
+
+            for k in range(0, 4):
+                with cupy.cuda.Device(k):
+                    mempool = cupy.get_default_memory_pool()
+                    print(f"\t Right After {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
+            print("after execution:", psutil.Process().memory_info().rss)
+
+            graph_elapsed = graph_end_t - graph_start_t
+            print("Iteration:", i, ", execution time:", graph_elapsed, flush=True)
+            graph_times.append(graph_elapsed)
+
+        graph_times = np.asarray(graph_times)
+        graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(
+            graph_times), np.min(graph_times), np.max(graph_times), len(graph_times))
+
+        timing.append(graph_t)
+
+
+
 def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, run_config: RunConfig = None) -> TimeSample:
 
     if run_config is None:
@@ -549,7 +611,7 @@ def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, 
 
         with Parla(logfile=run_config.logfile):
             internal_start_t = time.perf_counter()
-            execute_graph(data_config, tasks, run_config, timing)
+            execute_graph_memory_test(data_config, tasks, run_config, timing)
             internal_end_t = time.perf_counter()
 
         outer_end_t = time.perf_counter()

@@ -175,7 +175,6 @@ bool InnerScheduler::get_should_run() {
 }
 
 bool InnerScheduler::get_clear_all_parrays() {
-  std::cout << "get clear all parrays\n" << std::flush;
   return this->clear_all_parrays.load();
 }
 
@@ -198,6 +197,7 @@ void InnerScheduler::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
     }
     if (this->break_for_eviction) {
+      std::cout << "Break for eviction\n" << std::flush;
       break;
     }
     if (this->clear_all_parrays_in_c.load()) {
