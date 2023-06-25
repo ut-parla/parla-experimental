@@ -4,35 +4,38 @@
 #include "device_manager.hpp"
 #include "parray.hpp"
 
-enum PArrayInstanceState {
-  // A PArray is being prefetched (moved).
-  PREFETCHING = 0,
-  // A PArray's reference count is more than 1,
-  // but it is not acquired yet.
-  RESERVED = 1,
-  // A task acuires and is using a PArray.
-  ACQUIRED = 2,
-  // None of mapped/running tasks is using this PArray.
-  FREE = 3
-};
 
-
+/**
+ * Node type of a PArray eviction double-linked list.
+ */
 class PArrayNode {
 public:
-  PArrayNode(parray::InnerPArray *parr, DevID_t dev, size_t prior = 0) :
-      parray(parr), device(dev), priority(prior), next(nullptr), prev(nullptr)
+  PArrayNode(parray::InnerPArray *parr, size_t prior = 0) :
+      parray(parr), priority(prior), next(nullptr), prev(nullptr)
   {}
 
+  // Pointer of a PArray instance
   parray::InnerPArray *parray;
-  DevID_t device;
+  // Priority of the node
+  // TODO(hc): This is not used
   size_t priority;
+  // Pointers to the next and the previous PArrayNodes
   PArrayNode *next;
   PArrayNode *prev;
 };
 
-
+/**
+ * Double-linked list of candidate PArrays for eviction.
+ * PArray eviction manager selects and evicts PArray instances
+ * in this list depending on an eviction policy.
+ * Note that an eviction manager manages this list for each device.
+ */
 class DoubleLinkedList {
 public:
+
+  /**
+   * Print the current list.
+   */
   void print() {
     PArrayNode *node = this->head_;
     std::cout << "\n";
@@ -40,34 +43,31 @@ public:
       std::cout << node->parray->id << " -> \n"; 
       node = node->next;
     }
-
-    if (this->tail_ != nullptr) {
-      std::cout << "Final tail:" << this->tail_->parray->id << "\n\n";
-    }
     std::cout << "\n";
   }
 
-  /// Append a node to the tail.
+  /**
+   * Append a PArray node to the list.
+   * The first PArray of the list is set to both head and tail, and
+   * the last added PArray is set to tail.
+   */
   void append(PArrayNode *node) {
     this->mtx_.lock();
     if (this->list_size_ == 0) {
-      //std::cout << node->parray->id << " is set as head\n";
       this->head_ = node;
       this->tail_ = node;
     } else {
-      //std::cout << node->parray->id << " is attached to tail\n";
       this->tail_->next = node;
       node->prev = this->tail_;
       this->tail_ = node;
     }
-    //std::cout << "Append :" << node->parray->id << "\n";
-    //this->print();
     this->list_size_ += 1;
     this->mtx_.unlock();
   }
 
-  /// Insert the new_node to the next to the node.
-  /// node -> [new node] -> ..
+  /**
+   * Insert a PArray node between `node` and `node->next`.
+   */
   void insert_after(PArrayNode *node, PArrayNode *new_node) {
     this->mtx_.lock();
     if (node->next != nullptr) {
@@ -81,8 +81,9 @@ public:
     this->mtx_.unlock();
   }
 
-  /// Insert the new_node to the before the node.
-  /// .. -> [new node] -> node
+  /**
+   * Insert a PArray node between `node` and `node->prev`.
+   */
   void insert_before(PArrayNode *node, PArrayNode *new_node) {
     this->mtx_.lock();
     if (node->prev != nullptr) {
@@ -93,64 +94,69 @@ public:
     }
     node->prev = new_node;
     new_node->next = node;
-    //this->print();
-
     this->mtx_.unlock();
   }
 
-  /// Remove the current head node from the list.
+  /**
+   * Remove and return the current head PArray node from a list.
+   */
   PArrayNode *remove_head() {
     this->mtx_.lock();
     PArrayNode *old_head = this->head_;
-    //std::cout << " zr list size:" << this->list_size_ << "\n";
     if (old_head != nullptr) {
       this->remove_unsafe(old_head); 
     }
-    //this->print();
-
     this->mtx_.unlock();
     return old_head;
   }
 
+  /**
+   * Remove a node and return true if it is removed false otherwise.
+   */
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
     bool rv = this->remove_unsafe(node);
-    //this->print();
     this->mtx_.unlock();
     return rv;
   }
 
-  /// Remove the node from the list.
+  /**
+   * Remove a node and return true if it is removed false otherwise.
+   * This function is not thread safe.
+   */
   bool remove_unsafe(PArrayNode *node) {
     if (node->prev == nullptr && node->next == nullptr &&
         node != this->head_ && node != this->tail_) {
+      // If a node is not in a list, do nothing and return false.
       return false;
     }
 
     if (this->list_size_ == 1) {
-      if (node == this->head_ || node == this->tail_) {
-        this->head_ = this->tail_ = nullptr;
-      }
+      // A node is a single node in a list.
+      this->head_ = this->tail_ = nullptr;
     } else {
       if (this->head_ == node) {
+        // A node is a head, and so break link of node->next->prev.
         this->head_ = node->next;
         node->next->prev = nullptr;
       } else if (this->tail_ == node) {
+        // A node is a tail, and so break link of node->prev->next.
         this->tail_ = node->prev;
         node->prev->next = nullptr;
       } else {
-        // TODO(hc):check it again
+        // A node is in the middle of a list, and so break two links.
         node->prev->next = node->next;
         node->next->prev = node->prev;
       }
     }
     node->prev = node->next = nullptr;
     this->list_size_ -= 1;
-    //std::cout << node->parray->id << " was removed from list: " <<
-    //  this->list_size_ << "\n";
     return true;
   }
 
+  /**
+   * Return a size of a list.
+   */
   size_t size() {
     this->mtx_.lock();
     size_t list_size = this->list_size_;
@@ -158,10 +164,18 @@ public:
     return list_size;
   }
 
+  /**
+   * Return the current head.
+   * This function is not thread safe.
+   */
   PArrayNode *get_head() {
     return this->head_;
   }
 
+  /**
+   * Return the current tail.
+   * This function is not thread safe.
+   */
   PArrayNode *get_tail() {
     return this->tail_;
   }
@@ -169,13 +183,17 @@ public:
 private:
   PArrayNode *head_{nullptr};
   PArrayNode *tail_{nullptr};
-
   std::mutex mtx_;
   size_t list_size_{0};
 };
 
 
-class LRUDeviceMemoryManager {
+/**
+ * Least-recently-used policy based eviction manager for a device.
+ * It holds PArrays which are not referenced by tasks which are
+ * between task mapping and termination phases.
+ */
+class LRUDeviceEvictionManager {
 public:
   struct PArrayMetaInfo {
     // Points to a PArray node if it exists
@@ -184,7 +202,7 @@ public:
     size_t ref_count;
   };
 
-  LRUDeviceMemoryManager(DevID_t dev_id) : dev_id_(dev_id) {}
+  LRUDeviceEvictionManager(DevID_t dev_id) : dev_id_(dev_id) {}
 
   /**
    * @brief This function is called when a task acquires
@@ -198,7 +216,7 @@ public:
     if (found == this->parray_reference_counts_.end()) {
       //std::cout << "Parray:" << parray_id << "," <<
       //  " was not found\n";
-      PArrayNode *parray_node = new PArrayNode(parray, this->dev_id_);
+      PArrayNode *parray_node = new PArrayNode(parray);
       this->parray_reference_counts_[parray_id] =
           PArrayMetaInfo{parray_node, 1};
       //std::cout << "Parray:" << parray->id << "," <<
@@ -304,14 +322,20 @@ private:
 };
 
 
-class LRUGlobalMemoryManager {
+/**
+ * Least-recently-used policy based global eviction manager that manages
+ * eviction managers for each device.
+ * Scheduler or outer component gets PArrays through this manager
+ * to evict in any device.
+ */
+class LRUGlobalEvictionManager {
 public:
-  LRUGlobalMemoryManager(DeviceManager *device_manager) :
+  LRUGlobalEvictionManager(DeviceManager *device_manager) :
     device_manager_(device_manager) {
     this->device_mm_.resize(
         device_manager->template get_num_devices<DeviceType::All>());
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
-      this->device_mm_[i] = new LRUDeviceMemoryManager(i);
+      this->device_mm_[i] = new LRUDeviceEvictionManager(i);
     }
   }
 
@@ -346,7 +370,7 @@ public:
 
 private:
   DeviceManager *device_manager_;
-  std::vector<LRUDeviceMemoryManager *> device_mm_;
+  std::vector<LRUDeviceEvictionManager *> device_mm_;
 };
 
 #endif
