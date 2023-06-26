@@ -8,8 +8,7 @@ PArrayTracker::PArrayTracker(DeviceManager *device_manager)
 
 void PArrayTracker::track_parray(const InnerPArray &parray, DevID_t dev_id) {
   // This function is called when a PArray is mapped to a device.
-  // Since `managed_parrays_` holds information of the PArrays that
-  // have already instantiated or will be moved, set its state to "true".
+  // `managed_parays_` tracks if a PArray will be created in this device.
   this->managed_parrays_[dev_id].insert({parray.parent_id, true});
 }
 
@@ -32,7 +31,8 @@ void PArrayTracker::reserve_parray_to_tracker(const InnerPArray &parray, Device 
   if (this->managed_parrays_[dev_global_id][parray.parent_id] == false or
       first_reservation) {
     this->managed_parrays_[dev_global_id][parray.parent_id] = true;
-    // Allocate memory for a PArray to a specified device.
+    // Increase memory counter of a device for task mapping as a PArray size.
+    // TODO(hc): This counter is not used for now.
     ResourcePool_t &dev_mapped_pool = device->get_mapped_pool();
     ResourcePool_t parray_resource;
     parray_resource.set(Resource::Memory, parray.get_size());
