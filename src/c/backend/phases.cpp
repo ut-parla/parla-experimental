@@ -108,7 +108,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
             parray_resource)) {
           std::cout << necessary_memory << " vs " << dev_reserved_pool.get(Resource::Memory) << "\n";
           this->scheduler->break_for_eviction = true;
-          this->scheduler->set_memory_size_for_eviction(necessary_memory, chosen_device->get_global_id());
+          this->scheduler->set_memory_size_to_eviction(necessary_memory, chosen_device->get_global_id());
         }
       }
 

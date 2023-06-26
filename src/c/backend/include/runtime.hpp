@@ -899,17 +899,24 @@ public:
   /* Should Run, Stop Condition */
   std::atomic<bool> should_run = true;
 
-  std::atomic<bool> clear_all_parrays = false;
-  std::atomic<bool> clear_all_parrays_in_c = false;
+  /* Clear all Python PArray references if users request */ 
+  std::atomic<bool> clear_all_pyparrays = false;
+  /* Clear all C PArray objects if users request in eviction manager */ 
+  std::atomic<bool> clear_all_cparrays = false;
 
   /* Phase: maps tasks to devices */
   Mapper *mapper;
-  /* If it is set, break run() of InnerScheduler
-     and make PythonScheduler invoke memory eviction */
+
+  /* If it is set, break an infinite loop in InnerScheduler::run()
+     and invoke PArray eviction to PythonScheduler */
   bool break_for_eviction = false;
-  std::vector<size_t> memory_size_for_eviction{0};
-  void set_memory_size_for_eviction(size_t, DevID_t);
-  size_t get_memory_size_for_eviction(DevID_t);
+  /* Memory size to evict for each device */
+  std::vector<size_t> memory_size_to_eviction{0};
+
+  /* Set memory size to evict for each device */
+  void set_memory_size_to_eviction(size_t, DevID_t);
+  /* Get memory size to evict for each device */
+  size_t get_memory_size_to_evict(DevID_t);
 
   /* Phase reserves resources to limit/plan task execution*/
   MemoryReserver *memory_reserver;
@@ -940,6 +947,7 @@ public:
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
 
+  /* Get a flag that represents if there is still a task to be executed */
   bool get_should_run();
 
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
@@ -1009,15 +1017,29 @@ public:
   /* Get a PArray tracker */
   PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
 
-  /* Reserve a PArray in a device */
-  void reserve_parray_to_tracker(parray::InnerPArray *parray, DevID_t global_dev_id) {
+ /**
+  * @brief Reserve a PArray in a device, and so start or update PArray state
+  * tracking through or in a PArray tracker.
+  *
+  * @param parray PArray to be tracked or whose state will be updated
+  * @param global_dev_id global device id where the parray will be mapped
+  */
+  void reserve_parray_to_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.reserve_parray_to_tracker(*parray, device);
   }
 
-  /* Release a PArray in a device */
-  void release_parray_from_tracker(parray::InnerPArray *parray, DevID_t global_dev_id) {
+ /**
+  * @brief Release a PArray from a device, and so stop PArray state
+  * tracking in a PArray tracker.
+  *
+  * @param parray PArray to be untracked
+  * @param global_dev_id global device id where the parray was mapped
+  */
+  void release_parray_from_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
     Device *device =
         this->device_manager_->get_device_by_global_id(global_dev_id);
     this->parray_tracker_.release_parray_from_tracker(*parray, device);
@@ -1042,8 +1064,11 @@ public:
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
 
-  void invoke_all_parrays_clear();
-  bool get_clear_all_parrays();
+  /* Invoke clearing all C PArray instances from a PArray eviction manager. */
+  void invoke_all_cparrays_clear();
+  
+  /* Get a flag that represents whether Python PArrays should be cleared */
+  bool get_all_pyparrays_clear_flag();
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.

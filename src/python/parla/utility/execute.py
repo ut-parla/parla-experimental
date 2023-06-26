@@ -523,7 +523,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             print("Iteration:", i, flush=True)
             #worker_thread = get_scheduler_context()
-            #worker_thread.scheduler.invoke_all_parrays_clear()
+            #worker_thread.scheduler.invoke_all_cparrays_clear()
 
             for k in range(0, 4):
                 with cupy.cuda.Device(k):
@@ -577,7 +577,7 @@ def execute_graph_memory_test(data_config: Dict[int, DataInfo], tasks: Dict[Task
             graph_end_t = time.perf_counter()
 
             #worker_thread = get_scheduler_context()
-            #worker_thread.scheduler.invoke_all_parrays_clear()
+            #worker_thread.scheduler.invoke_all_cparrays_clear()
 
             for k in range(0, 4):
                 with cupy.cuda.Device(k):

@@ -128,7 +128,7 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
     : device_manager_(device_manager), parray_tracker_(device_manager),
       mm_(memory_manager) {
 
-  this->memory_size_for_eviction.resize(
+  this->memory_size_to_eviction.resize(
       device_manager->template get_num_devices<DeviceType::CUDA>());
 
   // A dummy task count is used to keep the scheduler alive.
@@ -174,22 +174,22 @@ bool InnerScheduler::get_should_run() {
   return this->should_run.load();
 }
 
-bool InnerScheduler::get_clear_all_parrays() {
-  return this->clear_all_parrays.load();
+bool InnerScheduler::get_all_pyparrays_clear_flag() {
+  return this->clear_all_pyparrays.load();
 }
 
-void InnerScheduler::set_memory_size_for_eviction(size_t size, DevID_t dev_id) {
-  this->memory_size_for_eviction[dev_id] = size;
+void InnerScheduler::set_memory_size_to_eviction(size_t size, DevID_t dev_id) {
+  this->memory_size_to_eviction[dev_id] = size;
 }
 
-size_t InnerScheduler::get_memory_size_for_eviction(DevID_t dev_id) {
-  return this->memory_size_for_eviction[dev_id];
+size_t InnerScheduler::get_memory_size_to_evict(DevID_t dev_id) {
+  return this->memory_size_to_eviction[dev_id];
 }
 
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
-  this->clear_all_parrays_in_c = false;
-  this->clear_all_parrays = false;
+  this->clear_all_cparrays = false;
+  this->clear_all_pyparrays = false;
   while (this->should_run.load()) {
     this->break_for_eviction = false;
     auto status = this->activate();
@@ -200,10 +200,10 @@ void InnerScheduler::run() {
       std::cout << "Break for eviction\n" << std::flush;
       break;
     }
-    if (this->clear_all_parrays_in_c.load()) {
+    if (this->clear_all_cparrays.load()) {
       std::cout << "Clear all parrays..\n";
       this->mm_->clear_all_instances();
-      this->clear_all_parrays = true;
+      this->clear_all_pyparrays = true;
       break;
     }
   }
@@ -216,8 +216,8 @@ void InnerScheduler::stop() {
   LOG_INFO(SCHEDULER, "Stopped scheduler");
 }
 
-void InnerScheduler::invoke_all_parrays_clear() {
-  this->clear_all_parrays_in_c = true; 
+void InnerScheduler::invoke_all_cparrays_clear() {
+  this->clear_all_cparrays = true; 
 }
 
 Scheduler::Status InnerScheduler::activate() {

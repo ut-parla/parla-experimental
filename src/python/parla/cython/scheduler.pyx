@@ -487,7 +487,7 @@ class Scheduler(ControllableThread, SchedulerContext):
             global_id = cuda_device.get_global_id()
             parray_id = self.device_manager.globalid_to_parrayid(global_id)
             memory_size_for_eviction = \
-                self.inner_scheduler.get_memory_size_for_eviction(global_id)
+                self.inner_scheduler.get_memory_size_to_evict(global_id)
             num_evictable_parray = py_mm.size(global_id)
             import cupy
             for i in range(0, num_evictable_parray):
@@ -532,7 +532,7 @@ class Scheduler(ControllableThread, SchedulerContext):
             while True:
                 print("Scheduler: Running", flush=True)
                 self.inner_scheduler.run()
-                if self.inner_scheduler.get_clear_all_parrays():
+                if self.inner_scheduler.get_all_pyparrays_clear_flag():
                     # All the references of the PArrays held by
                     # a Python scheduler should be destroyed 
                     # AFTER C++ scheduler (or memory manager) clears
@@ -616,8 +616,8 @@ class Scheduler(ControllableThread, SchedulerContext):
         return self.inner_scheduler.get_parray_state( \
             global_dev_id, parray_parent_id)
 
-    def invoke_all_parrays_clear(self):
-        self.inner_scheduler.invoke_all_parrays_clear()
+    def invoke_all_cparrays_clear(self):
+        self.inner_scheduler.invoke_all_cparrays_clear()
 
 
 def _task_callback(task, body):
