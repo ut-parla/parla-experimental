@@ -3,7 +3,7 @@ cimport cython
 
 from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
-from parla.cython.cyparray cimport InnerPArray, CyPArray
+from parla.cython.cyparray cimport InnerPArray
 from parla.cython.mm cimport LRUGlobalEvictionManager
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t

@@ -486,45 +486,41 @@ class Scheduler(ControllableThread, SchedulerContext):
         for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
             global_id = cuda_device.get_global_id()
             parray_id = self.device_manager.globalid_to_parrayid(global_id)
+            # Get target memory size to get from the device through eviction.
             memory_size_for_eviction = \
                 self.inner_scheduler.get_memory_size_to_evict(global_id)
+            # Get the number of PArray candidates that are allowed to be evicted
+            # from Python eviction manager.
             num_evictable_parray = py_mm.size(global_id)
+            # TODO(hc): remove this. this is for test.
             import cupy
             for i in range(0, num_evictable_parray):
                 try:
-                    # Get a PArray to evict from a memory manager
-                    print("Before fetching", flush=True)
-                    evictable_parray = py_mm.remove_and_return_head_from_zrlist(global_id)
-                    print("After fetching", flush=True)
+                    # Get a PArray from a memory manager to evict.
+                    evictable_parray = \
+                        py_mm.remove_and_return_head_from_zrlist(global_id)
                     if evictable_parray is not None:
-                        #evictable_parray.print_overview()
+                        # TODO(hc): remove this. this is for test.
                         for k in range(0, 4):
                             with cupy.cuda.Device(k):
                                 mempool = cupy.get_default_memory_pool()
                                 print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
-                        """
-                        if evictable_parray.num_zr_instances() <= 0:
-                            print("remove active parray", flush=True)
-                            self.remove_active_parray(evictable_parray)
-                            print("remove active parray [don]", flush=True)
-                        """
-                        if evictable_parray.evict(parray_id):
-                            print("After eviction..: global: ", global_id, " parray id: ", parray_id, flush=True)
-                            #evictable_parray.print_overview()
-                            for k in range(0, 4):
-                                with cupy.cuda.Device(k):
-                                    mempool = cupy.get_default_memory_pool()
-                                    print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
-                            memory_size_for_eviction -= evictable_parray.nbytes_at(parray_id)
-                            if memory_size_for_eviction <= 0:
-                                break
-                        else:
-                            pass
+
+                        evictable_parray.evict(parray_id)
+
+                        # TODO(hc): remove this. this is for test.
+                        for k in range(0, 4):
+                            with cupy.cuda.Device(k):
+                                mempool = cupy.get_default_memory_pool()
+                                print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
+
+                        # Repeat eviction until it gets enough memory.
+                        memory_size_for_eviction -= \
+                            evictable_parray.nbytes_at(parray_id)
+                        if memory_size_for_eviction <= 0:
+                            break
                 except Exception as e:
                     print("Failed to find parray evictable", flush=True)
-            if num_evictable_parray > 0:
-                mempool = cupy.get_default_memory_pool()
-                mempool.free_all_blocks()
         return
 
     def run(self):
@@ -536,7 +532,7 @@ class Scheduler(ControllableThread, SchedulerContext):
                     # All the references of the PArrays held by
                     # a Python scheduler should be destroyed 
                     # AFTER C++ scheduler (or memory manager) clears
-                    # all PArray nodes from the list.
+                    # all PArray nodes from the list in the eviction manager.
                     # TODO(hc): rename the function to is_cparrays_cleared.
                     # TODO(hc): this might be done by a worker thread
                     #           who will allocate PArrays.
@@ -544,11 +540,13 @@ class Scheduler(ControllableThread, SchedulerContext):
                     #           over memory allocation/deallocation.
                     self.clear_active_parrays()
                 else:
-                    #pass
+                    should_run = self.inner_scheduler.get_should_run()
+                    if should_run == False:
+                        break
+                    # If C++ scheduler loop was exited not because of
+                    # task execution completion, it should be the case that
+                    # eviction mechanism was invoked.
                     self.eviction() 
-                should_run = self.inner_scheduler.get_should_run()
-                if should_run == False:
-                    break
             self.stop_callback()
 
     def stop(self):
