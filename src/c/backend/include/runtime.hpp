@@ -918,7 +918,7 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(LRUGlobalMemoryManager *memory_manager, DeviceManager *device_manager);
+  InnerScheduler(LRUGlobalEvictionManager *memory_manager, DeviceManager *device_manager);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
@@ -1053,7 +1053,7 @@ protected:
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
 
-  LRUGlobalMemoryManager *mm_;
+  LRUGlobalEvictionManager *mm_;
 };
 
 #endif // PARLA_BACKEND_HPP

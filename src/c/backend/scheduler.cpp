@@ -123,7 +123,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(LRUGlobalMemoryManager* memory_manager,
+InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
                                DeviceManager *device_manager)
     : device_manager_(device_manager), parray_tracker_(device_manager),
       mm_(memory_manager) {

@@ -575,7 +575,7 @@ cdef class PyInnerScheduler:
     def __cinit__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         cdef DeviceManager* _cpp_device_manager = <DeviceManager*> cy_device_manager.get_cpp_device_manager()
-        cdef LRUGlobalMemoryManager* _cpp_memory_manager = <LRUGlobalMemoryManager*> cy_memory_manager.get_cpp_memory_manager()
+        cdef LRUGlobalEvictionManager* _cpp_memory_manager = <LRUGlobalEvictionManager*> cy_memory_manager.get_cpp_memory_manager()
 
         _inner_scheduler = new InnerScheduler(_cpp_memory_manager, _cpp_device_manager)
         self.inner_scheduler = _inner_scheduler

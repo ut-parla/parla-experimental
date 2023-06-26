@@ -1,9 +1,9 @@
 
 from parla.cython import device_manager
 
-from parla.cython.core cimport LRUGlobalMemoryManager
+from parla.cython.core cimport LRUGlobalEvictionManager
 from parla.cython cimport device_manager
-#from parla.cython.core import LRUGlobalMemoryManager
+#from parla.cython.core import LRUGlobalEvictionManager
 
 class PyMM:
     def __init__(self, dm: device_manager.PyDeviceManager):
@@ -39,11 +39,11 @@ class PyMM:
 
 
 cdef class CyMM:
-#cdef LRUGlobalMemoryManager* _inner_mm
+#cdef LRUGlobalEvictionManager* _inner_mm
 
     def __cinit__(self, device_manager.CyDeviceManager cy_dm):
         print("CyMM cinit()", flush=True)
-        self._inner_mm = new LRUGlobalMemoryManager(cy_dm.get_cpp_device_manager())
+        self._inner_mm = new LRUGlobalEvictionManager(cy_dm.get_cpp_device_manager())
         print("CyMM cinit() [done]", flush=True)
 
     def __dealloc__(self):
@@ -51,11 +51,11 @@ cdef class CyMM:
         del self._inner_mm
 
     cpdef size(self, int dev_id):
-        cdef LRUGlobalMemoryManager* c_self = self._inner_mm
+        cdef LRUGlobalEvictionManager* c_self = self._inner_mm
         return c_self.size(dev_id)
 
     cpdef remove_and_return_head_from_zrlist(self, int dev_id):
-        cdef LRUGlobalMemoryManager* c_self = self._inner_mm
+        cdef LRUGlobalEvictionManager* c_self = self._inner_mm
         print("cpp request head of zrlist", flush=True)
         cdef void* py_parray = c_self.remove_and_return_head_from_zrlist(dev_id)
         print("cpp requested head ", flush=True)
@@ -64,5 +64,5 @@ cdef class CyMM:
         else:
             return <object> py_parray
 
-    cdef LRUGlobalMemoryManager* get_cpp_memory_manager(self):
+    cdef LRUGlobalEvictionManager* get_cpp_memory_manager(self):
         return self._inner_mm

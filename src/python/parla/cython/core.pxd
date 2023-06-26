@@ -4,7 +4,7 @@ cimport cython
 from parla.cython.device_manager cimport DeviceManager
 from parla.cython.device cimport Device, CyDevice
 from parla.cython.cyparray cimport InnerPArray, CyPArray
-from parla.cython.mm cimport LRUGlobalMemoryManager
+from parla.cython.mm cimport LRUGlobalEvictionManager
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
@@ -129,7 +129,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
-        InnerScheduler(LRUGlobalMemoryManager* cpp_memory_manager,  DeviceManager* cpp_device_manager)
+        InnerScheduler(LRUGlobalEvictionManager* cpp_memory_manager,  DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
         void set_py_scheduler(void* py_scheduler)

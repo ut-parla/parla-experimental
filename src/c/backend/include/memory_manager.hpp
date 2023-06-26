@@ -6,7 +6,7 @@
 
 
 /**
- * Node type of a PArray eviction double-linked list.
+ * @brief Node type of a PArray eviction double-linked list.
  */
 class PArrayNode {
 public:
@@ -14,19 +14,19 @@ public:
       parray(parr), priority(prior), next(nullptr), prev(nullptr)
   {}
 
-  // Pointer of a PArray instance
+  /// Pointer of a PArray instance
   parray::InnerPArray *parray;
-  // Priority of the node
-  // TODO(hc): This is not used
+  /// Priority of the node
+  /// TODO(hc): This is not used, but keep it for the future
   size_t priority;
-  // Pointers to the next and the previous PArrayNodes
+  /// Pointers to the next and the previous PArrayNodes
   PArrayNode *next;
   PArrayNode *prev;
 };
 
 /**
- * Double-linked list of candidate PArrays for eviction.
- * PArray eviction manager selects and evicts PArray instances
+ * @brief Double-linked list of candidate PArrays for eviction.
+ * @details PArray eviction manager selects and evicts PArray instances
  * in this list depending on an eviction policy.
  * Note that an eviction manager manages this list for each device.
  */
@@ -34,7 +34,7 @@ class DoubleLinkedList {
 public:
 
   /**
-   * Print the current list.
+   * @brief Print the current list.
    */
   void print() {
     PArrayNode *node = this->head_;
@@ -47,9 +47,11 @@ public:
   }
 
   /**
-   * Append a PArray node to the list.
-   * The first PArray of the list is set to both head and tail, and
+   * @brief Append a PArray node to the list.
+   * @detail The first PArray of the list is set to both head and tail, and
    * the last added PArray is set to tail.
+   *
+   * @param node PArray node to be appended
    */
   void append(PArrayNode *node) {
     this->mtx_.lock();
@@ -66,7 +68,10 @@ public:
   }
 
   /**
-   * Insert a PArray node between `node` and `node->next`.
+   * @brief Insert a PArray node between `node` and `node->next`.
+   *
+   * @param node existing PArray node where `new_node` is being linked
+   * @param new_node PArray node to be appended after `node`
    */
   void insert_after(PArrayNode *node, PArrayNode *new_node) {
     this->mtx_.lock();
@@ -82,7 +87,10 @@ public:
   }
 
   /**
-   * Insert a PArray node between `node` and `node->prev`.
+   * @brief Insert a PArray node between `node` and `node->prev`.
+   *
+   * @param node existing PArray node where `new_node` is being linked
+   * @param new_node PArray node to be appended before `node`
    */
   void insert_before(PArrayNode *node, PArrayNode *new_node) {
     this->mtx_.lock();
@@ -98,7 +106,7 @@ public:
   }
 
   /**
-   * Remove and return the current head PArray node from a list.
+   * @brief Remove and return the current head PArray node from a list.
    */
   PArrayNode *remove_head() {
     this->mtx_.lock();
@@ -111,7 +119,9 @@ public:
   }
 
   /**
-   * Remove a node and return true if it is removed false otherwise.
+   * @brief Remove a node and return true if it is removed false otherwise.
+   *
+   * @param node PArray node to be removed from a list
    */
   bool remove(PArrayNode *node) {
     this->mtx_.lock();
@@ -121,8 +131,10 @@ public:
   }
 
   /**
-   * Remove a node and return true if it is removed false otherwise.
+   * @brief Remove a node and return true if it is removed false otherwise.
    * This function is not thread safe.
+   *
+   * @param node PArray node to be removed from a list
    */
   bool remove_unsafe(PArrayNode *node) {
     if (node->prev == nullptr && node->next == nullptr &&
@@ -155,7 +167,7 @@ public:
   }
 
   /**
-   * Return a size of a list.
+   * @brief Return a size of a list.
    */
   size_t size() {
     this->mtx_.lock();
@@ -165,7 +177,7 @@ public:
   }
 
   /**
-   * Return the current head.
+   * @brief Return the current head.
    * This function is not thread safe.
    */
   PArrayNode *get_head() {
@@ -173,7 +185,7 @@ public:
   }
 
   /**
-   * Return the current tail.
+   * @brief Return the current tail.
    * This function is not thread safe.
    */
   PArrayNode *get_tail() {
@@ -189,8 +201,8 @@ private:
 
 
 /**
- * Least-recently-used policy based eviction manager for a device.
- * It holds PArrays which are not referenced by tasks which are
+ * @brief Least-recently-used policy based eviction manager for a device.
+ * @details It holds PArrays which are not referenced by tasks which are
  * between task mapping and termination phases.
  */
 class LRUDeviceEvictionManager {
@@ -205,63 +217,60 @@ public:
   LRUDeviceEvictionManager(DevID_t dev_id) : dev_id_(dev_id) {}
 
   /**
-   * @brief This function is called when a task acquires
-   * a PArray. It increases a reference count of the PArray
+   * @brief A task refers `parray` in the device.
+   * @detail This function is called when a task being mapped
+   * refers `parray`. This increases a reference count of the PArray
    * and removes it from a zero-referenced list if it exists.
+   *
+   * @param parray pointer to a parray to be referred by a task
    */
   void acquire_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found == this->parray_reference_counts_.end()) {
-      //std::cout << "Parray:" << parray_id << "," <<
-      //  " was not found\n";
+      // Add `parray` to a zr list if it does not exist.
       PArrayNode *parray_node = new PArrayNode(parray);
       this->parray_reference_counts_[parray_id] =
           PArrayMetaInfo{parray_node, 1};
-      //std::cout << "Parray:" << parray->id << "," <<
-      //  " size:" << parray->get_size() << " was ceated, "
-      //  << " reference count: 1 \n";
     } else {
+      // If `parray` is already in a zr list, removes it
+      // from the list and decreases its reference count.
       found->second.ref_count++; 
-      //std::cout << "Parray:" << parray->id << "," <<
-      //  " size:" << parray->get_size() << " was referenced, "
-      //  << " reference count: " << found->second.ref_count << 
-      //  ", " << &this->zr_parray_list_ << "\n";
       this->zr_parray_list_.remove(found->second.parray_node_ptr);
     }
     this->mtx_.unlock();
   }
 
   /**
-   * @brief This function is called when a task releases 
-   * a PArray. It decreases a reference count of the PArray
-   * and adds it to a zero-referenced list if its reference 
-   * count became 0.
+   * @brief A task is finished and releases `parray` in the device.
+   * @detail This function is called by a worker thread when a task
+   * assigned to that completes. So, the thread also releases a
+   * `parray`, and decreases a reference count of that in the device.
+   * If the reference count becomes 0, the `parray` is added to
+   * its zero-referenced list.
+   *
+   * @param parray pointer to a parray to be released by a task
    */
   void release_data(parray::InnerPArray *parray) {
     this->mtx_.lock();
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found != this->parray_reference_counts_.end()) {
-      //std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
-      //  << " size:" << parray->get_size() << " was released, "
-      //  << " reference count:" << found->second.ref_count << 
-      //  ", " << &this->zr_parray_list_ << " \n";
       found->second.ref_count--; 
       if (found->second.ref_count == 0) {
+        // If none of task referes to `parray`, add it to
+        // a zr list.
         this->zr_parray_list_.append(found->second.parray_node_ptr);
       }
-      /*
-      std::cout << "Parray:" << parray->id << "," << " device id:" << this->dev_id_
-        << " size:" << parray->get_size() << " was released, "
-        << " reference count:" << found->second.ref_count << 
-        ", " << &this->zr_parray_list_ << " [done] \n";
-      */
     }
     this->mtx_.unlock();
   }
 
+
+  /**
+   * @brief Return a size of a list.
+   */
   size_t size() {
     size_t zr_parray_list_size{0};
     this->mtx_.lock();
@@ -272,8 +281,8 @@ public:
 
   /**
    * @brief Remove and return a head of the zero-referenced list.
-   *        This function is not thread safe since it assumes that only
-   *        the memory manager calls into this function during eviction. 
+   * @detail This function is not thread safe since it assumes that only
+   * the scheduler thread calls into this function during eviction. 
    */
   PArrayNode *remove_and_return_head_from_zrlist() {
     PArrayNode* old_head{nullptr};
@@ -285,18 +294,19 @@ public:
 
   /**
    * @brief This function clears all existing PArrays in the
-   *        zero-referenced list. This function has two purposes.
-   *        First, it is used to fix unlinked Python and C++ PArray
-   *        instances. It is possible that Python PArrays are destroyed
-   *        due to, for example, out-of-scope. Then, C++ PArrays
-   *        start to hold invalid Python PArray pointers.
-   *        When a scheduler starts PArray eviction, it is possible that
-   *        the C++ PArrays holding invalid Python PArrays are chosen 
-   *        as evictable PArrays and causes segmentation fault.
-   *        This function removes those PArrays in advance to avoid
-   *        this issue.
-   *        The second purpose is to allow users to clear all memory
-   *        related states managed by the Parla runtime.
+   * zero-referenced list.
+   * @detail This function has two purposes.
+   * First, it is used to fix unlinked Python and C++ PArray
+   * instances. It is possible that Python PArrays are destroyed
+   * due to, for example, out-of-scope. Then, C++ PArrays
+   * start to hold invalid Python PArray pointers.
+   * When a scheduler starts PArray eviction, it is possible that
+   * the C++ PArrays holding invalid Python PArrays are chosen 
+   * as evictable PArrays and causes segmentation fault.
+   * This function removes those PArrays in advance to avoid
+   * this issue (But users should be aware of and take care of this scenario).
+   * The second purpose is to allow users to clear all memory
+   * related states managed by the Parla runtime.
    */
   // TODO(hc): This bulk flushing is not ideal IMO. The Parla runtime
   //           should provide a function that flushes only a single PArray.
@@ -312,6 +322,7 @@ public:
   }
 
 private:
+  /// This eviction manager manages PArray instances in this device
   DevID_t dev_id_;
   std::mutex mtx_;
   /// Key: PArray ID, Value: Meta information including reference
@@ -323,10 +334,9 @@ private:
 
 
 /**
- * Least-recently-used policy based global eviction manager that manages
- * eviction managers for each device.
- * Scheduler or outer component gets PArrays through this manager
- * to evict in any device.
+ * @brief Least-recently-used policy based global eviction manager.
+ * @details External components access and manipulate PArray instances in any
+ * device through this manager.
  */
 class LRUGlobalEvictionManager {
 public:
@@ -339,18 +349,50 @@ public:
     }
   }
 
+  /**
+   * @brief A task refers `parray` in `dev_id` device.
+   * @detail This function is called when a task being mapped
+   * refers `parray`. This increases a reference count of the PArray
+   * and removes it from a zero-referenced list if it exists.
+   *
+   * @param parray pointer to a parray to be referred by a task
+   * @param dev_id device id of a device to access its information
+   */
   void acquire_data(parray::InnerPArray *parray, DevID_t dev_id) {
     this->device_mm_[dev_id]->acquire_data(parray);
   }
 
+  /**
+   * @brief A task is finished and releases `parray` in `dev_id` device.
+   * @detail This function is called by a worker thread when a task
+   * assigned to that completes. So, the thread also releases a
+   * `parray`, and decreases a reference count of that in the device.
+   * If the reference count becomes 0, the `parray` is added to
+   * its zero-referenced list.
+   *
+   * @param parray pointer to a parray to be released by a task
+   * @param dev_id device id of a device to access its information
+   */
   void release_data(parray::InnerPArray *parray, DevID_t dev_id) {
     this->device_mm_[dev_id]->release_data(parray);
   }
 
+  /**
+   * @brief Return a size of a list.
+   *
+   * @param dev_id device id of a device to access its information
+   */
   size_t size(DevID_t dev_id) {
     return this->device_mm_[dev_id]->size();
   }
 
+  /**
+   * @brief Remove and return a head of the zero-referenced list.
+   * @detail This function is not thread safe since it assumes that only
+   * the scheduler thread calls into this function during eviction. 
+   *
+   * @param dev_id device id of a device to access its information
+   */
   void *remove_and_return_head_from_zrlist(DevID_t dev_id) {
     PArrayNode *old_head =
         this->device_mm_[dev_id]->remove_and_return_head_from_zrlist();
@@ -369,7 +411,9 @@ public:
   }
 
 private:
+  /// Device manager managing system environment
   DeviceManager *device_manager_;
+  /// A list of LRU-based eviction manager for each device
   std::vector<LRUDeviceEvictionManager *> device_mm_;
 };
 
