@@ -599,6 +599,10 @@ cdef class PyInnerScheduler:
         del self.inner_scheduler
 
     cpdef get_should_run(self):
+        """
+        This function checks whether there are remaining tasks
+        in C scheduler queues.
+        """
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_should_run()
 

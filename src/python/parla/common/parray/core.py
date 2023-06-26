@@ -891,3 +891,9 @@ class PArray:
 
     def get_num_active_tasks(self, global_dev_id):
         return self._cy_parray.get_num_active_tasks(global_dev_id)
+
+    def __del__(self):
+        # Users can explicitly call `del` over a Python PArray.
+        # In this case, detroy its array instance.
+        # TODO(hc): This code is not tested yet
+        self._array = None
