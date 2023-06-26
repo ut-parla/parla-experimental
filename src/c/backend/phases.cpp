@@ -48,7 +48,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // In order to overlap scheduler phases and task execution,
   // use threshold of the number of tasks to be mapped.
   size_t num_task_mapping_attempt{0};
+  // Accumulate necessary memory size for PArrays being mapped.
   std::vector<size_t> accum_necessary_memory;
+  // Eviction manager does not evict CPU instances; In the future,
+  // this also might be evicted to other devices. But to simplify indexing,
+  // allocate as the number of total devices.
   accum_necessary_memory.resize(this->device_manager->get_num_devices(DeviceType::All));
   while (has_task && num_task_mapping_attempt < 20) {
     // Comment(wlr): this assumes the task is always able to be mapped.
@@ -106,9 +110,11 @@ void Mapper::run(SchedulerPhase *next_phase) {
         parray_resource.set(Resource::Memory, necessary_memory);
         if (!dev_reserved_pool.check_greater<ResourceCategory::Persistent>(
             parray_resource)) {
-          std::cout << necessary_memory << " vs " << dev_reserved_pool.get(Resource::Memory) << "\n";
+          // Set necessary memory size and let PArray eviction manager
+          // evicts evictable PArrays as much of that.
+          this->scheduler->set_memory_size_to_eviction(
+              necessary_memory, chosen_device->get_global_id());
           this->scheduler->break_for_eviction = true;
-          this->scheduler->set_memory_size_to_eviction(necessary_memory, chosen_device->get_global_id());
         }
       }
 
