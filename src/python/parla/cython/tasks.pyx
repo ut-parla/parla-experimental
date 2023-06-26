@@ -16,7 +16,6 @@ from parla.common.globals import AccessMode, Storage
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
 from parla.common.globals import _global_data_tasks
-import gc
 
 
 PyDevice = device.PyDevice
@@ -463,6 +462,8 @@ class Task:
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.IN, in_parray_devid)
+                # Add a PArray reference to a dictionary in a scheduler
+                # to pass its lifecycle.
                 self.scheduler.append_active_parray(in_parray)
             for out_parray_tpl in dataflow.output:
                 out_parray = out_parray_tpl[0]
@@ -567,13 +568,6 @@ class ComputeTask(Task):
         return self.func(self, *self.args)
 
     def cleanup(self):
-        """
-        print("referers:")
-        import gc
-        refers = gc.get_referrers(self)
-        for i in range(0, len(refers)):
-            print(i, " = ", type(refers[i]), ", ", refers[i])
-        """
         self.func = None
         self.args = None
         self.dataflow = None
