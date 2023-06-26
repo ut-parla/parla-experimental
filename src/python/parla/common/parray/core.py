@@ -49,8 +49,6 @@ class PArray:
     _cyparray_state: CyPArrayState
 
     def __init__(self, array: ndarray, parent: "PArray" = None, slices=None, name: str = "NA") -> None:
-        # Maintain a reference to this PArray, and so avoid to release it
-        # before a computation task uses.
         if parent is not None:  # create a view (a subarray) of a PArray
             # inherit parent's buffer and coherence states
             # so this PArray will becomes a 'view' of its parents
@@ -118,13 +116,13 @@ class PArray:
 
             self._name = name
 
-        # record the size in Cython PArray
-				# This is to track PArray declarations.
-				# Later, this PArray instances can be placed anywhere.
+        # Register this PArray to tracker and make a link between
+        # C PArray instance.
         scheduler = get_scheduler()
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(
             self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
+        # record the size in Cython PArray
         self._cy_parray.set_size(self.subarray_nbytes)
         target_dev_id = - \
             1 if isinstance(array, numpy.ndarray) else array.device.id
