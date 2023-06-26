@@ -197,11 +197,14 @@ void InnerScheduler::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
     }
     if (this->break_for_eviction) {
-      std::cout << "Break for eviction\n" << std::flush;
+      // Yield a control to a Python scheduler to evict PArrays since
+      // PArray coherency protocol is managed in there.
       break;
     }
     if (this->clear_all_cparrays.load()) {
-      std::cout << "Clear all parrays..\n";
+      // TODO(hc): This should be more generalized and refined.
+      // Temporarily use it as experimental puprose.
+      std::cout << "Clear all C/Python parrays..\n";
       this->mm_->clear_all_instances();
       this->clear_all_pyparrays = true;
       break;
@@ -212,6 +215,11 @@ void InnerScheduler::run() {
 void InnerScheduler::stop() {
   LOG_INFO(SCHEDULER, "Stopping scheduler");
   this->should_run = false;
+  // XXX(hc): To process PArray eviction on Python,
+  // Python scheduler now has an while loop that iterates until there is
+  // no more task, and it wraps C scheduler's loop.
+  // Therefore, there is no point for C++ scheduler to explicitly invoke
+  // this callback at here. Python scheduler knows when it needs to stop.
   //launch_stop_callback(this->stop_callback, this->py_scheduler);
   LOG_INFO(SCHEDULER, "Stopped scheduler");
 }
