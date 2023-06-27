@@ -128,7 +128,9 @@ public:
   }
 
   ~RLAgent() {
-    this->save_models();
+    if (this->is_training_mode()) {
+      this->save_models();
+    }
   }
 
   void save_models() {
@@ -466,6 +468,11 @@ public:
       std::cout << param_key << ", " << named_parameter.value() 
         << ", new " << *target_param_val_ptr << "\n";
       */
+    }
+
+    if (this->episode_ % 10 == 0 && this->is_training_mode()) {
+      std::cout << "Episode " << this->episode_ << ": stores models.." << "\n";
+      this->save_models();
     }
   }
 

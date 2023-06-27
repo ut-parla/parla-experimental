@@ -75,7 +75,7 @@ class GPUInfo():
     #cycles_per_second = 867404498.3008006
     #cycles_per_second = 47994628114801.04
 #cycles_per_second = 1949802881.4819772
-    cycles_per_second = 875649327.7713356
+    cycles_per_second = 875649327771.3356
 #cycles_per_second = 1002001313000.6014779
 
     """

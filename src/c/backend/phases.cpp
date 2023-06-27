@@ -71,7 +71,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   has_task = this->get_count() > 0;
   size_t num_task_mapping_attempt{0};
-  while (has_task && num_task_mapping_attempt < 20) {
+  while (has_task && num_task_mapping_attempt < 3) {
     // Comment(wlr): this assumes the task is always able to be mapped.
     InnerTask *task = this->mappable_tasks.front_and_pop();
     PlacementRequirementCollections &placement_req_options =
@@ -274,6 +274,8 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     if (task == nullptr) {
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
+
+    std::cout << task->name << " is on memory reserver\n" << std::flush;
 
     // Is there enough memory on the devices to schedule this task?
     bool can_reserve = this->check_resources(task);
@@ -499,8 +501,8 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-  //          << std::endl;
+  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
+           << std::endl << std::flush;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
