@@ -5,7 +5,7 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(num_devices, num_devices, num_devices, is_training_mode);
+  this->rl_agent_ = new RLAgent(num_devices * 2, num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, mapper);
 }
 
@@ -168,7 +168,7 @@ void RLTaskMappingPolicy::run_task_mapping(
   }
 
   this->rl_current_state_ =
-      this->rl_env_->make_current_state();
+      this->rl_env_->make_current_state(task);
 
   DevID_t chosen_device_gid =
       this->rl_agent_->select_device(
@@ -206,6 +206,7 @@ void RLTaskMappingPolicy::run_task_mapping(
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
+    this->rl_env_->output_reward(this->rl_agent_->get_episode());
     this->rl_agent_->incr_episode();
   }
 }

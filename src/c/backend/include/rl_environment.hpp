@@ -2,6 +2,7 @@
 #define PARLA_RL_ENVIRONMENT
 
 #include "device_manager.hpp"
+#include "runtime.hpp"
 
 #include <torch/torch.h>
 
@@ -12,17 +13,25 @@ public:
   RLEnvironment(DeviceManager *device_manager, Mapper *mapper)
       : device_manager_(device_manager), mapper_(mapper) {}
 
-  torch::Tensor make_current_state();
+  void make_task_dependency_state(torch::Tensor current_state, InnerTask *task);
+
+  torch::Tensor make_current_state(InnerTask *task);
 
   torch::Tensor make_next_state(torch::Tensor current_state,
                                 DevID_t chosen_device_id);
 
   torch::Tensor calculate_reward(DevID_t chosen_device_id,
                                  torch::Tensor current_state);
+
+  void output_reward(size_t episode);
 protected:
   DeviceManager *device_manager_;
 
   Mapper *mapper_;
+
+  size_t num_reward_accumulation_{0};
+  double reward_accumulation_{0};
+
 };
 
 #endif
