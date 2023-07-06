@@ -178,8 +178,3 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_scheduler_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
-
-
-
-
-

@@ -1,11 +1,13 @@
 ################################################################################
 # Cython implementations (Declarations are in device.pxd)
 ################################################################################
+import cython 
+cimport cython 
 
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import VCU_BASELINE
+from parla.common.globals import VCU_BASELINE, get_device_manager
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
@@ -69,32 +71,43 @@ cdef class CyCPUDevice(CyDevice):
 # Python
 ################################################################################
 
+@dataclass
+class DeviceConfiguration:
+    """
+    A dataclass to represent a device configuration.
+    """
+    type: PyDeviceType
+    id: int = 0
+    memory: long = 0
+    vcus: int = 1000
 
-class DeviceResource:
-    def __init__(self, memory_sz = 0, num_vcus = 0):
-        # This class represents a device total resource size.
-        # This can also be used to specify resource requirements
-        # of a task for task mapping. 
-        # 0 value implies that there is no constraint in a
-        # resource. In the same sense, 0 value in a requirement
-        # implies that it can be mapped to a device even though 
-        # that device does not have enough resource.
-        # TODO(hc): better design? map still has a problem that
-        #           users should remember keys.
-        self.memory_sz = memory_sz
-        self.num_vcus = num_vcus
+    __annotations__ = {
+        "type": PyDeviceType,
+        "id": int,
+        "memory": long,
+        "vcus": int
+    }
 
-    #Comment(wlr): Reverted this as more things print "object(fields)" than not in our repo
     def __repr__(self):
-        return f"DeviceResource(memory_sz={self.memory_sz}, num_vcus={self.num_vcus})"
+        return f"DeviceConfiguration(device_type={self.device_type}, device_id={self.device_id}, memory={self.memory_size}, vcus={self.num_vcus})"
 
+
+@dataclass
+class DeviceResource:
+    memory: long = 0
+    vcus: int = 1000
+
+    __annotations__ = {
+        "memory": long,
+        "vcus": int
+    }
 
 class PyDevice:
     """
     This class is to abstract a single device in Python and manages
     a device context as a task runs in Python.
     """
-    def __init__(self, dev_type, dev_type_name, dev_id: int):
+    def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
         self._dev_type = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self
@@ -114,7 +127,7 @@ class PyDevice:
         #print(f"Exited device, {self.get_name()}, context", flush=True)
 
     @property
-    def id(self):
+    def id(self) -> int:
         return self._dev_id 
     
     @id.setter
@@ -122,7 +135,7 @@ class PyDevice:
         self._dev_id = new_id
 
     @property
-    def global_id(self):
+    def global_id(self) -> int:
         return self._global_id
     
     @global_id.setter
@@ -131,10 +144,10 @@ class PyDevice:
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = None if "memory" not in param else int(param["memory"])
-            num_vcus = None if "vcus" not in param else \
+            memory = None if "memory" not in param else int(param["memory"])
+            vcus = None if "vcus" not in param else \
                 int(VCU_BASELINE * param["vcus"]) if param["vcus"] <= 1 else param["vcus"]
-            return (self, DeviceResource(memory_sz, num_vcus))
+            return (self, DeviceResource(memory=memory, vcus=vcus))
         raise TypeError("[PyDevice] Parameter should be a dictionary specifying resource",
               " requirements.")
 
@@ -184,9 +197,9 @@ class PyDevice:
         #NOTE: DEVICE NAMES MUST BE UNIQUE INSIDE A SCHEDULER INSTANCE
         return hash(self._device_name)
 
-    def __eq__(self, other):
-        if isinstance(other, int):
-            return self._dev_type == other
+    def __eq__(self, other) -> bool:
+        if isinstance(other, int) or isinstance(other, PyDeviceType):
+            return self.architecture == other
         elif isinstance(other, PyDevice):
             return self._device_name == other._device_name
         else:
@@ -213,7 +226,8 @@ class PyCUDADevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
-    def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
+
+    def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
@@ -229,7 +243,8 @@ class PyCPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
-    def __init__(self, dev_id: int, mem_sz: long, num_vcus: long):
+
+    def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
@@ -272,15 +287,22 @@ class PyArchitecture(metaclass=ABCMeta):
 
     def __getitem__(self, param):
         if isinstance(param, Dict):
-            memory_sz = None if "memory" not in param else param["memory"]
-            num_vcus = None if "vcus" not in param else \
+            memory = None if "memory" not in param else param["memory"]
+            vcus = None if "vcus" not in param else \
                 int(VCU_BASELINE * param["vcus"]) if param["vcus"] <= 1 else param["vcus"]
-            return (self, DeviceResource(memory_sz, num_vcus))
+            return (self, DeviceResource(memory=memory, vcus=vcus))
         raise TypeError("[PyArchitecture] Parameter should be a dictionary specifying resource",
               " requirements.")
 
     @property
     def id(self):
+        return self._id
+
+    @property
+    def architecture(self):
+        """
+        Returns the architecture (type) of the device.
+        """
         return self._id
 
     @property
@@ -295,15 +317,15 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, int):
+        if isinstance(o, int) or isinstance(o, PyDeviceType):
             return self.id == o
         elif isinstance(o, type(self)):
-            return ( (self.id == o.id) and (self._name == o.name) )
+            return (self.id == o.id) 
         else:
             return False
 
     def __hash__(self):
-        return self._id
+        return hash(self._id)
 
     def __repr__(self):
         return type(self).__name__
@@ -315,23 +337,95 @@ class PyArchitecture(metaclass=ABCMeta):
     def __len__(self):
         return len(self._devices)
 
- 
-class PyCUDAArchitecture(PyArchitecture):
-    def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
-
     def add_device(self, device):
         assert isinstance(device, PyDevice)
         self._devices.append(device)
 
+
+class ImportableArchitecture(PyArchitecture):
+
+    def __init__(self, arch_name = "UnnamedArchitecture", architecture_type = DeviceType.CPU):
+        self._name = arch_name
+        self._architecture_type = architecture_type
+
+    def __call__(self, index, *args, **kwds):
+        """
+        Create a device with this architecture.
+        The arguments can specify which physical device you are requesting,
+        but the runtime may override you.
+
+        >>> gpu(0)
+        """
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        return architecture(index, *args, **kwds)
+
+    def __getitem__(self, param):
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        return architecture[param]
+
+    @property
+    def id(self):
+        return self._architecture_type
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def devices(self):
+        """
+        :return: all `devices<Device>` with this architecture in the system.
+        """
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        return architecture.devices 
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, int):
+            return self.id == o
+        elif isinstance(o, type(self)):
+            return ( (self.id == o.id) and (self._name == o.name) )
+        else:
+            return False
+
+    def __hash__(self):
+        return self._architecture_type
+
+    def __repr__(self):
+        return type(self).__name__
+
+    def __mul__(self, num_archs: int):
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        return architecture * num_archs
+
+    def __len__(self):
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        return len(architecture)
+
+    def add_device(self, device):
+        architecture = get_device_manager().get_architecture(self._architecture_type)
+        architecture.add_device(device)
+
+
+class PyCUDAArchitecture(PyArchitecture):
+    def __init__(self):
+        super().__init__("CUDAArch", DeviceType.CUDA)
+
+class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
+    def __init__(self):
+        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
  
+
 class PyCPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CPUArch", DeviceType.CPU)
+        super().__init__("CPUArch", PyDeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
         self._devices.append(device)
+
+class ImportableCPUArchitecture(PyCPUArchitecture, ImportableArchitecture):
+    def __init__(self):
+        ImportableArchitecture.__init__(self, "CPUArch", DeviceType.CPU)
 
 
 # TODO(hc): use dataclass later.

@@ -500,14 +500,14 @@ class Task:
                 # Single device.
                 self.inner_task.add_device_req(
                     req.device.get_cy_device(),
-                    req.res_req.memory_sz, req.res_req.num_vcus)
+                    req.res_req.memory, req.res_req.vcus)
             elif isinstance(req, FrozenSet):
                 # Single architecture
                 self.inner_task.begin_arch_req_addition()
                 for member in req:
                     self.inner_task.add_device_req(
                         member.device.get_cy_device(),
-                        member.res_req.memory_sz, member.res_req.num_vcus)
+                        member.res_req.memory, member.res_req.vcus)
                 self.inner_task.end_arch_req_addition()
             elif isinstance(req, List):
                 # Multi-optional requirements
@@ -1073,6 +1073,8 @@ class TerminalEnvironment(TaskEnvironment):
         
         #for event in self.event_dict.values():
         #    task.add_event(event)
+
+        #Note: only adding default event for now
         task.add_event(self.event_dict['default'])
 
     def write_streams_to_task(self, task):
