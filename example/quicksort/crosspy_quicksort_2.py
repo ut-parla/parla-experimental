@@ -1,31 +1,21 @@
-# from parla import Parla, spawn, TaskSpace
-import argparse
-import cupy as cp
 import numpy as np
-import crosspy as xp
-import math
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
-parser.add_argument('-num_partitions', type=int, default=2)
-parser.add_argument("-num_gpus", type=int, default=1)
-parser.add_argument("-m", type=int, default=5)
-args = parser.parse_args()
+import cupy as cp
 
 np.random.seed(10)
 cp.random.seed(10)
+
+import time
+
+import crosspy as xp
+import math
+
 
 # TODO(wlr): Fuse this kernel
 ngpus = args.num_gpus
 
 
-def partition_kernel(A, B, comp, pivot):
-    comp[:] = (A < pivot)
-    mid = comp.sum()
-    B[:mid] = A[comp]
-    B[mid:] = A[~comp]
-    A[:] = B[:]
-    return mid
+from .common import partition_kernel
+
 
 
 def partition(xA, pivot):
@@ -45,6 +35,7 @@ def partition(xA, pivot):
             workspace = cp.empty_like(local_array)
             comp = cp.empty_like(local_array, dtype=cp.bool_)
             mid[i+1] = partition_kernel(local_array, workspace, comp, pivot)
+            local_array[:] = workspace[:]
     return mid
 
 
@@ -236,22 +227,12 @@ def quicksort(global_array, active_array, active_slice, T):
     # quicksort(global_array, right_array, right_slice, T)
 
 
-def main(T):
+def main(args, T):
 
     # Per device size
 
-    global_size = args.m * args.num_partitions
-    global_array = np.arange(global_size, dtype=np.int32)
-    np.random.shuffle(global_array)
+    global_array, cupy_list, _ = create_array(args.m, args.num_gpus)
 
-    # Initilize a CrossPy Array
-    cupy_list = []
-
-    for i in range(args.num_partitions):
-        with cp.cuda.Device(0):
-            random_array = cp.random.randint(0, 100, size=args.m)
-            random_array = random_array.astype(cp.int32)
-            cupy_list.append(random_array)
 
     xA = xp.array(cupy_list, dim=0)
 
@@ -262,5 +243,12 @@ def main(T):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
+    parser.add_argument('-num_partitions', type=int, default=2)
+    parser.add_argument("-num_gpus", type=int, default=1)
+    parser.add_argument("-m", type=int, default=5)
+    args = parser.parse_args()
     T = None
-    main(T)
+    main(args, T)

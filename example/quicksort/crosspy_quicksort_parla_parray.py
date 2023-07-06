@@ -23,13 +23,8 @@ cp.random.seed(10)
 ngpus = args.ngpus
 
 
-def partition_kernel(A, B, comp, pivot):
-    comp[:] = (A < pivot)
-    mid = comp.sum()
-    B[:mid] = A[comp]
-    B[mid:] = A[~comp]
-    A[:] = B[:]
-    return mid
+from .common import partition_kernel
+
 
 
 def partition(xA, pivot):
@@ -55,6 +50,7 @@ def partition(xA, pivot):
             workspace = cp.empty_like(local_array)
             comp = cp.empty_like(local_array, dtype=cp.bool_)
             mid[i+1] = partition_kernel(local_array, workspace, comp, pivot)
+            local_array[:] = workspace[:]
     return mid
 
 

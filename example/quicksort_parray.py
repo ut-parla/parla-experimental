@@ -20,16 +20,7 @@ cp.random.seed(10)
 # COMMENT(wlr): Our distributed array here will be a list of Parla arrays
 
 
-def partition_kernel(A, B, comp, pivot):
-    # TODO(wlr): Fuse this kernel
-    bufferA = A.array
-    bufferB = B.array
-    comp[:] = bufferA[:] < pivot
-    mid = (int)(comp.sum())
-    bufferB[:mid] = bufferA[comp]
-    bufferB[mid:] = bufferA[~comp]
-    # print("Reordered Buffer:", bufferA, comp, bufferB, (bufferB[:] < pivot))
-    return mid
+from .common import partition_kernel, balance_partition
 
 
 def partition(A, B, pivot):
@@ -40,82 +31,8 @@ def partition(A, B, pivot):
     for i, (array_in, array_out) in enumerate(zip(A, B)):
         with context.device[0]:
             comp = cp.empty_like(array_in, dtype=cp.bool_)
-            mid[i] = partition_kernel(array_in, array_out, comp, pivot)
+            mid[i] = partition_kernel(array_in.array, array_out.array, comp, pivot)
     return mid
-
-
-def balance_partition(A, left_counts):
-    sizes = np.zeros(len(A), dtype=np.uint32)
-    for i, array in enumerate(A):
-        sizes[i] = len(array)
-
-    remaining_left = np.copy(left_counts)
-    remaining_right = np.copy(sizes) - left_counts
-    free = np.copy(sizes)
-
-    source_start_left = np.zeros((len(A), len(A)), dtype=np.uint32)
-    target_start_left = np.zeros((len(A), len(A)), dtype=np.uint32)
-    sz_left = np.zeros((len(A), len(A)), dtype=np.uint32)
-
-    source_start_right = np.zeros((len(A), len(A)), dtype=np.uint32)
-    target_start_right = np.zeros((len(A), len(A)), dtype=np.uint32)
-    sz_right = np.zeros((len(A), len(A)), dtype=np.uint32)
-
-    # Pack all left data to the left first
-    target_idx = 0
-    local_target_start = 0
-
-    for source_idx in range(len(A)):
-        local_source_start = 0
-        message_size = remaining_left[source_idx]
-        while message_size > 0:
-            max_message = min(free[target_idx], message_size)
-
-            if max_message == 0:
-                target_idx += 1
-                local_target_start = 0
-                continue
-
-            free[target_idx] -= max_message
-            remaining_left[source_idx] -= max_message
-
-            sz_left[source_idx, target_idx] = max_message
-            source_start_left[source_idx, target_idx] = local_source_start
-            target_start_left[source_idx, target_idx] = local_target_start
-            local_source_start += max_message
-            local_target_start += max_message
-
-            message_size = remaining_left[source_idx]
-
-    # Pack all right data to the right
-    for source_idx in range(len(A)):
-        local_source_start = left_counts[source_idx]
-        message_size = remaining_right[source_idx]
-        while message_size > 0:
-            max_message = min(free[target_idx], message_size)
-
-            if max_message == 0:
-                target_idx += 1
-                local_target_start = 0
-                continue
-
-            free[target_idx] -= max_message
-            remaining_right[source_idx] -= max_message
-
-            sz_right[source_idx, target_idx] = max_message
-            source_start_right[source_idx, target_idx] = local_source_start
-            target_start_right[source_idx, target_idx] = local_target_start
-            local_source_start += max_message
-            local_target_start += max_message
-
-            message_size = remaining_right[source_idx]
-
-    return (source_start_left, target_start_left, sz_left), (
-        source_start_right,
-        target_start_right,
-        sz_right,
-    )
-
 
 def scatter(A, B, left_info, right_info):
     context = get_current_context()
