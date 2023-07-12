@@ -48,7 +48,7 @@ def quicksort(
     # print("Pivot: ", pivot)
 
     # local partition
-    left_counts = partition(A, workspace, pivot)
+    left_counts = partition(A, pivot, workspace=workspace)
     global_left_count = np.sum(left_counts)
 
     # compute communication pattern

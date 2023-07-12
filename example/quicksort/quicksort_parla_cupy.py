@@ -126,11 +126,11 @@ def main(args):
     #This has a large performance impact due to recursion on the boundaries between partitions.
     #To do: Separate this into two variables?
 
-    global_array, A, workspace = create_array(args.m, args.num_gpus)
+    global_array, A, workspace = create_array(args.m, args.num_gpus, True)
 
     sizes, size_prefix = get_size_info(A)
 
-
+    print([x.size for x in A])
 
     with Parla():
         T = TaskSpace("T")
@@ -141,9 +141,9 @@ def main(args):
 
     print("Time: ", t_end - t_start)
 
-    print("Sorted")
-    for array in A:
-        print(array)
+    # print("Sorted")
+    # for array in A:
+    #     print(array)
 
 
 if __name__ == "__main__":
@@ -151,6 +151,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
     parser.add_argument("-num_gpus", type=int, default=2)
-    parser.add_argument("-m", type=int, default=10)
+    parser.add_argument("-m", type=int, default=100000000)
     args = parser.parse_args()
     main(args)

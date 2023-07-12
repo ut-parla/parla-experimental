@@ -83,14 +83,16 @@ class Dataflow:
                     assert isinstance(element[0], PArray)
                     assert isinstance(element[1], int)
                     _out.append(element)
-                elif CROSSPY_ENABLED and isinstance(element, crosspy.CrossPyArray):
-                    # A Crosspy's partition number is corresponding
-                    # to an order of the placement.
-                    for i, parray_list in enumerate(element.device_view()):
-                        for parray in parray_list:
-                            if isinstance(parray, PArray):
-                                # Skip CuPy or NumPy arrays.
-                                _out.append((parray, i))
+                elif CROSSPY_ENABLED:
+                    import crosspy
+                    if isinstance(element, crosspy.CrossPyArray):
+                        # A Crosspy's partition number is corresponding
+                        # to an order of the placement.
+                        for i, parray_list in enumerate(element.device_view()):
+                            for parray in parray_list:
+                                if isinstance(parray, PArray):
+                                    # Skip CuPy or NumPy arrays.
+                                    _out.append((parray, i))
                 else:
                     raise TypeError("IN/OUT/INOUT should be either a tuple of PArray",
                                     "and its partition number or CrossPyArray")

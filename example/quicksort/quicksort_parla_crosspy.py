@@ -48,10 +48,10 @@ def quicksort(array: xp.CrossPyArray, T, T_idx=1):
         array[len(left)] = pivot
         if len(left):
             await T[2*T_idx]
-            xp.assignment(array, cp.arange(len(left)), left, None)
+            array[:len(left)] = left
         if len(right):
             await T[2*T_idx+1]
-            xp.assignment(array, cp.arange(len(left) + 1, len(array)), right, None)
+            array[len(left) + 1:] = right
         return
 
 def main():

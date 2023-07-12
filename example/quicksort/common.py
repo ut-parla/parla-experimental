@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import cupy as cp
 
@@ -29,10 +31,14 @@ def create_array(per_gpu_size, num_gpus, unique=False):
 
     return global_array, cupy_list_A, cupy_list_B
 
-def get_size_info(array):
-    sizes = np.zeros(len(array)+1, dtype=np.uint32)
-    for i in range(len(array)):
-        sizes[i+1] = len(array[i])
+def get_size_info(array_list):
+    """Return size of each array and accumulated sizes
+    [0, len(a0), len(a1), ...]
+    [0, len(a0), len(a0) + len(a1), ...]
+    """
+    sizes = np.zeros(len(array_list) + 1, dtype=np.uint32)
+    for i, array in enumerate(array_list):
+        sizes[i + 1] = len(array)
     return sizes, np.cumsum(sizes)
 
 def partition_kernel(A, B, comp, pivot):
@@ -42,15 +48,18 @@ def partition_kernel(A, B, comp, pivot):
     B[mid:] = A[~comp]
     return mid
 
-def partition(A, B, pivot):
+def partition(arrays: list, pivot, *, workspace: Optional[list] = None, prepend_zero=False):
     """Partition A against pivot and output to B, return mid index."""
-    n_partitions = len(A)
-    mid = np.zeros(n_partitions, dtype=np.uint32)
+    n_partitions = len(arrays)
+    _z = 1 if prepend_zero else 0  # int(prepend_zero)
+    mid = np.zeros(_z + n_partitions, dtype=np.uint32)
 
-    for i, (array_in, array_out) in enumerate(zip(A, B)):
-        with cp.cuda.Device(0):
+    for i, array_in in enumerate(arrays):
+        with array_in.device:
+            array_out = workspace[i] if workspace else cp.empty_like(array_in)
             comp = cp.empty_like(array_in, dtype=cp.bool_)
-            mid[i] = partition_kernel(array_in, array_out, comp, pivot)
+            mid[_z + i] = partition_kernel(array_in, array_out, comp, pivot)
+            if not workspace: array_in[:] = array_out[:]
     return mid
 
 def balance_partition(A, left_counts):

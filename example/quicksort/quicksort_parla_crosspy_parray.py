@@ -1,6 +1,7 @@
 from parla import Parla, spawn, TaskSpace
 from parla.common.globals import get_current_context
-from parla.cython.device_manager import cpu, gpu
+from parla.cython.device_manager import gpu
+from parla import parray
 
 import argparse
 import cupy as cp
@@ -14,25 +15,28 @@ parser.add_argument("-ngpus", type=int, default=2)
 parser.add_argument("-m", type=int, default=3)
 args = parser.parse_args()
 
+parla_wrapper = parray.asarray
+
 np.random.seed(10)
 cp.random.seed(10)
 
 ngpus = args.ngpus
 
 
-from .common import partition_kernel
+from common import partition_kernel
+
 
 
 def partition(xA, pivot):
 
     context = get_current_context()
 
-    print("COntext in partition function: ", context)
+    print("Context in partition function: ", context)
 
     if isinstance(xA, cp.ndarray):
         n_partitions = 1
     else:
-        n_partitions = len(xA.values())
+        n_partitions = len(xA.block_view())
 
     mid = np.zeros(n_partitions+1, dtype=np.uint32)
 
@@ -42,7 +46,7 @@ def partition(xA, pivot):
             if isinstance(xA, cp.ndarray):
                 local_array = xA
             else:
-                local_array = xA.values()[i]
+                local_array = xA.values()[i].array
             workspace = cp.empty_like(local_array)
             comp = cp.empty_like(local_array, dtype=cp.bool_)
             mid[i+1] = partition_kernel(local_array, workspace, comp, pivot)
@@ -99,31 +103,45 @@ def quicksort(idx, global_array, active_array, active_slice, T):
     n_partitions = len(active_array.values())
 
     if n_partitions == 1:
-        dev_id = active_array.values()[0][0].device.id
-        print("CREATING TASK CONSTRAINTS: ", idx, active_array, dev_id)
-        placement = gpu(dev_id)[{'vcus': 1000}]
+        #dev_id = active_array.values()[0][0].device.id
+        #print("CREATING TASK CONSTRAINTS: ", idx, active_array, dev_id)
+        placement = gpu[{'vcus': 1000}]
     else:
         placement = tuple(
-                [gpu(arr.device.id)[{'vcus': 1000}] for arr in active_array.block_view()])
+                [gpu[{'vcus': 1000}] for arr in active_array.block_view()])
 
         print("CREATING TASK CONSTRAINTS: ", idx, active_array, [arr.device.id for arr in active_array.block_view()])
 
     print("Placement for : ", idx, placement, flush=True)
 
-    @spawn(T[idx], placement=[placement])
+    if idx > 1:
+        dependencies = [T[idx//2]]
+    else:
+        dependencies = []
+
+    @spawn(T[idx], placement=[placement], inout=[active_array], dependencies=dependencies)
     def quicksort_task():
 
         context = get_current_context()
         print(T[idx], "is running on", context)
         # print("----------------------")
         # print(idx, "Starting Partition on Slice: ", active_slice)
-        n_partitions = len(active_array.values())
-        # print("CrossPy has n_partitions: ", n_partitions)
+        n_partitions = active_array.nparts
+        print("CrossPy has n_partitions: ", n_partitions)
+
+        for arr in active_array.block_view():
+            print(arr)
+            print(arr.print_overview())
+
+
 
         if n_partitions == 1:
             # print("Base case reached, returning...")
-            active_array.values()[0][0].sort()
+            active_array.values()[0][0].array.sort()
             print(idx, "active_array: ", active_array)
+
+            #NOTE: Global writeback breaks multi-device task guarantees...
+
             # Can't writeback
             # global_array[active_slice] = active_array
             # xp.alltoallv(active_array, np.arange(len(active_array)), global_array[active_slice])
@@ -137,7 +155,7 @@ def quicksort(idx, global_array, active_array, active_slice, T):
 
         # print("The chosen pivot index is: ", pivot_idx)
 
-        pivot = (int)(active_array[pivot_idx].to(-1))
+        pivot = (int)(active_array[pivot_idx])
 
         # print("The chosen pivot is: ", pivot)
 
@@ -167,9 +185,9 @@ def quicksort(idx, global_array, active_array, active_slice, T):
         if num_left_blocks == 0:
             left_array = None
         elif num_left_blocks == 1:
-            left_array = xp.array(left_cupy_blocks[0])
+            left_array = xp.array(left_cupy_blocks[0], wrapper=parla_wrapper)
         else:
-            left_array = xp.array(left_cupy_blocks, dim=0)
+            left_array = xp.array(left_cupy_blocks, dim=0, wrapper=parla_wrapper)
 
         # print("Number of elements in the right partition: ", local_right)
         num_right_blocks = (int)(math.ceil(local_right / args.m))
@@ -187,9 +205,9 @@ def quicksort(idx, global_array, active_array, active_slice, T):
         if num_right_blocks == 0:
             right_array = None
         elif num_right_blocks == 1:
-            right_array = xp.array(right_cupy_blocks[0])
+            right_array = xp.array(right_cupy_blocks[0], wrapper=parla_wrapper)
         else:
-            right_array = xp.array(right_cupy_blocks, dim=0)
+            right_array = xp.array(right_cupy_blocks, dim=0, wrapper=parla_wrapper)
 
         # print("Left array: ", left_array)
         # print("Left array 0: ", left_array[0:2])
@@ -229,27 +247,27 @@ def main():
     global_array = np.arange(global_size, dtype=np.int32)
     np.random.shuffle(global_array)
 
-    # Initilize a CrossPy Array
-    cupy_list = []
-
-    for i in range(args.ngpus):
-        with cp.cuda.Device(i) as device:
-            random_array = cp.random.randint(0, 100, size=args.m)
-            random_array = random_array.astype(cp.int32)
-            cupy_list.append(random_array)
-            device.synchronize()
-
-    xA = xp.array(cupy_list, dim=0)
-
-    print("Original Array: ", xA)
-    T = TaskSpace("T")
-    start_t = time.perf_counter()
     with Parla():
-        quicksort(1, xA, xA, slice(0, len(xA)), T)
-    end_t = time.perf_counter()
+        # Initilize a CrossPy Array
+        cupy_list = []
 
-    print("Sorted: ", xA)
-    print("Elapsed: ", end_t - start_t)
+        for i in range(args.ngpus):
+            with cp.cuda.Device(i) as device:
+                random_array = cp.random.randint(0, 100, size=args.m)
+                random_array = random_array.astype(cp.int32)
+                cupy_list.append(random_array)
+                device.synchronize()
+
+        xA = xp.array(cupy_list, axis=0, wrapper=parla_wrapper)
+
+        print("Original Array: ", xA)
+        T = TaskSpace("T")
+        start_t = time.perf_counter()
+        quicksort(1, xA, xA, slice(0, len(xA)), T)
+        end_t = time.perf_counter()
+
+        print("Sorted: ", xA)
+        print("Elapsed: ", end_t - start_t)
 
 
 if __name__ == "__main__":
