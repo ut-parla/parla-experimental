@@ -79,6 +79,8 @@ class Dataflow:
         _out = []
         if _in is not None:
             for element in _in:
+                if isinstance(element, PArray):
+                    element = (element, 0)
                 if isinstance(element, tuple):
                     assert isinstance(element[0], PArray)
                     assert isinstance(element[1], int)
