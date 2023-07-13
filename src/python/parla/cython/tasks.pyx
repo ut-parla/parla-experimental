@@ -791,13 +791,14 @@ class TaskEnvironment:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
 
         Locals.push_context(self)
+        self.devices[0].__enter__(push_context=False)
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting environment", self.env_list, flush=True)
         ret = False
-
+        self.devices[0].__exit__(exc_type, exc_val, exc_tb, pop_context=False)
         Locals.pop_context()
         
         return ret 
@@ -1153,18 +1154,20 @@ class GPUEnvironment(TerminalEnvironment):
         return f"GPUEnvironment({self._device})"
 
 
-    def __enter__(self):
+    def __enter__(self, push_context=True):
         #print("Entering GPU Environment: ", self, flush=True)
-        Locals.push_context(self)
+        if push_context:
+            Locals.push_context(self)
         self.active_stream = self.stream_list[0]
         ret_stream = self.active_stream.__enter__()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb, pop_context=True):
         #print("Exiting GPU Environment: ", self, flush=True)
         ret = False
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
-        Locals.pop_context()
+        if pop_context:
+            Locals.pop_context()
         return ret 
 
     def finalize(self):
