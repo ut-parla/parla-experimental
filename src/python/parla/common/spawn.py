@@ -73,7 +73,9 @@ def spawn(task=None,
 
         if task is None:
             idx = len(taskspace)
-
+        else:
+            idx = task
+            
         task = taskspace[idx]
 
     # @profile

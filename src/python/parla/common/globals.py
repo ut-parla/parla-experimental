@@ -237,6 +237,8 @@ _Locals = Locals()
 def get_locals():
     return _Locals
 
+def get_current_task():
+    return _Locals.task
 
 def get_current_devices():
     return _Locals.devices

@@ -55,6 +55,12 @@ class TaskState(object, metaclass=ABCMeta):
     def is_terminal(self) -> bool:
         raise NotImplementedError()
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class TaskCreated(TaskState):
     """
@@ -134,7 +140,7 @@ class TaskRunning(TaskState):
 
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[List]):
+    def __init__(self, func, args, dependencies: Optional[List] = None):
         #print("TaskRunning init", flush=True)
         if dependencies is not None:
             # d could be one of four types: Task, DataMovementTask, TaskID or other types.
@@ -401,8 +407,8 @@ class Task:
         #assert isinstance(self.req, EnvironmentRequirements), "Task was not assigned to a enviornment before execution"
 
         task_state = None
+        self.state = TaskRunning(self.func, self.args)
         try:
-            #assert(self._state, TaskRunning)
 
             task_state = self._execute_task()
 
@@ -411,6 +417,7 @@ class Task:
         except Exception as e:
             tb = traceback.format_exc()
             task_state = TaskException(e, tb)
+            self.state = task_state
 
             print("Exception in Task ", self, ": ", e, tb, flush=True)
 
