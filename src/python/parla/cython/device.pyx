@@ -394,8 +394,9 @@ class ImportableArchitecture(PyArchitecture):
         return type(self).__name__
 
     def __mul__(self, num_archs: int):
-        architecture = get_device_manager().get_architecture(self._architecture_type)
-        return architecture * num_archs
+        #architecture = get_device_manager().get_architecture(self._architecture_type)
+        arch_ps = [self for i in range(0, num_archs)]
+        return tuple(arch_ps)
 
     def __len__(self):
         architecture = get_device_manager().get_architecture(self._architecture_type)
