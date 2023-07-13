@@ -263,6 +263,9 @@ class Task:
 
         self.taskspace = taskspace
         self.idx = idx
+        self.func = None
+        self.args = None
+
 
         self.state = state
         self.scheduler = scheduler
