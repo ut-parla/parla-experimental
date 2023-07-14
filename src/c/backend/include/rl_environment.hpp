@@ -20,8 +20,13 @@ public:
   torch::Tensor make_next_state(torch::Tensor current_state,
                                 DevID_t chosen_device_id);
 
-  torch::Tensor calculate_reward(DevID_t chosen_device_id,
+  torch::Tensor calculate_loadbalancing_reward(DevID_t chosen_device_id,
                                  torch::Tensor current_state);
+
+  torch::Tensor calculate_reward(InnerTask* task, DevID_t chosen_device_id,
+                                 torch::Tensor current_state,
+                                 double dev_accum_idletime_mapping,
+                                 double dev_accum_idletime_launching);
 
   void output_reward(size_t episode);
 protected:
@@ -31,6 +36,8 @@ protected:
 
   size_t num_reward_accumulation_{0};
   double reward_accumulation_{0};
+  double waittime_reward_accumulation_{0};
+  double loadbalancing_reward_accumulation_{0};
 
 };
 

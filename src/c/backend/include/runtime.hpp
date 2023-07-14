@@ -180,6 +180,8 @@ public:
   /* Unique ID of the task. Can be used as a dictionary key.*/
   long long int id = 0;
 
+  size_t replay_mem_buffer_id_ = 0;
+
   /*Name of the task. Useful for logging and printing.*/
   std::string name = "";
 

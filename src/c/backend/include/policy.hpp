@@ -101,6 +101,8 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) = 0;
 
+  virtual void append_launched_task_info(InnerTask*) = 0;
+
 protected:
   DeviceManager *device_manager_;
   PArrayTracker *parray_tracker_;
@@ -141,6 +143,8 @@ public:
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec);
+
+  void append_launched_task_info(InnerTask*) {}
 };
 
 #endif

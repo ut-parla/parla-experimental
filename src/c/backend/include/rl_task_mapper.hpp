@@ -6,6 +6,7 @@
 #include "runtime.hpp"
 #include "policy.hpp"
 
+#include <chrono>
 #include <random>
 #include <torch/torch.h>
 
@@ -79,6 +80,19 @@ private:
   BufferTy buffer_;
 };
 
+class RLStateTransition {
+  public:
+    using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+    torch::Tensor current_state;
+    torch::Tensor next_state;
+    torch::Tensor chosen_device;
+    torch::Tensor base_score;
+    // To calculate idle time of device:
+    // (dev_accum_idletime_launching - dev_accum_idletime_mapping)
+    double dev_accum_idletime_mapping;
+    double dev_accum_idletime_launching;
+};
+
 struct FullyConnectedDQNImpl : public torch::nn::Module {
   FullyConnectedDQNImpl(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
@@ -120,7 +134,7 @@ public:
         device_(device), n_actions_(n_actions), is_training_mode_(is_training_mode),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
-        replay_memory_(1000),
+        replay_memory_(10000),
         rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.0025)),
         //adam_optimizer_(policy_net_.parameters(), torch::optim::AdamOptions(3e-4)),
         episode_(0) {
@@ -201,8 +215,6 @@ public:
             target_param_val_ptr->copy_(param_value);
           }
         }
-        //std::cout << param_key << ", " << named_parameter.value() 
-        //  << ", new " << *target_param_val_ptr << "\n";
       }
     }
     
@@ -507,6 +519,61 @@ public:
     return this->is_training_mode_;
   }
 
+  void append_mapped_task_info(
+      InnerTask *task,
+      torch::Tensor current_state, torch::Tensor next_state,
+      torch::Tensor chosen_device, torch::Tensor base_score,
+      double dev_accum_idletime_mapping) {
+    //auto current_time = std::chrono::high_resolution_clock::now();
+    RLStateTransition *tinfo = new RLStateTransition();
+    tinfo->current_state = current_state;
+    tinfo->next_state = next_state;
+    tinfo->chosen_device = chosen_device;
+    //tinfo->task_mapping_time = current_time;
+    tinfo->base_score = base_score;
+    tinfo->dev_accum_idletime_mapping = dev_accum_idletime_mapping;
+    task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
+    this->replay_memory_buffer_.push_back(tinfo);
+  }
+
+  /**
+   * @brief Calculate reward for a launched task and add the information
+   * to the replay memory.
+   *
+   * @detail Task mapping information for a task is partially constructed
+   * at a mapping phase and is stored in a temporary buffer.
+   * When this task is about to be launched, calculate a reward with the
+   * information in the buffer, and add it to the replay memory.
+   *
+   * @param task Inner task to register to the replay memory
+   * @param rl_env RL environment having the replay memory
+   */
+  void append_launched_task_info(InnerTask *task, RLEnvironment *rl_env) {
+    if (this->is_training_mode_) {
+      // Get id of the task
+      RLStateTransition *tinfo = this->replay_memory_buffer_[
+          task->replay_mem_buffer_id_];
+      DevID_t chosen_device_id = static_cast<DevID_t>(
+          tinfo->chosen_device[0].item<int64_t>());
+
+      tinfo->dev_accum_idletime_launching =
+          task->assigned_devices[0]->get_total_idle_time();
+      //torch::Tensor reward = rl_env->calculate_waittime_reward(
+      //    chosen_device_id, tinfo->current_state, ms_duration);
+      torch::Tensor reward = rl_env->calculate_reward(
+            task, chosen_device_id, tinfo->base_score,
+            tinfo->dev_accum_idletime_mapping, tinfo->dev_accum_idletime_launching);
+      this->append_replay_memory(
+          tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
+          reward);
+      this->optimize_model();
+      this->target_net_soft_update();
+      std::cout << this->get_episode() << " episode task " << task->name <<
+          " current state:" << tinfo->current_state << ", device id:" <<
+          tinfo->chosen_device << ", reward:" << reward << "\n";
+    }
+  }
+
 private:
   // TODO: replay memory
 
@@ -524,6 +591,7 @@ private:
   //torch::optim::Adam adam_optimizer_;
   size_t episode_;
   size_t subepisode_{0};
+  std::vector<RLStateTransition*> replay_memory_buffer_;
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
@@ -565,6 +633,22 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>>
           *placement_req_options_vec) override;
+
+
+  /**
+   * @brief Calculate reward for a launched task and add the information
+   * to the replay memory.
+   *
+   * @detail Task mapping information for a task is partially constructed
+   * at a mapping phase and is stored in a temporary buffer.
+   * When this task is about to be launched, calculate a reward with the
+   * information in the buffer, and add it to the replay memory.
+   *
+   * @param task Inner task to register to the replay memory
+   */
+  void append_launched_task_info(InnerTask *task) {
+    this->rl_agent_->append_launched_task_info(task, this->rl_env_);
+  }
 
 #if 0
   // RL forwarding.

@@ -276,6 +276,11 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
 
+    // TODO(hc): This assumes that VCU is 1.
+    if (task->name.find("begin_rl_task") == std::string::npos) {
+      device->begin_device_idle();
+    }
+
     // TODO(wlr): This needs to be changed to not release PARRAY resources
     device_pool.increase<ResourceCategory::All>(task_pool);
 
@@ -290,8 +295,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         parray->decr_num_active_tasks(dev_id);
       }
     }
-    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id, 1 + num_data_tasks);
-    std::cout << dev_id << " is released by " << task->get_name() << "\n" << std::flush;
+    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id, 1);
   }
 
   // Clear all assigned streams from the task

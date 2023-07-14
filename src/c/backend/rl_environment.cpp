@@ -83,9 +83,45 @@ torch::Tensor RLEnvironment::make_next_state(torch::Tensor current_state,
   return next_state;
 }
 
-torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
-                               torch::Tensor current_state) {
+/// Calculate load balancing reward at the mapping phase.
+torch::Tensor RLEnvironment::calculate_loadbalancing_reward(
+    DevID_t chosen_device_id, torch::Tensor current_state) {
   double score = 0;
+  if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {
+    // If the chosen device has been idle, give a reward 1.
+    score = 1.f;
+  } else {
+    size_t total_running_planned_tasks =
+        this->mapper_->atomic_load_total_num_mapped_tasks();
+    size_t dev_running_planned_tasks =
+        this->mapper_->atomic_load_dev_num_mapped_tasks_device(
+            chosen_device_id);
+    if (total_running_planned_tasks != 0) {
+      // Apply root for smooth gradient descent.
+      score = double{1 -
+          pow(dev_running_planned_tasks / float(total_running_planned_tasks), 0.5)};
+    }
+
+    DevID_t num_devices =
+        this->device_manager_->template get_num_devices(ParlaDeviceType::All);
+    // If too many tasks are skewed to a device, that choice was not good.
+    // So, give a negative reward.
+    double threshold = (1 - pow(1 / double(num_devices), 0.5)) - 0.05;
+    if (score <= threshold) {
+      score = -(1 - score);
+    }
+  }
+
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+  std::cout << "Load balancing score:" << score << "\n";
+  return torch::tensor({score}, torch::kDouble);
+}
+
+#if 0
+torch::Tensor RLEnvironment::calculate_loadbalancing_reward(DevID_t chosen_device_id,
+                               torch::Tensor current_state) {
+  double score = -1.f;
   if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {
     // If the chosen device was idle, give a reward 1.
     score = 1.f;
@@ -95,33 +131,74 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
     size_t dev_running_planned_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(
             chosen_device_id);
-    if (total_running_planned_tasks != 0) {
-      score = double{1 - (dev_running_planned_tasks / float(total_running_planned_tasks))};
-    }
-
+    double load_ratio = dev_running_planned_tasks / float(total_running_planned_tasks);
     DevID_t num_devices =
         this->device_manager_->template get_num_devices(ParlaDeviceType::All);
-    double threshold = (1 - (1 / double(num_devices))) - 0.1;
-    if (total_running_planned_tasks >= dev_running_planned_tasks) {
-      if (score <= threshold) {
-        score = -(1 - score);
-      }
+    double threshold = 1 / float(num_devices);
+    ioverride f (load_ratio <= threshold) {
+      score = 1.f;
     }
+    /*
     std::cout << "score:" << score << ", " <<
       total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
+    */
   }
 
   ++this->num_reward_accumulation_;
   this->reward_accumulation_ += score;
+  std::cout << "Total score:" << score << "\n";
+
+
+  /*
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+  */
 
   return torch::tensor({score}, torch::kDouble);
 }
+#endif
 
 void RLEnvironment::output_reward(size_t episode) {
   std::cout << "Accumulated reward:" << this->reward_accumulation_ << ", and #:" << this->num_reward_accumulation_ << "\n";
   std::ofstream fp("reward.out", std::ios_base::app);
-  fp << episode << ", " << (this->reward_accumulation_ / this->num_reward_accumulation_) << "\n";
+  fp << episode << ", " << this->reward_accumulation_ << ", "
+    << this->num_reward_accumulation_ << ", " << this->loadbalancing_reward_accumulation_ <<
+    ", " << this->waittime_reward_accumulation_ << ", " <<
+    (this->reward_accumulation_ / this->num_reward_accumulation_) << "\n";
+  this->loadbalancing_reward_accumulation_ = 0;
+  this->waittime_reward_accumulation_ = 0;
   this->reward_accumulation_ = 0;
   this->num_reward_accumulation_ = 0;
   fp.close();
+}
+
+/// Calculate the final reward when a task is about to be launched.
+/// The final score is weighted by wait time from resource reservation phase.
+/// If the task was launched immediately after resource reservation,
+/// this weight is 1, which im
+/// it implies that the task is not blocked by any dependency, 
+torch::Tensor RLEnvironment::calculate_reward(
+    InnerTask* task, DevID_t chosen_device_id,
+    torch::Tensor base_score,
+    double dev_accum_idletime_mapping,
+    double dev_accum_idletime_launching) {
+  double idletime_score{1};
+    std::cout << "launching idle time:" << dev_accum_idletime_launching <<
+      ", mapping idle time:" << dev_accum_idletime_mapping << "\n";
+
+  if (dev_accum_idletime_launching > 0) {
+    idletime_score = pow(double{1} -
+      (dev_accum_idletime_launching - dev_accum_idletime_mapping) /
+          dev_accum_idletime_launching, 0.5);
+  }
+  double total_score = (idletime_score * base_score.item<float>());
+
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += total_score;
+  this->waittime_reward_accumulation_ += idletime_score;
+  this->loadbalancing_reward_accumulation_ += base_score.item<float>();
+  std::cout << " Base score:" << base_score.item<float>() << "\n";
+  std::cout << " Wait-time score:" << idletime_score << "\n";
+  std::cout << "Total score:" << total_score << "\n";
+  return torch::tensor({total_score}, torch::kDouble);
 }

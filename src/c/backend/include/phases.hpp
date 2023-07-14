@@ -144,6 +144,15 @@ public:
     return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
   }
 
+  /// @brief Return a raw pointer to a policy.
+  /// @detail It exposes a mapping policy object to enable programmers to
+  /// call policy-specific features.
+  /// For example, in the RL policy, a launcher needs to call and add time
+  /// inforamtion at the launching phase.
+  MappingPolicy* get_policy_raw_pointer() {
+    return this->policy_.get();
+  }
+
 protected:
   inline static const std::string name{"Mapper"};
   MapperStatus status{name};

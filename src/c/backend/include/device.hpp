@@ -4,7 +4,9 @@
 
 #include "resources.hpp"
 #include <atomic>
+#include <chrono>
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -31,6 +33,7 @@ inline const std::array<std::string, NUM_DEVICE_TYPES> architecture_names{
 /// Devices can be distinguished from other devices
 /// by a class type and its index.
 class ParlaDevice {
+  using TimePoint = std::chrono::time_point<std::chrono::system_clock>; 
 
 public:
   ParlaDevice() = delete;
@@ -50,6 +53,10 @@ public:
     mapped_res_.set(Resource::VCU, 0);
     mapped_res_.set(Resource::Memory, 0);
     mapped_res_.set(Resource::Copy, 0);
+
+    this->idle_begin_time_ = {};
+    this->idle_end_time_ = {};
+    this->accumulated_idle_time_ = 0;
   }
 
   /// Return a device id.
@@ -126,6 +133,48 @@ public:
 
   const bool check_resource_availability(DeviceRequirement *dev_req) const;
 
+  /**
+   * @brief Get the current system clock as the beginning of a
+   * device idle state.
+   */
+  void begin_device_idle() {
+    this->idle_timer_mtx_.lock();
+    // Get the current time point as an idle time begin.
+    this->idle_begin_time_ = std::chrono::system_clock::now();
+    this->idle_timer_mtx_.unlock();
+  }
+
+  /**
+   * @brief Get the current system clock as the end of a device
+   * idle state, and accumulate the duration.
+   */
+  void end_device_idle() {
+    this->idle_timer_mtx_.lock();
+    // Get the current time point as an idle time end.
+    this->idle_end_time_ = std::chrono::system_clock::now();
+    if (this->idle_begin_time_.time_since_epoch().count() != 0) {
+      // Calculate and accumulate duration between two points.
+      this->accumulated_idle_time_ += std::chrono::duration_cast<
+          std::chrono::milliseconds>(
+              this->idle_end_time_ - this->idle_begin_time_).count();
+    }
+    // Reset time points; New duration will be accumulated.
+    this->idle_begin_time_ = {};
+    this->idle_end_time_ = {};
+    this->idle_timer_mtx_.unlock();
+  }
+
+  /**
+   * @brief Get the duration of the idle time of a device.
+   */
+  double get_total_idle_time() {
+    double old_total_idle_time{0};
+    this->idle_timer_mtx_.lock();
+    old_total_idle_time = this->accumulated_idle_time_;
+    this->idle_timer_mtx_.unlock();
+    return old_total_idle_time;
+  }
+
 protected:
   ParlaDeviceType dev_type_;
   DevID_t dev_id_;
@@ -135,6 +184,13 @@ protected:
   ResourcePool_t reserved_res_;
   void *py_dev_;
   std::unordered_map<std::string, size_t> resource_map_;
+  /// System clock time point of the beginning of the device idle
+  TimePoint idle_begin_time_;
+  /// System clock time point of the end of the device idle
+  TimePoint idle_end_time_;
+  /// Accumulated system clock counts during the device idle
+  double accumulated_idle_time_;
+  std::mutex idle_timer_mtx_;
 };
 
 ///

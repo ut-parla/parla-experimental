@@ -184,8 +184,23 @@ void RLTaskMappingPolicy::run_task_mapping(
   if (this->rl_agent_->is_training_mode()) {
     this->rl_next_state_ = this->rl_env_->make_next_state(
         this->rl_current_state_, chosen_device_gid);
-    torch::Tensor reward = this->rl_env_->calculate_reward(
+
+#if 0
+    // TODO():disable
+    torch::Tensor reward = this->rl_env_->calculate_loadbalancing_reward(
         chosen_device_gid, this->rl_current_state_);
+#endif
+    torch::Tensor base_score = this->rl_env_->calculate_loadbalancing_reward(
+        chosen_device_gid, this->rl_current_state_);
+    this->rl_agent_->append_mapped_task_info(
+        task, this->rl_current_state_,
+        this->rl_next_state_,
+        torch::tensor({float{chosen_device_gid}}, torch::kInt64),
+        base_score,
+        device_requirements[chosen_device_gid]->device()
+            ->get_total_idle_time());
+#if 0
+    // TODO():disable
     this->rl_agent_->append_replay_memory(
         this->rl_current_state_,
         torch::tensor({float{chosen_device_gid}}, torch::kInt64),
@@ -196,6 +211,8 @@ void RLTaskMappingPolicy::run_task_mapping(
       " current state:" << this->rl_current_state_ <<
       " device id: " << chosen_device_gid << " reward:" <<
       reward.item<float>() << "\n";
+    // TODO():disable
+#endif
   } else {
     std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
       " current state:" << this->rl_current_state_ <<
@@ -206,7 +223,8 @@ void RLTaskMappingPolicy::run_task_mapping(
   chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
-    this->rl_env_->output_reward(this->rl_agent_->get_episode());
     this->rl_agent_->incr_episode();
+  } else if (task->get_name().find("end_rl_task") != std::string::npos) {
+    this->rl_env_->output_reward(this->rl_agent_->get_episode());
   }
 }

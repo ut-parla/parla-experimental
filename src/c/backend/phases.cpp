@@ -103,14 +103,20 @@ void Mapper::run(SchedulerPhase *next_phase) {
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
         // Increase the number of mapped tasks as the number of PArrays
         // since the corresponding data movement tasks will be created.
-        this->atomic_incr_num_mapped_tasks_device(global_dev_id,
-                                                  1 + (*parray_list)[i].size());
+        this->atomic_incr_num_mapped_tasks_device(global_dev_id, 1);
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(*parray,
                                                                 chosen_device);
           parray->incr_num_active_tasks(global_dev_id);
         }
+
+#if 0
+        std::ofstream fp;
+        fp.open("mapping_result.out", std::ios_base::app);
+        fp << task->name << ", " << global_dev_id << "\n";
+        fp.close();
+#endif
       }
 
 #if 0
@@ -274,8 +280,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     if (task == nullptr) {
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
-
-    std::cout << task->name << " is on memory reserver\n" << std::flush;
 
     // Is there enough memory on the devices to schedule this task?
     bool can_reserve = this->check_resources(task);
@@ -497,12 +501,21 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   task->set_state(Task::RUNNING);
   this->num_running_tasks++;
 
+  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+    ParlaDevice *device = task->assigned_devices[i];
+    device->end_device_idle();
+  }
+
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-           << std::endl << std::flush;
+  if (dynamic_cast<RLTaskMappingPolicy*>(this->
+        scheduler->mapper->get_policy_raw_pointer()) != nullptr) {
+    this->scheduler->mapper->get_policy_raw_pointer()->
+        append_launched_task_info(task);    
+  }
+
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
