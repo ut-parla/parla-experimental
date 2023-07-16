@@ -166,6 +166,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void reserve_parray(InnerPArray* parray, int dev_id) except +
         void release_parray(InnerPArray* parray, int dev_id) except +
 
+        void try_register_task_info(string task_name, double exec_time) except +
+
 
 cdef extern from "include/profiling.hpp" nogil:
     void initialize_log(string filename)

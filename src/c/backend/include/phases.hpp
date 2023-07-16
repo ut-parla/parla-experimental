@@ -106,42 +106,55 @@ public:
   /// Increase the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the tasks mapped to a device
-  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id,
-                                             size_t weight = 1) {
+  void atomic_incr_num_mapped_tasks_device(DevID_t dev_id, double  weight = 1) {
     // Increase the number of the total mapped tasks to the whole devices.
     // We do not get the old total number of mapped tasks.
-    total_num_mapped_tasks_.fetch_add(weight, std::memory_order_relaxed);
-    return dev_num_mapped_tasks_[dev_id].fetch_add(weight,
-                                                   std::memory_order_relaxed);
+    this->num_mapped_tasks_mtx_.lock();
+    this->total_num_mapped_tasks_ += weight;
+    (this->dev_num_mapped_tasks_)[dev_id] += weight;
+    std::cout << "Incr counter Weight:" << weight << " is added:" <<
+      this->total_num_mapped_tasks_ <<
+      ", dev:" << dev_id << " to " << (this->dev_num_mapped_tasks_)[dev_id] << "\n";
+    this->num_mapped_tasks_mtx_.unlock();
   }
 
   /// Decrease the number of the tasks mapped to a device.
   ///
   /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the tasks mapped to a device
-  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id,
-                                             size_t weight = 1) {
+  void atomic_decr_num_mapped_tasks_device(DevID_t dev_id, double weight = 1) {
     // Decrease the number of the total mapped tasks to the whole devices.
     // We do not get the old total number of mapped tasks.
-    total_num_mapped_tasks_.fetch_sub(weight, std::memory_order_relaxed);
-    return dev_num_mapped_tasks_[dev_id].fetch_sub(weight,
-                                                   std::memory_order_relaxed);
+    this->num_mapped_tasks_mtx_.lock();
+    this->total_num_mapped_tasks_ -= weight;
+    (this->dev_num_mapped_tasks_)[dev_id] -= weight;
+    std::cout << "Decr counter Weight:" << weight << " is added:" <<
+      this->total_num_mapped_tasks_ <<
+      ", dev:" << dev_id << " to " << (this->dev_num_mapped_tasks_)[dev_id] << "\n";
+
+    this->num_mapped_tasks_mtx_.unlock();
   }
 
   /// Return the number of total mapped tasks to the whole devices.
   ///
   /// @return The old number of total mapped tasks
-  const size_t atomic_load_total_num_mapped_tasks() const {
-    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
+  double atomic_load_total_num_mapped_tasks() {
+    double total_num_mapped_tasks{0};
+    this->num_mapped_tasks_mtx_.lock();
+    total_num_mapped_tasks = this->total_num_mapped_tasks_; 
+    this->num_mapped_tasks_mtx_.unlock();
+    return total_num_mapped_tasks;
   }
 
   /// Return the number of mapped tasks to a single device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The old number of the tasks mapped to a device
-  const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
-    return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
+  double atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) {
+    double dev_num_mapped_tasks{0};
+    this->num_mapped_tasks_mtx_.lock();
+    dev_num_mapped_tasks = (this->dev_num_mapped_tasks_)[dev_id];
+    this->num_mapped_tasks_mtx_.unlock();
+    return dev_num_mapped_tasks;
   }
 
   /// @brief Return a raw pointer to a policy.
@@ -161,10 +174,11 @@ protected:
   uint64_t dummy_dev_idx_;
 
   std::shared_ptr<MappingPolicy> policy_;
-  /// The total number of tasks mapped to and running on the whole devices.
-  std::atomic<size_t> total_num_mapped_tasks_{0};
+  /// The total loads of tasks mapped to and running on the whole devices.
+  double total_num_mapped_tasks_{0};
+  std::mutex num_mapped_tasks_mtx_;
   /// The total number of tasks mapped to and running on a single device.
-  std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
+  std::vector<double> dev_num_mapped_tasks_;
 };
 
 /**

@@ -4,7 +4,7 @@
 bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-    const Mapper &mapper, Score_t *score,
+    Mapper *mapper, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
               &parray_list) {
   const ParlaDevice &device = *(dev_placement_req->device());
@@ -60,9 +60,9 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 #endif
 
   // Calculate device load balancing.
-  size_t total_num_mapped_tasks = mapper.atomic_load_total_num_mapped_tasks();
+  size_t total_num_mapped_tasks = mapper->atomic_load_total_num_mapped_tasks();
   size_t num_tasks_to_device =
-      mapper.atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
+      mapper->atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
   double normalizd_device_load{0};
   if (total_num_mapped_tasks != 0) {
     normalizd_device_load =
@@ -92,7 +92,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     InnerTask *task, ArchitectureRequirement *arch_placement_req,
-    const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+    Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         &parray_list,
@@ -147,7 +147,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-    const Mapper &mapper,
+    Mapper *mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
@@ -204,7 +204,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
 }
 
 void LocalityLoadBalancingMappingPolicy::run_task_mapping(
-    InnerTask *task, const Mapper &mapper,
+    InnerTask *task, Mapper *mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list,

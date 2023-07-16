@@ -295,7 +295,11 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         parray->decr_num_active_tasks(dev_id);
       }
     }
-    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id, 1);
+    double task_prev_avg_exectime =
+        this->get_task_prev_avg_exectime(task->name);
+    std::cout << "Task id who decreases counter:" << task->name << "\n";
+    this->mapper->atomic_decr_num_mapped_tasks_device(
+        dev_id, task_prev_avg_exectime);
   }
 
   // Clear all assigned streams from the task

@@ -879,6 +879,23 @@ public:
 
 } // namespace Scheduler
 
+struct TaskInfo {
+  std::string task_name{""};
+  // Accumulated exection time to calculate
+  // average.
+  double accum_exec_time{0};
+  // The number of executions of this task
+  // to calculate average.
+  size_t num_execs{0}; 
+  // The average execution time of this task.
+  double avg_exec_time{0};
+  // The previous average execution time of this task;
+  // Each device maintains a workload counter.
+  // This counter is used to revert that back to the one
+  // before this task is mapped.
+  double prev_avg_exec_time{0};
+};
+
 /**
  *   The C++ "Mirror" of Parla's Python Scheduler
  *   This class is used to create a C++ representation of a Parla Scheduler
@@ -905,6 +922,9 @@ public:
 
   /* Should Run, Stop Condition */
   std::atomic<bool> should_run = true;
+
+  std::unordered_map<std::string, TaskInfo> task_info;
+  std::mutex task_info_mtx;
 
   /* Phase: maps tasks to devices */
   Mapper *mapper;
@@ -1029,6 +1049,48 @@ public:
   void spawn_wait();
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
+
+  void try_register_task_info(std::string task_name, double exec_time) {
+    this->task_info_mtx.lock();
+    auto it = this->task_info.find(task_name);
+    if (it == this->task_info.end()) {
+      this->task_info[task_name] = { task_name, exec_time, 1, exec_time, 1 };
+      std::cout << "Initial task registration:" << task_name << " exec. time:" << exec_time << "\n";
+    } else {
+      TaskInfo& tinfo = it->second;
+      tinfo.accum_exec_time += exec_time;
+      tinfo.num_execs += 1;
+      tinfo.prev_avg_exec_time = tinfo.avg_exec_time;
+      tinfo.avg_exec_time = (tinfo.accum_exec_time / double{tinfo.num_execs});
+      std::cout << "Task registration:" << task_name << " exec. time:" << exec_time << 
+        " accumulated times:" << tinfo.accum_exec_time <<
+        " num. accumulations:" << tinfo.num_execs <<
+        " avg. time:" << tinfo.avg_exec_time << "\n";
+    }
+    this->task_info_mtx.unlock();
+  }
+
+  double get_task_avg_exectime(std::string task_name) {
+    double avg_exec_time{1};
+    this->task_info_mtx.lock();
+    auto it = this->task_info.find(task_name);
+    if (it != this->task_info.end()) {
+      avg_exec_time = it->second.avg_exec_time;
+    }
+    this->task_info_mtx.unlock();
+    return avg_exec_time;
+  }
+
+  double get_task_prev_avg_exectime(std::string task_name) {
+    double prev_avg_exec_time{1};
+    this->task_info_mtx.lock();
+    auto it = this->task_info.find(task_name);
+    if (it != this->task_info.end()) {
+      prev_avg_exec_time = it->second.prev_avg_exec_time;
+    }
+    this->task_info_mtx.unlock();
+    return prev_avg_exec_time;
+  }
 
 protected:
   /// It manages all device instances in C++.

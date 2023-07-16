@@ -8,6 +8,7 @@ from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
 from parla.common.globals import SynchronizationType as SyncType
 
 import traceback
+import time
 import sys
 
 #cimport tasks
@@ -246,12 +247,15 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #Push the task to the thread local stack
                         Locals.push_task(active_task)
 
+                        task_exec_sec = 0
                         with device_context as env:
-                            
+                            task_start_t = time.perf_counter() 
                             core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                             #Run the task body (this may complete the task or return a continuation)
                             #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
                             active_task.run()
+                            task_end_t = time.perf_counter() 
+                            task_exec_sec = task_end_t - task_start_t
 
                         #Pop the task from the thread local stack
                         Locals.pop_task()
@@ -287,6 +291,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                            self.scheduler.try_register_task_info(active_task.name.encode('utf-8'), task_exec_sec)
                     
                         #print("Cleaning up Task", active_task, flush=True)
                         
@@ -475,6 +480,16 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_parray_state( \
             global_dev_id, parray_parent_id)
+
+    def try_register_task_info(self, task_name, exec_time):
+        """
+        Accumulate task execution time and update
+        average execution time of that task.
+
+        :param task_name Task name to register
+        :param exec_time Task execution time that was measured
+        """
+        self.inner_scheduler.try_register_task_info(task_name, exec_time)
 
 
 def _task_callback(task, body):

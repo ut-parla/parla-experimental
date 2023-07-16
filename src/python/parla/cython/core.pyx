@@ -704,6 +704,10 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
 
+    cpdef try_register_task_info(self, string task_name, double exec_time):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.try_register_task_info(task_name, exec_time)
+
 
 class Resources:
 

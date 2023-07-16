@@ -65,9 +65,10 @@ torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
   torch::Tensor current_state = torch::zeros({1, num_devices * 2});
   for (DevID_t d = 0; d < num_devices; ++d) {
     // TODO: narrowed type conversion.
-    int64_t dev_running_planned_tasks =
+    double dev_running_planned_task_loads =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
-    current_state[0][d * 2] = dev_running_planned_tasks;
+    std::cout << d << "'s load:" << dev_running_planned_task_loads << "\n";
+    current_state[0][d * 2] = dev_running_planned_task_loads;
     current_state[0][d * 2 + 1] = 0;
   }
   this->make_task_dependency_state(current_state, task);
@@ -91,15 +92,15 @@ torch::Tensor RLEnvironment::calculate_loadbalancing_reward(
     // If the chosen device has been idle, give a reward 1.
     score = 1.f;
   } else {
-    size_t total_running_planned_tasks =
+    double total_running_planned_tasks =
         this->mapper_->atomic_load_total_num_mapped_tasks();
-    size_t dev_running_planned_tasks =
+    double dev_running_planned_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(
             chosen_device_id);
     if (total_running_planned_tasks != 0) {
       // Apply root for smooth gradient descent.
       score = double{1 -
-          pow(dev_running_planned_tasks / float(total_running_planned_tasks), 0.5)};
+          pow(dev_running_planned_tasks / total_running_planned_tasks, 0.5)};
     }
 
     DevID_t num_devices =
