@@ -1,10 +1,9 @@
 
 from __future__ import annotations # For type hints of unloaded classes
 from parla.common.parray.core import PArray
-from parla.common.globals import CROSSPY_ENABLED
+from parla.common.globals import CROSSPY_ENABLED, crosspy
 
-from typing import List, Any, Tuple, Union
-from itertools import chain
+from typing import List, Tuple, Union
 
 
 class DataflowIterator:

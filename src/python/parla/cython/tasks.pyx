@@ -801,7 +801,7 @@ class TaskEnvironment:
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting environment", self.env_list, flush=True)
         ret = False
-        self.devices[0].exit_without_context()
+        self.devices[0].exit_without_context(exc_type, exc_val, exc_tb)
         Locals.pop_context()
         
         return ret 
