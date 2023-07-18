@@ -75,7 +75,8 @@ class GPUInfo():
     #cycles_per_second = 867404498.3008006
     #cycles_per_second = 47994628114801.04
 #cycles_per_second = 1949802881.4819772
-    cycles_per_second = 875649327771.3356
+#cycles_per_second = 875649327771.3356
+    cycles_per_second = 875649327.7713356
 #cycles_per_second = 1002001313000.6014779
 
     """
@@ -359,9 +360,11 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
 
+            print(f"+{task.task_id} Running", flush=True)
             elapsed = synthetic_kernel(total_time, gil_fraction,
                                        gil_accesses, config=config)
 
+            print(f"-{task.task_id} Running", flush=True)
             if config.verbose:
                 print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
 

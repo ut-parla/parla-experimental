@@ -62,13 +62,17 @@ void RLEnvironment::make_task_dependency_state(torch::Tensor current_state,
 torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
   DevID_t num_devices =
       this->device_manager_->template get_num_devices(ParlaDeviceType::All);
-  torch::Tensor current_state = torch::zeros({1, num_devices * 2});
+  torch::Tensor current_state = torch::zeros({1, num_devices * 2 + 1});
   for (DevID_t d = 0; d < num_devices; ++d) {
     // TODO: narrowed type conversion.
     int64_t dev_running_planned_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
     current_state[0][d * 2] = dev_running_planned_tasks;
     current_state[0][d * 2 + 1] = 0;
+  }
+  if (task->name.find("T_") != std::string::npos) {
+    current_state[0][num_devices * 2] =
+        float{std::stof(task->name.substr(2, task->name.length()))};
   }
   this->make_task_dependency_state(current_state, task);
   return current_state;

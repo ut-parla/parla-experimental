@@ -5,7 +5,8 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(num_devices * 2, num_devices, num_devices, is_training_mode);
+  this->rl_agent_ = new RLAgent(
+      num_devices * 2 + 1, num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, mapper);
 }
 
