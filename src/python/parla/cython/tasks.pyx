@@ -791,16 +791,23 @@ class TaskEnvironment:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
 
         Locals.push_context(self)
+        self.devices[0].enter_without_context()
 
+        return self
+
+    def enter_without_context(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting environment", self.env_list, flush=True)
         ret = False
-
+        self.devices[0].exit_without_context(exc_type, exc_val, exc_tb)
         Locals.pop_context()
         
         return ret 
+
+    def exit_without_context(self, exc_type, exc_val, exc_tb):
+        return False
 
     def __getitem__(self, index):
 
@@ -1160,12 +1167,23 @@ class GPUEnvironment(TerminalEnvironment):
         ret_stream = self.active_stream.__enter__()
         return self
 
+    def enter_without_context(self):
+        self.active_stream = self.stream_list[0]
+        ret_stream = self.active_stream.__enter__()
+        return self
+
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting GPU Environment: ", self, flush=True)
         ret = False
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
         Locals.pop_context()
         return ret 
+
+    def exit_without_context(self, exc_type, exc_val, exc_tb):
+        ret = False
+        self.active_stream.__exit__(exc_type, exc_val, exc_tb)
+        return ret
 
     def finalize(self):
         stream_pool = get_stream_pool()

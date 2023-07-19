@@ -139,7 +139,10 @@ cdef void callback_launch(void* python_scheduler, void* python_task, void*
         #print("Done with callback", flush=True)
         #(<object>python_function)(<object>python_input)
 
-cdef void callback_stop(void* python_function) nogil:
+ctypedef void(*f_type)(void*) 
+
+@cython.binding(False)
+cdef void callback_stop(void* python_function) noexcept nogil:
     with gil:
         #print("Inside callback to cython (stop)", flush=True)
         scheduler = <object>python_function
