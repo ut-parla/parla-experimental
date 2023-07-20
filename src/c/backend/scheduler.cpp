@@ -279,18 +279,16 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     // TODO(wlr): This needs to be changed to not release PARRAY resources
     device_pool.increase<ResourceCategory::All>(task_pool);
 
-    size_t num_data_tasks{0};
     // PArrays could be evicted even during task barrier continuation.
     // However, these PArrays will be allocated and tracked
     // again after the task restarts.
     if (!task->is_data_task()) {
-      num_data_tasks += task->parray_list[i].size();
       for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
         parray::InnerPArray *parray = task->parray_list[i][j].first;
         parray->decr_num_active_tasks(dev_id);
       }
+      this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
     }
-    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id, 1 + num_data_tasks);
     std::cout << dev_id << " is released by " << task->get_name() << "\n" << std::flush;
   }
 

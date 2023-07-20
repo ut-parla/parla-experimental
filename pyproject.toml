@@ -5,7 +5,8 @@ requires = [
     "scikit-build",
     "cmake",
     "pip",
-    "cython",
+#"cython",
+    "cython<=0.29.36",
     "ninja",
     "numpy"
 ]

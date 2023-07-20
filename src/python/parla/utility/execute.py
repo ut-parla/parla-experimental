@@ -72,10 +72,10 @@ class GPUInfo():
 
     #approximate average on frontera RTX
     #cycles_per_second = 1919820866.3481758
-    #cycles_per_second = 867404498.3008006
+    cycles_per_second = 867404498.3008006
     #cycles_per_second = 47994628114801.04
 #cycles_per_second = 1949802881.4819772
-    cycles_per_second = 875649327771.3356
+#cycles_per_second = 875649327771.3356
 #cycles_per_second = 1002001313000.6014779
 
     """
@@ -200,7 +200,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     parla_cuda_stream = get_current_stream()
     ticks = int((total_time/(10**3))*cycles_per_second)
 
-    #print(" total time:", total_time, ", cycles_per_second:", cycles_per_second, "device id:", dev_id, " ticks:", ticks, flush=True)
+    print(" total time:", total_time, ", cycles_per_second:", cycles_per_second, "device id:", dev_id, " ticks:", ticks, flush=True)
 
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
@@ -217,6 +217,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     task_internal_end_t = time.perf_counter()
     task_internal_duration = task_internal_end_t - task_internal_start_t
+    print("Task target duration:", total_time, " Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
     return task_internal_duration
 
 

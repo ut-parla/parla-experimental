@@ -103,8 +103,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
         // Increase the number of mapped tasks as the number of PArrays
         // since the corresponding data movement tasks will be created.
-        this->atomic_incr_num_mapped_tasks_device(global_dev_id,
-                                                  1 + (*parray_list)[i].size());
+        this->atomic_incr_num_mapped_tasks_device(global_dev_id);
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(*parray,

@@ -11,6 +11,7 @@ from parla import Parla, TaskSpace, spawn
 from parla.cython.device_manager import cpu
 from parla.cython.device_manager import gpu
 from parla.common.globals import get_current_devices
+from parla.common.globals import PyMappingPolicyType
 
 import time
 import numpy as np
@@ -116,7 +117,7 @@ def flatten(t):
     return [item for sublist in t for item in sublist]
 
 
-def cholesky_blocked_inplace(a, block_size):
+def cholesky_blocked_inplace(a, block_size, trial):
     """
     This is a less naive version of dpotrf with one level of blocking.
     Blocks are currently assumed to evenly divide the axes lengths.
@@ -134,17 +135,18 @@ def cholesky_blocked_inplace(a, block_size):
     # print("Initial Array", a, flush=True)
     # block_size = a[0][0].array.shape[0]
     # Define task spaces
-    gemm1 = TaskSpace("gemm1")        # Inter-block GEMM
-    subcholesky = TaskSpace("subcholesky")  # Cholesky on block
-    gemm2 = TaskSpace("gemm2")        # Inter-block GEMM
-    solve = TaskSpace("solve")        # Triangular solve
+    gemm1 = TaskSpace("gemm1-" + trial)        # Inter-block GEMM
+    subcholesky = TaskSpace("subcholesky-", trial)  # Cholesky on block
+    gemm2 = TaskSpace("gemm2-" + trial)        # Inter-block GEMM
+    solve = TaskSpace("solve-" + trial)        # Triangular solve
 
     for j in range(len(a)):
         for k in range(j):
             # Inter-block GEMM
 
-            loc_syrk = gpu
+            loc_syrk = gpu[{"vcus":v}]
             if fixed:
+                print("Fixed is enabled?", flush=True)
                 loc_syrk = gpu(j % ngpus)[{'vcus': v}]
 
             @spawn(gemm1[j, k], [solve[j, k], gemm1[j, 0:k]], input=[(a[j][k], 0)], inout=[(a[j][j], 0)], placement=[loc_syrk])
@@ -165,7 +167,7 @@ def cholesky_blocked_inplace(a, block_size):
 
         # Cholesky on block
 
-        loc_potrf = gpu
+        loc_potrf = gpu[{"vcus":v}]
         if fixed:
             loc_potrf = gpu(j % ngpus)[{'vcus': v}]
 
@@ -187,7 +189,7 @@ def cholesky_blocked_inplace(a, block_size):
             for k in range(j):
                 # Inter-block GEMM
 
-                loc_gemm = gpu
+                loc_gemm = gpu[{"vcus":v}]
                 if fixed:
                     loc_gemm = gpu(i % ngpus)[{'vcus': v}]
 
@@ -210,7 +212,7 @@ def cholesky_blocked_inplace(a, block_size):
 
             # Triangular solve
 
-            loc_trsm = gpu
+            loc_trsm = gpu[{"vcus":v}]
             if fixed:
                 loc_trsm = gpu(i % ngpus)[{'vcus': v}]
 
@@ -287,7 +289,7 @@ def main():
                             asarray(ap_list[i][j], name=f"ap_{i}_{j}"))
 
             else:
-                rs = TaskSpace("Reset")
+                rs = TaskSpace("Reset-" + str(k))
                 for i in range(n//block_size):
                     for j in range(n//block_size):
                         @spawn(rs[i, j], placement=gpu(i % n_gpus), inout=[(ap_parray[i][j], 0)])
@@ -298,18 +300,18 @@ def main():
 
                 await rs
 
-            print("Starting Cholesky")
-            print("------------")
+            print("Starting Cholesky", flush=True)
+            print("------------", flush=True)
             start = time.perf_counter()
 
             # Call Parla Cholesky result and wait for completion
-            await cholesky_blocked_inplace(ap_parray, block_size)
+            await cholesky_blocked_inplace(ap_parray, block_size, str(k))
             # print(ap_parray)
 
             # print(ap)
             end = time.perf_counter()
 
-            ts = TaskSpace("CopyBack")
+            ts = TaskSpace("CopyBack-" + str(k))
             plist = flatten(ap_parray)
             plist = [(p, 0) for p in plist]
 
@@ -350,5 +352,6 @@ def main():
 if __name__ == '__main__':
     np.random.seed(10)
     random.seed(10)
-    with Parla():
+    with Parla(mapping_policy = PyMappingPolicyType.RLTraining):
+#with Parla():
         main()

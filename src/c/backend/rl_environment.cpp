@@ -117,6 +117,25 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
   return torch::tensor({score}, torch::kDouble);
 }
 
+#if 0
+torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               torch::Tensor current_state) {
+  std::cout << "Calculate reward\n";
+  double score = 0;
+  if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {
+    // If the chosen device was idle, give a reward 1.
+    score = 1.f;
+  }
+
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+
+  std::cout << "Calculate reward:" << score << "\n";
+  return torch::tensor({score}, torch::kDouble);
+}
+#endif
+
+
 void RLEnvironment::output_reward(size_t episode) {
   std::cout << "Accumulated reward:" << this->reward_accumulation_ << ", and #:" << this->num_reward_accumulation_ << "\n";
   std::ofstream fp("reward.out", std::ios_base::app);
