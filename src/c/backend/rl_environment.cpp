@@ -24,7 +24,7 @@ void RLEnvironment::make_task_dependency_state(torch::Tensor current_state,
       }
       std::cout << task->name << "'s dependency:" << dependency->name << " on device: " << dev_id << "\n";
       task_id_map[dev_id].emplace(taskid);
-      current_state[0][dev_id * 2 + 1] += 1;
+      current_state[0][dev_id * 3 + 1] += 1;
     }
   }
 
@@ -53,7 +53,7 @@ void RLEnvironment::make_task_dependency_state(torch::Tensor current_state,
         task_id_map[dev_id].emplace(taskid);
         std::cout << task->name << "'s depenent's dependency:" <<
           dependent_dependency->name << " on device: " << dev_id << "\n";
-        current_state[0][dev_id * 2 + 1] += 1;
+        current_state[0][dev_id * 3 + 1] += 1;
       }
     }
   }
@@ -62,13 +62,32 @@ void RLEnvironment::make_task_dependency_state(torch::Tensor current_state,
 torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
   DevID_t num_devices =
       this->device_manager_->template get_num_devices(ParlaDeviceType::All);
-  torch::Tensor current_state = torch::zeros({1, num_devices * 2});
+  torch::Tensor current_state = torch::zeros({1, num_devices * 3}, torch::kDouble);
+  double total_nonlocal_bytes{0};
+  for (DevID_t d = 0; d < num_devices; ++d) {
+    for (size_t pi = 0; pi < task->parray_list[d].size(); ++pi) {
+      InnerPArray *parray = task->parray_list[d][pi].first;
+      total_nonlocal_bytes += int64_t{parray->get_size()}; 
+    }
+  }
+
   for (DevID_t d = 0; d < num_devices; ++d) {
     // TODO: narrowed type conversion.
     int64_t dev_running_planned_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
-    current_state[0][d * 2] = dev_running_planned_tasks;
-    current_state[0][d * 2 + 1] = 0;
+    current_state[0][d * 3] = dev_running_planned_tasks;
+    current_state[0][d * 3 + 1] = 0;
+    if (total_nonlocal_bytes > 0) {
+      double nonlocal_data{0};
+      for (size_t pi = 0; pi < task->parray_list[0].size(); ++pi) {
+        InnerPArray *parray = task->parray_list[0][pi].first;
+        if (!parray_tracker_->get_parray_state(d, parray->parent_id)) {
+          nonlocal_data += double{parray->get_size()};
+        }
+      }
+      nonlocal_data /= total_nonlocal_bytes;
+      current_state[0][d * 3 + 2] = nonlocal_data; 
+    }
   }
   this->make_task_dependency_state(current_state, task);
   return current_state;
@@ -79,11 +98,46 @@ torch::Tensor RLEnvironment::make_next_state(torch::Tensor current_state,
   torch::Tensor next_state = current_state.clone();
   // The first element of a device is the number of task mapped and
   // running on that device. 
-  next_state[0][chosen_device_id * 2] += 1;
+  next_state[0][chosen_device_id * 3] += 1;
   return next_state;
 }
 
+#if 0
 torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state) {
+  DevID_t num_devices =
+      this->device_manager_->template get_num_devices(ParlaDeviceType::All);
+  double score = 0;
+  double min_nonlocal_data = std::numeric_limits<double>::max();
+  DevID_t min_device{0};
+  for (DevID_t d = 0; d < num_devices; ++d) {
+    double nonlocal_data{0};
+    for (size_t pi = 0; pi < task->parray_list[d].size(); ++pi) {
+      InnerPArray *parray = task->parray_list[d][pi].first;
+      if (!parray_tracker_->get_parray_state(d, parray->parent_id)) {
+        nonlocal_data += parray->get_size(); 
+      }
+    }
+    if (min_nonlocal_data > nonlocal_data) {
+      min_device = d;
+      min_nonlocal_data = nonlocal_data;
+    }
+  }
+
+  if (min_device == chosen_device_id) {
+    score = 1;
+  }
+
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+
+  return torch::tensor({score}, torch::kDouble);
+}
+#endif
+
+torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               InnerTask* task,
                                torch::Tensor current_state) {
   double score = 0;
   if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {

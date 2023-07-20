@@ -271,6 +271,16 @@ def main():
             mempool = cp.get_default_memory_pool()
             mempool.free_all_blocks()
 
+            begin_rl_ts = TaskSpace("begin_rl_task")
+            end_rl_ts = TaskSpace("end_rl_task")
+
+            @spawn(begin_rl_ts[0])
+            def begin_rl_task():
+                pass
+
+            await begin_rl_ts[0]
+
+
             if k == 0:
                 ap_list = list()
                 for i in range(n//block_size):
@@ -296,6 +306,8 @@ def main():
                         def reset():
                             ap_parray[i][j].array[:] = cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F')
+
+                            print("i, j size:", ap_parray[i][j].nbytes)
                             cp.cuda.stream.get_current_stream().synchronize()
 
                 await rs
@@ -349,9 +361,15 @@ def main():
                 print("Error", error)
 
 
+            @spawn(end_rl_ts[0])
+            def end_rl_task():
+                pass
+
+            await end_rl_ts[0]
+
 if __name__ == '__main__':
     np.random.seed(10)
     random.seed(10)
-    with Parla(mapping_policy = PyMappingPolicyType.RLTraining):
+    with Parla(mapping_policy = PyMappingPolicyType.RLTest):
 #with Parla():
         main()

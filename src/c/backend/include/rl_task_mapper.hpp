@@ -83,11 +83,17 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
   FullyConnectedDQNImpl(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
     // Move networks to a GPU.
-    fc1_ = register_module("fc1", torch::nn::Linear(in_dim, in_dim * 4));
+    fc1_ = torch::nn::Linear(in_dim, in_dim * 4);
+    fc1_->to(torch::kDouble);
+    fc1_ = register_module("fc1", fc1_);
     fc1_->to(device_);
-    fc2_ = register_module("fc2", torch::nn::Linear(in_dim * 4, in_dim * 4));
+    fc2_ = torch::nn::Linear(in_dim * 4, in_dim * 4);
+    fc2_->to(torch::kDouble);
+    fc2_ = register_module("fc2", fc2_);
     fc2_->to(device_);
-    out_ = register_module("out", torch::nn::Linear(in_dim * 4, out_dim));
+    out_ = torch::nn::Linear(in_dim * 4, out_dim);
+    out_->to(torch::kDouble);
+    out_ = register_module("out", out_);
     out_->to(device_);
   }
 
