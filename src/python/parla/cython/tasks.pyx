@@ -662,6 +662,7 @@ class TaskEnvironment:
                 self.device_list.append(dev)
                 self.device_dict[dev.architecture].append(dev)
 
+            self.stream_list.extend(env.streams)
             self._global_device_ids  = self._global_device_ids.union(env.global_ids)
             self.env_list.append(env)
 
@@ -709,10 +710,7 @@ class TaskEnvironment:
 
     @property
     def streams(self):
-        if self.is_terminal:
-            return self.stream_list
-        else:
-            return [None]
+        return self.stream_list
 
     @property
     def stream(self):
