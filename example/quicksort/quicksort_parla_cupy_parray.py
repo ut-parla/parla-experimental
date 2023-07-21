@@ -6,18 +6,78 @@ cp.random.seed(10)
 
 import time
 
+from parla import parray as pa
 from parla import Parla, spawn, TaskSpace
 from parla.cython.device_manager import gpu as cuda
+from parla.common.globals import get_current_context
 
 # COMMENT(wlr): Our distributed array here will be a list of Parla arrays
 
-from common import create_array, get_size_info, balance_partition
-from common_parla_manual import partition, scatter
+from common import create_array, get_size_info
+from common_parla import partition
+
+from cupy_helper import balance_partition
 
 
-def quicksort(
-        idx, global_prefix, global_A, global_workspace, start, end, T):
-    
+def scatter(dest, src, left_info, right_info):
+    context = get_current_context()
+
+    source_starts, target_starts, sizes = left_info
+
+    for source_idx in range(len(dest)):
+        for target_idx in range(len(dest)):
+            if sizes[source_idx, target_idx] == 0:
+                continue
+
+            with context.device[0]:
+                source_start = source_starts[source_idx, target_idx]
+                source_end = source_start + sizes[source_idx, target_idx]
+
+                target_start = target_starts[source_idx, target_idx]
+                target_end = target_start + sizes[source_idx, target_idx]
+
+                # print(source_idx, target_idx, (source_start,
+                #      source_end), (target_start, target_end))
+
+                target = dest[target_idx]
+                source = src[source_idx]
+
+                print("Target:", target, flush=True)
+                print("Source: ", source, flush=True)
+
+                dest[target_idx].array[target_start:target_end] = cp.asarray(src[source_idx].array[
+                    source_start:source_end
+                ])
+                # print("TARGET: ", target, type(target))
+                # print("SOURCE: ", source, type(source))
+                # target[target_start:target_end] = source[source_start:source_end]
+
+    source_starts, target_starts, sizes = right_info
+    for source_idx in range(len(dest)):
+        for target_idx in range(len(dest)):
+            if sizes[source_idx, target_idx] == 0:
+                continue
+
+            with context.device[0]:
+                source_start = source_starts[source_idx, target_idx]
+                source_end = source_start + sizes[source_idx, target_idx]
+
+                target_start = target_starts[source_idx, target_idx]
+                target_end = target_start + sizes[source_idx, target_idx]
+
+                # print(source_idx, target_idx, (source_start,
+                #      source_end), (target_start, target_end))
+
+                dest[target_idx].array[target_start:target_end] = cp.asarray(src[source_idx].array[
+                    source_start:source_end
+                ])
+                # target = A[target_idx]
+                # source = B[source_idx]
+                # target[target_start:target_end] = source[source_start:source_end]
+
+
+def quicksort(idx, global_prefix, global_A, global_workspace, start, end, T):
+
     start = int(start)
     end = int(end)
 
@@ -41,7 +101,8 @@ def quicksort(
     print("LOCAL_START: ", local_left_split, "LOCAL_END: ", local_right_split)
 
     if global_start_idx == global_end_idx and local_left_split < local_right_split:
-        A.append(global_A[global_start_idx][local_left_split:local_right_split])
+        A.append(global_A[global_start_idx]
+                 [local_left_split:local_right_split])
         workspace.append(global_workspace[global_start_idx])
     else:
         print(
@@ -54,7 +115,8 @@ def quicksort(
             local_left_split < len(global_A[global_start_idx])
         ):
             A.append(global_A[global_start_idx][local_left_split:])
-            workspace.append(global_workspace[global_start_idx][local_left_split:])
+            workspace.append(
+                global_workspace[global_start_idx][local_left_split:])
             print("ADDED LEFT")
 
         for i in range(global_start_idx + 1, global_end_idx):
@@ -64,22 +126,24 @@ def quicksort(
 
         if (global_end_idx < len(global_A)) and local_right_split > 0:
             A.append(global_A[global_end_idx][:local_right_split])
-            workspace.append(global_workspace[global_end_idx][:local_right_split])
+            workspace.append(
+                global_workspace[global_end_idx][:local_right_split])
             print("ADDED RIGHT")
 
+    n_partitions = len(A)
 
     tag_A = [(A[i], i) for i in range(len(A))]
-    tag_B = [(workspace[i], i) for i in range(len(A))]
+    tag_B = [(workspace[i], i) for i in range(len(workspace))]
 
     unpacked = tag_A + tag_B
 
     print("unpacked: ", unpacked)
 
-    device_list = tuple([cuda(a.device.id) for a in A])
-    print("Spawning task with device list: ", device_list, flush=True)
-    # device_list = cuda
+# TODO(hc): just cuda doesnt work well.
+    device_list = tuple([cuda(i) for i in range(n_partitions)])
+# device_list = cuda
 
-    @spawn(T[idx], placement=[device_list])
+    @spawn(T[idx], placement=[device_list], inout=unpacked)
     def quicksort_task():
         nonlocal global_prefix
         nonlocal global_A
@@ -87,7 +151,6 @@ def quicksort(
         nonlocal start
         nonlocal end
         nonlocal T
-
         n_partitions = len(A)
 
         print("TASK", T[idx], flush=True)
@@ -97,18 +160,23 @@ def quicksort(
         sizes = np.zeros(len(A) + 1, dtype=np.uint32)
         for i in range(len(A)):
             # print("INCOMING ARRAY", A[i].array)
-            sizes[i + 1] = len(A[i])
+            sizes[i + 1] = len(A[i].array)
             # print("INCOMING ARRAY", A[i], len(A[i]))
             # sizes[i+1] = len(A[i])
 
+        np.cumsum(sizes)
+        np.sum(sizes)
 
-        if n_partitions <= 1:
-            # Base case.
-            if n_partitions == 1:
-                # The data is on a single gpu.
-                A[0].sort()
+        if len(A) == 1:
+            # print("BASE")
+            A[0].array.sort()
+            # A[0].sort()
             return
 
+        if len(A) == 0:
+            return
+
+        n_partitions = len(A)
 
         # # Choose random pivot
         pivot_block = np.random.randint(0, n_partitions)
@@ -118,7 +186,7 @@ def quicksort(
         print("Pivot: ", pivot)
 
         # local partition
-        left_counts = partition(A, workspace, pivot)
+        left_counts = partition(A, pivot, workspace=workspace, unwrap=lambda a: a.array)
         local_left_count = np.sum(left_counts)
         global_left_count = start + local_left_count
 
@@ -151,15 +219,22 @@ def quicksort(
             T,
         )
 
+    # Scatter to other partitions
+    # scatter(active_A, active_B, mid)
+
+
 def main(args):
-    global_array, A, workspace = create_array(args.m, args.num_gpus)
+    # Initilize a CrossPy Array
+    global_array, cupy_list_A, cupy_list_B = create_array(args.m, args.num_gpus)
 
-    sizes, size_prefix = get_size_info(A)
 
-
-    print("Original Array: ", A, flush=True)
 
     with Parla():
+        A = pa.asarray_batch(cupy_list_A)
+        workspace = pa.asarray_batch(cupy_list_B)
+
+        sizes, size_prefix = get_size_info(A)
+
         T = TaskSpace("T")
         t_start = time.perf_counter()
         with cp.cuda.Device(0) as d:

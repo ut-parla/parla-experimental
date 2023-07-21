@@ -9,141 +9,97 @@ import time
 from parla import Parla, spawn
 from parla.cython.tasks import AtomicTaskSpace as TaskSpace
 from parla.cython.device_manager import gpu
+from parla.common.globals import get_current_context
+from parla.common.array import copy
 
-# COMMENT(wlr): Our distributed array here will be a list of cupy arrays. Everything will be managed manually
+from common import create_array, get_size_info
+from common_parla import partition
+from common_parla import parla_copy
+# from cupy_helper import cupy_copy
 
-from common import create_array, get_size_info, balance_partition
-from common_parla import partition, scatter
+from cupy_helper import slice_distributed_arrays, balance_partition, scatter
 
+def quicksort(global_dist_arrays: list, global_workspace: list, global_prefix, start, end, T, Tid=1):
+    A, workspace = slice_distributed_arrays(global_dist_arrays, global_prefix, start, end, workspace=global_workspace)
 
-def quicksort(
-        idx, global_prefix, global_A, global_workspace, start, end, T):
-    
-    start = int(start)
-    end = int(end)
-
-    # # How to select the active block from the global array
-    global_start_idx = np.searchsorted(global_prefix, start, side="right") - 1
-    global_end_idx = np.searchsorted(global_prefix, end, side="right") - 1
-
-    # Split within a block at the endpoints (to form slices)
-    local_left_split = start - global_prefix[global_start_idx]
-    local_right_split = end - global_prefix[global_end_idx]
-
-    local_left_split = (int)(local_left_split)
-    local_right_split = (int)(local_right_split)
-
-    A = []
-    workspace = []
-    
-    #Reform a global array out of sliced components (NOTE: THESE SEMANTICS BREAK PARRAY. Concurrent slices cannot be written)
-    if global_start_idx == global_end_idx and local_left_split < local_right_split:
-        A.append(global_A[global_start_idx][local_left_split:local_right_split])
-        workspace.append(global_workspace[global_start_idx])
-    else:
-        if (global_start_idx < global_end_idx) and (
-            local_left_split < len(global_A[global_start_idx])
-        ):
-            A.append(global_A[global_start_idx][local_left_split:])
-            workspace.append(global_workspace[global_start_idx][local_left_split:])
-
-        for i in range(global_start_idx + 1, global_end_idx):
-            A.append(global_A[i])
-            workspace.append(global_workspace[i])
-
-        if (global_end_idx < len(global_A)) and local_right_split > 0:
-            A.append(global_A[global_end_idx][:local_right_split])
-            workspace.append(global_workspace[global_end_idx][:local_right_split])
-
-
-    n_partitions = len(A)
-    device_list = tuple([gpu(arr.device.id) for arr in A])
-
-    @spawn(T[idx], placement=[device_list], vcus=1)
+    placement = tuple([gpu(a.device.id) for a in A])
+    # print("Spawning task with device list: ", placement, flush=True)
+    @spawn(T[Tid], placement=[placement], vcus=1)
     def quicksort_task():
-        nonlocal global_prefix
-        nonlocal global_A
+        nonlocal global_dist_arrays
         nonlocal global_workspace
+        nonlocal global_prefix
         nonlocal start
         nonlocal end
         nonlocal T
 
+        context = get_current_context()
         n_partitions = len(A)
 
         #print("TASK", T[idx], get_current_context(), flush=True)
 
-        if n_partitions <= 1:
+        if n_partitions < 2:
             # Base case.
             if n_partitions == 1:
                 # The data is on a single gpu.
                 A[0].sort()
             return
 
-        #Form local prefix sum
-        sizes = np.zeros(len(A) + 1, dtype=np.uint32)
-        for i in range(len(A)):
-            sizes[i + 1] = len(A[i])
-
-        #Choose random pivot
+        # Choose random pivot
         pivot_block = np.random.randint(0, n_partitions)
         pivot_idx = np.random.randint(0, len(A[pivot_block]))
         pivot = (int)(A[pivot_block][pivot_idx])
 
         # Perform local partition and repacking (no communication)
-        left_counts = partition(A, workspace, pivot)
-        local_left_count = np.sum(left_counts)
-        global_left_count = start + local_left_count
+        mid = partition(A, pivot, workspace=workspace)
+        left_count = np.sum(mid)
 
         # compute communication pattern
-        left_info, right_info = balance_partition(A, left_counts)
+        left_info, right_info = balance_partition(A, mid)
 
         # Send left points to left partition and right points to right partition (communication)
-        scatter(A, workspace, left_info, right_info)
+        scatter(A, workspace, left_info, right_info, ctx_func=lambda i: context.devices[i], copy_func=parla_copy)
 
         quicksort(
-            2 * idx,
-            global_prefix,
-            global_A,
-            global_workspace,
-            start,
-            global_left_count,
-            T,
+            global_dist_arrays, global_workspace,
+            global_prefix, start, start + left_count,
+            T, 2 * Tid,
         )
         quicksort(
-            2 * idx + 1,
-            global_prefix,
-            global_A,
-            global_workspace,
-            global_left_count,
-            end,
-            T,
+            global_dist_arrays, global_workspace,
+            global_prefix, start + left_count, end,
+            T, 2 * Tid + 1,
         )
 
 def main(args):
-    # Per device size. 
+    global_array, dist_array_list, workspace = create_array(args.m, args.num_gpus)
 
-    #This is also treated as the maximum number of points that can be on each device (very strict constraint).
-    #This has a large performance impact due to recursion on the boundaries between partitions.
-    #To do: Separate this into two variables?
+    sizes, size_prefix = get_size_info(dist_array_list)
 
-    global_array, A, workspace = create_array(args.m, args.num_gpus, True)
-
-    sizes, size_prefix = get_size_info(A)
-
-    print([x.size for x in A])
+    print("Original Array: ", dist_array_list, flush=True)
 
     with Parla():
         T = TaskSpace("T")
         t_start = time.perf_counter()
-        quicksort(1, size_prefix, A, workspace, 0, args.m * args.num_gpus, T)
-        T.wait()
+        quicksort(dist_array_list, workspace, size_prefix, 0, args.m * args.num_gpus, T)
+        T.wait()  # await T
         t_end = time.perf_counter()
 
-    print("Time: ", t_end - t_start)
+    print("Sorted:")
+    for array in dist_array_list:
+        print(array)
+    print("Time:")
+    print(t_end - t_start)
 
-    # print("Sorted")
-    # for array in A:
-    #     print(array)
+    with cp.cuda.Device(0) as d:
+        d.synchronize()
+        t_start = time.perf_counter()
+        global_array.sort()
+        d.synchronize()
+        t_end = time.perf_counter()
+
+    print("Time cupy.sort on single device:")
+    print(t_end - t_start)
 
 
 if __name__ == "__main__":
@@ -151,6 +107,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
     parser.add_argument("-num_gpus", type=int, default=2)
-    parser.add_argument("-m", type=int, default=100000000)
+    parser.add_argument("-m", type=int, default=10)
     args = parser.parse_args()
     main(args)

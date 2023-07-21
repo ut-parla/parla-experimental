@@ -15,7 +15,12 @@ parser.add_argument("-ngpus", type=int, default=2)
 parser.add_argument("-m", type=int, default=3)
 args = parser.parse_args()
 
-parla_wrapper = parray.asarray
+class PArrayManager(xp.utils.wrapper.DynamicObjectManager):
+    def wrap(self, array):
+        return parray.asarray(array)
+    
+    def get_device(self, id):
+        return get_current_context().devices[id]
 
 np.random.seed(10)
 cp.random.seed(10)
@@ -36,7 +41,7 @@ def partition(xA, pivot):
     if isinstance(xA, cp.ndarray):
         n_partitions = 1
     else:
-        n_partitions = len(xA.block_view())
+        n_partitions = xA.nparts
 
     mid = np.zeros(n_partitions+1, dtype=np.uint32)
 
@@ -46,7 +51,7 @@ def partition(xA, pivot):
             if isinstance(xA, cp.ndarray):
                 local_array = xA
             else:
-                local_array = xA.values()[i].array
+                local_array = xA.device_array[i].array
             workspace = cp.empty_like(local_array)
             comp = cp.empty_like(local_array, dtype=cp.bool_)
             mid[i+1] = partition_kernel(local_array, workspace, comp, pivot)
@@ -82,7 +87,7 @@ def scatter(splits, active_array, left_array, right_array):
         # print("Left send indices: ", left_send_indices)
         # print("Right send indices: ", right_send_indices)
         # print("Source len: ", len(active_array), "Index Len: ", len(left_send_indices), "Target Len: ", len(left_array))
-        xp.alltoallv(active_array, left_send_indices, left_array)
+        left_array = active_array[left_send_indices]
 
     if right_array is not None:
         right_count = len(right_array)
@@ -93,7 +98,7 @@ def scatter(splits, active_array, left_array, right_array):
                                ] = np.arange(size_prefix[i]+splits[i+1], size_prefix[i+1])
 
         # Performing right scatter
-        xp.alltoallv(active_array, right_send_indices, right_array)
+        right_array = active_array[right_send_indices]
 
     return None
 
@@ -155,6 +160,8 @@ def quicksort(idx, global_array, active_array, active_slice, T):
 
         # print("The chosen pivot index is: ", pivot_idx)
 
+        print(get_current_context())
+        # active_array[pivot_idx].print_overview()
         pivot = (int)(active_array[pivot_idx])
 
         # print("The chosen pivot is: ", pivot)
@@ -182,12 +189,7 @@ def quicksort(idx, global_array, active_array, active_slice, T):
                 left_cupy_blocks.append(
                     cp.zeros(local_length, dtype=cp.int32))
 
-        if num_left_blocks == 0:
-            left_array = None
-        elif num_left_blocks == 1:
-            left_array = xp.array(left_cupy_blocks[0], wrapper=parla_wrapper)
-        else:
-            left_array = xp.array(left_cupy_blocks, dim=0, wrapper=parla_wrapper)
+        left_array = xp.array(left_cupy_blocks, axis=0 if left_cupy_blocks else None, data_manager=active_array.data_manager)
 
         # print("Number of elements in the right partition: ", local_right)
         num_right_blocks = (int)(math.ceil(local_right / args.m))
@@ -202,12 +204,7 @@ def quicksort(idx, global_array, active_array, active_slice, T):
                 right_cupy_blocks.append(
                     cp.zeros(local_length, dtype=cp.int32))
 
-        if num_right_blocks == 0:
-            right_array = None
-        elif num_right_blocks == 1:
-            right_array = xp.array(right_cupy_blocks[0], wrapper=parla_wrapper)
-        else:
-            right_array = xp.array(right_cupy_blocks, dim=0, wrapper=parla_wrapper)
+        right_array = xp.array(right_cupy_blocks, axis=0 if right_cupy_blocks else None, data_manager=active_array.data_manager)
 
         # print("Left array: ", left_array)
         # print("Left array 0: ", left_array[0:2])
@@ -258,7 +255,7 @@ def main():
                 cupy_list.append(random_array)
                 device.synchronize()
 
-        xA = xp.array(cupy_list, axis=0, wrapper=parla_wrapper)
+        xA = xp.array(cupy_list, axis=0, data_manager=PArrayManager())
 
         print("Original Array: ", xA)
         T = TaskSpace("T")

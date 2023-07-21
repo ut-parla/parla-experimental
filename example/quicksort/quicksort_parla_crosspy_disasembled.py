@@ -1,53 +1,21 @@
-from parla import Parla, spawn, TaskSpace
-from parla.common.globals import get_current_context
-from parla.cython.device_manager import cpu, gpu
 
-import argparse
-import cupy as cp
 import numpy as np
+import cupy as cp
 import crosspy as xp
 import math
-import time
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-ngpus", type=int, default=2)
-parser.add_argument("-m", type=int, default=3)
-args = parser.parse_args()
 
 np.random.seed(10)
 cp.random.seed(10)
 
-ngpus = args.ngpus
+import time
 
+from parla import Parla, spawn
+from parla.cython.tasks import AtomicTaskSpace
+from parla.common.globals import get_current_context
+from parla.cython.device_manager import gpu
 
-from common import partition_kernel
-
-
-def partition(xA, pivot):
-
-    context = get_current_context()
-
-    print("COntext in partition function: ", context)
-
-    if isinstance(xA, cp.ndarray):
-        n_partitions = 1
-    else:
-        n_partitions = len(xA.values())
-
-    mid = np.zeros(n_partitions+1, dtype=np.uint32)
-
-    for i in range(n_partitions):
-        with context.devices[i]:
-            print("Working on partition: ", i, cp.cuda.runtime.getDevice(), flush=True)
-            if isinstance(xA, cp.ndarray):
-                local_array = xA
-            else:
-                local_array = xA.values()[i]
-            workspace = cp.empty_like(local_array)
-            comp = cp.empty_like(local_array, dtype=cp.bool_)
-            mid[i+1] = partition_kernel(local_array, workspace, comp, pivot)
-            local_array[:] = workspace[:]
-    return mid
+from common import create_array, partition_kernel
+from common_parla import partition
 
 
 # TODO(wlr): Fuse this kernel, pack this better?
@@ -94,36 +62,36 @@ def scatter(splits, active_array, left_array, right_array):
     return None
 
 
-def quicksort(idx, global_array, active_array, active_slice, T):
+def quicksort(active_array, active_slice, T, Tid=1):
 
     n_partitions = active_array.nparts
 
     if n_partitions == 1:
         dev_id = next(iter(active_array.device_array.values())).device.id
-        print("CREATING TASK CONSTRAINTS: ", idx, active_array, dev_id)
+        print("CREATING TASK CONSTRAINTS: ", Tid, active_array, dev_id)
         placement = gpu(dev_id)[{'vcus': 1000}]
     else:
         placement = tuple(
                 [gpu(arr.device.id)[{'vcus': 1000}] for arr in active_array.block_view()])
 
-        print("CREATING TASK CONSTRAINTS: ", idx, active_array, [arr.device.id for arr in active_array.block_view()])
+        print("CREATING TASK CONSTRAINTS: ", Tid, active_array, [arr.device.id for arr in active_array.block_view()])
 
-    print("Placement for : ", idx, placement, flush=True)
+    active_array = list(active_array.device_array.values())
+    print("Placement for : ", Tid, placement, flush=True)
 
-    @spawn(T[idx], placement=[placement])
+    @spawn(T[Tid], placement=[placement])
     def quicksort_task():
-
         context = get_current_context()
-        print(T[idx], "is running on", context)
+        print(T[Tid], "is running on", context)
         # print("----------------------")
         # print(idx, "Starting Partition on Slice: ", active_slice)
-        n_partitions = active_array.nparts
+        nonlocal n_partitions
         # print("CrossPy has n_partitions: ", n_partitions)
 
         if n_partitions == 1:
             # print("Base case reached, returning...")
             next(iter(active_array.device_array.values())).sort()
-            print(idx, "active_array: ", active_array)
+            print(Tid, "active_array: ", active_array)
             # Can't writeback
             # global_array[active_slice] = active_array
             # xp.alltoallv(active_array, np.arange(len(active_array)), global_array[active_slice])
@@ -143,7 +111,7 @@ def quicksort(idx, global_array, active_array, active_slice, T):
 
         # local partition
         # print("Performing local partition...")
-        splits = partition(active_array, pivot)
+        splits = partition(active_array, pivot, prepend_zero=True)
         # print("Found the following splits: ", splits)
 
         local_split = np.sum(splits)
@@ -206,41 +174,35 @@ def quicksort(idx, global_array, active_array, active_slice, T):
         right_slice = slice(right_start, right_end)
 
         if left_array is not None:
-            quicksort(2*idx, global_array, left_array, left_slice, T)
+            quicksort(left_array, left_slice, T, 2*Tid)
 
         if right_array is not None:
-            quicksort(2*idx+1, global_array, right_array, right_slice, T)
+            quicksort(right_array, right_slice, T, 2*Tid+1)
 
-def main():
-
-    # Per device size
-
-    global_size = args.m * args.ngpus
-    global_array = np.arange(global_size, dtype=np.int32)
-    np.random.shuffle(global_array)
+def main(args):
+    global_array, cupy_list, _ = create_array(args.m, args.num_gpus)
 
     # Initilize a CrossPy Array
-    cupy_list = []
-
-    for i in range(args.ngpus):
-        with cp.cuda.Device(i) as device:
-            random_array = cp.random.randint(0, 100, size=args.m)
-            random_array = random_array.astype(cp.int32)
-            cupy_list.append(random_array)
-            device.synchronize()
-
     xA = xp.array(cupy_list, axis=0)
 
-    print("Original Array: ", xA)
-    T = TaskSpace("T")
-    start_t = time.perf_counter()
-    with Parla():
-        quicksort(1, xA, xA, slice(0, len(xA)), T)
-    end_t = time.perf_counter()
+    print("Original Array: ", xA, flush=True)
 
-    print("Sorted: ", xA)
-    print("Elapsed: ", end_t - start_t)
+    with Parla():
+        T = AtomicTaskSpace("T")
+        t_start = time.perf_counter()
+        quicksort(xA, slice(0, len(xA)), T)
+        t_end = time.perf_counter()
+
+    print("Sorted:")
+    print(xA)
+    print("Time: ", t_end - t_start)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-dev_config", type=str, default="devices_sample.YAML")
+    parser.add_argument("-num_gpus", type=int, default=2)
+    parser.add_argument("-m", type=int, default=10)
+    args = parser.parse_args()
+    main(args)

@@ -6,130 +6,66 @@ cp.random.seed(10)
 
 import time
 
-# COMMENT(wlr): Our distributed array here will be a list of Parla arrays
-
-from common import create_array, get_size_info, balance_partition
+from common import create_array, get_size_info
 from common import partition, scatter
 
+from cupy_helper import slice_distributed_arrays, balance_partition
 
-def quicksort(
-        global_prefix, A, workspace, start, end):
-    n_partitions = len(A)
-    print("LENGTH", n_partitions, end - start)
+def quicksort(dist_arrays: list, workspace: list):
+    n_partitions = len(dist_arrays)
 
-    sizes = np.zeros(len(A)+1, dtype=np.uint32)
-    for i in range(len(A)):
-        # print("INCOMING ARRAY", A[i].array)
-        # sizes[i+1] = len(A[i].array)
-        print("INCOMING ARRAY", len(A[i]))
-        sizes[i+1] = len(A[i])
+    # print("TASK", T[idx], get_current_context(), flush=True)
 
-    size_prefix = np.cumsum(sizes)
-    local_size = np.sum(sizes)
-
-    # print("SIZES", size_prefix)
-
-    if len(A) == 1:
-        # print("BASE")
-        # A[0].array.sort()
-        A[0].sort()
+    if n_partitions < 2:
+        # Base case.
+        if n_partitions == 1:
+            # The data is on a single gpu.
+            dist_arrays[0].sort()
         return
-
-    if len(A) == 0:
-        return
-
-    n_partitions = len(A)
 
     # Choose random pivot
     pivot_block = np.random.randint(0, n_partitions)
-    pivot_idx = np.random.randint(0, len(A[pivot_block]))
-    pivot = (int)(A[pivot_block][pivot_idx])
+    pivot_idx = np.random.randint(0, len(dist_arrays[pivot_block]))
+    pivot = (int)(dist_arrays[pivot_block][pivot_idx])
 
-    # print("Pivot: ", pivot)
-
-    # local partition
-    left_counts = partition(A, pivot, workspace=workspace)
-    global_left_count = np.sum(left_counts)
+    # Perform local partition and repacking (no communication)
+    mid = partition(dist_arrays, pivot, workspace=workspace)
+    left_count = np.sum(mid)
 
     # compute communication pattern
-    left_info, right_info = balance_partition(A, left_counts)
+    left_info, right_info = balance_partition(dist_arrays, mid)
 
-    # Send left to left and right to right
-    scatter(A, workspace, left_info, right_info)
+    # Send left points to left partition and right points to right partition (communication)
+    scatter(dist_arrays, workspace, left_info, right_info)
 
-    # print(size_prefix, global_left_count)
-    split_idx = np.searchsorted(size_prefix, global_left_count, side="right")-1
-    local_split = global_left_count - size_prefix[split_idx]
-
-    # print(local_split)
-    # print("Split Index: ", split_idx)
-
-    array_left = []
-    array_left += [A[i] for i in range(split_idx)]
-    if split_idx < len(A) and local_split > 0:
-        array_left += [A[split_idx][0:local_split]]
-
-    workspace_left = []
-    workspace_left += [workspace[i] for i in range(split_idx)]
-    if split_idx < len(A) and local_split > 0:
-        workspace_left += [workspace[split_idx][0:local_split]]
-
-    array_right = []
-    if split_idx < len(A) and local_split < sizes[split_idx+1]:
-        array_right += [A[split_idx][local_split:sizes[split_idx+1]]]
-    array_right += [A[i] for i in range(split_idx+1, len(A))]
-
-    workspace_right = []
-    if split_idx < len(A) and local_split < sizes[split_idx+1]:
-        workspace_right += [workspace[split_idx]
-                            [local_split:sizes[split_idx+1]]]
-    workspace_right += [workspace[i] for i in range(split_idx+1, len(A))]
-
-    # print("Left", len(array_left), global_left_count)
-    # for array in array_left:
-    # print(array.array)
-    #    print(array)
-
-    # print("Right", len(array_right), local_size - global_left_count)
-    # for array in array_right:
-    # print(array.array)
-    #    print(array)
-
-    quicksort(global_prefix, array_left, workspace_left,
-              start, start+global_left_count)
-    quicksort(global_prefix, array_right, workspace_right,
-              start+global_left_count, end)
-
-    # Scatter to other partitions
-    # scatter(active_A, active_B, mid)
-
+    sizes, size_prefix = get_size_info(dist_arrays)
+    array_left, workspace_left = slice_distributed_arrays(dist_arrays, size_prefix, end=left_count, workspace=workspace)
+    quicksort(array_left, workspace_left)
+    array_right, workspace_right = slice_distributed_arrays(dist_arrays, size_prefix, start=left_count, workspace=workspace)
+    quicksort(array_right, workspace_right)
 
 def main(args):
-
-    global_array, A, workspace = create_array(args.m, args.num_gpus)
-
-    sizes, size_prefix = get_size_info(A)
+    global_array, dist_array_list, workspace = create_array(args.m, args.num_gpus)
 
     t_start = time.perf_counter()
-    with cp.cuda.Device(0) as d:
-        quicksort(size_prefix, A, workspace, 0, args.m * args.num_gpus)
-        d.synchronize()
+    quicksort(dist_array_list, workspace)
     t_end = time.perf_counter()
 
-    print("Time: ", t_end - t_start)
+    print("Sorted:")
+    for array in dist_array_list:
+        print(array)
+    print("Time:")
+    print(t_end - t_start)
 
     with cp.cuda.Device(0) as d:
         d.synchronize()
         t_start = time.perf_counter()
         global_array.sort()
         d.synchronize()
-    t_end = time.perf_counter()
+        t_end = time.perf_counter()
 
-    print("Time: ", t_end - t_start)
-
-    print("Sorted")
-    for array in A:
-        print(array)
+    print("Time cupy.sort on single device:")
+    print(t_end - t_start)
 
 
 if __name__ == "__main__":
