@@ -18,12 +18,14 @@ if CUPY_ENABLED:
         CROSSPY_ENABLED = (os.getenv("PARLA_ENABLE_CROSSPY", "1") == "1")
     except ImportError:
         CROSSPY_ENABLED = False
+        crosspy = None
 else:
     CROSSPY_ENABLED = False
+    crosspy = None
 
 
 USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
-PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
+PREINIT_THREADS = (os.getenv("PARLA_PREINIT_THREADS", "1") == "1")
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
 print("CUPY_ENABLED: ", CUPY_ENABLED)

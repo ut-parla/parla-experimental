@@ -562,6 +562,10 @@ class CupyStream(Stream):
     def wait_event(self, event):
         self._stream.wait_event(event)
 
+    @property
+    def ptr(self):
+        return self._stream.ptr
+
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):
         if hasattr(self, name):

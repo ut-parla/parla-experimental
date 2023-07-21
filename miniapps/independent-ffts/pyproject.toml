@@ -1,0 +1,15 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "scikit-build",
+    "cmake",
+    "pip",
+    "cython<=0.29.36",
+    "ninja",
+    "numpy"
+]
+
+[tool.ruff]
+extend-ignore = ["F841", "401"]
+
