@@ -63,7 +63,7 @@ def crosspy_sample_sort(x:xp.array):
         with cp.cuda.Device(i):
             sp[i , :] = cp.asnumpy(y.blockview[i][idx])
 
-    sp  = sp.reshape((num_gpu * (num_gpu-1)))
+    sp  = np.reshape((num_gpu * (num_gpu-1)))
     sp  = np.sort(sp)
     num_splitters = num_gpu-1
 
@@ -112,9 +112,9 @@ def crosspy_sample_sort(x:xp.array):
     
     z         = xp.array(arr_list, axis=0)
     
-    rbuff_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
-    rbuff_offset  = np.append(np.array([0], dtype=np.int64), rbuff_counts)
-    rbuff_offset  = np.cumsum(rbuff_offset)[:-1]
+    recieve_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
+    recieve_offset  = np.append(np.array([0], dtype=np.int64), recieve_counts)
+    recieve_offset  = np.cumsum(recieve_offset)[:-1]
 
 
     for i in range(num_gpu):
@@ -132,7 +132,7 @@ def crosspy_sample_sort(x:xp.array):
         #     sp_cpu   = asnumpy1(sp)
         #     print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
 
-        gid_send[rbuff_offset[i] : rbuff_offset[i] + rbuff_counts[i]] = tmp
+        gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
 
     T[pp.S_MAP].stop()
 
