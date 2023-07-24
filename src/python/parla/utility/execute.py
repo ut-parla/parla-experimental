@@ -327,6 +327,14 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         IN = [] if len(read_data_list) == 0 else [(data_list[d], 0) for d in read_data_list]
         OUT = [] if len(write_data_list) == 0 else [(data_list[d], 0) for d in write_data_list]
 
+        memory_sz = 0
+        for inout_parray in INOUT:
+            memory_sz += inout_parray[0].nbytes
+        for out_parray in OUT:
+            memory_sz += out_parray[0].nbytes
+        for in_parray in IN:
+            memory_sz += in_parray[0].nbytes
+
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
         #           and does not have multiple placement options. 
@@ -355,7 +363,7 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #    " placement:", placement_set)
         # TODO(hc): Add data checking.
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set, input=IN, output=OUT, inout=INOUT)
+        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=placement_set, input=IN, output=OUT, inout=INOUT, memory=memory_sz)
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)

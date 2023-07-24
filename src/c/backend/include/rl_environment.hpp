@@ -17,6 +17,16 @@ public:
 
   void make_task_dependency_state(torch::Tensor current_state, InnerTask *task);
 
+  /// *** Task states + Active dependency/dependent task states per device +
+  /// Device states ***
+  void make_current_task_state(
+      InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
+      size_t offset, bool accum);
+  void make_current_device_state(
+      InnerTask *task, torch::Tensor current_state, DevID_t num_devices);
+  void make_current_active_deptask_state(
+      InnerTask *task, torch::Tensor current_state, DevID_t num_devices);
+
   torch::Tensor make_current_state(InnerTask *task);
 
   torch::Tensor make_next_state(torch::Tensor current_state,
