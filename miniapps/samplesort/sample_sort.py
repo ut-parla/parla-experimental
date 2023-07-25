@@ -49,6 +49,9 @@ def crosspy_sample_sort(x:xp.array):
     y         = xp.array(list(x.block_view(cp.sort)), axis=0)
     sync([i for i in range(num_gpu)])
     T[pp.LSORT1].stop()
+
+    # print("x", x.device_view)
+    # print("y", y.device_view)
     
     if num_gpu == 1:
         T[pp.ALL].stop()
@@ -63,7 +66,7 @@ def crosspy_sample_sort(x:xp.array):
         with cp.cuda.Device(i):
             sp[i , :] = cp.asnumpy(y.blockview[i][idx])
 
-    sp  = np.reshape((num_gpu * (num_gpu-1)))
+    sp  = sp.reshape((num_gpu * (num_gpu-1)))
     sp  = np.sort(sp)
     num_splitters = num_gpu-1
 
@@ -122,15 +125,15 @@ def crosspy_sample_sort(x:xp.array):
         for j in range(num_gpu):
             tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
         
-        # #print((u[tmp]<sp[0]).all()==True)
-        # if i==0:
-        #     u_cpu    = asnumpy1(u)[tmp]
-        #     sp_cpu   = asnumpy1(sp)
-        #     print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
-        # elif i==1:
-        #     u_cpu    = asnumpy1(u)[tmp]
-        #     sp_cpu   = asnumpy1(sp)
-        #     print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
+        #print((u[tmp]<sp[0]).all()==True)
+        if i==0:
+            u_cpu    = asnumpy1(u)[tmp]
+            sp_cpu   = asnumpy1(sp)
+            print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
+        elif i==1:
+            u_cpu    = asnumpy1(u)[tmp]
+            sp_cpu   = asnumpy1(sp)
+            print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
 
         gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
 
