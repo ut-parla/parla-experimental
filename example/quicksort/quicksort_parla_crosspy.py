@@ -35,11 +35,11 @@ def quicksort(array: xp.CrossPyArray, T, Tid=1):
 
         array[len(left)] = pivot
         if len(left):
-            await quicksort(left, T, 2 * Tid)
             array[:len(left)] = left
+            await quicksort(array[:len(left)], T, 2 * Tid)
         if len(right):
-            await quicksort(right, T, 2 * Tid + 1)
             array[len(left) + 1:] = right
+            await quicksort(array[len(left) + 1:], T, 2 * Tid + 1)
 
     return T[Tid]
 
