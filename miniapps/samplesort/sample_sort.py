@@ -40,8 +40,40 @@ TN =["All","Local sort 1", "Splitter comp. ", "Scatter map", "All to all ", "Loc
 for i in range(pp.LAST):
     T[i] = profile_t("T_%d"%(i))
 
-def crosspy_sample_sort(x:xp.array):
+def alltoallv(sbuff : xp.array , scounts : np.array):
+    num_gpus = sbuff.ndevices
     
+    rcounts  = np.transpose(scounts)
+
+    soffsets = np.zeros_like(scounts)
+    roffsets = np.zeros_like(rcounts)
+
+    for i in range(num_gpus):
+        soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
+        roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
+    
+    recieve_partitions = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpus)]
+    #rbuff              = xp.zeros(recieve_partitions, device=[gpu(i) for i in range(num_gpus)])
+    a=list()
+    for i in range(num_gpus):
+        with cp.cuda.Device(i):
+            a.append(cp.zeros(recieve_partitions[i]))
+
+    rbuff = xp.array(a, axis=0)
+
+    for i in range(num_gpus):
+        for j in range(num_gpus):
+            #print("rbuff.blkview[%d][%d:%d] = sbuff.blkview[%d][%d:%d]"%(i, roffsets[i,j] , roffsets[i,j] + rcounts[i,j], j, soffsets[j, i] , soffsets[j, i] + scounts[j, i]))
+            rbuff.blockview[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+
+    return rbuff
+
+
+
+    
+def crosspy_sample_sort(x:xp.array):
+    # print("input array ")
+    # print(x)
     T[pp.ALL].start()
     num_gpu  = x.ndevices
     
@@ -50,9 +82,6 @@ def crosspy_sample_sort(x:xp.array):
     sync([i for i in range(num_gpu)])
     T[pp.LSORT1].stop()
 
-    # print("x", x.device_view)
-    # print("y", y.device_view)
-    
     if num_gpu == 1:
         T[pp.ALL].stop()
         return y
@@ -126,24 +155,28 @@ def crosspy_sample_sort(x:xp.array):
             tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
         
         #print((u[tmp]<sp[0]).all()==True)
-        if i==0:
-            u_cpu    = asnumpy1(u)[tmp]
-            sp_cpu   = asnumpy1(sp)
-            print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
-        elif i==1:
-            u_cpu    = asnumpy1(u)[tmp]
-            sp_cpu   = asnumpy1(sp)
-            print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
+        # if i==0:
+        #     u_cpu    = asnumpy1(y)[tmp]
+        #     sp_cpu   = asnumpy1(sp)
+        #     print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
+        # elif i==1:
+        #     u_cpu    = asnumpy1(y)[tmp]
+        #     sp_cpu   = asnumpy1(sp)
+        #     print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
 
         gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
+
+    #print("gid_send")
+    #print(gid_send)
 
     T[pp.S_MAP].stop()
 
     T[pp.ALL2ALL].start()
-    gid_recv   = np.array(range(y.shape[0]), dtype=np.int64)
-    assignment = xp.alltoall(z, gid_recv, y, gid_send)
-    assignment()
-    sync([i for i in range(num_gpu)])
+    # gid_recv   = np.array(range(y.shape[0]), dtype=np.int64)
+    # assignment = xp.alltoall(z, gid_recv, y, gid_send)
+    # assignment()
+    # sync([i for i in range(num_gpu)])
+    z=alltoallv(y, send_count)
     T[pp.ALL2ALL].stop()
 
     T[pp.LSORT2].start()
@@ -199,11 +232,13 @@ if __name__ == "__main__":
     args   = parser.parse_args()
 
     for iter in range(args.warm_up):
+        # if iter==0:
+        # print("generating the random numbers")
         x         = partitioned_crosspy(args.n, args.gpu)
+        x_cpu     = asnumpy1(x)
         y         = crosspy_sample_sort(x)
-
-        y_cpu = xp.asnumpy(y)
-        x_cpu = xp.asnumpy(x)
+        y_cpu     = asnumpy1(y)
+        
         
         x_cpu=np.sort(x_cpu)
         print("sample sort passed : ",((y_cpu==x_cpu).all()==True))
