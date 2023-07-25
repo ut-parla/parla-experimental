@@ -63,7 +63,6 @@ def alltoallv(sbuff : xp.array , scounts : np.array):
 
     for i in range(num_gpus):
         for j in range(num_gpus):
-            #print("rbuff.blkview[%d][%d:%d] = sbuff.blkview[%d][%d:%d]"%(i, roffsets[i,j] , roffsets[i,j] + rcounts[i,j], j, soffsets[j, i] , soffsets[j, i] + scounts[j, i]))
             rbuff.blockview[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
 
     return rbuff
@@ -113,13 +112,13 @@ def crosspy_sample_sort(x:xp.array):
 
     T[pp.S_MAP].start()
     # to compute global ids
-    local_counts = np.array([len(y.blockview[i]) for i in range(num_gpu)])
-    local_offset = np.append(np.array([0]), local_counts)
-    local_offset = np.cumsum(local_offset)[:-1]
+    # local_counts = np.array([len(y.blockview[i]) for i in range(num_gpu)])
+    # local_offset = np.append(np.array([0]), local_counts)
+    # local_offset = np.cumsum(local_offset)[:-1]
 
     send_count  = np.zeros((num_gpu,num_gpu), dtype=np.int64)
-    send_offset = np.zeros((num_gpu,num_gpu), dtype=np.int64)
-    gid_send    = np.zeros(y.shape[0], dtype=np.int64)
+    # send_offset = np.zeros((num_gpu,num_gpu), dtype=np.int64)
+    # gid_send    = np.zeros(y.shape[0], dtype=np.int64)
     
     for i in range(num_gpu):
         with cp.cuda.Device(i):
@@ -134,37 +133,37 @@ def crosspy_sample_sort(x:xp.array):
             idx = cp.where(y.blockview[i] >= sp.blockview[i][num_splitters-1])[0]
             send_count[i, num_gpu-1] = len(idx)
     
-    for i in range(num_gpu):
-        send_offset[i,:]= np.append(np.array([0], dtype=np.int64), np.cumsum(send_count[i,:]))[:-1]
+    # for i in range(num_gpu):
+    #     send_offset[i,:]= np.append(np.array([0], dtype=np.int64), np.cumsum(send_count[i,:]))[:-1]
     
-    arr_list = list()
-    for i in range(num_gpu):
-        with cp.cuda.Device(i):
-            arr_list.append(cp.zeros(np.sum(send_count[:,i])))
+    # arr_list = list()
+    # for i in range(num_gpu):
+    #     with cp.cuda.Device(i):
+    #         arr_list.append(cp.zeros(np.sum(send_count[:,i])))
     
-    z         = xp.array(arr_list, axis=0)
+    # z         = xp.array(arr_list, axis=0)
     
-    recieve_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
-    recieve_offset  = np.append(np.array([0], dtype=np.int64), recieve_counts)
-    recieve_offset  = np.cumsum(recieve_offset)[:-1]
+    # recieve_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
+    # recieve_offset  = np.append(np.array([0], dtype=np.int64), recieve_counts)
+    # recieve_offset  = np.cumsum(recieve_offset)[:-1]
 
 
-    for i in range(num_gpu):
-        tmp      = np.array([],dtype=np.int64)
-        for j in range(num_gpu):
-            tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
+    # for i in range(num_gpu):
+    #     tmp      = np.array([],dtype=np.int64)
+    #     for j in range(num_gpu):
+    #         tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
         
-        #print((u[tmp]<sp[0]).all()==True)
-        # if i==0:
-        #     u_cpu    = asnumpy1(y)[tmp]
-        #     sp_cpu   = asnumpy1(sp)
-        #     print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
-        # elif i==1:
-        #     u_cpu    = asnumpy1(y)[tmp]
-        #     sp_cpu   = asnumpy1(sp)
-        #     print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
+    #     #print((u[tmp]<sp[0]).all()==True)
+    #     # if i==0:
+    #     #     u_cpu    = asnumpy1(y)[tmp]
+    #     #     sp_cpu   = asnumpy1(sp)
+    #     #     print("partion 0 ", (u_cpu<sp_cpu[0]).all()==True)
+    #     # elif i==1:
+    #     #     u_cpu    = asnumpy1(y)[tmp]
+    #     #     sp_cpu   = asnumpy1(sp)
+    #     #     print("partion 1 ", (u_cpu>=sp_cpu[0]).all()==True)
 
-        gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
+    #     gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
 
     #print("gid_send")
     #print(gid_send)

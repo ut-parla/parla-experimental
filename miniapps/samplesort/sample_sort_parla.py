@@ -51,6 +51,34 @@ def partitioned_crosspy(global_size: int, num_gpu:int):
 
     return xp.array(x_list, axis=0)
 
+def alltoallv(sbuff : xp.array , scounts : np.array):
+    num_gpus = sbuff.ndevices
+    
+    rcounts  = np.transpose(scounts)
+
+    soffsets = np.zeros_like(scounts)
+    roffsets = np.zeros_like(rcounts)
+
+    for i in range(num_gpus):
+        soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
+        roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
+    
+    recieve_partitions = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpus)]
+    
+    a=list()
+    for i in range(num_gpus):
+        with cp.cuda.Device(i):
+            a.append(cp.zeros(recieve_partitions[i]))
+
+    rbuff = xp.array(a, axis=0)
+
+    for i in range(num_gpus):
+        for j in range(num_gpus):
+            rbuff.blockview[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+
+    return rbuff
+
+
 def sync(device_ids):
     for device_id in device_ids:
         with cp.cuda.Device(device_id):
@@ -60,7 +88,6 @@ def sync(device_ids):
 def parla_sample_sort(x:xp.array):
     T[pp.ALL].start()
     num_gpu     = x.ndevices
-    #y           = partitioned_crosspy(len(x), num_gpu)
     
     a = [None] * num_gpu
     T[pp.LSORT1].start()
@@ -80,6 +107,7 @@ def parla_sample_sort(x:xp.array):
             await T
     
     y = xp.array(a, axis=0)
+    sync([i for i in range(num_gpu)])
     T[pp.LSORT1].stop()
 
     if num_gpu==1:
@@ -125,13 +153,13 @@ def parla_sample_sort(x:xp.array):
     T[pp.SP].stop()
 
     T[pp.S_MAP].start()
-    local_counts = np.array([len(x.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
-    local_offset = np.append(np.array([0], dtype=np.int64), local_counts)
-    local_offset = np.cumsum(local_offset)[:-1]
+    # local_counts = np.array([len(x.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
+    # local_offset = np.append(np.array([0], dtype=np.int64), local_counts)
+    # local_offset = np.cumsum(local_offset)[:-1]
 
     send_count  = np.zeros((num_gpu,num_gpu), dtype=np.int64)
-    send_offset = np.zeros((num_gpu,num_gpu), dtype=np.int64)
-    gid_send    = np.zeros(y.shape[0], dtype=np.int64)
+    #send_offset = np.zeros((num_gpu,num_gpu), dtype=np.int64)
+    #gid_send    = np.zeros(y.shape[0], dtype=np.int64)
 
     with Parla():
         @spawn(placement=cpu, vcus=0)
@@ -153,41 +181,41 @@ def parla_sample_sort(x:xp.array):
                         send_count[i, num_gpu-1] = len(idx)
             await T 
     
-    for i in range(num_gpu):
-        send_offset[i,:]= np.append(np.array([0], dtype=np.int64), np.cumsum(send_count[i,:]))[:-1]
+    # for i in range(num_gpu):
+    #     send_offset[i,:]= np.append(np.array([0], dtype=np.int64), np.cumsum(send_count[i,:]))[:-1]
 
-    a=[None] * num_gpu
-    with Parla():
-        @spawn(placement=cpu, vcus=0)
-        async def alloc_array_sorted():
-            T = TaskSpace("T")
-            for i in range(num_gpu):
-                @spawn(T[i], placement=[gpu(i)], vcus=0.0)
-                def t1():
-                    with cp.cuda.Device(i):
-                        a[i] = cp.zeros(np.sum(send_count[:,i]))
+    # a=[None] * num_gpu
+    # with Parla():
+    #     @spawn(placement=cpu, vcus=0)
+    #     async def alloc_array_sorted():
+    #         T = TaskSpace("T")
+    #         for i in range(num_gpu):
+    #             @spawn(T[i], placement=[gpu(i)], vcus=0.0)
+    #             def t1():
+    #                 with cp.cuda.Device(i):
+    #                     a[i] = cp.zeros(np.sum(send_count[:,i]))
 
-                    return
-            await T
+    #                 return
+    #         await T
 
-    z=xp.array(a, axis=0)
-    recieve_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
-    recieve_offset  = np.append(np.array([0]), recieve_counts)
-    recieve_offset  = np.cumsum(recieve_offset)[:-1]
+    # z=xp.array(a, axis=0)
+    # recieve_counts  = np.array([len(z.blockview[i]) for i in range(num_gpu)], dtype=np.int64)
+    # recieve_offset  = np.append(np.array([0]), recieve_counts)
+    # recieve_offset  = np.cumsum(recieve_offset)[:-1]
 
-    for i in range(num_gpu):
-        tmp      = np.array([],dtype=np.int64)
-        for j in range(num_gpu):
-            tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
+    # for i in range(num_gpu):
+    #     tmp      = np.array([],dtype=np.int64)
+    #     for j in range(num_gpu):
+    #         tmp=np.append(tmp, local_offset[j] + send_offset[j,i] + np.array(range(send_count[j,i]), dtype=np.int64))
         
-        gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
-
+    #     gid_send[recieve_offset[i] : recieve_offset[i] + recieve_counts[i]] = tmp
     T[pp.S_MAP].stop()
 
     T[pp.ALL2ALL].start()
-    gid_recv   = np.array(range(y.shape[0]), dtype=np.int64)
-    assignment = xp.alltoall(z, gid_recv, y, gid_send)
-    assignment()
+    # gid_recv   = np.array(range(y.shape[0]), dtype=np.int64)
+    # assignment = xp.alltoall(z, gid_recv, y, gid_send)
+    # assignment()
+    z=alltoallv(y, send_count)
     sync([i for i in range(num_gpu)])
     T[pp.ALL2ALL].stop()
 
@@ -207,6 +235,7 @@ def parla_sample_sort(x:xp.array):
             await T
     
     z = xp.array(a, axis=0)
+    sync([i for i in range(num_gpu)])
     T[pp.LSORT2].stop()
     T[pp.ALL].stop()
     return z
