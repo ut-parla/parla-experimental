@@ -168,6 +168,15 @@ void RLEnvironment::make_current_device_state(
     std::cout << "\t device:" << d << ", " << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2 <<
       ", " << remaining_memory << ", " << total_memory << ", " <<
       remaining_memory / double{total_memory} << "\n";
+
+    // 4) Average idle and non-idle time features.
+    auto [idle_time, nonidle_time] = device->get_total_idle_time();
+    double total_time = idle_time + nonidle_time;
+    std::cout << "Idle time:" << idle_time << ", non-idle time:" << nonidle_time << "\n";
+    if (total_time > 0) {
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 3] = idle_time / total_time;
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] = nonidle_time/ total_time;
+    }
   }
 }
 

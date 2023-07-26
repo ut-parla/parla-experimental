@@ -496,6 +496,11 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   task->set_state(Task::RUNNING);
   this->num_running_tasks++;
 
+  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+    ParlaDevice *device = task->assigned_devices[i];
+    device->end_device_idle();
+  }
+
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);

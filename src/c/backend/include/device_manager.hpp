@@ -4,6 +4,7 @@
 
 #include "device.hpp"
 
+#include <chrono>
 #include <iostream>
 #include <vector>
 
@@ -13,11 +14,16 @@ using DevID_t = uint32_t;
 /// information on the current system to the Parla runtime.
 class DeviceManager {
 public:
-  DeviceManager() {}
+  using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+
+  DeviceManager() {
+    this->initial_epoch_ = std::chrono::system_clock::now();
+  }
   DeviceManager(const DeviceManager &) = delete;
 
   void register_device(ParlaDevice *new_dev) {
     new_dev->set_global_id(this->last_dev_id_++);
+    new_dev->set_initial_epoch(this->initial_epoch_);
     const int idx = static_cast<int>(new_dev->get_type());
     arch_devices_[idx].emplace_back(new_dev);
     all_devices_.emplace_back(new_dev);
@@ -125,6 +131,8 @@ protected:
   std::array<std::vector<ParlaDevice *>, NUM_DEVICE_TYPES> arch_devices_;
   // Stores all devices in the system
   std::vector<ParlaDevice *> all_devices_;
+  /// System clock time point when this instance created
+  TimePoint initial_epoch_;
 };
 
 #endif
