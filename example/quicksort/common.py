@@ -2,34 +2,37 @@ from typing import Optional
 
 import numpy as np
 import cupy as cp
-
-np.random.seed(10)
-cp.random.seed(10)
+from crosspy import gpu
 
 # Note: this experimental allocator breaks memcpy async
 # cp.cuda.set_allocator(cp.cuda.MemoryAsyncPool().malloc)
 
-def create_array(per_gpu_size, num_gpus, unique=False, dtype=np.int32):
+def create_array(per_gpu_size, num_gpus, dtype=np.int32, unique=False, return_workspace=True):
     if unique:
         global_array = np.arange(per_gpu_size * num_gpus, dtype=dtype)
         np.random.shuffle(global_array)
     else:
-        global_array = cp.random.randint(0, 1000000, per_gpu_size * num_gpus).astype(dtype, copy=False)
+        global_array = np.random.randint(0, 1000000, per_gpu_size * num_gpus).astype(dtype, copy=False)
 
     # Init a distributed crosspy array
     cupy_list_A = []
-    cupy_list_B = []
+    if return_workspace:
+        cupy_list_B = []
     for i in range(num_gpus):
-        with cp.cuda.Device(i) as dev:
+        # with cp.cuda.Device(i) as dev:
+        with gpu(i) as ctx:
             random_array = cp.asarray(global_array[per_gpu_size * i:per_gpu_size * (i + 1)])
             cupy_list_A.append(random_array)
-            cupy_list_B.append(cp.empty(per_gpu_size, dtype=dtype))
+            if return_workspace:
+                cupy_list_B.append(cp.empty(per_gpu_size, dtype=dtype))
 
-    for i in range(num_gpus):
-        with cp.cuda.Device(i) as dev:
-            dev.synchronize()
+    # for i in range(num_gpus):
+    #     with cp.cuda.Device(i) as dev:
+    #         dev.synchronize()
 
-    return global_array, cupy_list_A, cupy_list_B
+    if return_workspace:
+        return global_array, cupy_list_A, cupy_list_B
+    return global_array, cupy_list_A
 
 def get_size_info(array_list):
     """Return size of each array and accumulated sizes
