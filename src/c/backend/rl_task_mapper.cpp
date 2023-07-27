@@ -181,9 +181,12 @@ void RLTaskMappingPolicy::run_task_mapping(
     return;
   }
 
+  chosen_devices->clear();
+  chosen_devices->push_back(device_requirements[chosen_device_gid]);
+
   if (this->rl_agent_->is_training_mode()) {
     this->rl_next_state_ = this->rl_env_->make_next_state(
-        this->rl_current_state_, chosen_device_gid);
+        this->rl_current_state_, chosen_device_gid, task);
     torch::Tensor reward = this->rl_env_->calculate_reward(
         chosen_device_gid, task, this->rl_current_state_);
     this->rl_agent_->append_replay_memory(
@@ -193,17 +196,16 @@ void RLTaskMappingPolicy::run_task_mapping(
     this->rl_agent_->optimize_model();
     this->rl_agent_->target_net_soft_update();
     std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-      " current state:" << this->rl_current_state_ <<
+      " current state:" << this->rl_current_state_ << " next state:" <<
+      this->rl_next_state_ <<
       " device id: " << chosen_device_gid << " reward:" <<
       reward.item<float>() << "\n";
   } else {
     std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-      " current state:" << this->rl_current_state_ <<
+      " current state:" << this->rl_current_state_ << " next state: " <<
+      this->rl_next_state_ <<
       " device id: " << chosen_device_gid <<  "\n";
   }
-
-  chosen_devices->clear();
-  chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
     this->rl_env_->output_reward(this->rl_agent_->get_episode());

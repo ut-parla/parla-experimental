@@ -15,8 +15,6 @@ public:
       : device_manager_(device_manager), parray_tracker_(parray_tracker),
           mapper_(mapper) {}
 
-  void make_task_dependency_state(torch::Tensor current_state, InnerTask *task);
-
   /// *** Task states + Active dependency/dependent task states per device +
   /// Device states ***
   void make_current_task_state(
@@ -29,8 +27,8 @@ public:
 
   torch::Tensor make_current_state(InnerTask *task);
 
-  torch::Tensor make_next_state(torch::Tensor current_state,
-                                DevID_t chosen_device_id);
+  torch::Tensor make_next_state(
+        torch::Tensor current_state, DevID_t chosen_device_id, InnerTask *task);
 
   torch::Tensor calculate_reward(DevID_t chosen_device_id,
                                  InnerTask *task,
