@@ -258,6 +258,29 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
 torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
                                InnerTask* task,
                                torch::Tensor current_state) {
+  double score{0};
+  DevID_t num_devices =
+      this->device_manager_->template get_num_devices(ParlaDeviceType::All);
+  double total_nonidle_time{0}, current_time{0};
+  for (DevID_t d = 0; d < num_devices; ++d) {
+    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
+    auto [idle_time, nonidle_time] = device->get_total_idle_time();
+    total_nonidle_time += nonidle_time;
+    if (d == chosen_device_id) {
+      current_time = device->current_timepoint_count_from_beginning();
+    }
+  }
+  double ideal_time_per_device = total_nonidle_time / num_devices;
+  score = ideal_time_per_device / current_time;
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+  return torch::tensor({score}, torch::kDouble);
+}
+
+#if 0
+torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state) {
   double score = 0;
   if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {
     // If the chosen device was idle, give a reward 1.
@@ -290,7 +313,6 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
   return torch::tensor({score}, torch::kDouble);
 }
 
-#if 0
 torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
                                torch::Tensor current_state) {
   std::cout << "Calculate reward\n";

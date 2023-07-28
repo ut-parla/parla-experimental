@@ -188,6 +188,12 @@ public:
     return std::make_pair(old_total_idle_time, total_time - old_total_idle_time);
   }
 
+  double current_timepoint_count_from_beginning() {
+    TimePoint current_time_point = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        current_time_point - this->initial_epoch_).count();
+  }
+
   void set_initial_epoch(TimePoint initial_epoch) {
     this->initial_epoch_ = initial_epoch;
   }
