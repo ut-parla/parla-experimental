@@ -277,9 +277,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         task->device_constraints[device->get_global_id()];
 
     // TODO(hc):This assumes that VCU is 1.
-    if (task->name.find("begin_rl_task") == std::string::npos) {
-      device->begin_device_idle();
-    }
+    device->begin_device_idle();
 
     // TODO(wlr): This needs to be changed to not release PARRAY resources
     device_pool.increase<ResourceCategory::All>(task_pool);
@@ -314,6 +312,13 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+    ParlaDevice *device = task->assigned_devices[i];
+    // TODO(hc):This assumes that VCU is 1.
+    if (task->name.find("begin_rl_task") == std::string::npos) {
+      device->begin_device_idle();
+    }
+  }
 
   task_cleanup_presync(worker, task, state);
   // synchronize task enviornment

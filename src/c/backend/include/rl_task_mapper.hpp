@@ -79,6 +79,14 @@ private:
   BufferTy buffer_;
 };
 
+class RLStateTransition {
+  public:
+    torch::Tensor current_state;
+    torch::Tensor next_state;
+    torch::Tensor chosen_device;
+    double base_score;
+};
+
 struct FullyConnectedDQNImpl : public torch::nn::Module {
   FullyConnectedDQNImpl(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
@@ -120,15 +128,15 @@ public:
 
   RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions, bool is_training_mode = true,
           torch::Device device = torch::kCUDA,
-          float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 200,
-          size_t batch_size = 100, float gamma = 0.999)
+          float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 1000,
+          size_t batch_size = 128, float gamma = 0.999)
       : policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
         device_(device), n_actions_(n_actions), is_training_mode_(is_training_mode),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
-        replay_memory_(1000),
-        rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.0025)),
-        //adam_optimizer_(policy_net_.parameters(), torch::optim::AdamOptions(3e-4)),
+        replay_memory_(10000),
+        //rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
+        adam_optimizer_(policy_net_.parameters(), torch::optim::AdamOptions(3e-4)),
         episode_(0) {
     this->load_models();      
   }
@@ -147,7 +155,8 @@ public:
     this->target_net_.save(target_net_output_archive);
     policy_net_output_archive.save_to("policy_net.pt");
     target_net_output_archive.save_to("target_net.pt");
-    torch::save(this->rms_optimizer_, "rms_optimizer.pt");
+    //torch::save(this->rms_optimizer_, "rms_optimizer.pt");
+    torch::save(this->adam_optimizer_, "adamm_optimizer.pt");
 #if 0
     std::ofstream fp_p("policy_net.out");
     size_t p_i{0};
@@ -214,7 +223,8 @@ public:
     
     if (std::ifstream fp("rms_optimizer.pt"); fp) {
       std::cout << "Load RMS optimizer\n";
-      torch::load(this->rms_optimizer_, "rms_optimizer.pt");
+      //torch::load(this->rms_optimizer_, "rms_optimizer.pt");
+      torch::load(this->adam_optimizer_, "adam_optimizer.pt");
     }
 #if 0
     std::ofstream fp_p("policy_net.in");
@@ -379,7 +389,8 @@ public:
     std::cout << "\n Loss:" << loss << "\n";
 
     // Zerofying gradients in the optimizer.
-    this->rms_optimizer_.zero_grad();
+    //this->rms_optimizer_.zero_grad();
+    this->adam_optimizer_.zero_grad();
     /*
     for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
       std::cout << "After zerofying parameter:" << parameter.grad() << "\n";
@@ -413,7 +424,8 @@ public:
     }
     */
 
-    this->rms_optimizer_.step();
+    //this->rms_optimizer_.step();
+    this->adam_optimizer_.step();
     /*
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       std::cout << "After parameter:" << parameter.grad().data() << "\n";
@@ -489,6 +501,62 @@ public:
                               this->episode_);
   }
 
+  void append_mapped_task_info(
+      InnerTask *task,
+      torch::Tensor current_state, torch::Tensor next_state,
+      torch::Tensor chosen_device) {
+    if (task->name.find("global_0") != std::string::npos ||
+        task->name.find("begin_rl_task") != std::string::npos ||
+        task->name.find("end_rl_task") != std::string::npos) {
+      return;
+    }
+    //auto current_time = std::chrono::high_resolution_clock::now();
+    RLStateTransition *tinfo = new RLStateTransition();
+    tinfo->current_state = current_state;
+    tinfo->next_state = next_state;
+    tinfo->chosen_device = chosen_device;
+    tinfo->base_score = (current_state[0][8 + chosen_device.item<int64_t>() * 9].item<double>() == 1)? 0 : 1;
+    task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
+    this->replay_memory_buffer_.push_back(tinfo);
+  }
+
+  /**
+   * @brief Calculate reward for a launched task and add the information
+   * to the replay memory.
+   *
+   * @detail Task mapping information for a task is partially constructed
+   * at a mapping phase and is stored in a temporary buffer.
+   * When this task is about to be launched, calculate a reward with the
+   * information in the buffer, and add it to the replay memory.
+   *
+   * @param task Inner task to register to the replay memory
+   * @param rl_env RL environment having the replay memory
+   */
+  void append_launched_task_info(InnerTask *task, RLEnvironment *rl_env) {
+    if (this->is_training_mode_) {
+      if (task->name.find("global_0") != std::string::npos ||
+          task->name.find("begin_rl_task") != std::string::npos ||
+          task->name.find("end_rl_task") != std::string::npos) {
+        return;
+      }
+      // Get id of the task
+      RLStateTransition *tinfo = this->replay_memory_buffer_[
+          task->replay_mem_buffer_id_];
+      DevID_t chosen_device_id = static_cast<DevID_t>(
+          tinfo->chosen_device[0].item<int64_t>());
+      torch::Tensor reward = rl_env->calculate_reward(
+            chosen_device_id, task, tinfo->current_state, tinfo->base_score);
+      this->append_replay_memory(
+          tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
+          reward);
+      this->optimize_model();
+      this->target_net_soft_update();
+      std::cout << this->get_episode() << " episode task " << task->name <<
+          " current state:" << tinfo->current_state << ", device id:" <<
+          tinfo->chosen_device << ", reward:" << reward << "\n";
+    }
+  }
+
   void print() { this->replay_memory_.print(); }
 
   std::vector<std::tuple<torch::Tensor, torch::Tensor, torch::Tensor,
@@ -526,10 +594,11 @@ private:
   float gamma_;
   uint64_t steps_;
   ExperienceReplay replay_memory_;
-  torch::optim::RMSprop rms_optimizer_;
-  //torch::optim::Adam adam_optimizer_;
+  //torch::optim::RMSprop rms_optimizer_;
+  torch::optim::Adam adam_optimizer_;
   size_t episode_;
   size_t subepisode_{0};
+  std::vector<RLStateTransition*> replay_memory_buffer_;
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
@@ -543,13 +612,13 @@ public:
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      const Mapper &mapper, Score_t *score,
+      Mapper *mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -557,7 +626,7 @@ public:
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      const Mapper &mapper,
+      Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -565,12 +634,27 @@ public:
           &parray_list) override;
 
   void run_task_mapping(
-      InnerTask *task, const Mapper &mapper,
+      InnerTask *task, Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>>
           *placement_req_options_vec) override;
+
+  /**
+   * @brief Calculate reward for a launched task and add the information
+   * to the replay memory.
+   *
+   * @detail Task mapping information for a task is partially constructed
+   * at a mapping phase and is stored in a temporary buffer.
+   * When this task is about to be launched, calculate a reward with the
+   * information in the buffer, and add it to the replay memory.
+   *
+   * @param task Inner task to register to the replay memory
+   */
+  void append_launched_task_info(InnerTask *task) {
+    this->rl_agent_->append_launched_task_info(task, this->rl_env_);
+  }
 
 #if 0
   // RL forwarding.

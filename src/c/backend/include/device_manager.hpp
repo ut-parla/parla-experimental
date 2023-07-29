@@ -29,6 +29,13 @@ public:
     all_devices_.emplace_back(new_dev);
   }
 
+  void reset_device_timers() {
+    this->initial_epoch_ = std::chrono::system_clock::now();
+    for (ParlaDevice* device : this->all_devices_) {
+      device->set_initial_epoch(this->initial_epoch_);
+    }
+  }
+
   void print_registered_devices() {
     std::cout << "C++ device list:\n";
     for (ParlaDeviceType dev_type : architecture_types) {

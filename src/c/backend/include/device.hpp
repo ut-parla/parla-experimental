@@ -139,6 +139,7 @@ public:
    */
   void begin_device_idle() {
     this->idle_timer_mtx_.lock();
+    this->is_idle = true;
     // Get the current time point as an idle time begin.
     this->idle_begin_time_ = std::chrono::system_clock::now();
     this->idle_timer_mtx_.unlock();
@@ -150,26 +151,34 @@ public:
    */
   void end_device_idle() {
     this->idle_timer_mtx_.lock();
+    this->is_idle = false;
+    this->end_device_idle_unsafe();
+    this->idle_timer_mtx_.unlock();
+  }
+
+  void end_device_idle_unsafe() {
     // Get the current time point as an idle time end.
     this->idle_end_time_ = std::chrono::system_clock::now();
-    if (this->idle_begin_time_.time_since_epoch().count() != 0) {
-      // Calculate and accumulate duration between two points.
-      this->accumulated_idle_time_ += std::chrono::duration_cast<
-          std::chrono::milliseconds>(
-              this->idle_end_time_ - this->idle_begin_time_).count();
-
-      std::cout << "Idle end time count:" <<
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            this->idle_end_time_.time_since_epoch()).count() <<
-            ", begin time count:" <<
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            this->idle_begin_time_.time_since_epoch()).count() <<
-            "\n";
-    }
+    // Calculate and accumulate duration between two points.
+    this->accumulated_idle_time_ += std::chrono::duration_cast<
+        std::chrono::milliseconds>(
+            this->idle_end_time_ - this->idle_begin_time_).count();
+    #if 0
+    std::cout << "Idle end time count:" <<
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          this->idle_end_time_.time_since_epoch()).count() <<
+          ", begin time count:" <<
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          this->idle_begin_time_.time_since_epoch()).count() <<
+          "\n";
+    std::cout << "Initial time count:" <<
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          this->initial_epoch_.time_since_epoch()).count() <<
+          "\n";
+    #endif
     // Reset time points; New duration will be accumulated.
-    this->idle_begin_time_ = {};
+    this->idle_begin_time_ = this->idle_end_time_;
     this->idle_end_time_ = {};
-    this->idle_timer_mtx_.unlock();
   }
 
   /**
@@ -180,10 +189,19 @@ public:
   std::pair<double, double> get_total_idle_time() {
     double old_total_idle_time{0}, total_time{0};
     this->idle_timer_mtx_.lock();
+    if (this->is_idle) {
+      this->end_device_idle_unsafe();
+    }
     old_total_idle_time = this->accumulated_idle_time_;
     TimePoint current_time_point = std::chrono::system_clock::now();
     total_time = std::chrono::duration_cast<std::chrono::milliseconds>(
         current_time_point - this->initial_epoch_).count();
+    this->num_get_idle_time_++;
+    #if 0
+    std::cout << "Total time:" << total_time << "\n";
+    std::cout << "accumulated idle time:" << this->accumulated_idle_time_ << ", " <<
+      this->num_get_idle_time_ << "\n";
+    #endif
     this->idle_timer_mtx_.unlock();
     return std::make_pair(old_total_idle_time, total_time - old_total_idle_time);
   }
@@ -195,7 +213,13 @@ public:
   }
 
   void set_initial_epoch(TimePoint initial_epoch) {
+    this->idle_timer_mtx_.lock();
     this->initial_epoch_ = initial_epoch;
+    this->accumulated_idle_time_ = 0;
+    this->idle_begin_time_ = initial_epoch;
+    this->idle_end_time_ = {};
+    this->num_get_idle_time_ = 0;
+    this->idle_timer_mtx_.unlock();
   }
 
 protected:
@@ -209,13 +233,15 @@ protected:
   std::unordered_map<std::string, size_t> resource_map_;
   /// System clock time point when the device manager created
   TimePoint initial_epoch_;
-	/// System clock time point of the beginning of the device idle
-	TimePoint idle_begin_time_;
-	/// System clock time point of the end of the device idle
-	TimePoint idle_end_time_;
-	/// Accumulated system clock counts during the device idle
-	double accumulated_idle_time_;
-	std::mutex idle_timer_mtx_;
+  /// System clock time point of the beginning of the device idle
+  TimePoint idle_begin_time_;
+  /// System clock time point of the end of the device idle
+  TimePoint idle_end_time_;
+  /// Accumulated system clock counts during the device idle
+  double accumulated_idle_time_;
+  std::mutex idle_timer_mtx_;
+  size_t num_get_idle_time_{0};
+  bool is_idle{true};
 };
 
 ///

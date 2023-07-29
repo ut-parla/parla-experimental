@@ -17,7 +17,7 @@ RLTaskMappingPolicy::~RLTaskMappingPolicy() {
 bool RLTaskMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-    const Mapper &mapper, Score_t *score,
+    Mapper *mapper, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
               &parray_list) {
 #if 0
@@ -51,7 +51,7 @@ bool RLTaskMappingPolicy::calc_score_devplacement(
 
 bool RLTaskMappingPolicy::calc_score_archplacement(
     InnerTask *task, ArchitectureRequirement *arch_placement_req,
-    const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+    Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         &parray_list,
@@ -61,7 +61,7 @@ bool RLTaskMappingPolicy::calc_score_archplacement(
 
 bool RLTaskMappingPolicy::calc_score_mdevplacement(
     InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-    const Mapper &mapper,
+    Mapper *mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score,
     const std::vector<
@@ -121,7 +121,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
 }
 
 void RLTaskMappingPolicy::run_task_mapping(
-    InnerTask *task, const Mapper &mapper,
+    InnerTask *task, Mapper *mapper,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list,
@@ -131,7 +131,6 @@ void RLTaskMappingPolicy::run_task_mapping(
   std::vector<bool> compatible_devices(num_devices, false);
   std::vector<std::shared_ptr<DeviceRequirement>>
       device_requirements(num_devices);
-  //std::cout << "\n";
   for (std::shared_ptr<PlacementRequirementBase> base_req :
        *placement_req_options_vec) {
     if (base_req->is_dev_req()) {
@@ -151,11 +150,11 @@ void RLTaskMappingPolicy::run_task_mapping(
           dynamic_cast<ArchitectureRequirement *>(base_req.get());
       auto placement_options = arch_req->GetDeviceRequirementOptions();
       size_t n_devices = placement_options.size();
-      for (size_t d = 0; d < n_devices; ++d) {
-        std::shared_ptr<DeviceRequirement> dev_req = placement_options[d];
-        const ParlaDevice &device = *(dev_req->device());
-        DevID_t global_dev_id = device.get_global_id();
-        if (device.check_resource_availability(dev_req.get())) {
+      for (size_t k = 0; k < n_devices; ++k) {
+        std::shared_ptr<DeviceRequirement> dev_req = placement_options[k];
+        ParlaDevice *device = dev_req->device();
+        DevID_t global_dev_id = device->get_global_id();
+        if (device->check_resource_availability(dev_req.get())) {
           compatible_devices[global_dev_id] = true;
           device_requirements[global_dev_id] = dev_req;
         } else {
@@ -187,6 +186,10 @@ void RLTaskMappingPolicy::run_task_mapping(
   if (this->rl_agent_->is_training_mode()) {
     this->rl_next_state_ = this->rl_env_->make_next_state(
         this->rl_current_state_, chosen_device_gid, task);
+    this->rl_agent_->append_mapped_task_info(
+        task, this->rl_current_state_, this->rl_next_state_,
+        torch::tensor({float{chosen_device_gid}}, torch::kInt64));
+#if 0
     torch::Tensor reward = this->rl_env_->calculate_reward(
         chosen_device_gid, task, this->rl_current_state_);
     this->rl_agent_->append_replay_memory(
@@ -200,6 +203,7 @@ void RLTaskMappingPolicy::run_task_mapping(
       this->rl_next_state_ <<
       " device id: " << chosen_device_gid << " reward:" <<
       reward.item<float>() << "\n";
+#endif
   } else {
     std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
       " current state:" << this->rl_current_state_ << " next state: " <<
@@ -208,7 +212,10 @@ void RLTaskMappingPolicy::run_task_mapping(
   }
 
   if (task->get_name().find("begin_rl_task") != std::string::npos) {
-    this->rl_env_->output_reward(this->rl_agent_->get_episode());
     this->rl_agent_->incr_episode();
+    this->device_manager_->reset_device_timers();
+  }
+  if (task->get_name().find("end_rl_task") != std::string::npos) {
+    this->rl_env_->output_reward(this->rl_agent_->get_episode());
   }
 }

@@ -83,17 +83,17 @@ void Mapper::run(SchedulerPhase *next_phase) {
         &parray_list = task->parray_list;
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
-    policy_->run_task_mapping(task, *this, &chosen_devices, parray_list,
+    policy_->run_task_mapping(task, this, &chosen_devices, parray_list,
         &placement_req_options_vec);
 
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
       // If it is, re-enqueue the task to the mappable task queue.
       this->enqueue(task);
-      // std::cout << "Task has not been mapped" << std::endl;
     } else {
       std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           *parray_list = &(task->parray_list);
+      task->device_constraints.clear();
       for (size_t i = 0; i < chosen_devices.size(); ++i) {
         assert(chosen_devices[i] != nullptr);
         ParlaDevice *chosen_device = chosen_devices[i]->device();
@@ -116,7 +116,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
                 << "\n";
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-        std::cout << "\t [" << i << "] "
+        std::cout << "\t [" << i << "] " << ", " << task->assigned_devices[i]->get_global_id() <<
+          ", "
                   << task->assigned_devices[i]->get_name() << "\n";
         auto res = task->device_constraints[task->assigned_devices[i]
                                                 ->get_global_id()];
@@ -169,9 +170,7 @@ bool MemoryReserver::check_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-
     status = device_pool.check_greater<ResourceCategory::Persistent>(task_pool);
-
     if (!status) {
       break;
     }
@@ -273,8 +272,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     if (task == nullptr) {
       throw std::runtime_error("MemoryReserver::run: task is nullptr");
     }
-
-    std::cout << task->name << " is on memory reserver\n" << std::flush;
 
     // Is there enough memory on the devices to schedule this task?
     bool can_reserve = this->check_resources(task);
@@ -505,8 +502,11 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-           << std::endl << std::flush;
+  if (dynamic_cast<RLTaskMappingPolicy*>(this->
+        scheduler->mapper->get_policy_raw_pointer()) != nullptr) {
+      this->scheduler->mapper->get_policy_raw_pointer()->
+          append_launched_task_info(task);
+  }
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

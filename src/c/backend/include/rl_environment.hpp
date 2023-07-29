@@ -32,7 +32,7 @@ public:
 
   torch::Tensor calculate_reward(DevID_t chosen_device_id,
                                  InnerTask *task,
-                                 torch::Tensor current_state);
+                                 torch::Tensor current_state, double base_score);
 
   void output_reward(size_t episode);
 protected:

@@ -33,7 +33,7 @@ public:
   virtual bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      const Mapper &mapper, Score_t *score,
+      Mapper *mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) = 0;
 
@@ -61,7 +61,7 @@ public:
   /// @return True if any device in the architecture is available
   virtual bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -87,7 +87,7 @@ public:
   /// @return True if all devices in the multi-device placement are available.
   virtual bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      const Mapper &mapper,
+      Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -95,11 +95,13 @@ public:
           &parray_list) = 0;
 
   virtual void run_task_mapping(
-      InnerTask *task, const Mapper &mapper,
+      InnerTask *task, Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) = 0;
+
+  virtual void append_launched_task_info(InnerTask*) = 0;
 
 protected:
   DeviceManager *device_manager_;
@@ -114,13 +116,13 @@ public:
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      const Mapper &mapper, Score_t *score,
+      Mapper *mapper, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      const Mapper &mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -128,7 +130,7 @@ public:
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      const Mapper &mapper,
+      Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -136,11 +138,13 @@ public:
           &parray_list) override;
 
   void run_task_mapping(
-      InnerTask *task, const Mapper &mapper,
+      InnerTask *task, Mapper *mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec);
+
+  void append_launched_task_info(InnerTask*) {}
 };
 
 #endif
