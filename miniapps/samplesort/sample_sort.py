@@ -10,6 +10,7 @@ from profile import profile_t
 from threading import Thread
 from time import perf_counter as time
 from multiprocessing.pool import ThreadPool as WorkerPool
+import sys
 
 class pp(enum.IntEnum):
     ALL     = 0
@@ -130,8 +131,11 @@ async def alltoallv_parla(sbuff : xp.array , scounts : np.array, out):
             with cp.cuda.Device(i):
                 a[i] = cp.zeros(recieve_partitions[i], dtype = sbuff.dtype)
                 for j in range(num_gpu):
-                    #with cp.cuda.Stream(non_blocking=True) as stream:
-                    a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+                    with cp.cuda.Stream(non_blocking=True) as stream:
+                        #a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+                        dst = a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]]
+                        src = sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]]
+                        dst.data.copy_from_async(src.data, src.nbytes, stream=stream)
                 
                 cp.cuda.runtime.deviceSynchronize()
     
@@ -161,7 +165,10 @@ def alltoallv_threads(sbuff : xp.array , scounts : np.array):
             a[i] = cp.zeros(recieve_partitions[i])
             for j in range(num_gpu):
                 with cp.cuda.Stream(non_blocking=True) as stream:
-                    a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+                    #a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+                    dst = a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]]
+                    src = sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]]
+                    dst.data.copy_from_async(src.data, src.nbytes, stream=stream)
             
             cp.cuda.runtime.deviceSynchronize()
 
