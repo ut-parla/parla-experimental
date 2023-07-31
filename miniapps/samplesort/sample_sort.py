@@ -93,40 +93,54 @@ def profile_summary_dump(T):
     
     print("\n")
         
-def alltoallv(sbuff : xp.array , scounts : np.array):
-    num_gpu = sbuff.ndevices
+async def alltoallv_parla(sbuff : xp.array , scounts : np.array, out):
+    num_gpu    = sbuff.ndevices
     
-    rcounts  = np.transpose(scounts)
+    recieve_partitions=[None]
+    result            =[None] * 3
+    ts=TaskSpace("A")
+    @spawn(ts[0], placement=cpu, vcus=0)
+    def t0():
+        rcounts    = np.transpose(scounts)
+        soffsets   = np.zeros_like(scounts)
+        roffsets   = np.zeros_like(rcounts)
+        for i in range(num_gpu):
+            soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
+            roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
 
-    soffsets = np.zeros_like(scounts)
-    roffsets = np.zeros_like(rcounts)
-
-    for i in range(num_gpu):
-        soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
-        roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
-
-    recieve_partitions = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpu)]
+        recieve_partitions[0] = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpu)]
+        
+        result[0] = rcounts 
+        result[1] = soffsets
+        result[2] = roffsets
+        
+        return
     
+    await ts
+    recieve_partitions = recieve_partitions[0] 
+    rcounts            = result[0]
+    soffsets           = result[1]
+    roffsets           = result[2]
+    
+    task_space = TaskSpace("T")
     a=[None] * num_gpu
+    for i in range(num_gpu):
+        @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
+        def t1():
+            with cp.cuda.Device(i):
+                a[i] = cp.zeros(recieve_partitions[i], dtype = sbuff.dtype)
+                for j in range(num_gpu):
+                    #with cp.cuda.Stream(non_blocking=True) as stream:
+                    a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
+                
+                cp.cuda.runtime.deviceSynchronize()
     
-    with Parla():
-        @spawn(placement=cpu, vcus=0)
-        async def _():
-            T = TaskSpace("T")
-            for i in range(num_gpu):
-                @spawn(T[i], placement=[gpu(i)], vcus=0.0)
-                def __():
-                    with cp.cuda.Device(i):
-                        a[i] = cp.zeros(recieve_partitions[i], dtype = sbuff.dtype)
-                        for j in range(num_gpu):
-                            with cp.cuda.Stream(non_blocking=True) as stream:
-                                a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
-                        
-                        cp.cuda.runtime.deviceSynchronize()
-            await T
-    
-    return xp.array(a, axis=0)
-
+    @spawn(task_space[num_gpu], placement=[cpu], vcus=0.0, dependencies=task_space[0:num_gpu])
+    def t2():
+        out[0] = xp.array(a, axis=0)
+    await task_space[num_gpu]
+    return
+        
 def alltoallv_threads(sbuff : xp.array , scounts : np.array):
     num_gpu = sbuff.ndevices
     
@@ -256,102 +270,116 @@ def parla_sample_sort(x:xp.array):
     T[pp.ALL].start()
     num_gpu     = x.ndevices
     
-    a           = [None] * num_gpu
-    T[pp.LSORT1].start()
+    z           = [None]
     with Parla():
         @spawn(placement=cpu, vcus=0)
-        async def local_sort():
-            T = TaskSpace("T")
+        async def __main__():
+            T[pp.LSORT1].start()
+            a           = [None] * num_gpu
+            task_space = TaskSpace("T")
             for i in range(num_gpu):
-                @spawn(T[i], placement=[gpu(i)], vcus=0.0)
+                @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
                 def t1():
                     with cp.cuda.Device(i):
                         a[i] = cp.sort(x.blockview[i])
                         cp.cuda.runtime.deviceSynchronize()
                     return
-                
-            await T
-    
-    y = xp.array(a, axis=0)
-    T[pp.LSORT1].stop()
-
-    if num_gpu==1:
-        T[pp.ALL].stop()
-        return y
-
-    T[pp.SP].start()
-    sp        = np.zeros((num_gpu, num_gpu-1))
-    for i in range(num_gpu):
-        with cp.cuda.Device(i):
-            idx     = np.array([(((j+1) * len(y.blockview[i])) // num_gpu)-1 for j in range(num_gpu-1)], dtype=np.int64)
-            sp[i,:] = cp.asnumpy(y.blockview[i][idx])
-
-    sp = sp.reshape((num_gpu * (num_gpu-1)))
-    sp = np.sort(sp)
-
-    num_splitters = num_gpu-1
-    idx = np.array([((i) * len(sp) // num_splitters) + (((i+1) * len(sp) // num_splitters) - ((i) * len(sp) // num_splitters))//2 for i in range(num_splitters)],dtype=np.int64)
-    sp  = sp[idx]
-
-    a = [None] * num_gpu
-    for i in range(num_gpu):
-        with cp.cuda.Device(i):
-            a[i] = cp.asarray(sp)
-
-    for i in range(num_gpu):
-        with cp.cuda.Device(i):
-            cp.cuda.runtime.deviceSynchronize()
-
-    sp = xp.array(a,axis=0)
-    T[pp.SP].stop()
-
-    T[pp.S_MAP].start()
-    send_count  = np.zeros((num_gpu,num_gpu), dtype=np.int64)
-    
-    with Parla():
-        @spawn(placement=cpu, vcus=0)
-        async def local_sort():
-            T = TaskSpace("T")
-            for i in range(num_gpu):
-                @spawn(T[i], placement=[gpu(i)], vcus=0.0)
-                def t1():
-                    with cp.cuda.Device(i):
-                        send_count[i,0:num_splitters]  = cp.asnumpy(cp.searchsorted(y.blockview[i], sp.blockview[i]))
-                        cp.cuda.runtime.deviceSynchronize()
-
-                    send_count[i,-1] = len(y.blockview[i]) - np.sum(send_count[i,-2])
-                    
-                    for j in reversed(range(1, num_gpu-1)):
-                        send_count[i,j] = send_count[i,j] - send_count[i,j-1]
             
-            await T
-    T[pp.S_MAP].stop()
+            y = [None]
+            @spawn(task_space[num_gpu], placement=[cpu], vcus=0.0, dependencies=task_space[0:num_gpu])
+            def t2():
+                y[0] = xp.array(a, axis=0)
+            
+            await task_space[num_gpu]
+            y   = y[0]
+            
+            T[pp.LSORT1].stop()
+            if num_gpu==1:
+                z[0] = y
+                return
+            else:
+                T[pp.SP].start()
+                task_space = TaskSpace("T")
+                sp  = np.zeros((num_gpu, num_gpu-1))
+                for i in range(num_gpu):
+                    @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
+                    def t1():
+                        with cp.cuda.Device(i):
+                            idx     = np.array([(((j+1) * len(y.blockview[i])) // num_gpu)-1 for j in range(num_gpu-1)], dtype=np.int64)
+                            sp[i,:] = cp.asnumpy(y.blockview[i][idx])
+                            cp.cuda.runtime.deviceSynchronize()
+                            
+                await task_space
+                sp = sp.reshape((num_gpu * (num_gpu-1)))
+                sp = np.sort(sp)
 
-    T[pp.ALL2ALL].start()
-    y=alltoallv(y, send_count)
-    T[pp.ALL2ALL].stop()
+                num_splitters = num_gpu-1
+                idx = np.array([((i) * len(sp) // num_splitters) + (((i+1) * len(sp) // num_splitters) - ((i) * len(sp) // num_splitters))//2 for i in range(num_splitters)],dtype=np.int64)
+                sp  = sp[idx]
 
-    T[pp.LSORT2].start()
-    a = [None] * num_gpu
-    with Parla():
-        @spawn(placement=cpu, vcus=0)
-        async def local_sort():
-            T = TaskSpace("T")
-            for i in range(num_gpu):
-                @spawn(T[i], placement=[gpu(i)], vcus=0.0)
-                def t1():
-                    with cp.cuda.Device(i):
-                        a[i] = cp.sort(y.blockview[i])
-                        cp.cuda.runtime.deviceSynchronize()
-                    return
+                a  = [None] * num_gpu
+                task_space = TaskSpace("T")
+                for i in range(num_gpu):
+                    @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
+                    def t1():
+                        with cp.cuda.Device(i):
+                            a[i] = cp.asarray(sp)
+                            cp.cuda.runtime.deviceSynchronize()
                 
-            await T
-    
-    y = xp.array(a, axis=0)
-    T[pp.LSORT2].stop()
-    
+                sp=[None]
+                @spawn(task_space[num_gpu], placement=[cpu], vcus=0.0, dependencies=task_space[0:num_gpu])
+                def t2():
+                    sp[0] = xp.array(a, axis=0)
+                await task_space[num_gpu]
+                sp=sp[0]
+                T[pp.SP].stop()
+
+                T[pp.S_MAP].start()
+                send_count  = np.zeros((num_gpu,num_gpu), dtype=np.int64)
+                task_space = TaskSpace("T")
+                for i in range(num_gpu):
+                    @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
+                    def t1():
+                        with cp.cuda.Device(i):
+                            send_count[i,0:num_splitters]  = cp.asnumpy(cp.searchsorted(y.blockview[i], sp.blockview[i]))
+                            cp.cuda.runtime.deviceSynchronize()
+
+                        send_count[i,-1] = len(y.blockview[i]) - np.sum(send_count[i,-2])
+                    
+                        for j in reversed(range(1, num_gpu-1)):
+                            send_count[i,j] = send_count[i,j] - send_count[i,j-1]
+            
+                await task_space
+                T[pp.S_MAP].stop()
+                
+                T[pp.ALL2ALL].start()
+                await alltoallv_parla(y, send_count, z)
+                y = z[0]
+                T[pp.ALL2ALL].stop()
+                
+                T[pp.LSORT2].start()
+                a = [None] * num_gpu
+                task_space = TaskSpace("T")
+                for i in range(num_gpu):
+                    @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
+                    def t1():
+                        with cp.cuda.Device(i):
+                            a[i] = cp.sort(y.blockview[i])
+                            cp.cuda.runtime.deviceSynchronize()
+                        
+                        return
+                
+                @spawn(task_space[num_gpu], placement=[cpu],vcus=0, dependencies=task_space[0:num_gpu])
+                def t2():
+                    z[0] =  xp.array(a, axis=0)
+                    return
+
+                await task_space[num_gpu]
+                T[pp.LSORT2].stop()
+                    
+                
     T[pp.ALL].stop()
-    return y
+    return z[0]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
