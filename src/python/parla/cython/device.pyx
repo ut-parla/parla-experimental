@@ -480,6 +480,10 @@ class Stream:
     def wait_event(self):
         pass
 
+    @property
+    def ptr(self):
+        return None
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
