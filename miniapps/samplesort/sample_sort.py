@@ -1,7 +1,9 @@
 import numpy as np
 import cupy as cp
+#cp.cuda.set_allocator(cp.cuda.MemoryAsyncPool().malloc)
 from parla import Parla
-from parla.tasks import spawn, TaskSpace
+from parla.tasks import spawn
+from parla.tasks import TaskSpace as TaskSpace
 from parla.devices import cpu, gpu
 import argparse
 import crosspy as xp
@@ -79,11 +81,13 @@ def profile_summary_dump(T):
     for i, t in enumerate(T):
         if t.iter==0:
             continue
+        
+        #print("%s -- %.4E"%(TN[i], t.snap))
 
-        if i==0:
-            print("%s -- %.4E"%(TN[i], t.seconds/t.iter))
-        else:
-            print("  |%s -- %.4E"%(TN[i], t.seconds/t.iter))
+        # if i==0:
+        #     print("%s -- %.4E"%(TN[i], t.seconds/t.iter))
+        # else:
+        #     print("  |%s -- %.4E"%(TN[i], t.seconds/t.iter))
 
 
     for i, t in enumerate(T):
@@ -94,42 +98,24 @@ def profile_summary_dump(T):
     
     print("\n")
         
-async def alltoallv_parla(sbuff : xp.array , scounts : np.array, out):
+def alltoallv_parla(task_space : TaskSpace, sbuff : xp.array , scounts : np.array, out):
     num_gpu    = sbuff.ndevices
     
-    recieve_partitions=[None]
-    result            =[None] * 3
-    ts=TaskSpace("A")
-    @spawn(ts[0], placement=cpu, vcus=0)
-    def t0():
-        rcounts    = np.transpose(scounts)
-        soffsets   = np.zeros_like(scounts)
-        roffsets   = np.zeros_like(rcounts)
-        for i in range(num_gpu):
-            soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
-            roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
+    rcounts    = np.transpose(scounts)
+    soffsets   = np.zeros_like(scounts)
+    roffsets   = np.zeros_like(rcounts)
+    for i in range(num_gpu):
+        soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
+        roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
 
-        recieve_partitions[0] = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpu)]
-        
-        result[0] = rcounts 
-        result[1] = soffsets
-        result[2] = roffsets
-        
-        return
+    recieve_partitions = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpu)]
     
-    await ts
-    recieve_partitions = recieve_partitions[0] 
-    rcounts            = result[0]
-    soffsets           = result[1]
-    roffsets           = result[2]
-    
-    task_space = TaskSpace("T")
     a=[None] * num_gpu
     for i in range(num_gpu):
         @spawn(task_space[i], placement=[gpu(i)], vcus=0.0)
         def t1():
             with cp.cuda.Device(i):
-                a[i] = cp.zeros(recieve_partitions[i], dtype = sbuff.dtype)
+                a[i] = cp.empty(recieve_partitions[i], dtype = sbuff.dtype)
                 for j in range(num_gpu):
                     with cp.cuda.Stream(non_blocking=True) as stream:
                         #a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
@@ -142,7 +128,7 @@ async def alltoallv_parla(sbuff : xp.array , scounts : np.array, out):
     @spawn(task_space[num_gpu], placement=[cpu], vcus=0.0, dependencies=task_space[0:num_gpu])
     def t2():
         out[0] = xp.array(a, axis=0)
-    await task_space[num_gpu]
+    
     return
         
 def alltoallv_threads(sbuff : xp.array , scounts : np.array):
@@ -162,7 +148,7 @@ def alltoallv_threads(sbuff : xp.array , scounts : np.array):
     a=[None] * num_gpu
     def t1(i):
         with cp.cuda.Device(i):
-            a[i] = cp.zeros(recieve_partitions[i])
+            a[i] = cp.empty(recieve_partitions[i], dtype = sbuff.dtype)
             for j in range(num_gpu):
                 with cp.cuda.Stream(non_blocking=True) as stream:
                     #a[i][roffsets[i,j] : roffsets[i,j] + rcounts[i,j]] = cp.asarray(sbuff.blockview[j][soffsets[j, i] : soffsets[j, i] + scounts[j, i]])
@@ -178,6 +164,36 @@ def alltoallv_threads(sbuff : xp.array , scounts : np.array):
     pool.join()
 
     return xp.array(a, axis=0)
+
+def alltoallv_crosspy(sbuff : xp.array , scounts : np.array):
+    num_gpu = sbuff.ndevices
+    
+    rcounts  = np.transpose(scounts)
+
+    soffsets = np.zeros_like(scounts)
+    roffsets = np.zeros_like(rcounts)
+
+    for i in range(num_gpu):
+        soffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), scounts[i,:]))[:-1]
+        roffsets[i,:] = np.cumsum(np.append(np.array([0],dtype=np.int64), rcounts[i,:]))[:-1]
+    
+    recieve_partitions = [roffsets[i,-1] + rcounts[i,-1] for i in range(num_gpu)]    
+    rbuff              = xp.empty(recieve_partitions, device=[xp.gpu(i) for i in range(num_gpu)])
+    
+    sbuff_bounds = ([0] + sbuff.boundaries)[0:-1]
+    rbuff_bounds = ([0] + rbuff.boundaries)[0:-1]
+    
+    gid_send     = np.zeros(sbuff.shape[0], dtype=np.int64)
+    gid_recv     = np.array(range(sbuff.shape[0]), dtype=np.int64)
+    for i in range(num_gpu):
+        tmp      = np.array([],dtype=np.int64)
+        for j in range(num_gpu):
+            tmp=np.append(tmp, sbuff_bounds[j] + soffsets[j,i] + np.array(range(scounts[j,i]), dtype=np.int64))
+        
+        gid_send[rbuff_bounds[i] : rbuff_bounds[i] + recieve_partitions[i]] = tmp
+    assignment = xp.alltoall(rbuff, gid_recv, sbuff, gid_send)
+    assignment()
+    return rbuff
 
 def crosspy_sample_sort(x:xp.array):
     T[pp.ALL].start()
@@ -253,7 +269,8 @@ def crosspy_sample_sort(x:xp.array):
 
     T[pp.ALL2ALL].start()
     y=alltoallv_threads(y, send_count)
-    T[pp.ALL2ALL].stop()
+    #y =alltoallv_crosspy(y, send_count)
+    T[pp.ALL2ALL].stop()    
 
     T[pp.LSORT2].start()
     a = [None] * num_gpu
@@ -360,7 +377,9 @@ def parla_sample_sort(x:xp.array):
                 T[pp.S_MAP].stop()
                 
                 T[pp.ALL2ALL].start()
-                await alltoallv_parla(y, send_count, z)
+                task_space = TaskSpace("T")
+                alltoallv_parla(task_space, y, send_count, z)
+                await task_space
                 y = z[0]
                 T[pp.ALL2ALL].stop()
                 
@@ -383,7 +402,7 @@ def parla_sample_sort(x:xp.array):
 
                 await task_space[num_gpu]
                 T[pp.LSORT2].stop()
-                    
+                
                 
     T[pp.ALL].stop()
     return z[0]
@@ -424,7 +443,25 @@ if __name__ == "__main__":
         
     for iter in range(args.runs):
         x         = partitioned_crosspy(args.n, args.gpu)
+        
+        for i in range(args.gpu):
+            with cp.cuda.Device(i):
+                mempool = cp.get_default_memory_pool()
+                mempool.free_all_blocks()
+                
+        for i in range(args.gpu):
+            with cp.cuda.Device(i):
+                cp.cuda.runtime.deviceSynchronize()
+        
         y         = sort_func(x)
+        
+        
+        for i in range(args.gpu):
+            with cp.cuda.Device(i):
+                cp.cuda.runtime.deviceSynchronize()
+                
+        
+        
 
     profile_summary_dump(T)
     
