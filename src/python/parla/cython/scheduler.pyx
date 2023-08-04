@@ -377,10 +377,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     def scheduler(self):
         return self
 
-    @property
-    def default_taskspace(self):
-        return self.default_taskspace
-
     def get_device_reqs_from_placement(self, placement, vcus, memory):
         return self.device_manager.get_device_reqs_from_placement(placement, vcus, memory)
 
