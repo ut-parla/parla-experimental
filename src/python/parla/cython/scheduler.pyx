@@ -25,6 +25,7 @@ Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
+AtomicTaskSpace = tasks.AtomicTaskSpace
 create_env = tasks.create_env
 
 from parla.utility.tracer import NVTXTracer
@@ -353,7 +354,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         self.exception_stack = []
 
-        self.default_taskspace = TaskSpace("global")
+        self.default_taskspace = AtomicTaskSpace("global")
 
         #TODO: Handle resources better
         resources = 1.0
@@ -375,6 +376,10 @@ class Scheduler(ControllableThread, SchedulerContext):
     @property
     def scheduler(self):
         return self
+
+    @property
+    def default_taskspace(self):
+        return self.default_taskspace
 
     def get_device_reqs_from_placement(self, placement, vcus, memory):
         return self.device_manager.get_device_reqs_from_placement(placement, vcus, memory)
