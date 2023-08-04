@@ -253,6 +253,9 @@ def get_active_device():
 def get_current_stream():
     return _Locals.stream
 
+def get_default_taskspace():
+    return _Locals.scheduler.default_taskspace
+
 
 def get_current_context():
     return _Locals.context
