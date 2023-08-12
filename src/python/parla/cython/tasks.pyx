@@ -531,6 +531,9 @@ class Task:
     def add_event(self, event):
         self.inner_task.add_event(event)
 
+    def cleanup(self):
+        raise NotImplementedError()
+
 
 class ComputeTask(Task):
 
@@ -603,6 +606,9 @@ class DataMovementTask(Task):
         #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
         #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
+
+    def cleanup(self):
+        pass
 
 ######
 # Task Environment

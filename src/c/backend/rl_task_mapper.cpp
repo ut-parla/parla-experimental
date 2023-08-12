@@ -131,6 +131,8 @@ void RLTaskMappingPolicy::run_task_mapping(
   std::vector<bool> compatible_devices(num_devices, false);
   std::vector<std::shared_ptr<DeviceRequirement>>
       device_requirements(num_devices);
+  size_t num_compatible_devices{0};
+  DevID_t chosen_device_gid{0};
   for (std::shared_ptr<PlacementRequirementBase> base_req :
        *placement_req_options_vec) {
     if (base_req->is_dev_req()) {
@@ -139,6 +141,8 @@ void RLTaskMappingPolicy::run_task_mapping(
       const ParlaDevice &device = *(dev_req->device());
       DevID_t global_dev_id = device.get_global_id();
       if (device.check_resource_availability(dev_req.get())) {
+        chosen_device_gid = global_dev_id;
+        ++num_compatible_devices;
         compatible_devices[global_dev_id] = true;
         device_requirements[global_dev_id] = dev_req;
       } else {
@@ -155,6 +159,8 @@ void RLTaskMappingPolicy::run_task_mapping(
         ParlaDevice *device = dev_req->device();
         DevID_t global_dev_id = device->get_global_id();
         if (device->check_resource_availability(dev_req.get())) {
+          chosen_device_gid = global_dev_id;
+          ++num_compatible_devices;
           compatible_devices[global_dev_id] = true;
           device_requirements[global_dev_id] = dev_req;
         } else {
@@ -166,56 +172,71 @@ void RLTaskMappingPolicy::run_task_mapping(
     }
   }
 
-  this->rl_current_state_ =
-      this->rl_env_->make_current_state(task);
-
-  DevID_t chosen_device_gid =
-      this->rl_agent_->select_device(
-          this->rl_current_state_,
-          this->device_manager_->template get_devices<ParlaDeviceType::All>(),
-          &compatible_devices);
-
-  if (!compatible_devices[chosen_device_gid]) {
-    std::cout << "Incompatible or unavailable device was chosen: " << chosen_device_gid << " \n";
-    return;
-  }
-
   chosen_devices->clear();
-  chosen_devices->push_back(device_requirements[chosen_device_gid]);
-
-  if (this->rl_agent_->is_training_mode()) {
-    this->rl_next_state_ = this->rl_env_->make_next_state(
-        this->rl_current_state_, chosen_device_gid, task);
-    this->rl_agent_->append_mapped_task_info(
-        task, this->rl_current_state_, this->rl_next_state_,
-        torch::tensor({float{chosen_device_gid}}, torch::kInt64));
-#if 0
-    torch::Tensor reward = this->rl_env_->calculate_reward(
-        chosen_device_gid, task, this->rl_current_state_);
-    this->rl_agent_->append_replay_memory(
-        this->rl_current_state_,
-        torch::tensor({float{chosen_device_gid}}, torch::kInt64),
-        this->rl_next_state_, reward);
-    this->rl_agent_->optimize_model();
-    this->rl_agent_->target_net_soft_update();
-    std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-      " current state:" << this->rl_current_state_ << " next state:" <<
-      this->rl_next_state_ <<
-      " device id: " << chosen_device_gid << " reward:" <<
-      reward.item<float>() << "\n";
-#endif
+  if (num_compatible_devices == 1) {
+    std::cout << task->name << " only has a single compatible device\n";
+    chosen_devices->push_back(device_requirements[chosen_device_gid]);
   } else {
-    std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-      " current state:" << this->rl_current_state_ << " next state: " <<
-      this->rl_next_state_ <<
-      " device id: " << chosen_device_gid <<  "\n";
-  }
+    this->rl_current_state_ =
+        this->rl_env_->make_current_state(task);
 
-  if (task->get_name().find("begin_rl_task") != std::string::npos) {
-    this->rl_agent_->incr_episode();
-    this->device_manager_->reset_device_timers();
-  }
-  if (task->get_name().find("end_rl_task") != std::string::npos) {
-    this->rl_env_->output_reward(this->rl_agent_->get_episode());
+    DevID_t chosen_device_gid =
+        this->rl_agent_->select_device(
+            this->rl_current_state_,
+            this->device_manager_->template get_devices<ParlaDeviceType::All>(),
+            &compatible_devices);
+
+    if (!compatible_devices[chosen_device_gid]) {
+      std::cout << "Incompatible or unavailable device was chosen: " << chosen_device_gid << " \n";
+      return;
+    }
+
+    chosen_devices->push_back(device_requirements[chosen_device_gid]);
+
+    // Accumulate the current task info. to itself and device.
+   task->remote_data_bytes = this->rl_current_state_[0][
+        8 + chosen_device_gid * 9 + 1].item<double>();
+    task->num_dependencies = this->rl_current_state_[0][0].item<double>();
+    task->num_dependents = this->rl_current_state_[0][1].item<double>();
+    ParlaDevice* device = this->device_manager_->get_device_by_global_id(chosen_device_gid);
+    device->accumulate_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
+        task->num_dependents);
+
+    if (this->rl_agent_->is_training_mode()) {
+      this->rl_next_state_ = this->rl_env_->make_next_state(
+          this->rl_current_state_, chosen_device_gid, task);
+      this->rl_agent_->append_mapped_task_info(
+          task, this->rl_current_state_, this->rl_next_state_,
+          torch::tensor({float{chosen_device_gid}}, torch::kInt64));
+#if 0
+      torch::Tensor reward = this->rl_env_->calculate_reward(
+          chosen_device_gid, task, this->rl_current_state_);
+      this->rl_agent_->append_replay_memory(
+          this->rl_current_state_,
+          torch::tensor({float{chosen_device_gid}}, torch::kInt64),
+          this->rl_next_state_, reward);
+      this->rl_agent_->optimize_model();
+      this->rl_agent_->target_net_soft_update();
+      std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+        " current state:" << this->rl_current_state_ << " next state:" <<
+        this->rl_next_state_ <<
+        " device id: " << chosen_device_gid << " reward:" <<
+        reward.item<float>() << "\n";
+#endif
+    } else {
+      std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+        " current state:" << this->rl_current_state_ << " next state: " <<
+        this->rl_next_state_ <<
+        " device id: " << chosen_device_gid <<  "\n";
+    }
+
+    if (task->get_name().find("begin_rl_task") != std::string::npos) {
+      this->rl_agent_->incr_episode();
+      this->device_manager_->reset_device_timers();
+    }
+    if (task->get_name().find("end_rl_task") != std::string::npos) {
+      this->rl_env_->output_reward(this->rl_agent_->get_episode());
+      this->rl_agent_->clear_replay_memory_buffer();
+    }
   }
 }

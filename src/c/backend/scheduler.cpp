@@ -291,6 +291,8 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         parray->decr_num_active_tasks(dev_id);
       }
       this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+      device->reduce_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
+          task->num_dependents);
     }
     std::cout << dev_id << " is released by " << task->get_name() << "\n" << std::flush;
   }

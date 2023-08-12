@@ -177,6 +177,11 @@ class InnerTask {
 
   // TODO(hc): those member vars should be protected.
 public:
+  // Task info. for RL
+  double remote_data_bytes{0};
+  double num_dependencies{0};
+  double num_dependents{0};
+
   /* Unique ID of the task. Can be used as a dictionary key.*/
   long long int id = 0;
 

@@ -186,22 +186,27 @@ public:
    *
    * @return Pair of idle and non-idle times.
    */
-  std::pair<double, double> get_total_idle_time() {
+  std::pair<double, double> get_total_idle_time(TimePoint current_time_point) {
     double old_total_idle_time{0}, total_time{0};
     this->idle_timer_mtx_.lock();
     if (this->is_idle) {
       this->end_device_idle_unsafe();
     }
     old_total_idle_time = this->accumulated_idle_time_;
-    TimePoint current_time_point = std::chrono::system_clock::now();
     total_time = std::chrono::duration_cast<std::chrono::milliseconds>(
         current_time_point - this->initial_epoch_).count();
+#if 0
+    std::cout << this->dev_global_id_ << " Initial time count:" <<
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          this->initial_epoch_.time_since_epoch()).count() <<
+          "\n";
+#endif
     this->num_get_idle_time_++;
-    #if 0
+#if 0
     std::cout << "Total time:" << total_time << "\n";
     std::cout << "accumulated idle time:" << this->accumulated_idle_time_ << ", " <<
       this->num_get_idle_time_ << "\n";
-    #endif
+#endif
     this->idle_timer_mtx_.unlock();
     return std::make_pair(old_total_idle_time, total_time - old_total_idle_time);
   }
@@ -220,6 +225,62 @@ public:
     this->idle_end_time_ = {};
     this->num_get_idle_time_ = 0;
     this->idle_timer_mtx_.unlock();
+  }
+
+  void accumulate_mapped_task_info(
+      double remote_data_bytes, double num_dependencies, double num_dependents) {
+    this->mapped_task_info_mtx_.lock();
+    this->remote_data_bytes_ += remote_data_bytes;
+    this->num_dependencies_ += num_dependencies;
+    this->num_dependents_ += num_dependents;
+
+    std::cout << "1 1 1 Device " << dev_global_id_ << " accumulation:" <<
+      remote_data_bytes_ << ", " << num_dependencies <<
+      ", " << num_dependents << "\n";
+
+
+    std::cout << "Device " << dev_global_id_ << " accumulation:" <<
+      this->remote_data_bytes_ << ", " << this->num_dependencies_ <<
+      ", " << this->num_dependents_ << "\n";
+
+    this->mapped_task_info_mtx_.unlock();
+  }
+
+  void reduce_mapped_task_info(
+      double remote_data_bytes, double num_dependencies, double num_dependents) {
+    this->mapped_task_info_mtx_.lock();
+    this->remote_data_bytes_ -= remote_data_bytes;
+    this->num_dependencies_ -= num_dependencies;
+    this->num_dependents_ -= num_dependents;
+    std::cout << "Device " << dev_global_id_ << " reduction:" <<
+      this->remote_data_bytes_ << ", " << this->num_dependencies_ <<
+      ", " << this->num_dependents_ << "\n";
+
+    this->mapped_task_info_mtx_.unlock();
+  }
+
+  double get_remote_data_bytes() {
+    double value{0};
+    this->mapped_task_info_mtx_.lock();
+    value = this->remote_data_bytes_;
+    this->mapped_task_info_mtx_.unlock();
+    return value;
+  }
+
+  double get_num_dependencies() {
+    double value{0};
+    this->mapped_task_info_mtx_.lock();
+    value = this->num_dependencies_;
+    this->mapped_task_info_mtx_.unlock();
+    return value;
+  }
+
+  double get_num_dependents() {
+    double value{0};
+    this->mapped_task_info_mtx_.lock();
+    value = this->num_dependents_;
+    this->mapped_task_info_mtx_.unlock();
+    return value;
   }
 
 protected:
@@ -242,6 +303,11 @@ protected:
   std::mutex idle_timer_mtx_;
   size_t num_get_idle_time_{0};
   bool is_idle{true};
+  /// For RL
+  std::mutex mapped_task_info_mtx_;
+  double remote_data_bytes_{0};
+  double num_dependencies_{0};
+  double num_dependents_{0};
 };
 
 ///

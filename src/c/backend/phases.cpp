@@ -112,7 +112,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
         }
       }
 
-#if 0
       std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
                 << "\n";
       for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
@@ -124,7 +123,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
         std::cout << "\t memory:" << res.get(Resource::Memory)
                   << ", vcu:" << res.get(Resource::VCU) << "\n";
       }
-#endif
       this->mapped_tasks_buffer.push_back(task);
     }
     has_task = this->get_count() > 0;
@@ -504,8 +502,10 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
 
   if (dynamic_cast<RLTaskMappingPolicy*>(this->
         scheduler->mapper->get_policy_raw_pointer()) != nullptr) {
-      this->scheduler->mapper->get_policy_raw_pointer()->
-          append_launched_task_info(task);
+      if (!task->is_data_task()) {
+        this->scheduler->mapper->get_policy_raw_pointer()->
+            append_launched_task_info(task);
+      }
   }
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }

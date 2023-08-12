@@ -84,7 +84,7 @@ class RLStateTransition {
     torch::Tensor current_state;
     torch::Tensor next_state;
     torch::Tensor chosen_device;
-    double base_score;
+    double base_score{0};
 };
 
 struct FullyConnectedDQNImpl : public torch::nn::Module {
@@ -156,7 +156,7 @@ public:
     policy_net_output_archive.save_to("policy_net.pt");
     target_net_output_archive.save_to("target_net.pt");
     //torch::save(this->rms_optimizer_, "rms_optimizer.pt");
-    torch::save(this->adam_optimizer_, "adamm_optimizer.pt");
+    torch::save(this->adam_optimizer_, "adam_optimizer.pt");
 #if 0
     std::ofstream fp_p("policy_net.out");
     size_t p_i{0};
@@ -221,8 +221,8 @@ public:
       }
     }
     
-    if (std::ifstream fp("rms_optimizer.pt"); fp) {
-      std::cout << "Load RMS optimizer\n";
+    if (std::ifstream fp("adam_optimizer.pt"); fp) {
+      std::cout << "Load ADAM optimizer\n";
       //torch::load(this->rms_optimizer_, "rms_optimizer.pt");
       torch::load(this->adam_optimizer_, "adam_optimizer.pt");
     }
@@ -515,7 +515,7 @@ public:
     tinfo->current_state = current_state;
     tinfo->next_state = next_state;
     tinfo->chosen_device = chosen_device;
-    tinfo->base_score = (current_state[0][8 + chosen_device.item<int64_t>() * 9].item<double>() == 1)? 0 : 1;
+    tinfo->base_score = (current_state[0][8 + chosen_device.item<int64_t>() * 9].item<double>() == 0)? 1 : 0;
     task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
     this->replay_memory_buffer_.push_back(tinfo);
   }
@@ -579,6 +579,10 @@ public:
 
   bool is_training_mode() {
     return this->is_training_mode_;
+  }
+
+  void clear_replay_memory_buffer() {
+    this->replay_memory_buffer_.clear();
   }
 
 private:

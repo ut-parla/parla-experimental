@@ -2,10 +2,29 @@
 #include "include/phases.hpp"
 #include "include/runtime.hpp"
 
+#include <chrono>
+
 #define NUM_TASK_FEATURES 4
 #define NUM_DEP_TASK_FEATURES 4
 #define NUM_DEVICE_FEATURES 9
 #define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES)
+
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+
+double RLEnvironment::check_task_type(InnerTask *task) {
+  double task_type;
+  std::string task_type_str = task->name.substr(0, task->name.find("-"));
+  auto found = this->task_type_map.find(task_type_str);
+  if (found == this->task_type_map.end()) {
+    task_type = this->last_task_type;
+    std::cout << task_type_str << "'s task type found \n";
+    this->task_type_map[task_type_str] = this->last_task_type++;
+  } else {
+    task_type = found->second;
+  }
+  std::cout << task_type_str << "'s task type:" << task_type << "\n";
+  return task_type;
+}
 
 void RLEnvironment::make_current_task_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
@@ -51,7 +70,8 @@ void RLEnvironment::make_current_task_state(
     current_state[0][offset + 1] = num_active_dependents;
     current_state[0][offset + 2] = (total_bytes / double{1 << 20});
     // 4) Task type.
-    current_state[0][offset + 3] = 0; // TODO(hc): for now, just use 0.
+    double task_type = this->check_task_type(task);
+    current_state[0][offset + 3] = task_type;
   }
 }
 
@@ -64,13 +84,32 @@ void RLEnvironment::make_current_device_state(
     total_bytes += double{parray->get_size()};
   }
 
-  for (DevID_t d = 0; d < num_devices; ++d) {
+  double total_idle_time{0}, total_nonidle_time{0};
+	TimePoint current_time_point = std::chrono::system_clock::now();
+  for (DevID_t d = 1; d < num_devices; ++d) {
+    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
+    auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
+    total_idle_time += idle_time;
+    total_nonidle_time += nonidle_time;
+  }
+
+  // Exclude CPU
+  for (DevID_t d = 1; d < num_devices; ++d) {
+    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
     double nonlocal_bytes{0};
     // 1) # of tasks on queues.
     int64_t dev_running_planned_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES] =
         dev_running_planned_tasks;
+    if (dev_running_planned_tasks > 0) {
+      std::cout << "Device " << d << " remote bytes:" <<
+        device->get_remote_data_bytes() << ", num dependencies:" << device->get_num_dependencies() <<
+        ", num dependents:" << device->get_num_dependents() << "\n";
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5] = device->get_remote_data_bytes() / dev_running_planned_tasks;
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6] = device->get_num_dependencies() / dev_running_planned_tasks;
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7] = device->get_num_dependents() / dev_running_planned_tasks;
+    }
     // 2) Data locality.
     if (total_bytes > 0) {
       for (size_t pi = 0; pi < task->parray_list[0].size(); ++pi) {
@@ -86,7 +125,6 @@ void RLEnvironment::make_current_device_state(
     }
 
     // 3) Reservable memory.
-    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
     const ResourcePool_t &device_pool = device->get_resource_pool();
     const ResourcePool_t &reserved_device_pool = device->get_reserved_pool();  
     int64_t total_memory = device_pool.get(Resource::Memory);
@@ -94,12 +132,16 @@ void RLEnvironment::make_current_device_state(
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2] =
       (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
 
-    // 4) Average idle and non-idle time features.
-    auto [idle_time, nonidle_time] = device->get_total_idle_time();
-    double total_time = idle_time + nonidle_time;
-    if (total_time > 0) {
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 3] = idle_time / total_time;
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] = nonidle_time/ total_time;
+    // 4) Relative idle/non-idle time.
+    auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
+    if (total_idle_time > 0) {
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 3] = idle_time / total_idle_time;
+      std::cout << "device " << d << "'s idle time:" << idle_time << ", " << idle_time / total_idle_time << "\n";
+    }
+    
+    if (total_nonidle_time > 0) {
+      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] = nonidle_time/ total_nonidle_time;
+      std::cout << "device " << d << "'s nonidle time:" << nonidle_time << ", " << nonidle_time / total_nonidle_time << "\n";
     }
   }
 }
@@ -181,17 +223,20 @@ torch::Tensor RLEnvironment::make_next_state(
       DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 2] =
       (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
 
+#if 0
   // Average idle and non-idle time features.
-  auto [idle_time, nonidle_time] = device->get_total_idle_time();
-  double total_time = idle_time + nonidle_time;
-  if (total_time > 0) {
+	TimePoint current_time_point = std::chrono::system_clock::now();
+  auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
+  double current_time = device->current_timepoint_count_from_beginning();
+  if (current_time > 0) {
     next_state[0][
         DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 3] =
-        idle_time / total_time;
+        idle_time / current_time;
     next_state[0][
         DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 4] =
-        nonidle_time/ total_time;
+        nonidle_time/ current_time;
   }
+#endif
 
   return next_state;
 }
@@ -234,37 +279,106 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
                                InnerTask* task,
                                torch::Tensor current_state, double base_score) {
   double score{0};
-  if (base_score > 0) {
-    // If the chosen device was idle, give a reward 1.
-    score = 1.f;
+  if (chosen_device_id == 0) {
+    std::cout << task->name << " selected CPU 0\n";
+    score = 0.f;
   } else {
-    DevID_t num_devices =
-        this->device_manager_->template get_num_devices(ParlaDeviceType::All);
-    double total_nonidle_time{0}, current_time{0};
-    for (DevID_t d = 0; d < num_devices; ++d) {
-      ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
-      auto [idle_time, nonidle_time] = device->get_total_idle_time();
-      total_nonidle_time += nonidle_time;
-      if (d == chosen_device_id) {
-        current_time = device->current_timepoint_count_from_beginning();
-      }
-    }
-    if (current_time > 0) {
-      double ideal_time_per_device = total_nonidle_time / num_devices;
-      std::cout << "chosen device:" << chosen_device_id <<
-        " ideal:" << ideal_time_per_device << ", current time:" <<
-        current_time << "\n";
-      score = ideal_time_per_device / current_time;
-      score = (score < 0.5)? 0 : score;
+    if (base_score > 0) {
+      // If the chosen device was idle, give a reward 1.
+      score = 1.f;
     } else {
-      score = 0;
+      DevID_t num_devices =
+          this->device_manager_->template get_num_devices(ParlaDeviceType::CUDA);
+      DevID_t best_device{chosen_device_id};
+      double max_idle_time{0};
+      // Only consider CUDA devices, and their index starts from 1.
+			TimePoint current_time_point = std::chrono::system_clock::now();
+      for (DevID_t d = 1; d < num_devices + 1; ++d) {
+        ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
+        auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
+        if (max_idle_time < idle_time) {
+          max_idle_time = idle_time;
+          best_device = d;
+        }
+      }
+
+      if (chosen_device_id == best_device) {
+        score = double{1};
+      } else {
+        score = 0;
+      }
+
+      std::cout << "chosen device:" << chosen_device_id << ", score:" << score << "\n";
     }
-    score = std::pow(score, 0.5);
+
+    ++this->num_reward_accumulation_;
+    this->reward_accumulation_ += score;
   }
-  ++this->num_reward_accumulation_;
-  this->reward_accumulation_ += score;
   return torch::tensor({score}, torch::kDouble);
 }
+
+#if 0
+ORIGINAL
+torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state, double base_score) {
+  double score{0};
+  if (chosen_device_id == 0) {
+    std::cout << task->name << " selected CPU 0\n";
+    score = 0.f;
+  } else {
+    if (base_score > 0) {
+      // If the chosen device was idle, give a reward 1.
+      score = 1.f;
+    } else {
+      DevID_t num_devices =
+          this->device_manager_->template get_num_devices(ParlaDeviceType::CUDA);
+      double total_nonidle_time{0}, current_time{0};
+      double current_device_nonidle_time{0};
+      // Only consider CUDA devices, and their index starts from 1.
+      for (DevID_t d = 1; d < num_devices + 1; ++d) {
+        ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
+        auto [idle_time, nonidle_time] = device->get_total_idle_time();
+        total_nonidle_time += nonidle_time;
+        if (d == chosen_device_id) {
+          current_time = device->current_timepoint_count_from_beginning();
+          current_device_nonidle_time = nonidle_time;
+        }
+      }
+      double ideal_time_per_device = total_nonidle_time / num_devices;
+      /*
+      if (current_time > 0) {
+        score = ideal_time_per_device / current_time;
+      } else {
+        score = 0;
+      }
+      */
+
+      if (current_device_nonidle_time > 0) {
+        score = (ideal_time_per_device / current_device_nonidle_time);
+        score = std::min(score, double{1});
+      } else {
+        score = 0;
+      }
+
+      std::cout << "chosen device:" << chosen_device_id <<
+      " ideal:" << ideal_time_per_device << ", current time:" <<
+      current_time << ", target device non-idle time:" << current_device_nonidle_time <<
+      ", score:" << score << "\n";
+
+      score = std::pow(score, 0.5);
+    }
+
+    if (score > 0 && score < 0.6) {
+      score -= 1;
+      std::cout << "Score became minus:" << score << "\n";
+    }
+    ++this->num_reward_accumulation_;
+    this->reward_accumulation_ += score;
+  }
+  return torch::tensor({score}, torch::kDouble);
+}
+#endif
 
 #if 0
 torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,

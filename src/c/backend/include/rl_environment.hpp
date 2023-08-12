@@ -34,6 +34,8 @@ public:
                                  InnerTask *task,
                                  torch::Tensor current_state, double base_score);
 
+  double check_task_type(InnerTask *task);
+
   void output_reward(size_t episode);
 protected:
   DeviceManager *device_manager_;
@@ -43,6 +45,8 @@ protected:
   size_t num_reward_accumulation_{0};
   double reward_accumulation_{0};
 
+  std::unordered_map<std::string, double> task_type_map;
+	double last_task_type{0};
 };
 
 #endif
