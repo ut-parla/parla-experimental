@@ -6,7 +6,7 @@ from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
-from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType
+from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType, crosspy, CROSSPY_ENABLED
 
 import inspect
 
@@ -73,7 +73,9 @@ def spawn(task=None,
 
         if task is None:
             idx = len(taskspace)
-
+        else:
+            idx = task
+            
         task = taskspace[idx]
 
     # @profile

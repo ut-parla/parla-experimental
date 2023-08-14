@@ -376,8 +376,9 @@ class ImportableArchitecture(PyArchitecture):
         return type(self).__name__
 
     def __mul__(self, num_archs: int):
-        architecture = get_device_manager().get_architecture(self._architecture_type)
-        return architecture * num_archs
+        #architecture = get_device_manager().get_architecture(self._architecture_type)
+        arch_ps = [self for i in range(0, num_archs)]
+        return tuple(arch_ps)
 
     def __len__(self):
         architecture = get_device_manager().get_architecture(self._architecture_type)
@@ -461,6 +462,10 @@ class Stream:
     def wait_event(self):
         pass
 
+    @property
+    def ptr(self):
+        return None
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
@@ -542,6 +547,10 @@ class CupyStream(Stream):
 
     def wait_event(self, event):
         self._stream.wait_event(event)
+
+    @property
+    def ptr(self):
+        return self._stream.ptr
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):

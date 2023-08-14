@@ -9,7 +9,7 @@ from typing import Dict
 #  Loading numpy locally works for some things, but not for the array._register_array_type call.
 import numpy
 
-from parla.common.globals import get_current_context, cupy, DeviceType, CUPY_ENABLED
+from parla.common.globals import get_current_context, cupy, DeviceType, CUPY_ENABLED, CROSSPY_ENABLED, crosspy
 
 
 class ArrayType(metaclass=ABCMeta):
@@ -234,6 +234,8 @@ def copy(destination, source):
     :param destination: The array to write into.
     :param source: The array to read from or the scalar value to put in destination.
     """
+    #FIXME: This doesn't work on PArrays or CrossPyArrays
+
     try:
         if is_array(source):
             _array_types[type(destination)].copy_into(source, destination)
@@ -253,8 +255,28 @@ def clone_here(source, kind=None):
     Create a local copy of `source` stored at the current location.
     :param source: The array to read from.
     """
+    if CROSSPY_ENABLED and isinstance(source, crosspy.CrossPyArray):
 
-    if is_array(source):
+        #FIXME: This only works on unwrapped CrossPy Arrays
+        #FIXME: This doesn't work on noncontigious colorings as it will not copy the index map
+        
+        current_context = get_current_context()
+
+        #Our semantics are only defined when the context contains more components than the source array.
+        #assert (len(current_context.devices) > len(source.block_view()))
+
+        #We need to copy the array to the current context.
+        #From left to right, we copy each "block" of the array to the corresponding device.
+        array_list = []
+        for i, block in enumerate(source.block_view()):
+            with current_context.devices[i]:
+                array_list.append(clone_here(block))
+
+        return crosspy.array(array_list, axis=0)
+
+    elif is_array(source):
+
+        #FIXME: This doesn't work on PArrays
 
         current_content = get_current_context()
 
