@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PARRAY_HPP
+#define PARRAY_HPP
 
 #include "containers.hpp"
 #include "include/atomic_wrapper.hpp"
@@ -12,9 +13,22 @@ class InnerTask;
 
 using TaskList = ProtectedVector<InnerTask *>;
 
+/// Access mode to a PArray.
+enum AccessMode {
+  /// Input of a task.
+  IN = 0,
+  /// Output of a task.
+  OUT = 1,
+  /// Input/output of a task.
+  INOUT = 2,
+  /// Newly allocated PArray.
+  NEW = 3,
+};
+
 namespace parray {
 // PArray C++ interface which provides some information that will be used for
 // scheduling task
+
 class InnerPArray {
 public:
   uint64_t id;        // unique ID of the PArray
@@ -67,8 +81,14 @@ public:
   /// Return the instance of Python PArray.
   void *get_py_parray();
 
+  /// Return the id of the current instance.
+  const uint64_t get_id() const;
+
   /// Return the parent id of the current instance.
-  uint64_t get_parray_parentid();
+  const uint64_t get_parent_id() const;
+
+  /// Return if this PArray is a subarray.
+  const bool is_subarray() const;
 
   /// Return a pointer of the parent PArray.
   InnerPArray *get_parent_parray();
@@ -88,4 +108,9 @@ private:
 
   void *_py_parray;
 };
+
+using PArrayList = ProtectedVector<InnerPArray *>;
+
 } // namespace parray
+
+#endif // PARRAY_HPP

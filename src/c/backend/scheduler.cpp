@@ -1,3 +1,4 @@
+#include "include/parray.hpp"
 #include "include/phases.hpp"
 #include "include/policy.hpp"
 #include "include/resources.hpp"
@@ -274,6 +275,8 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     task->notify_dependents_completed();
   }
 
+  auto parray_tracker = this->get_parray_tracker();
+
   // Release all resources for this task on all devices
   for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
     Device *device = task->assigned_devices[i];
@@ -282,8 +285,20 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
 
-    // TODO(wlr): This needs to be changed to not release PARRAY resources
-    device_pool.increase<ResourceCategory::All>(task_pool);
+    // Do not free the memory associated with newly created parrays
+    // Note this assumes the parray only exists on a single device at task end
+    // in a multidevice task.
+    for (auto j = 0; task->new_parrays[i].size_unsafe(); ++j) {
+      parray::InnerPArray *parray = task->new_parrays[i][j];
+
+      // only count memory for parent parrays
+      // (assumes subarrays are using exising memory)
+      if (!parray->is_subarray()) {
+        task_pool.decrease<Resource::Memory>(parray->get_size());
+      }
+    }
+
+    device_pool.increase(task_pool);
 
     // PArrays could be evicted even during task barrier continuation.
     // However, these PArrays will be allocated and tracked
@@ -292,9 +307,9 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
       for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
         parray::InnerPArray *parray = task->parray_list[i][j].first;
         parray->decr_num_active_tasks(dev_id);
-        // This PArray is not released from the PArray tracker here,
-        // but when it is EVICTED, it will check the number of referneces
-        // and will be released if that is 0.
+        //    // This PArray is not released from the PArray tracker here,
+        //    // but when it is EVICTED, it will check the number of referneces
+        //    // and will be released if that is 0.
       }
     }
     this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);

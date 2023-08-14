@@ -1,4 +1,5 @@
 #pragma once
+#include "resources.hpp"
 #ifndef PARLA_DEVICE_MANAGER_HPP
 #define PARLA_DEVICE_MANAGER_HPP
 
@@ -113,6 +114,33 @@ public:
     } else {
       return parray_dev_id + 1;
     }
+  }
+
+  /**
+   * @brief Free both the mapped and reserved memory on the device by global
+   * device id.
+   */
+  void free_memory(DevID_t global_dev_id, Resource_t memory_size) {
+    Device *dev = get_device_by_global_id(global_dev_id);
+    auto mapped_memory_pool = dev->get_mapped_pool();
+    auto reserved_memory_pool = dev->get_reserved_pool();
+
+    // Mapped memory counts how much memory is currently mapped to the device.
+    // Freeing memory decreases the mapped memory pool.
+    mapped_memory_pool.decrease<Resource::Memory>(memory_size);
+
+    // Reserved memory counts how much memory is left on the device.
+    // Freeing memory increases the reserved memory pool.
+    reserved_memory_pool.increase<Resource::Memory>(memory_size);
+  }
+
+  /**
+   * @brief Free both the mapped and reserved memory on the device by parray
+   * device id. Called by a PArray eviction event.
+   */
+  void free_memory_by_parray_id(DevID_t parray_dev_id, Resource_t memory_size) {
+    int global_dev_id = parrayid_to_globalid(parray_dev_id);
+    this->free_memory(global_dev_id, memory_size);
   }
 
 protected:

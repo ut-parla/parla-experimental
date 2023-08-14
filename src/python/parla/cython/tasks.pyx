@@ -586,6 +586,7 @@ class DataMovementTask(Task):
         self.runahead = runahead
 
     def _execute_task(self):
+        print("Executing DataMovementTask: ", self.name, self.access_mode, flush=True)
         write_flag = True if self.access_mode != AccessMode.IN else False
         device_manager = self.scheduler.device_manager
         """

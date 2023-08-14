@@ -381,6 +381,12 @@ void InnerTask::add_assigned_device(Device *device) {
   this->assigned_devices.push_back(device);
 }
 
+void InnerTask::finalize_assigned_devices() {
+  this->assigned_devices.shrink_to_fit();
+  auto num_assigned_devices = this->assigned_devices.size();
+  this->new_parrays.resize(num_assigned_devices);
+}
+
 Task::State InnerTask::set_state(Task::State state) {
   Task::State new_state = state;
   Task::State old_state;
@@ -414,8 +420,7 @@ bool InnerTask::get_complete() { return this->get_state(); }
 void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
-  res_req.set(Resource::Memory, mem_sz);
-  res_req.set(Resource::VCU, num_vcus);
+  res_req.set<Resources<Resource::Memory, Resource::VCU>>({mem_sz, num_vcus});
 
   std::shared_ptr<DeviceRequirement> dev_req =
       std::make_shared<DeviceRequirement>(dev_ptr, res_req);

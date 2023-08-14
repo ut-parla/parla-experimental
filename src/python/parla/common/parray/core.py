@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
-from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType, CUPY_ENABLED
+from parla.common.globals import get_current_devices, get_scheduler, has_environment, DeviceType, CUPY_ENABLED, get_current_task
 
 from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
@@ -115,7 +115,23 @@ class PArray:
             self._name = name
 
         # record the size in Cython PArray
+
+        #TODO(FIXME): PArrays can be created outside of a scheduler context!!
+
         scheduler = get_scheduler()
+
+        task = get_current_task()
+        if task is not None:
+            #PArray is created inside a task
+            task.add_new_parray(self)
+        elif scheduler is not None:
+            #PArray is created outside of a task but inside a scheduler
+            pass
+        else:
+            #PArray is created outside of a scheduler
+            #This is only allowed in the initialization phase of the program (not concurrent with the scheduler)
+            pass
+
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(
             self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
@@ -126,7 +142,7 @@ class PArray:
             assert isinstance(array, cupy.ndarray)
         target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
             target_dev_id)
-        scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
+        scheduler.log_parray(self._cy_parray, target_global_dev_id)
 
     # Properties:
 
@@ -378,9 +394,9 @@ class PArray:
         with self._coherence_cv[device_id]:
             operations = self._coherence.evict(device_id, keep_one_copy)
             if operations[0].inst == MemoryOperation.ERROR:
-                return False # cannot perform the eviction
-            self._process_operations(operations) 
-    
+                return False  # cannot perform the eviction
+            self._process_operations(operations)
+
         return True
 
     # Coherence update operations:
@@ -456,13 +472,13 @@ class PArray:
                 scheduler = get_scheduler()
                 src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
                     op.src)
-                if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
-                    # If none of visible tasks will refer this PArray, release
-                    # this PArray instance of the source device from the PArray tracker.
-                    scheduler.release_parray(
-                        self._cy_parray, src_global_dev_id)
-                # decrement the reference counter, relying on GC to free the memor
-                self._array.clear(op.src)
+
+                # decrement the reference counter, relying on GC to free the memory
+                to_free = self._array.clear(op.src)
+
+                if (to_free > 0):
+                    scheduler.global_device_manager.free_memory()
+
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError(
                     "PArray gets an error from coherence protocol")

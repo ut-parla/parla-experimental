@@ -46,15 +46,7 @@ using SpaceList = ProtectedVector<TaskBarrier *>;
 
 using PointerList = ProtectedVector<uintptr_t>;
 
-/* Access mode to a PArray. */
-enum AccessMode {
-  // Input of a task.
-  IN = 0,
-  // Output of a task.
-  OUT = 1,
-  // Input/output of a task.
-  INOUT = 2
-};
+using PArrayList = ProtectedVector<parray::InnerPArray *>;
 
 // Forward declaration of python callbacks
 
@@ -192,6 +184,9 @@ public:
   /*Container for Events*/
   PointerList events;
 
+  /*Container for PArrays created during task execution*/
+  std::vector<PArrayList> new_parrays;
+
   /*Synchronization Type */
   Task::SynchronizationType sync_type = Task::NON_BLOCKING;
 
@@ -321,6 +316,15 @@ public:
    */
   void add_parray(parray::InnerPArray *parray, int access_mode, int dev_id);
 
+  /**
+   * @brief Add the creation of a new PArray to the task
+   * @param parray Pointer to a PArray that this task created
+   * @param dev_id Device id that the PArray is created on
+   */
+  void add_new_parray(parray::InnerPArray *parray, int dev_id) {
+    new_parrays[dev_id].push_back(parray);
+  };
+
   /*
    *  Notify dependents that dependencies have completed
    *  This should be called by the worker when a task has completed
@@ -381,40 +385,45 @@ public:
     return this->num_unmapped_dependencies.load();
   };
 
-  template <ResourceCategory category> inline void set_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->num_persistant_instances.store(this->assigned_devices.size());
     } else {
       this->num_runtime_instances.store(this->assigned_devices.size());
     }
   };
 
-  template <ResourceCategory category> inline int decrement_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int decrement_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.fetch_sub(1);
     } else {
       return this->num_runtime_instances.fetch_sub(1);
     }
   };
 
-  template <ResourceCategory category> inline int get_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int get_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.load();
     } else {
       return this->num_runtime_instances.load();
     }
   };
 
-  template <ResourceCategory category> inline bool get_removed() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline bool get_removed() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->removed_reserved;
     } else {
       return this->removed_runtime;
     }
   }
 
-  template <ResourceCategory category> inline void set_removed(bool waiting) {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_removed(bool waiting) {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->removed_reserved = waiting;
     } else {
       this->removed_runtime = waiting;
@@ -505,6 +514,9 @@ public:
 
   /*Add to the assigned device list*/
   void add_assigned_device(Device *device);
+
+  /* Fix the assigned device set.*/
+  void finalize_assigned_devices();
 
   /*
    * Copy a vector of device pointers

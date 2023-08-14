@@ -27,6 +27,7 @@ PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
 print("CUPY_ENABLED: ", CUPY_ENABLED)
+print("CROSSPY_ENABLED: ", CROSSPY_ENABLED)
 print("PREINIT_THREADS: ", PREINIT_THREADS)
 
 _global_data_tasks = {}
@@ -237,6 +238,8 @@ _Locals = Locals()
 def get_locals():
     return _Locals
 
+def get_current_task():
+    return _Locals.task
 
 def get_current_devices():
     return _Locals.devices

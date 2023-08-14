@@ -16,7 +16,7 @@
  * @tparam category the resource category (persistent/non-persistent) that this
  * queue supervises the phase of.
  */
-template <ResourceCategory category> class DeviceQueue {
+template <typename ResourceCategory> class DeviceQueue {
   using MixedQueue_t = TaskQueue;
   using MDQueue_t = TaskQueue;
 
@@ -34,10 +34,9 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
-    // std::endl;
+    std::cout << "DeviceQueue::enqueue() - " << task->get_name() << std::endl;
 
-    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
     num_tasks++;
   };
@@ -60,24 +59,25 @@ public:
   */
   InnerTask *front() {
 
-    // std::cout << "DeviceQueue::front()" << std::endl;
-    // std::cout << "Waiting Queue size: " << waiting_queue.size() << std::endl;
-    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    std::cout << "DeviceQueue::front()" << std::endl;
+    std::cout << "Waiting Queue size: " << waiting_queue.size() << std::endl;
+    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    std::cout << "Num Tasks: " << num_tasks << std::endl;
 
     // First, check any waiting multi-device tasks
     if (!waiting_queue.empty()) {
       InnerTask *head = waiting_queue.front();
-      int waiting_count = head->get_num_instances<category>();
+      int waiting_count = head->get_num_instances<ResourceCategory>();
 
-      // std::cout << "MD Head: " << head->get_name()
-      //           << " Instances: " << waiting_count
-      //           << " Removed: " << head->get_removed<category>() <<
-      //           std::endl;
+      std::cout << "MD Head: " << head->get_name()
+                << " Instances: " << waiting_count
+                << " Removed: " << head->get_removed<ResourceCategory>()
+                << std::endl;
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {
         // Remove from waiting queue if dequeued by last instance
-        if (head->get_removed<category>()) {
+        if (head->get_removed<ResourceCategory>()) {
           // TODO(wlr): Should I remove this here?
           waiting_queue.pop_front();
 
@@ -91,12 +91,13 @@ public:
 
     if (!mixed_queue.empty()) {
       InnerTask *head = mixed_queue.front();
-      int prev_waiting_count = head->decrement_num_instances<category>();
+      int prev_waiting_count =
+          head->decrement_num_instances<ResourceCategory>();
 
-      // std::cout << "Mixed Head: " << head->get_name()
-      //           << " Instances: " << prev_waiting_count
-      //           << " Removed: " << head->get_removed<category>() <<
-      //           std::endl;
+      std::cout << "Mixed Head: " << head->get_name()
+                << " Instances: " << prev_waiting_count
+                << " Removed: " << head->get_removed<ResourceCategory>()
+                << std::endl;
 
       // Check if the task is waiting for other instances
       if (prev_waiting_count <= 1) {
@@ -104,7 +105,8 @@ public:
         return head;
       } else {
         // If the task is still waiting, move it to the waiting queue
-        // std::cout << "Moving to waiting queue" << std::endl;
+        std::cout << "Moving task to waiting queue: " << head->get_name()
+                  << std::endl;
         waiting_queue.push_back(head);
         mixed_queue.pop_front();
 
@@ -135,7 +137,7 @@ public:
       // std::cout << "Popping task: " << task->get_name() << std::endl;
       mixed_queue.pop_front();
       // Set removed status so task can be pruned from other queues
-      task->set_removed<category>(true);
+      task->set_removed<ResourceCategory>(true);
       num_tasks--;
     }
     return task;
@@ -160,7 +162,7 @@ protected:
  * @tparam category the resource category (persistent/non-persistent) that this
  * manager supervises
  */
-template <ResourceCategory category> class PhaseManager {
+template <typename ResourceCategory> class PhaseManager {
 public:
   /**
    * Initializes a DeviceQueue for each device in the DeviceManager.
@@ -173,7 +175,8 @@ public:
       this->ndevices += device_manager->get_num_devices(dev_type);
 
       for (Device *device : device_manager->get_devices(dev_type)) {
-        this->device_queues.emplace_back(new DeviceQueue<category>(device));
+        this->device_queues.emplace_back(
+            new DeviceQueue<ResourceCategory>(device));
         // std::cout << "Initialized DeviceQueue for Device: "
         //           << device->get_name() << std::endl;
       }
@@ -202,9 +205,9 @@ public:
     // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     // std::cout << "ndevices: " << this->ndevices << std::endl;
     // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
-    // std::cout << "Enqueuing task to phase manager: " << task->get_name()
-    //           << std::endl;
-    task->set_num_instances<category>();
+    std::cout << "Enqueuing task to phase manager: " << task->get_name()
+              << std::endl;
+    task->set_num_instances<ResourceCategory>();
     for (auto device : task->assigned_devices) {
       this->device_queues[device->get_global_id()]->enqueue(task);
     }
@@ -293,7 +296,7 @@ public:
   inline size_t get_num_device_queues() { return this->device_queues.size(); }
 
 protected:
-  std::vector<DeviceQueue<category> *> device_queues;
+  std::vector<DeviceQueue<ResourceCategory> *> device_queues;
 
   int last_device_idx{0};
   // DeviceType last_device_type{CPU};

@@ -7,6 +7,7 @@
 #include "device.hpp"
 #include "device_manager.hpp"
 #include "device_queues.hpp"
+#include "parray.hpp"
 #include "policy.hpp"
 #include "resources.hpp"
 #include "runtime.hpp"
@@ -171,7 +172,7 @@ public:
       : SchedulerPhase(scheduler, devices) {
     // std::cout << "MemoryReserver created\n";
     this->reservable_tasks =
-        std::make_shared<PhaseManager<ResourceCategory::Persistent>>(devices);
+        std::make_shared<PhaseManager<Resource::PersistentResources>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -181,10 +182,11 @@ public:
 
 protected:
   // std::string name{"Memory Reserver"};
-  std::shared_ptr<PhaseManager<ResourceCategory::Persistent>> reservable_tasks;
+  std::shared_ptr<PhaseManager<Resource::PersistentResources>> reservable_tasks;
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
   std::vector<InnerTask *> reserved_tasks_buffer;
+  parray::PArrayList created_parrays;
 
   bool check_resources(InnerTask *task);
   void reserve_resources(InnerTask *task);
@@ -206,10 +208,10 @@ public:
     // std::cout << "RuntimeReserver created" << std::endl;
     // FIXME: This leaks memory. Need to add deconstructor.
     this->runnable_tasks =
-        std::make_shared<PhaseManager<ResourceCategory::NonPersistent>>(
+        std::make_shared<PhaseManager<Resource::NonPersistentResources>>(
             devices);
     this->movement_tasks =
-        std::make_shared<PhaseManager<ResourceCategory::Movement>>(devices);
+        std::make_shared<PhaseManager<Resource::MovementResources>>(devices);
   }
 
   void enqueue(InnerTask *task);
@@ -224,8 +226,9 @@ public:
   const void print_status() const { this->status.print(); }
 
 protected:
-  std::shared_ptr<PhaseManager<ResourceCategory::NonPersistent>> runnable_tasks;
-  std::shared_ptr<PhaseManager<ResourceCategory::Movement>> movement_tasks;
+  std::shared_ptr<PhaseManager<Resource::NonPersistentResources>>
+      runnable_tasks;
+  std::shared_ptr<PhaseManager<Resource::MovementResources>> movement_tasks;
 
   inline static const std::string name{"Runtime Reserver"};
   RuntimeReserverStatus status{name};
