@@ -5,7 +5,7 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(7 + num_devices * 8, num_devices, num_devices, is_training_mode);
+  this->rl_agent_ = new RLAgent(10 + num_devices * 4, num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, mapper);
 }
 
@@ -194,19 +194,17 @@ void RLTaskMappingPolicy::run_task_mapping(
     chosen_devices->push_back(device_requirements[chosen_device_gid]);
 
     // Accumulate the current task info. to itself and device.
-   task->remote_data_bytes = this->rl_current_state_[0][
-        8 + chosen_device_gid * 9 + 1].item<double>();
-    task->num_dependencies = this->rl_current_state_[0][0].item<double>();
-    task->num_dependents = this->rl_current_state_[0][1].item<double>();
-    ParlaDevice* device = this->device_manager_->get_device_by_global_id(chosen_device_gid);
-    device->accumulate_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
-        task->num_dependents);
+   //task->remote_data_bytes = this->rl_current_state_[0][
+   //     8 + chosen_device_gid * 9 + 1].item<double>();
+   //task->num_dependencies = this->rl_current_state_[0][0].item<double>();
+   //task->num_dependents = this->rl_current_state_[0][1].item<double>();
+   //ParlaDevice* device = this->device_manager_->get_device_by_global_id(chosen_device_gid);
+   //device->accumulate_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
+   //    task->num_dependents);
 
     if (this->rl_agent_->is_training_mode()) {
-      this->rl_next_state_ = this->rl_env_->make_next_state(
-          this->rl_current_state_, chosen_device_gid, task);
       this->rl_agent_->append_mapped_task_info(
-          task, this->rl_current_state_, this->rl_next_state_,
+          task, this->rl_current_state_,
           torch::tensor({float{chosen_device_gid}}, torch::kInt64));
 #if 0
       torch::Tensor reward = this->rl_env_->calculate_reward(

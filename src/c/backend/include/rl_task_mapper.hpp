@@ -9,6 +9,11 @@
 #include <random>
 #include <torch/torch.h>
 
+#define NUM_TASK_FEATURES 4
+#define NUM_DEP_TASK_FEATURES 3
+#define NUM_DEVICE_FEATURES 4
+#define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
+
 class Mapper;
 
 class ExperienceReplay {
@@ -82,7 +87,6 @@ private:
 class RLStateTransition {
   public:
     torch::Tensor current_state;
-    torch::Tensor next_state;
     torch::Tensor chosen_device;
     double base_score{0};
 };
@@ -506,8 +510,7 @@ public:
   }
 
   void append_mapped_task_info(
-      InnerTask *task,
-      torch::Tensor current_state, torch::Tensor next_state,
+      InnerTask *task, torch::Tensor current_state,
       torch::Tensor chosen_device) {
     if (task->name.find("global_0") != std::string::npos ||
         task->name.find("begin_rl_task") != std::string::npos ||
@@ -517,9 +520,11 @@ public:
     //auto current_time = std::chrono::high_resolution_clock::now();
     RLStateTransition *tinfo = new RLStateTransition();
     tinfo->current_state = current_state;
-    tinfo->next_state = next_state;
     tinfo->chosen_device = chosen_device;
-    tinfo->base_score = (current_state[0][8 + chosen_device.item<int64_t>() * 9].item<double>() == 0)? 1 : 0;
+    tinfo->base_score = (current_state[0][
+        DEVICE_FEATURE_OFFSET +
+        chosen_device.item<int64_t>() *
+        NUM_DEVICE_FEATURES].item<double>() == 0)? 1 : 0;
     task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
     this->replay_memory_buffer_.push_back(tinfo);
   }
@@ -551,16 +556,14 @@ public:
           tinfo->chosen_device[0].item<int64_t>());
       torch::Tensor reward = rl_env->calculate_reward(
             chosen_device_id, task, tinfo->current_state, tinfo->base_score);
+      torch::Tensor next_state = rl_env->make_current_state(task);
       this->append_replay_memory(
-          tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
-          reward);
+          tinfo->current_state, tinfo->chosen_device, next_state, reward);
       this->optimize_model();
       this->target_net_soft_update_simpler();
-      /* XXX(hc)
       std::cout << this->get_episode() << " episode task " << task->name <<
           " current state:" << tinfo->current_state << ", device id:" <<
           tinfo->chosen_device << ", reward:" << reward << "\n";
-          */
     }
   }
 
@@ -688,7 +691,7 @@ private:
   /// RL environment.
   RLEnvironment *rl_env_;
   torch::Tensor rl_current_state_;
-  torch::Tensor rl_next_state_;
+  //torch::Tensor rl_next_state_;
   std::mutex mtx;
 };
 
