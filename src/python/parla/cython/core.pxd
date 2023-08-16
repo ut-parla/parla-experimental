@@ -126,6 +126,9 @@ cdef extern from "include/runtime.hpp" nogil:
         void wait()
         void stop()
 
+        void record_task_completion_epochs()
+        void evaluate_completed_task()
+
     #ctypedef InnerWorker* InnerWorkerPtr_t
 
     cdef cppclass InnerScheduler:

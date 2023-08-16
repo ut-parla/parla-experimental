@@ -47,6 +47,10 @@ protected:
 
   std::unordered_map<std::string, double> task_type_map;
 	double last_task_type{0};
+  // Accumulated task completion time to keep track of
+  // average of the completion time among tasks.
+  double total_task_completiontime{0};
+  size_t num_task_completiontime{0};
 };
 
 #endif

@@ -576,6 +576,16 @@ cdef class PyInnerWorker:
 
         _inner_worker.stop()
 
+    cpdef record_task_completion_epochs(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+        _inner_worker.record_task_completion_epochs()
+
+    cpdef evaluate_completed_task(self):
+        cdef InnerWorker* _inner_worker
+        _inner_worker = self.inner_worker
+        _inner_worker.evaluate_completed_task()
+
     def __dealloc__(self):
         del self.inner_worker
 

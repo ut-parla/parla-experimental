@@ -101,7 +101,7 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) = 0;
 
-  virtual void append_launched_task_info(InnerTask*) = 0;
+  virtual void evaluate_and_append_task_mapping(InnerTask*) = 0;
 
 protected:
   DeviceManager *device_manager_;
@@ -144,7 +144,7 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec);
 
-  void append_launched_task_info(InnerTask*) {}
+  void evaluate_and_append_task_mapping(InnerTask*) {}
 };
 
 #endif

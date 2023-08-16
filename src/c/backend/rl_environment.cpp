@@ -5,8 +5,8 @@
 #include <chrono>
 
 #define NUM_TASK_FEATURES 4
-#define NUM_DEP_TASK_FEATURES 4
-#define NUM_DEVICE_FEATURES 9
+#define NUM_DEP_TASK_FEATURES 3
+#define NUM_DEVICE_FEATURES 8
 #define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES)
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
@@ -17,12 +17,12 @@ double RLEnvironment::check_task_type(InnerTask *task) {
   auto found = this->task_type_map.find(task_type_str);
   if (found == this->task_type_map.end()) {
     task_type = this->last_task_type;
-    std::cout << task_type_str << "'s task type found \n";
+    //std::cout << task_type_str << "'s task type found \n";
     this->task_type_map[task_type_str] = this->last_task_type++;
   } else {
     task_type = found->second;
   }
-  std::cout << task_type_str << "'s task type:" << task_type << "\n";
+  //std::cout << task_type_str << "'s task type:" << task_type << "\n";
   return task_type;
 }
 
@@ -65,10 +65,12 @@ void RLEnvironment::make_current_task_state(
     current_state[0][offset] += num_active_dependencies;
     current_state[0][offset + 1] += num_active_dependents;
     current_state[0][offset + 2] += (total_bytes / double{1 << 20});
+    //current_state[0][offset + 2] += (total_bytes / uint64_t{1 << 20});
   } else {
     current_state[0][offset] = num_active_dependencies;
     current_state[0][offset + 1] = num_active_dependents;
     current_state[0][offset + 2] = (total_bytes / double{1 << 20});
+    //current_state[0][offset + 2] = (total_bytes / uint64_t{1 << 20});
     // 4) Task type.
     double task_type = this->check_task_type(task);
     current_state[0][offset + 3] = task_type;
@@ -103,9 +105,9 @@ void RLEnvironment::make_current_device_state(
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES] =
         dev_running_planned_tasks;
     if (dev_running_planned_tasks > 0) {
-      std::cout << "Device " << d << " remote bytes:" <<
-        device->get_remote_data_bytes() << ", num dependencies:" << device->get_num_dependencies() <<
-        ", num dependents:" << device->get_num_dependents() << "\n";
+      //std::cout << "Device " << d << " remote bytes:" <<
+      //  device->get_remote_data_bytes() << ", num dependencies:" << device->get_num_dependencies() <<
+      //  ", num dependents:" << device->get_num_dependents() << "\n";
       current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5] = device->get_remote_data_bytes() / dev_running_planned_tasks;
       current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6] = device->get_num_dependencies() / dev_running_planned_tasks;
       current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7] = device->get_num_dependents() / dev_running_planned_tasks;
@@ -130,28 +132,31 @@ void RLEnvironment::make_current_device_state(
     int64_t total_memory = device_pool.get(Resource::Memory);
     int64_t remaining_memory = reserved_device_pool.get(Resource::Memory);
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2] =
-      (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
+      (total_memory > 0)? (remaining_memory / double{total_memory}) * 100 : 0;
 
     // 4) Relative idle/non-idle time.
+#if 0
+    XXX(hc): 0814
     auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
     if (total_idle_time > 0) {
       current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 3] = idle_time / total_idle_time;
-      std::cout << "device " << d << "'s idle time:" << idle_time << ", " << idle_time / total_idle_time << "\n";
+      //std::cout << "device " << d << "'s idle time:" << idle_time << ", " << idle_time / total_idle_time << "\n";
     }
     
     if (total_nonidle_time > 0) {
       current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] = nonidle_time/ total_nonidle_time;
-      std::cout << "device " << d << "'s nonidle time:" << nonidle_time << ", " << nonidle_time / total_nonidle_time << "\n";
+      //std::cout << "device " << d << "'s nonidle time:" << nonidle_time << ", " << nonidle_time / total_nonidle_time << "\n";
     }
+#endif
   }
 }
 
 void RLEnvironment::make_current_active_deptask_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
   int64_t num_active_dependencies{0};
-  std::unordered_map<Task::State, size_t> state_counter;
-  size_t major_state_counter{std::numeric_limits<size_t>::min()};
-  Task::State major_state{Task::State::CREATED};
+  //std::unordered_map<Task::State, size_t> state_counter;
+  //size_t major_state_counter{std::numeric_limits<size_t>::min()};
+  //Task::State major_state{Task::State::CREATED};
   double num_active_tasks{0};
   // Iter 0: Dependencies
   // Iter 1: Dependents
@@ -165,6 +170,7 @@ void RLEnvironment::make_current_active_deptask_state(
         ++num_active_tasks;
         this->make_current_task_state(
             task, current_state, num_devices, NUM_TASK_FEATURES, true);
+        /*
         auto found = state_counter.find(task->get_state());
         if (found == state_counter.end()) {
           state_counter[task->get_state()] = 0;
@@ -176,10 +182,11 @@ void RLEnvironment::make_current_active_deptask_state(
             major_state = task->get_state();
           }
         }
+        */
       }
     }
   }
-  current_state[0][NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES - 1] = major_state;
+  //current_state[0][NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES - 1] = major_state;
   for (size_t i = 0; i < NUM_TASK_FEATURES; ++i) {
     double old_value = current_state[0][NUM_TASK_FEATURES + i].item<double>();
     if (num_active_tasks > 0) {
@@ -283,6 +290,47 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
     std::cout << task->name << " selected CPU 0\n";
     score = 0.f;
   } else {
+    /*
+    if (base_score > 0 || task->max_depcompl_time_epochs == 0) {
+      // If the chosen device was idle, give a reward 1.
+      score = 1.f;
+    } else {
+    */
+    double completion_time_epochs = task->completion_time_epochs;
+    if (completion_time_epochs == 0) {
+      double average = this->total_task_completiontime / this->num_task_completiontime;
+      if (average == 0) {
+        score = 1;
+      } else {
+        score = average / 10;
+      }
+    } else {
+      double interval = task->completion_time_epochs - task->max_depcompl_time_epochs;
+      this->total_task_completiontime += interval;
+      this->num_task_completiontime += 1;
+      double average = this->total_task_completiontime / this->num_task_completiontime;
+      double norm_interval = average / (10 * interval);
+      //score = 1 / interval;
+      score = norm_interval;
+      std::cout << "max decompl time epochs:" << interval << " average:" << average << " score:" << score << "\n";
+    }
+
+    ++this->num_reward_accumulation_;
+    this->reward_accumulation_ += score;
+  }
+  return torch::tensor({score}, torch::kDouble);
+}
+
+
+#if 0
+torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state, double base_score) {
+  double score{0};
+  if (chosen_device_id == 0) {
+    std::cout << task->name << " selected CPU 0\n";
+    score = 0.f;
+  } else {
     if (base_score > 0) {
       // If the chosen device was idle, give a reward 1.
       score = 1.f;
@@ -316,6 +364,7 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
   }
   return torch::tensor({score}, torch::kDouble);
 }
+#endif
 
 #if 0
 ORIGINAL

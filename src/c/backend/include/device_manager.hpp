@@ -128,6 +128,8 @@ public:
     }
   }
 
+  TimePoint get_initial_epoch() { return this->initial_epoch_; }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds

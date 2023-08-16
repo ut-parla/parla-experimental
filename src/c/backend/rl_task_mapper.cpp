@@ -5,7 +5,7 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(8 + num_devices * 9, num_devices, num_devices, is_training_mode);
+  this->rl_agent_ = new RLAgent(7 + num_devices * 8, num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, mapper);
 }
 
@@ -224,10 +224,13 @@ void RLTaskMappingPolicy::run_task_mapping(
         reward.item<float>() << "\n";
 #endif
     } else {
+
+      /* XXX(hc)
       std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
         " current state:" << this->rl_current_state_ << " next state: " <<
         this->rl_next_state_ <<
         " device id: " << chosen_device_gid <<  "\n";
+        */
     }
 
     if (task->get_name().find("begin_rl_task") != std::string::npos) {
@@ -237,6 +240,10 @@ void RLTaskMappingPolicy::run_task_mapping(
     if (task->get_name().find("end_rl_task") != std::string::npos) {
       this->rl_env_->output_reward(this->rl_agent_->get_episode());
       this->rl_agent_->clear_replay_memory_buffer();
+      if (this->rl_agent_->get_episode() % 10 == 0 && this->rl_agent_->is_training_mode()) {
+        std::cout << "Episode " << this->rl_agent_->get_episode() << ": stores models.." << "\n";
+        this->rl_agent_->save_models();
+      }
     }
   }
 }

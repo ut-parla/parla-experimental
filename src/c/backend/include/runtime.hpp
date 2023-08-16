@@ -34,6 +34,8 @@ class TaskBarrier;
 class InnerWorker;
 class InnerScheduler;
 
+class RLTaskMappingPolicy;
+
 // Type Aliases for common containers
 
 using WorkerQueue = ProtectedQueue<InnerWorker *>;
@@ -45,6 +47,8 @@ using TaskList = ProtectedVector<InnerTask *>;
 using SpaceList = ProtectedVector<TaskBarrier *>;
 
 using PointerList = ProtectedVector<uintptr_t>;
+
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 /* Access mode to a PArray. */
 enum AccessMode {
@@ -274,6 +278,11 @@ public:
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
       parray_list;
 
+  // Epochs from the first epoch to task completion
+  double completion_time_epochs{0};
+  // Max completion time among dependency tasks
+  double max_depcompl_time_epochs{0};
+
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
@@ -346,12 +355,15 @@ public:
   /* Wrapper for testing */
   bool notify_dependents_wrapper();
 
-  /* Notify the task that one of its dependents has completed
+  /*
+   *  Notify the task that one of its dependents has completed
    *  Decrements the number of blocking dependencies.
    *  Return true if 0 blocking dependencies remain.
    *  Used by "notify_dependents"
    */
   Task::StatusFlags notify(Task::State dependency_state, bool is_data = false);
+
+  void get_dependency_completion_epochs(double dep_compltime_epochs);
 
   /* Reset state and increment all internal counters. Used by continuation */
   void reset() {
@@ -566,6 +578,11 @@ public:
   /* Return True if an instance is a data movement task */
   bool is_data_task();
 
+  /* Set epochs at task completion from when the task graph begins */
+  void record_task_completion_epochs(double epochs) {
+    this->completion_time_epochs = epochs;
+  }
+
 protected:
   /*
    *  1 <--> 3 (MultiDevAdd, normally SingleDevAdd) <--> 2*2 (SingleArchAdd)
@@ -764,6 +781,13 @@ public:
   void remove_task();
 
   void stop();
+
+  /* Set epochs at task completion from when the task graph begins */
+  void record_task_completion_epochs();
+
+  /* In RL, evaluate task mapping; the evalution method is depending on
+     the RL policy. The current version is to use task completion time based */
+  void evaluate_completed_task();
 };
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -1034,6 +1058,13 @@ public:
   void spawn_wait();
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
+
+  /* In RL, evaluate task mapping; the evalution method is depending on
+     the RL policy. The current version is to use task completion time based */
+  void evaluate_completed_task(InnerTask *task);
+  TimePoint get_initial_epoch() {
+    return this->device_manager_->get_initial_epoch();
+  }
 
 protected:
   /// It manages all device instances in C++.

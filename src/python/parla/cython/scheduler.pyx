@@ -257,6 +257,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #Pop the task from the thread local stack
                         Locals.pop_task()
 
+                        # Record epochs between task graph begin to
+                        # task completion time.
+                        self.inner_worker.record_task_completion_epochs()
+                        # Evaluate task mapping.
+                        self.inner_worker.evaluate_completed_task()
+
                         #Log events on all 'task default' streams
                         device_context.record_events()
 

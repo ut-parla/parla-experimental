@@ -58,6 +58,22 @@ void InnerWorker::stop() {
   this->notified = true;
   cv.notify_all();
 }
+
+void InnerWorker::record_task_completion_epochs() {
+  // Only consider computation tasks.
+  if (!this->task->is_data_task()) {
+    TimePoint initial_time_epoch = this->scheduler->get_initial_epoch();
+    TimePoint now = std::chrono::system_clock::now();
+    double task_completion_epochs = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now - initial_time_epoch).count();
+    std::cout << this->task->name << "'s completion time:" << task_completion_epochs << "\n";
+    this->task->record_task_completion_epochs(task_completion_epochs);
+  }
+}
+
+void InnerWorker::evaluate_completed_task() {
+  this->scheduler->evaluate_completed_task(this->task);
+}
 // WorkerPool Implementation
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
@@ -294,7 +310,6 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
       device->reduce_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
           task->num_dependents);
     }
-    std::cout << dev_id << " is released by " << task->get_name() << "\n" << std::flush;
   }
 
   // Clear all assigned streams from the task
@@ -363,3 +378,12 @@ int InnerScheduler::get_num_ready_tasks() {
 }
 
 void InnerScheduler::spawn_wait() { this->workers.spawn_wait(); }
+
+void InnerScheduler::evaluate_completed_task(InnerTask *task) {
+  if (dynamic_cast<RLTaskMappingPolicy*>(this->
+          mapper->get_policy_raw_pointer()) != nullptr) {
+    this->mapper->get_policy_raw_pointer()->
+        evaluate_and_append_task_mapping(task);
+  }
+}
+

@@ -267,7 +267,7 @@ public:
     if (sample > eps_threshold) {
       torch::NoGradGuard no_grad;
       torch::Tensor out_tensor = this->policy_net_.forward(state).clone();
-      std::cout << ">> Out:" << out_tensor.unsqueeze(0) << "\n";
+      //std::cout << ">> Out:" << out_tensor.unsqueeze(0) << "\n";
       int64_t max_tensor_idx{1};
       for (size_t a = 0; a < this->n_actions_; ++a) {
         auto max_action_pair = out_tensor.max(0);
@@ -448,6 +448,15 @@ public:
     */
   }
 
+  void target_net_soft_update_simpler(float TAU = 0.005) {
+    for (auto &p : this->target_net_.named_parameters()) {
+      torch::NoGradGuard no_grad;
+      p.value().copy_(
+          TAU * p.value() +
+          (1 - TAU) * this->policy_net_.named_parameters()[p.key()]);
+    }
+  }
+
   void target_net_soft_update(float TAU = 0.005) {
     /*
     if (this->episode_ % 500 == 0) {
@@ -486,11 +495,6 @@ public:
       std::cout << param_key << ", " << named_parameter.value() 
         << ", new " << *target_param_val_ptr << "\n";
       */
-    }
-
-    if (this->episode_ % 10 == 0 && this->is_training_mode()) {
-      std::cout << "Episode " << this->episode_ << ": stores models.." << "\n";
-      this->save_models();
     }
   }
 
@@ -532,13 +536,14 @@ public:
    * @param task Inner task to register to the replay memory
    * @param rl_env RL environment having the replay memory
    */
-  void append_launched_task_info(InnerTask *task, RLEnvironment *rl_env) {
+  void evaluate_and_append_task_mapping(InnerTask *task, RLEnvironment *rl_env) {
     if (this->is_training_mode_) {
       if (task->name.find("global_0") != std::string::npos ||
           task->name.find("begin_rl_task") != std::string::npos ||
           task->name.find("end_rl_task") != std::string::npos) {
         return;
       }
+      if (task->is_data_task()) { return; }
       // Get id of the task
       RLStateTransition *tinfo = this->replay_memory_buffer_[
           task->replay_mem_buffer_id_];
@@ -550,10 +555,12 @@ public:
           tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
           reward);
       this->optimize_model();
-      this->target_net_soft_update();
+      this->target_net_soft_update_simpler();
+      /* XXX(hc)
       std::cout << this->get_episode() << " episode task " << task->name <<
           " current state:" << tinfo->current_state << ", device id:" <<
           tinfo->chosen_device << ", reward:" << reward << "\n";
+          */
     }
   }
 
@@ -656,8 +663,10 @@ public:
    *
    * @param task Inner task to register to the replay memory
    */
-  void append_launched_task_info(InnerTask *task) {
-    this->rl_agent_->append_launched_task_info(task, this->rl_env_);
+  void evaluate_and_append_task_mapping(InnerTask *task) {
+    mtx.lock();
+    this->rl_agent_->evaluate_and_append_task_mapping(task, this->rl_env_);
+    mtx.unlock();
   }
 
 #if 0
@@ -680,6 +689,7 @@ private:
   RLEnvironment *rl_env_;
   torch::Tensor rl_current_state_;
   torch::Tensor rl_next_state_;
+  std::mutex mtx;
 };
 
 #endif

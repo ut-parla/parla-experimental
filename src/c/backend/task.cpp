@@ -242,6 +242,17 @@ void InnerTask::notify_dependents_completed() {
     space->notify();
   }
 
+  double ct_epochs = this->completion_time_epochs; 
+  std::cout << "Notifying dependents of " << this->name << ": " <<
+    this->dependents.size_unsafe() << " with "  << ct_epochs << std::endl;
+  for (size_t i = 0; i < this->get_assigned_devices().size(); ++i) {
+    std::cout << "\t Device:" << this->get_assigned_devices()[i]->get_id() << "\n";
+  }
+  for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
+    auto task = this->dependents.get_unsafe(i);
+    task->get_dependency_completion_epochs(ct_epochs);
+  }
+
   this->set_state(Task::COMPLETED);
 
   this->spaces.unlock();
@@ -261,15 +272,12 @@ void InnerTask::notify_dependents(TaskStateList &buffer,
   //       May need to change back to call scheduler.enqueue(task) here instead
 
   this->dependents.lock();
-  // std::cout << "Notifying dependents of " << this->name << ": " <<
-  // this->dependents.size_unsafe() << std::endl;
-
+  //std::cout << "Notifying dependents of " << this->name << ": " <<
+  //  this->dependents.size_unsafe() << " with "  << ct_epochs << std::endl;
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
-
     auto task = this->dependents.get_unsafe(i);
     Task::StatusFlags status = task->notify(new_state, this->is_data.load());
-
-    // std::cout << "Dependent Task is notified: " << task->name << std::endl;
+    // std::cout << "\t Dependent " << i << ":" << task->name << std::endl;
     if (status.any()) {
       // std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
@@ -292,8 +300,17 @@ bool InnerTask::notify_dependents_wrapper() {
   return buffer.size() > 0;
 }
 
-Task::StatusFlags InnerTask::notify(Task::State dependency_state,
-                                    bool is_data) {
+void InnerTask::get_dependency_completion_epochs(
+    double dep_compltime_epochs) {
+  // This does not require a lock since dependents always
+  // run after dependencies.
+  this->max_depcompl_time_epochs =
+      std::max(dep_compltime_epochs, this->max_depcompl_time_epochs);
+}
+
+
+Task::StatusFlags InnerTask::notify(
+    Task::State dependency_state, bool is_data) {
 
   bool spawnable = false;
   bool mappable = false;
