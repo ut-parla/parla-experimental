@@ -11,6 +11,8 @@ from parla import Parla, spawn, TaskSpace
 from parla.cython.device_manager import cpu, gpu
 from parla.common.globals import get_current_context
 
+import nvtx
+
 #import pdb
 
 async def fit_xp(X, centers, sum_list,  count_list, gpu_sum, gpu_count, num_tasks, n_clusters, max_iter, num_gpu):
@@ -22,11 +24,19 @@ async def fit_xp(X, centers, sum_list,  count_list, gpu_sum, gpu_count, num_task
     Tk = TaskSpace("T")
     Tr = TaskSpace("reduction")
     Tc = TaskSpace("calc_centroids")
+
+    nvtx.push_range(message="USER LAUNCH TASKS", color="green",
+                    domain="application")
+
     for i in range(max_iter):
         for j in range(num_gpu):
             for k in range(num_tasks):
                 @spawn(Tk[i,j,k], Tc[i-1,j] ,input=[(X[j*num_tasks+k],0)], inout=[(sum_list[j][k],0), (count_list[j][k],0), (centers[j],0)], placement = [gpu(j)])
                 def kmeans_iter():
+
+                    nvtx.push_range(message="USER TASKS 1", color="blue",
+                                    domain="application")
+
                     samples = X[j*num_tasks+k]          
                     sums = sum_list[j][k]
                     counts = count_list[j][k]
@@ -50,6 +60,8 @@ async def fit_xp(X, centers, sum_list,  count_list, gpu_sum, gpu_count, num_task
                     stream = cp.cuda.get_current_stream()
                     stream.synchronize()
 
+                    nvtx.pop_range(domain="application")
+
             # await Tk[i,j,0:num_tasks]
             # print("Done Tk")
 
@@ -68,14 +80,20 @@ async def fit_xp(X, centers, sum_list,  count_list, gpu_sum, gpu_count, num_task
         for j in range(num_gpu):
             @spawn(Tc[i,j], [Tr[i,0:num_gpu]], inout=[(centers[j],0)], input=[(gpu_sum[x],0) for x in range(num_gpu)]+[(gpu_count[x],0) for x in range(num_gpu)], placement = [gpu(j)]) #
             def calc():
+                nvtx.push_range(message="USER TASKS 2", color="blue",
+                                domain="application")
+                
                 num = cp.stack([gpu_sum[x].array for x in range(num_gpu)]).sum(axis=0)
                 den = cp.stack([gpu_count[x].array for x in range(num_gpu)]).sum(axis=0)
                 centers[j].array[:,:] = num / den 
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
+
+                nvtx.pop_range(domain="application")
         
         await Tc[i,0:num_gpu]
 
+    nvtx.pop_range(domain="application")
     await Tc[max_iter-1,0:num_gpu]
 
 
@@ -85,10 +103,10 @@ def main():
         # define Constants
         num = 5000000 #5000000
         n_clusters = 10
-        num_tasks = 10
+        num_tasks = 4
         iter = 20
         dim = 10
-        num_gpus = 1 #cp.cuda.runtime.getDeviceCount()
+        num_gpus = 4 #cp.cuda.runtime.getDeviceCount()
         
 
         print("Generating Data points")
