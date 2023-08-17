@@ -68,9 +68,14 @@ async def fit_xp(X, centers, sum_list,  count_list, gpu_sum, gpu_count, num_task
         for j in range(num_gpu):
             @spawn(Tc[i,j], [Tr[i,0:num_gpu]], inout=[(centers[j],0)], input=[(gpu_sum[x],0) for x in range(num_gpu)]+[(gpu_count[x],0) for x in range(num_gpu)], placement = [gpu(j)]) #
             def calc():
+                # print("j= ", j)
+                # for k in range(num_gpu): 
+                #     print(gpu_sum[k])
+                
+                # print(type(gpu_sum[0].array.ndim))
                 num = cp.stack([gpu_sum[x].array for x in range(num_gpu)]).sum(axis=0)
                 den = cp.stack([gpu_count[x].array for x in range(num_gpu)]).sum(axis=0)
-                centers[j].array[:,:] = num / den 
+                centers[j].array[:] = num / den 
                 stream = cp.cuda.get_current_stream()
                 stream.synchronize()
         
@@ -83,16 +88,16 @@ def main():
     @spawn(placement=cpu)
     async def kmeans():
         # define Constants
-        num = 5000000 #5000000
+        num = 5000000
         n_clusters = 10
         num_tasks = 10
         iter = 20
         dim = 10
-        num_gpus = 1 #cp.cuda.runtime.getDeviceCount()
+        num_gpus = cp.cuda.runtime.getDeviceCount()
         
 
         print("Generating Data points")
-        samples = np.random.randn(num, dim)
+        samples = np.random.randn(num, 2)
         X_train = np.r_[samples + 1, samples - 1]
 
         # Generate initial centroids
@@ -113,16 +118,15 @@ def main():
             count_list_cp.append(list())
             with cp.cuda.Device(j) as dev:
                 centers_cp.append(cp.asarray(X_train[initial_indexes]))
-                gpu_sum_cp.append(cp.zeros((n_clusters, dim)))
+                gpu_sum_cp.append(cp.zeros((n_clusters, 2)))
                 gpu_count_cp.append(cp.zeros((n_clusters,1)))
                 for i in range(num_tasks): 
                     arr = cp.asarray(X_train[(num_tasks*j+i)*block_size:(num_tasks*j+i+1)*block_size], order='F')
                     X_list.append(arr)
-                    sum_list_cp[j].append(cp.zeros((n_clusters, dim)))
+                    sum_list_cp[j].append(cp.zeros((n_clusters, 2)))
                     count_list_cp[j].append(cp.zeros((n_clusters,1)))
                     cp.cuda.Device().synchronize()
 
-        print("Generated Data")
         # Make PArrays
         A = parray.asarray_batch(X_list)        # Q:Is this okay?
         centers = parray.asarray_batch(centers_cp)
@@ -135,13 +139,8 @@ def main():
             count_list.append(parray.asarray_batch(count_list_cp[i]))
 
         print("Starting kmeans")
-        print("------------")
-        start = time.perf_counter()
         # calculate kmeans for iter iterations
         await fit_xp(A, centers, sum_list, count_list, gpu_sum, gpu_count, num_tasks, n_clusters, iter, num_gpus)
-        
-        end = time.perf_counter()
-        print("Time = ", end-start)
         # print(type(centers))
         # print(centers.array.shape)
         # print(type(sum_list))
@@ -163,7 +162,7 @@ def main():
         if test == 1:    
             centers_test = X_train[initial_indexes]
             for _ in range(iter):
-                sum = np.zeros((n_clusters,dim))
+                sum = np.zeros((n_clusters,2))
                 count = np.zeros(n_clusters)
                 for i in range(n_samples):
                     dist = np.linalg.norm(centers_test - X_train[i,:], axis=1)
