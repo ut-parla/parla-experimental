@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=devtest        # Job name
+#SBATCH --nodes=1                 # Number of nodes
+#SBATCH --ntasks-per-node=1       # Number of tasks per node
+#SBATCH -p rtx-dev
+#SBATCH --time=00:06:00           # Time limit for job
+#SBATCH --output=devtest.out  # Output file name (%j expands to job ID)
+#SBATCH --error=devtest.err
+
+
+# Load any required modules
+module load cuda/11.3
+module load intel
+source /work2/06081/wlruys/frontera/mambaforge/etc/profile.d/conda.sh
+conda activate parla
+module load gcc
+
+# Run your command(s) here
+make clean; CC=gcc CXX=g++  make
+make test

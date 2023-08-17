@@ -1,0 +1,39 @@
+** Brief Summary
+
+Current Parla provides four types of synthetic task graphs.
+Among them, we use "reduction", "independent", and "reduction_scatter"
+task graphs for benchmarking.
+
+** Task Graphs
+
+* independent
+All tasks (nodes) in this graph have none of dependencies.
+THe number of tasks are an user parameter.
+
+* reduction
+In this graph, child nodes depend on their parent nodes, and so, it
+expresses reduction computation. The number of parents and the depth
+of the tree are user parameters, and we use a perfect binary tree.
+
+* reduction-scatter
+This graph includes two types of operators, reduction and scatter
+(or gather and scatter). Odd levels have bulk tasks, and even levels have
+one task which has gather-like dependencies from bulk tasks on the previous level
+and has scatter-like dependencies to bulk tasks on the next level.
+
+
+** Command Lines
+
+We use benchmark/python/benchmark.py to execute each synthetic task graph.
+Parameters are specified as [option1, option2, ..] or [explanation].
+
+* independent:
+python benchmark/python/benchmark.py -graph input.gph -computation_weight [milliseconds] -gil_count 1 -gil_time 0 -user [0,1] -num_gpus [# gpus] -d 2 -data_move [0: no-data, 1: manual, 2: automatic] -width_bytes [100KB: 12500, 1MB: 125000, 10MB: 1250000] -iter 1 -overlap 0 -n [# tasks] -workloads independent
+
+* reduction:
+python benchmark/python/benchmark.py -graph input.gph -computation_weight [milliseconds] -gil_count 1 -gil_time 0 -user [0,1] -num_gpus [# gpus] -d 2 -data_move [0: no-data, 1: manual, 2: automatic] -width_bytes [100KB: 12500, 1MB: 125000, 10MB: 1250000] -iter 1 -overlap 1 -level [# levels] -branch 2 -workloads reduction 
+(FYI, a 8 level task graph has 512 tasks and a 9 level task graph has 1024 tasks)
+
+* reduction-scatter:
+python benchmark/python/benchmark.py -graph input.gph -computation_weight [milliseconds] -gil_count 1 -gil_time 0 -user [0,1] -num_gpus [# gpus] -d 2 -data_move [0: no-data, 1: manual, 2: automatic] -width_bytes [100KB: 12500, 1MB: 125000, 10MB: 1250000] -iter 1 -overlap 1 -n [# tasks] -level [# levels] -workloads reduction_scatter
+(FYI, in this case, the generator automatically decides the number of bulk tasks for each level based on the passed level size)

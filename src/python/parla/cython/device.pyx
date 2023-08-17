@@ -480,6 +480,10 @@ class Stream:
     def wait_event(self):
         pass
 
+    @property
+    def ptr(self):
+        return None
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
@@ -561,6 +565,10 @@ class CupyStream(Stream):
 
     def wait_event(self, event):
         self._stream.wait_event(event)
+
+    @property
+    def ptr(self):
+        return self._stream.ptr
 
     #TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):
