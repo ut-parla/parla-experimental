@@ -554,7 +554,7 @@ public:
           task->replay_mem_buffer_id_];
       DevID_t chosen_device_id = static_cast<DevID_t>(
           tinfo->chosen_device[0].item<int64_t>());
-      torch::Tensor reward = rl_env->calculate_reward(
+      torch::Tensor reward = rl_env->calculate_reward2(
             chosen_device_id, task, tinfo->current_state, tinfo->base_score);
       torch::Tensor next_state = rl_env->make_current_state(task);
       this->append_replay_memory(

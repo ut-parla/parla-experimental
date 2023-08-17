@@ -252,10 +252,6 @@ public:
     this->remote_data_bytes_ -= remote_data_bytes;
     this->num_dependencies_ -= num_dependencies;
     this->num_dependents_ -= num_dependents;
-    std::cout << "Device " << dev_global_id_ << " reduction:" <<
-      this->remote_data_bytes_ << ", " << this->num_dependencies_ <<
-      ", " << this->num_dependents_ << "\n";
-
     this->mapped_task_info_mtx_.unlock();
   }
 

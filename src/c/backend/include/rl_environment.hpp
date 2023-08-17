@@ -33,8 +33,13 @@ public:
   torch::Tensor calculate_reward(DevID_t chosen_device_id,
                                  InnerTask *task,
                                  torch::Tensor current_state, double base_score);
+  torch::Tensor calculate_reward2(DevID_t chosen_device_id,
+                                  InnerTask* task,
+                                  torch::Tensor current_state, double base_score);
+
 
   double check_task_type(InnerTask *task);
+  double check_task_type_using_name(InnerTask *task);
 
   void output_reward(size_t episode);
 protected:
@@ -45,7 +50,8 @@ protected:
   size_t num_reward_accumulation_{0};
   double reward_accumulation_{0};
 
-  std::unordered_map<std::string, double> task_type_map;
+  std::unordered_map<std::string, double> task_type_map_;
+  std::unordered_map<std::string, double> task_compltime_delta_map_;
 	double last_task_type{0};
   // Accumulated task completion time to keep track of
   // average of the completion time among tasks.

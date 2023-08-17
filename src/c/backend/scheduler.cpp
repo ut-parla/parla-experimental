@@ -66,7 +66,7 @@ void InnerWorker::record_task_completion_epochs() {
     TimePoint now = std::chrono::system_clock::now();
     double task_completion_epochs = std::chrono::duration_cast<std::chrono::milliseconds>(
         now - initial_time_epoch).count();
-    std::cout << this->task->name << "'s completion time:" << task_completion_epochs << "\n";
+    //std::cout << this->task->name << "'s completion time:" << task_completion_epochs << "\n";
     this->task->record_task_completion_epochs(task_completion_epochs);
   }
 }
