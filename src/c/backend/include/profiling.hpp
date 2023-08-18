@@ -159,6 +159,31 @@ inline int write_log(std::string filename) { return 0; }
 #define WORKER 'Worker'
 #define SCHEDULER 'Scheduler'
 #define TASK 'Task'
+#define RL 'RL'
+
+inline void log_rl_msg(const int type, std::string msg) {
+  // const char* _msg = msg.c_str();
+  switch (type) {
+  case 0:
+    LOG_TRACE(RL, "{}", msg);
+    break;
+  case 1:
+    LOG_DEBUG(RL, "{}", msg);
+    break;
+  case 2:
+    LOG_INFO(RL, "{}", msg);
+    break;
+  case 3:
+    LOG_WARN(RL, "{}", msg);
+    break;
+  case 4:
+    LOG_ERROR(RL, "{}", msg);
+    break;
+  case 5:
+    LOG_FATAL(RL, "{}", msg);
+    break;
+  }
+}
 
 inline void log_task_msg(const int type, std::string msg) {
   // const char* _msg = msg.c_str();

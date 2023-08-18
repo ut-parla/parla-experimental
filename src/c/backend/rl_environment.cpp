@@ -1,8 +1,10 @@
 #include "include/rl_environment.hpp"
 #include "include/phases.hpp"
 #include "include/runtime.hpp"
+#include "include/profiling.hpp"
 
 #include <chrono>
+#include <cmath>
 
 #define NUM_TASK_FEATURES 4
 #define NUM_DEP_TASK_FEATURES 3
@@ -52,9 +54,12 @@ void RLEnvironment::make_current_task_state(
     // Access each dependency of the compute task.
     InnerTask *dependency = task->dependencies.at(i);
     if (dependency->is_data.load()) { continue; }
-    if (dependency->name.find("global_0") != std::string::npos ||
-        dependency->name.find("begin_rl_task") != std::string::npos ||
-        dependency->name.find("end_rl_task") != std::string::npos) { continue; }
+    if (task->name.find("global_0") != std::string::npos ||
+        task->name.find("begin_rl_task") != std::string::npos ||
+        task->name.find("end_rl_task") != std::string::npos ||
+        task->name.find("Reset") != std::string::npos ||
+        task->name.find("CopyBack") != std::string::npos) { continue; }
+
     if (dependency->get_state() < Task::State::COMPLETED) {
       ++num_active_dependencies;
       // XXX: it assumes a single device task.
@@ -87,9 +92,12 @@ void RLEnvironment::make_current_task_state(
     // (Those will be created after this task creates them first)
     InnerTask *dependent = task->dependents.at(i);
     if (dependent->is_data.load()) { continue; }
-    if (dependent->name.find("global_0") != std::string::npos ||
-        dependent->name.find("begin_rl_task") != std::string::npos ||
-        dependent->name.find("end_rl_task") != std::string::npos) { continue; }
+    if (task->name.find("global_0") != std::string::npos ||
+        task->name.find("begin_rl_task") != std::string::npos ||
+        task->name.find("end_rl_task") != std::string::npos ||
+        task->name.find("Reset") != std::string::npos ||
+        task->name.find("CopyBack") != std::string::npos) { continue; }
+
     if (dependent->get_state() < Task::State::COMPLETED) {
       ++num_active_dependents;
     }
@@ -245,9 +253,12 @@ void RLEnvironment::make_current_active_deptask_state(
       // Access each dependency/dependent of the compute task.
       InnerTask *dep_task = dep_task_list.at(i);
       if (dep_task->is_data.load()) { continue; }
-      if (dep_task->name.find("global_0") != std::string::npos ||
-          dep_task->name.find("begin_rl_task") != std::string::npos ||
-          dep_task->name.find("end_rl_task") != std::string::npos) { continue; }
+      if (task->name.find("global_0") != std::string::npos ||
+          task->name.find("begin_rl_task") != std::string::npos ||
+          task->name.find("end_rl_task") != std::string::npos ||
+          task->name.find("Reset") != std::string::npos ||
+          task->name.find("CopyBack") != std::string::npos) { continue; }
+
       if (dep_task->get_state() < Task::State::COMPLETED) {
         ++num_active_tasks;
         this->make_current_task_state(
@@ -421,22 +432,43 @@ torch::Tensor RLEnvironment::calculate_reward2(DevID_t chosen_device_id,
     score = 0.f;
   } else {
     std::string task_name = task->name;
+    uint32_t num_devices = this->device_manager_->template get_num_devices(ParlaDeviceType::CUDA);
+    size_t num_siblings = task->approximated_num_siblings;
+    std::cout << "num siblings:" << num_siblings << "\n";
+    size_t weight_delta = ceil(num_siblings / num_devices);
+    std::cout << "weight delta:" << weight_delta << "\n";
+    weight_delta = (weight_delta < 1)? 1 : weight_delta;
+
+    /*
+    double delta = (num_siblings == 0)?
+        (task->completion_time_epochs - task->max_depcompl_time_epochs) :
+        (task->completion_time_epochs - task->max_depcompl_time_epochs) /
+            double{(num_siblings / num_devices)};
+    */
     double delta = task->completion_time_epochs - task->max_depcompl_time_epochs;
     auto found = this->task_compltime_delta_map_.find(task_name);
-    if (found == this->task_compltime_delta_map_.end()) {
-      this->task_compltime_delta_map_[task_name] = delta;
-    } else {
+    if (found != this->task_compltime_delta_map_.end()) {
       double old_delta = found->second;
-      if (old_delta * 0.80 >= delta) {
+      if (1.2 * old_delta >= delta) {
         score = 1;
-      } else if (delta * 0.80 >= old_delta) {
+      } else if (delta > weight_delta * old_delta) {
         score = -1;
       }
-#if PRINT_LOG
+
       std::cout << task_name << " chosen dev:" << chosen_device_id <<
         " delta " << delta << " vs old delta " << old_delta << " score:" <<
         score << "\n";
-#endif
+      log_rl_msg(2, "calc_reward,"+task->name+", "+
+          std::to_string(chosen_device_id)+", "+
+          std::to_string(task->completion_time_epochs)+", "+
+          std::to_string(task->max_depcompl_time_epochs)+", "+
+          std::to_string(delta));
+      if (old_delta > delta) {
+        // Only update when the current delta is smaller than the old delta.
+        this->task_compltime_delta_map_[task_name] = delta;
+      }
+    } else {
+      this->task_compltime_delta_map_[task_name] = delta;
     }
   }
   ++this->num_reward_accumulation_;

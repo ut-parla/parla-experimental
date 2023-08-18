@@ -1,6 +1,7 @@
 #include "include/containers.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
+#include "include/profiling.hpp"
 #include <string.h>
 
 #define DEPENDENCY_BUFFER_SIZE 4
@@ -243,14 +244,19 @@ void InnerTask::notify_dependents_completed() {
   }
 
   double ct_epochs = this->completion_time_epochs; 
+#if 0
   std::cout << "Notifying dependents of " << this->name << ": " <<
     this->dependents.size_unsafe() << " with "  << ct_epochs << std::endl;
   for (size_t i = 0; i < this->get_assigned_devices().size(); ++i) {
     std::cout << "\t Device:" << this->get_assigned_devices()[i]->get_id() << "\n";
   }
+#endif
   for (size_t i = 0; i < this->dependents.size_unsafe(); i++) {
     auto task = this->dependents.get_unsafe(i);
+    log_rl_msg(2, "parent task,"+this->name+", "+
+        std::to_string(ct_epochs)+", "+task->name);
     task->get_dependency_completion_epochs(ct_epochs);
+    task->approximated_num_siblings = this->dependents.size_unsafe();
   }
 
   this->set_state(Task::COMPLETED);

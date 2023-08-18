@@ -59,6 +59,17 @@ void InnerWorker::stop() {
   cv.notify_all();
 }
 
+void InnerWorker::record_task_begin_epochs() {
+  if (!this->task->is_data_task()) {
+    TimePoint initial_time_epoch = this->scheduler->get_initial_epoch();
+    TimePoint now = std::chrono::system_clock::now();
+    double task_begin_epochs = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now - initial_time_epoch).count();
+    //std::cout << this->task->name << "'s completion time:" << task_completion_epochs << "\n";
+    this->task->record_task_begin_epochs(task_begin_epochs);
+  }
+}
+
 void InnerWorker::record_task_completion_epochs() {
   // Only consider computation tasks.
   if (!this->task->is_data_task()) {
@@ -68,6 +79,14 @@ void InnerWorker::record_task_completion_epochs() {
         now - initial_time_epoch).count();
     //std::cout << this->task->name << "'s completion time:" << task_completion_epochs << "\n";
     this->task->record_task_completion_epochs(task_completion_epochs);
+    log_rl_msg(2, "device selection,"+task->name+", "+
+        std::to_string(this->task->assigned_devices[0]->get_global_id())+", "+
+        std::to_string(this->task->begin_time_epochs)+", "+
+        std::to_string(this->task->completion_time_epochs)+", "+
+        std::to_string(this->task->max_depcompl_time_epochs)+", "+
+        std::to_string(this->task->completion_time_epochs -
+          this->task->max_depcompl_time_epochs));
+
   }
 }
 

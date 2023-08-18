@@ -248,7 +248,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         Locals.push_task(active_task)
 
                         with device_context as env:
-                            
+                            self.inner_worker.record_task_begin_epochs()
                             core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                             #Run the task body (this may complete the task or return a continuation)
                             #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead

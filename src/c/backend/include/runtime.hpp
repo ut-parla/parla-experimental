@@ -181,6 +181,8 @@ class InnerTask {
 
   // TODO(hc): those member vars should be protected.
 public:
+  size_t approximated_num_siblings{0};
+
   // Task info. for RL
   double remote_data_bytes{0};
   double num_dependencies{0};
@@ -278,6 +280,8 @@ public:
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
       parray_list;
 
+  // Epochs from the first epoco to task launching
+  double begin_time_epochs{0};
   // Epochs from the first epoch to task completion
   double completion_time_epochs{0};
   // Max completion time among dependency tasks
@@ -578,6 +582,11 @@ public:
   /* Return True if an instance is a data movement task */
   bool is_data_task();
 
+  /* Set epochs at task launching from when the task graph begins */
+  void record_task_begin_epochs(double epochs) {
+    this->begin_time_epochs = epochs;
+  }
+
   /* Set epochs at task completion from when the task graph begins */
   void record_task_completion_epochs(double epochs) {
     this->completion_time_epochs = epochs;
@@ -781,6 +790,9 @@ public:
   void remove_task();
 
   void stop();
+
+  /* Set epochs at task launching from when the task graph begins */
+  void record_task_begin_epochs();
 
   /* Set epochs at task completion from when the task graph begins */
   void record_task_completion_epochs();

@@ -453,6 +453,9 @@ public:
   }
 
   void target_net_soft_update_simpler(float TAU = 0.005) {
+    if (this->episode_ > 0 && this->episode_ % 3 == 0) {
+      return;
+    }
     for (auto &p : this->target_net_.named_parameters()) {
       torch::NoGradGuard no_grad;
       p.value().copy_(
@@ -514,7 +517,9 @@ public:
       torch::Tensor chosen_device) {
     if (task->name.find("global_0") != std::string::npos ||
         task->name.find("begin_rl_task") != std::string::npos ||
-        task->name.find("end_rl_task") != std::string::npos) {
+        task->name.find("end_rl_task") != std::string::npos ||
+        task->name.find("Reset") != std::string::npos ||
+        task->name.find("CopyBack") != std::string::npos) {
       return;
     }
     //auto current_time = std::chrono::high_resolution_clock::now();
@@ -545,7 +550,9 @@ public:
     if (this->is_training_mode_) {
       if (task->name.find("global_0") != std::string::npos ||
           task->name.find("begin_rl_task") != std::string::npos ||
-          task->name.find("end_rl_task") != std::string::npos) {
+          task->name.find("end_rl_task") != std::string::npos ||
+          task->name.find("Reset") != std::string::npos ||
+          task->name.find("CopyBack") != std::string::npos) {
         return;
       }
       if (task->is_data_task()) { return; }

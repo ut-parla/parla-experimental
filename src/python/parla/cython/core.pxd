@@ -126,6 +126,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void wait()
         void stop()
 
+        void record_task_begin_epochs()
         void record_task_completion_epochs()
         void evaluate_completed_task()
 
