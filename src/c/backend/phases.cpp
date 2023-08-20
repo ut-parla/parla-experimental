@@ -101,6 +101,9 @@ void Mapper::run(SchedulerPhase *next_phase) {
         task->assigned_devices.push_back(chosen_device);
         task->device_constraints.insert(
             {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
+        task->mapping_time_epochs =
+            this->scheduler->get_device_manager()->current_timepoint_count_from_beginning();
+        this->scheduler->assign_task_mapping_id(task);
         // Increase the number of mapped tasks as the number of PArrays
         // since the corresponding data movement tasks will be created.
         this->atomic_incr_num_mapped_tasks_device(global_dev_id);
@@ -498,6 +501,11 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
     device->end_device_idle();
   }
 
+  this->scheduler->assign_task_launching_id(task);
+  if (task->name.find("end_rl_task") != std::string::npos) {
+    this->scheduler->reset_task_mapping_id();
+    this->scheduler->reset_task_launching_id();
+  }
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);

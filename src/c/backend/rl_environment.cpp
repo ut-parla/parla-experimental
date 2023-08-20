@@ -328,6 +328,9 @@ torch::Tensor RLEnvironment::make_next_state(
   int64_t total_memory = device_pool.get(Resource::Memory);
   int64_t remaining_memory =
       reserved_device_pool.get(Resource::Memory) + task_memory;
+
+  next_state[0][
+      DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 1] = 0;
   next_state[0][
       DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 2] =
       (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
@@ -433,11 +436,13 @@ torch::Tensor RLEnvironment::calculate_reward2(DevID_t chosen_device_id,
   } else {
     std::string task_name = task->name;
     uint32_t num_devices = this->device_manager_->template get_num_devices(ParlaDeviceType::CUDA);
+    /*
     size_t num_siblings = task->approximated_num_siblings;
     std::cout << "num siblings:" << num_siblings << "\n";
     size_t weight_delta = ceil(num_siblings / num_devices);
     std::cout << "weight delta:" << weight_delta << "\n";
     weight_delta = (weight_delta < 1)? 1 : weight_delta;
+    */
 
     /*
     double delta = (num_siblings == 0)?
@@ -448,25 +453,40 @@ torch::Tensor RLEnvironment::calculate_reward2(DevID_t chosen_device_id,
     double delta = task->completion_time_epochs - task->max_depcompl_time_epochs;
     auto found = this->task_compltime_delta_map_.find(task_name);
     if (found != this->task_compltime_delta_map_.end()) {
-      double old_delta = found->second;
-      if (1.2 * old_delta >= delta) {
-        score = 1;
-      } else if (delta > weight_delta * old_delta) {
-        score = -1;
-      }
+      /*
+      if (task->launching_order_id < task->mapping_order_id + 2 &&
+          task->launching_order_id > task->mapping_order_id - 2) {
+        double weight =
+            std::abs(int64_t{task->mapping_order_id} -
+                     int64_t{task->launching_order_id});
+        weight = (weight == 0)? 1 : weight;
+          */
+        double old_delta = found->second;
+        if (1.2 * old_delta >= delta) {
+          score = 1;
+        //} else if (delta > weight_delta * old_delta) {
+        } else if (0.2 * delta > old_delta) {
+          score = -1;
+        }
 
-      std::cout << task_name << " chosen dev:" << chosen_device_id <<
-        " delta " << delta << " vs old delta " << old_delta << " score:" <<
-        score << "\n";
-      log_rl_msg(2, "calc_reward,"+task->name+", "+
-          std::to_string(chosen_device_id)+", "+
-          std::to_string(task->completion_time_epochs)+", "+
-          std::to_string(task->max_depcompl_time_epochs)+", "+
-          std::to_string(delta));
-      if (old_delta > delta) {
-        // Only update when the current delta is smaller than the old delta.
-        this->task_compltime_delta_map_[task_name] = delta;
+        std::cout << task_name << " chosen dev:" << chosen_device_id <<
+          " delta " << delta << " vs old delta " << old_delta << " score:" <<
+          score << "\n";
+        log_rl_msg(2, "calc_reward,"+task->name+", "+
+            std::to_string(chosen_device_id)+", "+
+            std::to_string(task->completion_time_epochs)+", "+
+            std::to_string(task->max_depcompl_time_epochs)+", "+
+            std::to_string(delta));
+        if (old_delta > delta) {
+          // Only update when the current delta is smaller than the old delta.
+          this->task_compltime_delta_map_[task_name] = delta;
+        }
+      /*
+      } else {
+        std::cout << task->name << " has different ID:" <<
+          task->launching_order_id << " vs " << task->mapping_order_id << "\n";
       }
+      */
     } else {
       this->task_compltime_delta_map_[task_name] = delta;
     }

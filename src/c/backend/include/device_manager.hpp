@@ -130,6 +130,12 @@ public:
 
   TimePoint get_initial_epoch() { return this->initial_epoch_; }
 
+  double current_timepoint_count_from_beginning() {
+    TimePoint current_time_point = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        current_time_point - this->initial_epoch_).count();
+  }
+
 protected:
   // Global device id counter
   // When used in Scheduler, we assume that only a single device manager holds

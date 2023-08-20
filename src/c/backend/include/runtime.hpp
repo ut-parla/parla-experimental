@@ -188,6 +188,9 @@ public:
   double num_dependencies{0};
   double num_dependents{0};
 
+  size_t mapping_order_id;
+  size_t launching_order_id;
+
   /* Unique ID of the task. Can be used as a dictionary key.*/
   long long int id = 0;
 
@@ -280,8 +283,10 @@ public:
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
       parray_list;
 
-  // Epochs from the first epoco to task launching
+  // Epochs from the first epoch to task launching
   double begin_time_epochs{0};
+  // Epochs from the first epoch to task mapping 
+  double mapping_time_epochs{0};
   // Epochs from the first epoch to task completion
   double completion_time_epochs{0};
   // Max completion time among dependency tasks
@@ -929,6 +934,9 @@ public:
 class InnerScheduler {
 
 public:
+  uint64_t task_mapping_order_{0};
+  uint64_t task_launching_order_{0};
+
   /* Sleep Between Loops */
   bool sleep_flag = false;
 
@@ -1076,6 +1084,28 @@ public:
   void evaluate_completed_task(InnerTask *task);
   TimePoint get_initial_epoch() {
     return this->device_manager_->get_initial_epoch();
+  }
+
+  void assign_task_mapping_id(InnerTask *task) {
+    task->mapping_order_id = this->task_mapping_order_;
+    //std::cout << "[Assigning Mapping ID] " << task->name <<
+    //  ", " << task->mapping_order_id << "\n" << std::flush;
+    ++this->task_mapping_order_;
+  }
+
+  void assign_task_launching_id(InnerTask *task) {
+    task->launching_order_id = this->task_launching_order_;
+    //std::cout << "[Assigning Launching ID] " << task->name <<
+    //  ", " << task->launching_order_id << "\n" << std::flush;
+    ++this->task_launching_order_;
+  }
+
+  void reset_task_mapping_id() {
+    this->task_mapping_order_ = 0;
+  }
+
+  void reset_task_launching_id() {
+    this->task_launching_order_ = 0;
   }
 
 protected:

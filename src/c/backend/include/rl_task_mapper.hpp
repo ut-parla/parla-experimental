@@ -39,10 +39,12 @@ public:
             torch::Tensor next_state, torch::Tensor reward, uint64_t episode) {
     BufferTupleType new_buffer_element =
         std::make_tuple(curr_state, chosen_device, next_state, reward, episode);
+    this->mtx_.lock();
     while (this->buffer_.size() >= this->capacity_) {
       this->buffer_.pop_front();
     }
     this->buffer_.push_back(new_buffer_element);
+    this->mtx_.unlock();
   }
 
   /*
@@ -51,23 +53,34 @@ public:
    * @param batch_size Batch size
    */
   std::vector<BufferTupleType> sample(int64_t batch_size) {
+    this->mtx_.lock();
     std::vector<BufferTupleType> sampled_buffer(batch_size);
     std::sample(this->buffer_.begin(), this->buffer_.end(),
                 sampled_buffer.begin(), sampled_buffer.size(),
                 std::mt19937_64{std::random_device{}()});
+    this->mtx_.unlock();
     return sampled_buffer;
   }
 
   /*
    * Return the number of tuples in the experience replay memory.
    */
-  size_t size() { return this->buffer_.size(); }
+  size_t size() {
+    size_t sz{0};
+    this->mtx_.lock();
+    sz = this->buffer_.size();
+    this->mtx_.unlock();
+    return sz;
+  }
 
   void clear() {
+    this->mtx_.lock();
     this->buffer_.clear();
+    this->mtx_.unlock();
   }
 
   void print() {
+    this->mtx_.lock();
     for (size_t i = 0; i < this->buffer_.size(); ++i) {
       std::cout << "\n [" << i << "th buffer]\n";
       std::cout << "\t Current state: " << std::get<0>(this->buffer_[i]) << ", "
@@ -75,6 +88,7 @@ public:
                 << "Next state: " << std::get<2>(this->buffer_[i]) << ", "
                 << "Reward: " << std::get<3>(this->buffer_[i]) << "\n";
     }
+    this->mtx_.unlock();
   }
 
 private:
@@ -82,6 +96,7 @@ private:
   int64_t capacity_;
   /// Experience replay memory.
   BufferTy buffer_;
+  std::mutex mtx_;
 };
 
 class RLStateTransition {
@@ -530,8 +545,10 @@ public:
         DEVICE_FEATURE_OFFSET +
         chosen_device.item<int64_t>() *
         NUM_DEVICE_FEATURES].item<double>() == 0)? 1 : 0;
+    this->replay_mem_buffer_mtx_.lock();
     task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
     this->replay_memory_buffer_.push_back(tinfo);
+    this->replay_mem_buffer_mtx_.unlock();
   }
 
   /**
@@ -556,18 +573,21 @@ public:
         return;
       }
       if (task->is_data_task()) { return; }
+      this->replay_mem_buffer_mtx_.lock();
       // Get id of the task
       RLStateTransition *tinfo = this->replay_memory_buffer_[
           task->replay_mem_buffer_id_];
+      this->replay_mem_buffer_mtx_.unlock();
       DevID_t chosen_device_id = static_cast<DevID_t>(
           tinfo->chosen_device[0].item<int64_t>());
       torch::Tensor reward = rl_env->calculate_reward2(
             chosen_device_id, task, tinfo->current_state, tinfo->base_score);
-      torch::Tensor next_state = rl_env->make_current_state(task);
+      //torch::Tensor next_state = rl_env->make_current_state(task);
+      torch::Tensor next_state = rl_env->make_next_state(
+          tinfo->current_state, chosen_device_id, task);
       this->append_replay_memory(
           tinfo->current_state, tinfo->chosen_device, next_state, reward);
       this->optimize_model();
-      this->target_net_soft_update_simpler();
       std::cout << this->get_episode() << " episode task " << task->name <<
           " current state:" << tinfo->current_state << ", device id:" <<
           tinfo->chosen_device << ", reward:" << reward << "\n";
@@ -599,7 +619,9 @@ public:
   }
 
   void clear_replay_memory_buffer() {
+    this->replay_mem_buffer_mtx_.lock();
     this->replay_memory_buffer_.clear();
+    this->replay_mem_buffer_mtx_.unlock();
   }
 
 private:
@@ -620,6 +642,7 @@ private:
   size_t episode_;
   size_t subepisode_{0};
   std::vector<RLStateTransition*> replay_memory_buffer_;
+  std::mutex replay_mem_buffer_mtx_;
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
@@ -674,9 +697,7 @@ public:
    * @param task Inner task to register to the replay memory
    */
   void evaluate_and_append_task_mapping(InnerTask *task) {
-    mtx.lock();
     this->rl_agent_->evaluate_and_append_task_mapping(task, this->rl_env_);
-    mtx.unlock();
   }
 
 #if 0
@@ -699,7 +720,6 @@ private:
   RLEnvironment *rl_env_;
   torch::Tensor rl_current_state_;
   //torch::Tensor rl_next_state_;
-  std::mutex mtx;
 };
 
 #endif

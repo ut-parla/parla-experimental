@@ -232,10 +232,11 @@ void RLTaskMappingPolicy::run_task_mapping(
     }
 
     if (task->get_name().find("begin_rl_task") != std::string::npos) {
-      this->rl_agent_->incr_episode();
       this->device_manager_->reset_device_timers();
     }
     if (task->get_name().find("end_rl_task") != std::string::npos) {
+      this->rl_agent_->incr_episode();
+      this->rl_agent_->target_net_soft_update_simpler();
       this->rl_env_->output_reward(this->rl_agent_->get_episode());
       this->rl_agent_->clear_replay_memory_buffer();
       if (this->rl_agent_->get_episode() % 10 == 0 && this->rl_agent_->is_training_mode()) {
