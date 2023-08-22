@@ -51,7 +51,7 @@ protected:
   double reward_accumulation_{0};
 
   std::unordered_map<std::string, double> task_type_map_;
-  std::unordered_map<std::string, double> task_compltime_delta_map_;
+  std::unordered_map<std::string, std::pair<double, size_t>> task_compltime_delta_map_;
 	double last_task_type{0};
   // Accumulated task completion time to keep track of
   // average of the completion time among tasks.
