@@ -116,9 +116,7 @@ public:
 
   /// Return a vector of devices that the parray is valid on
   /// These are parray local ids (not global parla ids)!
-  std::vector<uint64_t> get_valid_devices() {
-    return _state->get_valid_devices();
-  }
+  std::vector<int> get_valid_devices() { return _state->get_valid_devices(); }
 
 private:
   uint64_t _size; // number of bytes consumed by each copy of the array/subarray

@@ -103,7 +103,7 @@ public:
     }
   }
 
-  const int parrayid_to_globalid(DevID_t parray_dev_id) const {
+  const DevID_t parrayid_to_globalid(int parray_dev_id) const {
     if (parray_dev_id == -1) {
       // XXX: This assumes that a CPU device is always single and
       //      is added at first.
@@ -120,9 +120,10 @@ public:
    * device id.
    */
   void free_memory(DevID_t global_dev_id, Resource_t memory_size) {
+
     Device *dev = get_device_by_global_id(global_dev_id);
-    auto mapped_memory_pool = dev->get_mapped_pool();
-    auto reserved_memory_pool = dev->get_reserved_pool();
+    auto &mapped_memory_pool = dev->get_mapped_pool();
+    auto &reserved_memory_pool = dev->get_reserved_pool();
 
     // Mapped memory counts how much memory is currently mapped to the device.
     // Freeing memory decreases the mapped memory pool.
@@ -138,7 +139,7 @@ public:
    * device id. Called by a PArray eviction event.
    */
   void free_memory_by_parray_id(int parray_dev_id, Resource_t memory_size) {
-    int global_dev_id = parrayid_to_globalid(parray_dev_id);
+    DevID_t global_dev_id = parrayid_to_globalid(parray_dev_id);
     this->free_memory(global_dev_id, memory_size);
   }
 

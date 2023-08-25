@@ -25,7 +25,7 @@ public:
   void set_valid_on_device(int device_id, bool valid);
 
   // get vector of valid devices
-  std::vector<uint64_t> get_valid_devices();
+  std::vector<int> get_valid_devices();
 
 private:
   std::unordered_map<int, bool>
