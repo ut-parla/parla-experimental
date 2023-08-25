@@ -22,6 +22,14 @@ public:
    * Returns the size (in bytes) to be allocated in the target device.
    */
   size_t do_log(const DevID_t dev_id, PArrayAccess_t parray_access);
+
+  /**
+   * @brief Find memory cost of the new state of the PArray to the tracking
+   * table without performing the update.
+   * @param dev_id global ID for target device
+   * @param parray_access PArray & access information pair
+   * Returns the size (in bytes) to be allocated in the target device.
+   */
   size_t check_log(const DevID_t dev_id, PArrayAccess_t parray_access);
 
   size_t do_parray_creation_(AccessMode access_mode, DevID_t dev_id,
