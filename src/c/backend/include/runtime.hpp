@@ -1,8 +1,10 @@
 #pragma once
 
+#include "device.hpp"
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 #include "resources.hpp"
+#include <algorithm>
 #include <assert.h>
 #include <atomic>
 #include <chrono>
@@ -15,8 +17,6 @@
 #include <unordered_map>
 #include <utility>
 
-using namespace std::chrono_literals;
-
 #include "containers.hpp"
 
 #include "device_manager.hpp"
@@ -25,6 +25,9 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+
+using namespace std::chrono_literals;
+using namespace parray;
 
 // General Note. A LOT of these atomics could just be declared as volatile.
 
@@ -45,8 +48,11 @@ using TaskList = ProtectedVector<InnerTask *>;
 using SpaceList = ProtectedVector<TaskBarrier *>;
 
 using PointerList = ProtectedVector<uintptr_t>;
+using CreatedPArrayQueue = ProtectedQueue<PArrayLocationSize_t>;
 
-using PArrayList = ProtectedVector<parray::InnerPArray *>;
+/// Global New PArray List for arrays instatiated outside of the runtime
+inline CreatedPArrayQueue unmapped_created_parrays;
+inline CreatedPArrayQueue unreserved_created_parrays;
 
 // Forward declaration of python callbacks
 
@@ -67,6 +73,40 @@ inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
 /* C*+ -> Cython callback to stop the main scheduler. Called at runtime exit. */
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
+}
+
+inline const int parrayid_to_globalid(int parray_dev_id) {
+  if (parray_dev_id == -1) {
+    // XXX: This assumes that a CPU device is always single and
+    //      is added at first.
+    //      Otherwise, we need a loop iterating all devices and
+    //      comparing device ids.
+    return 0;
+  } else {
+    return parray_dev_id + 1;
+  }
+}
+
+inline void add_unmapped_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                        size_t to_move_size) {
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unmapped_created_parrays.push_back(parray_location);
+}
+
+inline void add_unreserved_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                          size_t to_move_size) {
+
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unreserved_created_parrays.push_back(parray_location);
+}
+
+inline void create_parray(InnerPArray *parray, int parray_device_id) {
+  auto dev_id = parrayid_to_globalid(parray_device_id);
+  size_t to_move_size = parray->get_size();
+  add_unmapped_created_parray(parray, dev_id, to_move_size);
+  add_unreserved_created_parray(parray, dev_id, to_move_size);
 }
 
 namespace Task {
@@ -150,8 +190,8 @@ BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
                   COMPUTE_RUNNABLE, RUNNABLE)
 #endif
 
-using TaskState = std::pair<InnerTask *, Task::StatusFlags>;
-using TaskStateList = std::vector<TaskState>;
+using TaskState_t = std::pair<InnerTask *, Task::StatusFlags>;
+using TaskStateList = std::vector<TaskState_t>;
 
 /**
  *   The C++ "Mirror" of Parla's Python Tasks
@@ -183,9 +223,6 @@ public:
 
   /*Container for Events*/
   PointerList events;
-
-  /*Container for PArrays created during task execution*/
-  std::vector<PArrayList> new_parrays;
 
   /*Synchronization Type */
   Task::SynchronizationType sync_type = Task::NON_BLOCKING;
@@ -253,8 +290,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them.
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
-  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-      parray_list;
+  std::vector<std::vector<PArrayAccess_t>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -303,6 +339,8 @@ public:
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
 
+  /* Handle the creation of a new parray object */
+  void create_parray(InnerPArray *parray, int parray_device_id);
   /*
    * Add a PArray to the task
    *
@@ -314,16 +352,7 @@ public:
    * Cython, but C++ enum and Python enum or int are not compatible. So, for
    * conveniency, I just pass int between Python and C++.
    */
-  void add_parray(parray::InnerPArray *parray, int access_mode, int dev_id);
-
-  /**
-   * @brief Add the creation of a new PArray to the task
-   * @param parray Pointer to a PArray that this task created
-   * @param dev_id Device id that the PArray is created on
-   */
-  void add_new_parray(parray::InnerPArray *parray, int dev_id) {
-    new_parrays[dev_id].push_back(parray);
-  };
+  void add_parray(InnerPArray *parray, int access_mode, int dev_id);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -593,7 +622,7 @@ public:
   //           immediately assign the unique id. We may need another function
   //           call from Python t C++ when we create Python data move task
   //           later. The current id for all the data move tasks is 0.
-  InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
+  InnerDataTask(std::string name, long long int id, InnerPArray *parray,
                 AccessMode access_mode, int dev_id)
       : parray_(parray), access_mode_(access_mode), dev_id_(dev_id),
         InnerTask(name, id, nullptr) {
@@ -613,7 +642,7 @@ public:
   int get_device_id() { return this->dev_id_; }
 
 private:
-  parray::InnerPArray *parray_;
+  InnerPArray *parray_;
   AccessMode access_mode_;
   int dev_id_;
 };
@@ -1008,27 +1037,26 @@ public:
     return this->workers.get_num_notified_workers();
   }
 
-  /* Get a PArray tracker */
-  PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
-
   /* Reserve a PArray in a device */
-  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.reserve_parray(*parray, device);
-  }
+  void create_parray(InnerPArray *parray, int parray_device_id);
 
   /* Release a PArray in a device */
-  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.release_parray(*parray, device);
-  }
+  void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
 
-  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
-    return this->parray_tracker_.get_parray_state(global_dev_idx,
-                                                  parray_parent_id);
-  }
+  /* Get mapped memory on device */
+  size_t get_mapped_memory(DevID_t global_dev_id);
+
+  /* Get reserved memory on device */
+  size_t get_reserved_memory(DevID_t global_dev_id);
+
+  /*Get total memory on device */
+  size_t get_max_memory(DevID_t global_dev_id);
+
+  /* Get parray state in mapping parray tracker */
+  bool get_mapped_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
+
+  /* Get parray state in reserved parray tracker */
+  bool get_reserved_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
@@ -1040,10 +1068,6 @@ protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
-
-  /// It manages the current/planned distribution of PArrays across devices.
-  /// Parla task mapping policy considers locality of PArrays through this.
-  PArrayTracker parray_tracker_;
 };
 
 #endif // PARLA_BACKEND_HPP

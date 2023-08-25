@@ -57,7 +57,7 @@ cdef class CyDeviceManager:
         return self.cpp_device_manager_
 
     cpdef free_memory(self, parray_dev_id, memory_size):
-        self.cpp_device_manager_.free_memory(parray_dev_id, memory_size)
+        self.cpp_device_manager_.free_memory_by_parray_id(parray_dev_id, memory_size)
 
 
 class PrintableFrozenSet(frozenset):

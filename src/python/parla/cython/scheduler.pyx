@@ -443,8 +443,9 @@ class Scheduler(ControllableThread, SchedulerContext):
 
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
+        
 
-    def reserve_parray(self, cy_parray: CyPArray, global_dev_id: int):
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
@@ -452,22 +453,37 @@ class Scheduler(ControllableThread, SchedulerContext):
         during initialization if its internal array type is PArray.
 
         :param parray: Created Cython PArray instance
+        """
+        self.inner_scheduler.create_parray(cy_parray, parray_dev_id)
+
+    def get_mapped_memory(self, global_dev_id: int):
+        """
+        Return the total amount of mapped memory on a device.
+
         :param global_dev_id: global logical device id that
-                              the PArray will be placed
+                              this function interests
         """
-        self.inner_scheduler.reserve_parray(cy_parray, global_dev_id)
+        return self.inner_scheduler.get_mapped_memory(global_dev_id)
 
-    def release_parray(self, cy_parray: CyPArray, global_dev_id: int):
+    def get_reserved_memory(self, global_dev_id: int):
         """
-        Release PArray instances that are evicted.
+        Return the total amount of reserved memory on a device.
 
-        :param parray: Cython PArray instance to be evicted
         :param global_dev_id: global logical device id that
-                              the PArray will be evicted
+                              this function interests
         """
-        self.inner_scheduler.release_parray(cy_parray, global_dev_id)
+        return self.inner_scheduler.get_reserved_memory(global_dev_id)
 
-    def get_parray_state(\
+    def get_max_memory(self, global_dev_id: int):
+        """
+        Return the total amount of memory on a device.
+
+        :param global_dev_id: global logical device id that
+                              this function interests
+        """
+        return self.inner_scheduler.get_max_memory(global_dev_id)
+
+    def get_mapped_parray_state(\
         self, global_dev_id: int, parray_parent_id):
         """
         Return True if a parent PArray of the passed PArray exists on a
@@ -477,7 +493,20 @@ class Scheduler(ControllableThread, SchedulerContext):
                               this function interests 
         :param parray_parent_id: parent PArray ID
         """
-        return self.inner_scheduler.get_parray_state( \
+        return self.inner_scheduler.get_mapped_parray_state( \
+            global_dev_id, parray_parent_id)
+
+    def get_reserved_parray_state(\
+        self, global_dev_id: int, parray_parent_id):
+        """
+        Return True if a parent PArray of the passed PArray exists on a
+        device.
+
+        :param global_dev_id: global logical device id that 
+                              this function interests 
+        :param parray_parent_id: parent PArray ID
+        """
+        return self.inner_scheduler.get_reserved_parray_state( \
             global_dev_id, parray_parent_id)
 
 

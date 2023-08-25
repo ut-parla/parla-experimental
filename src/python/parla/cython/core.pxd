@@ -29,6 +29,7 @@ cdef extern from "include/runtime.hpp" nogil:
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
 
+    void create_parray(InnerPArray* parray, int parray_dev_id)
     #ctypedef void* Ptr_t
     #ctypedef InnerTask* InnerTaskPtr_t
 
@@ -81,6 +82,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void reset_events_streams() except +
         void handle_runahead_dependencies(int sync_type) except +
         void synchronize_events()   except +
+
+        void create_parray(InnerPArray* parray, int parray_dev_id)
 
 
     cdef cppclass InnerDataTask(InnerTask):
@@ -154,12 +157,18 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()
-        bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void spawn_wait() except +
+        bool get_mapped_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
+        bool get_reserved_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void reserve_parray(InnerPArray* parray, int dev_id) except +
-        void release_parray(InnerPArray* parray, int dev_id) except +
+        size_t get_mapped_memory(uint32_t global_dev_idx)
+        size_t get_reserved_memory(uint32_t global_dev_idx)
+        size_t get_max_memory(uint32_t global_dev_idx)
+
+        void spawn_wait()
+
+        void create_parray(InnerPArray* parray, int parray_dev_id)
+        
 
 
 cdef extern from "include/profiling.hpp" nogil:

@@ -45,6 +45,7 @@ public:
   ProtectedVector(const ProtectedVector<T> &other) {
     this->name = other.name;
     this->vec = other.vec;
+    this->length.exchange(other.length);
   }
 
   ProtectedVector(std::string name) { this->name = name; }
@@ -59,14 +60,13 @@ public:
     this->vec.reserve(size);
   }
 
-  /// Explicit move assignment due to the atomic size member.
-  ProtectedVector &operator=(const ProtectedVector<T> &other) {
-    this->length.exchange(other.length);
-    this->vec = std::move(other.vec);
-    // The string should be small
-    this->name = std::move(other.name);
-    return *this;
-  }
+  // ProtectedVector &operator=(const ProtectedVector<T> &&other) {
+  //   this->length.exchange(other.length);
+  //   this->vec = std::move(other.vec);
+  //   // The string should be small
+  //   this->name = std::move(other.name);
+  //   return *this;
+  // }
 
   void lock() { this->mtx.lock(); }
 

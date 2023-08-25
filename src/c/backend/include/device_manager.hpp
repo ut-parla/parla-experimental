@@ -71,7 +71,7 @@ public:
     }
   }
 
-  Device *get_device_by_parray_id(DevID_t parray_dev_id) const {
+  Device *get_device_by_parray_id(int parray_dev_id) const {
     DevID_t global_dev_id = this->parrayid_to_globalid(parray_dev_id);
     return all_devices_[global_dev_id];
   }
@@ -94,8 +94,7 @@ public:
   size_t get_num_devices() { return all_devices_.size(); }
 
   // TODO(hc): use a customized type for device id.
-
-  const DevID_t globalid_to_parrayid(DevID_t global_dev_id) const {
+  const int globalid_to_parrayid(DevID_t global_dev_id) const {
     Device *dev = all_devices_[global_dev_id];
     if (dev->get_type() == DeviceType::CPU) {
       return -1;
@@ -138,7 +137,7 @@ public:
    * @brief Free both the mapped and reserved memory on the device by parray
    * device id. Called by a PArray eviction event.
    */
-  void free_memory_by_parray_id(DevID_t parray_dev_id, Resource_t memory_size) {
+  void free_memory_by_parray_id(int parray_dev_id, Resource_t memory_size) {
     int global_dev_id = parrayid_to_globalid(parray_dev_id);
     this->free_memory(global_dev_id, memory_size);
   }

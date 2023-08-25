@@ -1,6 +1,6 @@
 import cython 
 
-from parla.common.parray.core import PArray
+#from parla.common.parray.core import PArray
 from parla.common.dataflow import Dataflow
 from parla.common.globals import AccessMode
 
@@ -23,6 +23,9 @@ LOG_INFO = 2
 LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
+
+cpdef create_global_parray(CyPArray cy_parray, int parray_dev_id):
+    create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
@@ -191,6 +194,10 @@ cdef class PyInnerTask:
     cpdef get_py_task(self):
         cdef InnerTask* c_self = self.c_task
         return <object> c_self.get_py_task()
+
+    cpdef create_parray(self, CyPArray cy_parray, int parray_dev_id):
+        cdef InnerTask* c_self = self.c_task
+        c_self.create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
     cpdef set_scheduler(self, PyInnerScheduler scheduler):
         cdef InnerTask* c_self = self.c_task
@@ -694,18 +701,31 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.spawn_wait()
 
-    cpdef reserve_parray(self, CyPArray cy_parray, int global_dev_id):
+    cpdef create_parray(self, CyPArray cy_parray, int parray_dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.reserve_parray(cy_parray.get_cpp_parray(), global_dev_id)
+        c_self.create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
-    cpdef release_parray(self, CyPArray cy_parray, int global_dev_id):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.release_parray(cy_parray.get_cpp_parray(), global_dev_id)
-
-    cpdef get_parray_state(\
+    cpdef get_mapped_parray_state(\
         self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_parray_state(global_dev_id, parray_parent_id)
+        return c_self.get_mapped_parray_state(global_dev_id, parray_parent_id)
+
+    cpdef get_reserved_parray_state(\
+        self, int global_dev_id, long long int parray_parent_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_reserved_parray_state(global_dev_id, parray_parent_id)
+
+    cpdef get_max_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_max_memory(global_dev_id)
+    
+    cpdef get_mapped_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_mapped_memory(global_dev_id)
+
+    cpdef get_reserved_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_reserved_memory(global_dev_id)
 
 
 class Resources:
@@ -736,7 +756,7 @@ class DataMovementTaskAttributes:
     This is delcared to avoid circular imports that could happen
     when we import tasks.pyx in here.
     """
-    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+    def __init__(self, name, py_parray, access_mode, assigned_devices, \
                  c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray

@@ -13,6 +13,7 @@ from parla.common.globals import get_stream_pool, get_scheduler
 from parla.common.globals import DeviceType as PyDeviceType
 from parla.common.globals import AccessMode, Storage
 
+from parla.cython.cyparray import CyPArray
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
 
@@ -461,6 +462,9 @@ class Task:
 
     def get_assigned_devices(self):
         return self.inner_task.get_assigned_devices()
+
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
+        return self.inner_task.create_parray(cy_parray, parray_dev_id)
 
     def add_dataflow(self, dataflow):
         if dataflow is not None:

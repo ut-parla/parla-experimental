@@ -47,7 +47,8 @@ public:
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
     res_.set<GPUResources>({num_vcus, mem_sz, copy_engines});
-    reserved_res_.set<GPUResources>({0, 0, 0});
+    reserved_res_.set<GPUResources>({num_vcus, mem_sz, copy_engines});
+    mapped_res_.set<GPUResources>({0, 0, 0});
   }
 
   /// Return a device id.

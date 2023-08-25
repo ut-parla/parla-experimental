@@ -2,7 +2,7 @@
 
 from .cyparray cimport InnerPArray
 from .cyparray_state cimport CyPArrayState
-from parla.common.parray.core import PArray
+#from parla.common.parray.core import PArray
 
 # a Cython wrapper class around C++ PArray
 cdef class CyPArray:

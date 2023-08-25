@@ -8,12 +8,18 @@
 #include "device_manager.hpp"
 #include "device_queues.hpp"
 #include "parray.hpp"
+#include "parray_tracker.hpp"
 #include "policy.hpp"
+#include "resource_requirements.hpp"
 #include "resources.hpp"
 #include "runtime.hpp"
 
 #include <memory>
 #include <string>
+
+using DeviceRequirementList = std::vector<std::shared_ptr<DeviceRequirement>>;
+using PlacementRequirementList =
+    std::vector<std::shared_ptr<PlacementRequirementBase>>;
 
 enum class MapperState { Failure = 0, Success = 1, MAX = 2 };
 enum class MemoryReserverState { Failure = 0, Success = 1, MAX = 2 };
@@ -71,12 +77,21 @@ class SchedulerPhase {
 public:
   SchedulerPhase() = default;
   SchedulerPhase(InnerScheduler *scheduler, DeviceManager *devices)
-      : scheduler(scheduler), device_manager(devices) {}
+      : scheduler(scheduler), device_manager(devices) {
+    this->parray_tracker =
+        new PArrayTracker(devices->get_num_devices<DeviceType::All>());
+  }
+
+  ~SchedulerPhase() { delete this->parray_tracker; }
 
   virtual void enqueue(InnerTask *task) = 0;
   virtual void enqueue(std::vector<InnerTask *> &tasks) = 0;
   virtual void run(SchedulerPhase *next_phase) = 0;
   virtual size_t get_count() = 0;
+
+  PArrayTracker *get_parray_tracker() const { return parray_tracker; }
+  DeviceManager *get_device_manager() const { return device_manager; }
+  InnerScheduler *get_scheduler() const { return scheduler; }
 
 protected:
   inline static const std::string name{"Phase"};
@@ -84,6 +99,7 @@ protected:
   InnerScheduler *scheduler;
   DeviceManager *device_manager;
   TaskStateList enqueue_buffer;
+  PArrayTracker *parray_tracker;
 };
 
 /**
@@ -93,11 +109,17 @@ protected:
 class Mapper : virtual public SchedulerPhase {
 public:
   Mapper() = delete;
-  Mapper(InnerScheduler *scheduler, DeviceManager *devices,
-         std::shared_ptr<MappingPolicy> policy)
-      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0}, policy_{policy} {
+  Mapper(InnerScheduler *scheduler, DeviceManager *devices)
+      : SchedulerPhase(scheduler, devices) {
     dev_num_mapped_tasks_.resize(devices->get_num_devices());
+    dev_num_mapped_data_tasks_.resize(devices->get_num_devices());
+
+    // Mapping policy
+    this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
+        device_manager, this->parray_tracker);
   }
+
+  void drain_parray_buffer();
 
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
@@ -150,13 +172,21 @@ protected:
   MapperStatus status{name};
   TaskQueue mappable_tasks;
   std::vector<InnerTask *> mapped_tasks_buffer;
-  uint64_t dummy_dev_idx_;
+
+  void map_task(InnerTask *task, DeviceRequirementList &chosen_devices);
 
   std::shared_ptr<MappingPolicy> policy_;
-  /// The total number of tasks mapped to and running on the whole devices.
+  /// The total number of compute tasks mapped to and running on all devices.
   std::atomic<size_t> total_num_mapped_tasks_{0};
-  /// The total number of tasks mapped to and running on a single device.
+
+  /// The total number of data tasks mapped to and running on all devices.
+  std::atomic<size_t> total_num_mapped_data_tasks_{0};
+
+  /// The total number of compute tasks mapped to and running on each device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
+
+  /// The total number of data tasks mapped to and running on each device.
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_data_tasks_;
 };
 
 /**
@@ -175,6 +205,8 @@ public:
         std::make_shared<PhaseManager<Resource::PersistentResources>>(devices);
   }
 
+  void drain_parray_buffer();
+
   void enqueue(InnerTask *task);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
@@ -186,10 +218,13 @@ protected:
   inline static const std::string name{"Memory Reserver"};
   MemoryReserverStatus status{name};
   std::vector<InnerTask *> reserved_tasks_buffer;
-  parray::PArrayList created_parrays;
 
   bool check_resources(InnerTask *task);
+  bool check_data_resources(InnerTask *task);
+
   void reserve_resources(InnerTask *task);
+  void reserve_data_resources(InnerTask *task);
+
   void create_datamove_tasks(InnerTask *task);
 };
 

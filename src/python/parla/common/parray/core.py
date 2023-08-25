@@ -8,6 +8,7 @@ from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
 from parla.cython.cyparray_state import CyPArrayState
 from parla.cython.cyparray import CyPArray
+from parla.cython.core import create_global_parray
 
 import threading
 import numpy
@@ -116,33 +117,37 @@ class PArray:
 
         # record the size in Cython PArray
 
-        #TODO(FIXME): PArrays can be created outside of a scheduler context!!
+        #Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
+        #FIXME
 
         scheduler = get_scheduler()
+        if scheduler is None:
+            print("WARNING: PArray created outside of a scheduler context. This is not supported.", flush=True)
 
-        task = get_current_task()
-        if task is not None:
-            #PArray is created inside a task
-            task.add_new_parray(self)
-        elif scheduler is not None:
-            #PArray is created outside of a task but inside a scheduler
-            pass
-        else:
-            #PArray is created outside of a scheduler
-            #This is only allowed in the initialization phase of the program (not concurrent with the scheduler)
-            pass
 
+        print("Creating PArray with size: ", self.subarray_nbytes, flush=True)
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(
             self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
         self._cy_parray.set_size(self.subarray_nbytes)
+
         target_dev_id = - \
             1 if isinstance(array, numpy.ndarray) else array.device.id
-        if (target_dev_id >= 0):
-            assert isinstance(array, cupy.ndarray)
-        target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
-            target_dev_id)
-        scheduler.log_parray(self._cy_parray, target_global_dev_id)
+
+        if scheduler is not None:
+            task = get_current_task()
+            if task is not None:
+                print("Creating PArray within task: ", task, flush=True)
+                task.create_parray(self._cy_parray, target_dev_id)
+            else:
+                print("Creating parray in scheduler context", flush=True)
+                scheduler.create_parray(self._cy_parray, target_dev_id)
+        else:
+            create_parray(self._cy_parray, target_dev_id)
+
+        print("Completed PArray creation", flush=True)
+        
+
 
     # Properties:
 
@@ -469,15 +474,16 @@ class PArray:
                 if num_gpu > 0:
                     cupy.cuda.stream.get_current_stream().synchronize()
             elif op.inst == MemoryOperation.EVICT:
-                scheduler = get_scheduler()
-                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
-                    op.src)
 
                 # decrement the reference counter, relying on GC to free the memory
                 to_free = self._array.clear(op.src)
 
-                if (to_free > 0):
-                    scheduler.global_device_manager.free_memory()
+                print(f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
+
+                scheduler = get_scheduler()
+                if (to_free > 0) and (scheduler is not None):
+                    scheduler.device_manager.free_memory(op.src, to_free)
+                
 
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError(
