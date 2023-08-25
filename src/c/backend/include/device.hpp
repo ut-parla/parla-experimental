@@ -46,8 +46,8 @@ public:
          void *py_dev, int copy_engines = 2)
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
-    res_.set<GPUResources>({num_vcus, mem_sz, copy_engines});
-    reserved_res_.set<GPUResources>({num_vcus, mem_sz, copy_engines});
+    res_.set<GPUResources>({mem_sz, num_vcus, copy_engines});
+    reserved_res_.set<GPUResources>({mem_sz, num_vcus, copy_engines});
     mapped_res_.set<GPUResources>({0, 0, 0});
   }
 
