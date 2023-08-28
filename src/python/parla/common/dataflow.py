@@ -2,13 +2,10 @@
 @file dataflow.py
 @brief Implements internal CrossPy containers for automatic datamovement.
 """
-
-from crosspy import CrossPyArray
-
-
 from __future__ import annotations # For type hints of unloaded classes
 from parla.common.parray.core import PArray
 from parla.common.globals import CROSSPY_ENABLED, crosspy
+from crosspy import CrossPyArray
 
 from typing import List, Tuple, Union
 
