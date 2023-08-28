@@ -1,3 +1,10 @@
+/*! @file parray.hpp
+ *  @brief Provides C++ interface to PArray State and ID.
+ *
+ * This file contains the inner C++ parray interface. Allows access to coherency
+ * and parent/child relations without accessing the Python interpreter.
+ */
+
 #pragma once
 
 #include "containers.hpp"

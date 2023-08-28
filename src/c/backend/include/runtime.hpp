@@ -1,7 +1,26 @@
 #pragma once
-
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
+
+/**
+ * @mainpage Parla Documentation
+ *
+ * Welcome to the core C++ & Cython documentation for Parla.
+ * This is the landing page for the Doxygen-generated HTML documentation
+ * including call graphs and inheritance diagrams. You likely got here from the
+ * MKDocs documentation, which is the main user-facing documentation for Parla.
+ * This page exists to help contributors navigate the C++ runtime.
+ *
+ * @section sec_links Links
+ *
+ * - [GitHub Repository](https://github.com/ut-parla/parla-experimental)
+ */
+
+/*! @file runtime.hpp
+ *  @brief The core C++ runtime for Parla. Includes the main scheduler and task
+ * classes.
+ */
+
 #include "resources.hpp"
 #include <assert.h>
 #include <atomic>
@@ -26,7 +45,7 @@ using namespace std::chrono_literals;
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
 
-// General Note. A LOT of these atomics could just be declared as volatile.
+// Note(wlr): A LOT of these atomics could just be declared as volatile.
 
 // Forward Declarations of Inner Classes
 class InnerTask;
@@ -35,82 +54,96 @@ class InnerWorker;
 class InnerScheduler;
 
 // Type Aliases for common containers
-
 using WorkerQueue = ProtectedQueue<InnerWorker *>;
 using WorkerList = ProtectedVector<InnerWorker *>;
-
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
-
 using SpaceList = ProtectedVector<TaskBarrier *>;
-
 using PointerList = ProtectedVector<uintptr_t>;
 
-/* Access mode to a PArray. */
-enum AccessMode {
-  // Input of a task.
+/// @brief Access type for a data dependence
+enum class AccessMode {
+  /// This data is the input to a task (READ ACCESS).
   IN = 0,
-  // Output of a task.
+  // This data is the output to a task (WRITE ACCESS).
   OUT = 1,
-  // Input/output of a task.
+  // This data is both input and output of a task. (READ/WRITE ACCESS).
   INOUT = 2
 };
 
-// Forward declaration of python callbacks
+// Callbacks into Python
 
-/* Python function to assign a task to a worker */
 typedef void (*launchfunc_t)(void *scheduler, void *task, void *worker);
-
-/* Python function to stop the scheduler */
 typedef void (*stopfunc_t)(void *scheduler);
 
-// Callback Launchers
-
-/* C++ -> Cython callback to launch a single task */
+/*!
+ * @brief Callback function to launch a single task by calling into the Python
+ * scheduler.
+ * @note Currently unused in the C++ runtime. Legacy implementation from the
+ * first C++ runtime which would acquire the GIL from the scheduler thread.
+ */
 inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
                                  void *worker) {
   func(scheduler, task, worker);
 }
 
-/* C*+ -> Cython callback to stop the main scheduler. Called at runtime exit. */
+/*!
+ * @brief Callback function to stop the main scheduler thread. Acquires the
+ * interpreter and signals the Python runtime to stop.
+ * @note Called at Parla runtime shutdown (at context destruction or during
+ * exception handling)
+ */
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
 }
 
-namespace Task {
-
-/*State of the task. Shows which part of the runtime the task is in.*/
-enum State {
-  // Initial State. Task has been created but not spawned
+/*!
+ * @brief Tracks the state of of a task within the runtime
+ * @note  This is the lifecycle of a task within the runtime. These states
+ * depend on the runtime acting on the task, in contrast to the Status of a task
+ * which depends on the state of the tasks dependencies.
+ */
+enum class TaskState {
+  /// Initial State. Task has been created but not spawned
   CREATED = 0,
-  // Task has been spawned
+  /// Task has been spawned
   SPAWNED = 1,
-  // Task has been mapped
+  /// Task has been mapped
   MAPPED = 2,
-  // Task has persistent resources reserved
+  /// Task has persistent resources reserved
   RESERVED = 3,
-  // Task is ready to run
+  /// Task is ready to run
   READY = 4,
-  // Task is currently running and has runtime resources reserved
+  /// Task is currently running and has runtime resources reserved
   RUNNING = 5,
-  // Task body has completed but GPU kernels may be asynchronously running
+  /// Task body has completed but GPU kernels may be asynchronously running
   RUNAHEAD = 6,
-  // Task has completed
+  /// Task has completed
   COMPLETED = 7
 };
 
-enum SynchronizationType {
-  // No synchronization
+/*!
+ * @brief The type of between task synchronization to use in runahead scheduling
+ * on device hardware queues
+ */
+enum class SynchronizationType {
+  /// No unahead scheduling. Tasks block for body completion before running
+  /// ahead
   NONE = 0,
-  // BLocking synchronization
+  /// Block task body execution by waiting for events on the streams from
+  /// dependency tasks to complete
   BLOCKING = 1,
-  // Non-blocking synchronization
+  /// Do not block task body execution. Cross stream wait events are added to
+  /// the tasks streams before the body executes.
   NON_BLOCKING = 2,
-  // User defined synchronization
+  /// No synchronization (relies on user written code to ensure state)
   USER = 3
 };
 
-class StatusFlags {
+/*
+ * @brief Struct to store task status
+ */
+class TaskStatusFlags {
 public:
   bool spawnable{false};
   bool mappable{false};
@@ -118,10 +151,10 @@ public:
   bool compute_runnable{false};
   bool runnable{false};
 
-  StatusFlags() = default;
+  TaskStatusFlags() = default;
 
-  StatusFlags(bool spawnable, bool mappable, bool reservable,
-              bool compute_runnable, bool runnable)
+  TaskStatusFlags(bool spawnable, bool mappable, bool reservable,
+                  bool compute_runnable, bool runnable)
       : spawnable(spawnable), mappable(mappable), reservable(reservable),
         compute_runnable(compute_runnable), runnable(runnable) {}
 
@@ -131,7 +164,7 @@ public:
 };
 
 /* Properties of the tasks dependencies */
-enum Status {
+enum class TaskStatus {
   // Initial State. Status of dependencies is unknown or not spawned
   INITIAL = 0,
   // All dependencies are spawned (this task can be safely spawned)
@@ -147,25 +180,24 @@ enum Status {
   RUNNABLE = 5
 };
 
-} // namespace Task
-
 #ifdef PARLA_ENABLE_LOGGING
-BINLOG_ADAPT_STRUCT(Task::StatusFlags, spawnable, mappable, reservable,
+BINLOG_ADAPT_STRUCT(TaskStatusFlags, spawnable, mappable, reservable,
                     compute_runnable, runnable)
-BINLOG_ADAPT_ENUM(Task::State, CREATED, SPAWNED, MAPPED, RESERVED, READY,
-                  RUNNING, RUNAHEAD, COMPLETED)
-BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
+BINLOG_ADAPT_ENUM(TaskState, CREATED, SPAWNED, MAPPED, RESERVED, READY, RUNNING,
+                  RUNAHEAD, COMPLETED)
+BINLOG_ADAPT_ENUM(TaskStatus, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
                   COMPUTE_RUNNABLE, RUNNABLE)
 #endif
 
-using TaskState = std::pair<InnerTask *, Task::StatusFlags>;
-using TaskStateList = std::vector<TaskState>;
+/// @brief A pair of a task and its status information
+using TaskStatusPair = std::pair<InnerTask *, TaskStatusFlags>;
+
+/// @brief A list of task status pairs
+using TaskStatusList = std::vector<TaskStatusPair>;
 
 /**
- *   The C++ "Mirror" of Parla's Python Tasks
- *   This class is used to create a C++ representation of a Parla Task
- *   All scheduling logic should be handled by these after creation until
- * launched by the Python callback
+ *   @brief The C++ runtime implementation of a task.
+ *   Inherits metadata from the Python layer.
  */
 class InnerTask {
 
@@ -181,10 +213,10 @@ public:
   int instance = 0;
 
   /* State of the task (where is this task)*/
-  std::atomic<Task::State> state{Task::CREATED};
+  std::atomic<TaskState> state{TaskState::CREATED};
 
   /* Status of the task (state of its dependencies)*/
-  std::atomic<Task::Status> status{Task::INITIAL};
+  std::atomic<TaskStatus> status{TaskStatus::INITIAL};
 
   /* Reference to the scheduler (used for synchronizing state on events) */
   InnerScheduler *scheduler = nullptr;
@@ -193,7 +225,7 @@ public:
   PointerList events;
 
   /*Synchronization Type */
-  Task::SynchronizationType sync_type = Task::NON_BLOCKING;
+  SynchronizationType sync_type = SynchronizationType::NON_BLOCKING;
 
   /*Container for Streams*/
   PointerList streams;
@@ -287,22 +319,22 @@ public:
   void queue_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task. For external use.*/
-  Task::StatusFlags process_dependencies();
+  TaskStatusFlags process_dependencies();
 
   /* Clear the dependency list */
   void clear_dependencies();
 
   /* Add a dependency to the task and process it*/
-  Task::State add_dependency(InnerTask *task);
+  TaskState add_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
-  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks,
-                                     bool data_tasks = false);
+  TaskStatusFlags add_dependencies(std::vector<InnerTask *> &tasks,
+                                   bool data_tasks = false);
 
   /* Add a dependent to the task */
-  Task::State add_dependent_task(InnerTask *task);
-  Task::State add_dependent_space(TaskBarrier *barrier);
+  TaskState add_dependent_task(InnerTask *task);
+  TaskState add_dependent_space(TaskBarrier *barrier);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
@@ -327,7 +359,7 @@ public:
    *  Returns a container of tasks that are now ready to run
    *  TODO: Decide on a container to use for this
    */
-  void notify_dependents(TaskStateList &tasks, Task::State new_state);
+  void notify_dependents(TaskStatusList &tasks, TaskState new_state);
   void notify_dependents_completed();
 
   /* Wrapper for testing */
@@ -338,13 +370,13 @@ public:
    *  Return true if 0 blocking dependencies remain.
    *  Used by "notify_dependents"
    */
-  Task::StatusFlags notify(Task::State dependency_state, bool is_data = false);
+  TaskStatusFlags notify(TaskState dependency_state, bool is_data = false);
 
   /* Reset state and increment all internal counters. Used by continuation */
   void reset() {
     // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
-    this->state.store(Task::SPAWNED);
-    this->status.store(Task::INITIAL);
+    this->state.store(TaskState::SPAWNED);
+    this->status.store(TaskStatus::INITIAL);
     this->instance++;
     this->num_blocking_compute_dependencies.store(1);
     this->num_blocking_dependencies.store(1);
@@ -381,6 +413,17 @@ public:
     return this->num_unmapped_dependencies.load();
   };
 
+  /*!
+   * @brief Set the number of instances of the task (replicates for multi-device
+   * scheduling)
+   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
+   * to denote which phase of scheduling we are in.
+   * @param num_instances Number of instances of the task
+   * @details This is called to set the multi-device counters for the task when
+   * enqueued into the RuntimeReserver and MemoryResever Phases. These counters
+   * track how many devices the task is waiting on to be scheduled (i.e. it has
+   * not yet reached the head of their queues)
+   */
   template <ResourceCategory category> inline void set_num_instances() {
     if constexpr (category == ResourceCategory::Persistent) {
       this->num_persistant_instances.store(this->assigned_devices.size());
@@ -389,6 +432,12 @@ public:
     }
   };
 
+  /*!
+   * @brief Decrement the number of instances of the task (replicates for
+   * multi-device scheduling)
+   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
+   * to denote which phase of scheduling we are in (memory or runtime)
+   */
   template <ResourceCategory category> inline int decrement_num_instances() {
     if constexpr (category == ResourceCategory::Persistent) {
       return this->num_persistant_instances.fetch_sub(1);
@@ -405,6 +454,13 @@ public:
     }
   };
 
+  /*!
+   * @brief A task is removed when one of its instances (replicates across
+   * multi-device queues) has been moved to the next phase.
+   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
+   * to denote which phase of scheduling we are in (memory or runtime)
+   * @return True if the task has already been removed from the queue
+   */
   template <ResourceCategory category> inline bool get_removed() {
     if constexpr (category == ResourceCategory::Persistent) {
       return this->removed_reserved;
@@ -413,6 +469,15 @@ public:
     }
   }
 
+  /*!
+   * @brief Set the removed flag for the task
+   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
+   * to denote which phase of scheduling we are in (memory or runtime)
+   * @param waiting True if the task is waiting to be removed from the queue
+   * @details This is called when a task is moved to the next phase of
+   * scheduling (i.e. from MemoryReserver to RuntimeReserver) to indicate that
+   * the task is no longer in the queue
+   */
   template <ResourceCategory category> inline void set_removed(bool waiting) {
     if constexpr (category == ResourceCategory::Persistent) {
       this->removed_reserved = waiting;
@@ -448,11 +513,18 @@ public:
     }
   }
 
-  /*handle_runahead_dependencies*/
-  void handle_runahead_dependencies(int sync_type) {
-    if (sync_type == Task::BLOCKING) {
+  /*!
+   * @brief Dispatches to the appropriate synchronization function for runahead
+   * scheduling
+   * @param sync_type SynchronizationType::BLOCKING or
+   * SynchronizationType::NON_BLOCKING
+   */
+  void handle_runahead_dependencies(int sync_type_int) {
+    SynchronizationType sync_type =
+        static_cast<SynchronizationType>(sync_type_int);
+    if (sync_type == SynchronizationType::BLOCKING) {
       this->synchronize_dependency_events();
-    } else if (sync_type == Task::NON_BLOCKING) {
+    } else if (sync_type == SynchronizationType::NON_BLOCKING) {
       this->wait_dependency_events();
     }
   }
@@ -517,25 +589,25 @@ public:
   int set_state(int state);
 
   /* Set the task state */
-  Task::State set_state(Task::State state);
+  TaskState set_state(TaskState state);
 
   /* Get the task state */
-  Task::State get_state() const {
-    const Task::State state = this->state.load();
+  TaskState get_state() const {
+    const TaskState state = this->state.load();
     return state;
   }
 
   /*Set the task status */
-  Task::Status set_status(Task::Status status);
+  TaskStatus set_status(TaskStatus status);
 
   /*Determine status from parts*/
   // TODO(wlr): this should be private
-  Task::Status determine_status(bool spawnable, bool mappable, bool reservable,
-                                bool ready);
+  TaskStatus determine_status(bool spawnable, bool mappable, bool reservable,
+                              bool ready);
 
   /*Get the task status*/
-  Task::Status get_status() const {
-    const Task::Status status = this->status.load();
+  TaskStatus get_status() const {
+    const TaskStatus status = this->status.load();
     return status;
   }
 
@@ -588,14 +660,14 @@ public:
     this->is_data = true;
     // Data tasks are created after persistent resource reservation.
     // Therefore its start state is always RESERVED.
-    this->set_state(Task::RESERVED);
+    this->set_state(TaskState::RESERVED);
   }
 
   /// Return a python PArray pointer (as void*).
   void *get_py_parray();
 
-  /// Return a access mode of PArray.
-  AccessMode get_access_mode();
+  /// Return a access mode of PArray (as int value, used for Python interface)
+  int get_access_mode();
 
   // TODO(hc): will be removed
   int get_device_id() { return this->dev_id_; }
@@ -612,16 +684,16 @@ LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 
 /**
- *   The C++ "Mirror" of Parla's Python TaskSets & Spaces
- *   They are used as barriers for the calling thread for the completion of
- *   their members
+ *  @brief A task barrier is a synchronization primitive that notifies when a
+ * set of tasks are completed.
  */
-
 class TaskBarrier {
   // TODO: As is, this is not resuable.
 
   // TODO: This assumes the Python holder of the TaskBarrier will not be deleted
-  // before all of its tasks are completed. Add backlinks for cleanup?
+  // before all of its tasks are completed. Otherwise its reference will be
+  // cleaned by the GC and lead to a segfault. This is a serious problem. Add
+  // backlinks for cleanup? How to handlw without a huge performance hit?
 
 public:
   std::mutex mtx;
@@ -634,7 +706,7 @@ public:
 
   TaskBarrier(int num_tasks) : num_incomplete_tasks(num_tasks) {}
 
-  Task::State _add_task(InnerTask *task);
+  TaskState _add_task(InnerTask *task);
   void add_task(InnerTask *task);
   void add_tasks(std::vector<InnerTask *> &tasks);
   void set_id(int64_t id) { this->id = id; }
@@ -654,6 +726,11 @@ public:
   }
 };
 
+/*!
+ * @brief The C++ backend for the Parla TaskSpace
+ * @details The TaskSpace is a collection of tasks that can be queried (sliced)
+ * to get a subset of tasks and synchronized on.
+ */
 class InnerTaskSpace : public TaskBarrier {
 
 public:
@@ -685,10 +762,11 @@ public:
 };
 
 /**
- *   The C++ "Mirror" of Parla's Python Workers
- *   This class is used to create a C++ representation of a Parla Worker
- *   All scheduling logic should be handled by these after creation until
- * launched by the Python callback
+ * @brief A worker is a thread that executes tasks.
+ * @details The worker is a C++ object that is created by the Python runtime.
+ * It is responsible for executing tasks assigned to it by the scheduler. The
+ * worker sleeps until it receives a task from the scheduler. When it recieves a
+ * task, it wakes up and acquires the GIL.
  */
 class InnerWorker {
 
@@ -709,8 +787,8 @@ public:
 
   int thread_idx = -1;
 
-  /* Task Buffer (for enqueing new ready tasks at task cleanup ) */
-  TaskStateList enqueue_buffer;
+  /// A list of newly ready tasks that will be enqueued by this worker.
+  TaskStatusList enqueue_buffer;
 
   // TODO: (improvement?) Custom Barrier and Event Handling
 
@@ -719,25 +797,25 @@ public:
   InnerWorker() = default;
   InnerWorker(void *worker) : py_worker(worker){};
 
-  /* Set the Python Worker */
+  /// Set the backlink to the python worker
   void set_py_worker(void *worker) { this->py_worker = worker; };
 
-  /*Set the scheduler*/
+  /// Store the scheduler that owns this worker
   void set_scheduler(InnerScheduler *scheduler) {
     this->scheduler = scheduler;
   };
 
-  /* Set the thread idx */
+  /// Set the thread index of this worker
   void set_thread_idx(int idx) { this->thread_idx = idx; };
 
-  /* Wait for a task to be assigned */
+  /// wait for a task to be assigned
   void wait();
 
-  /* Assign a task to the worker and notify worker that it is available*/
+  /// assign a task to the worker and notify worker that it is available
   void assign_task(InnerTask *task);
 
-  /*
-   * Get a C++ task instance that this worker thread will execute.
+  /**
+   * @brief Get the C++ task instance that this worker thread will execute.
    * This function returns two outputs, a pointer to a task pointer and
    * a pointer to a flag specifying if this task is data task or not.
    * If that is the data task, the callee creates a Python data task instance
@@ -759,63 +837,71 @@ public:
 LOG_ADAPT_STRUCT(InnerWorker, thread_idx, notified)
 #endif
 
+/**
+ * @brief A worker pool is a collection of workers.
+ * @details For worker creation and managing status.
+ * @tparam AllWorkers_t A container type for storing the list of all workers
+ * (should be thread-safe)
+ * @tparam ActiveWorkers_t A container type for storing the list of active
+ * workers (should be thread-safe)
+ */
 template <typename AllWorkers_t, typename ActiveWorkers_t> class WorkerPool {
 
 public:
-  /* Container of all workers */
+  /// Container of all workers
   AllWorkers_t all_workers;
 
-  /* Container of available workers */
+  /// Container of available workers
   ActiveWorkers_t active_workers;
 
-  /* Number of workers */
   int max_workers;
 
-  /*Mutex for blocking spawn/await*/
+  /// mutex for blocking additional spawn/await*/ until workers are notified
   std::mutex mtx;
 
-  /*Condition variable for blocking spawn/await*/
+  /// condition variable for blocking spawn/await*/
   std::condition_variable cv;
 
-  /* Number of notified but not running workers*/
+  /// number of notified but not running workers (waiting)
   std::atomic<int> notified_workers{0};
 
   WorkerPool() = default;
   WorkerPool(int nworkers) : max_workers(nworkers){};
 
-  /* Add a worker to the active pool */
+  /// add a worker to the active pool
   void enqueue_worker(InnerWorker *worker);
 
-  /* Remove a worker from the active pool */
+  /// remove a worker from the active pool
   InnerWorker *dequeue_worker();
 
-  /* Add a worker to the all pool */
+  /// add a worker to the all pool
   void add_worker(InnerWorker *worker);
 
-  /* Get number of available workers */
+  /// get number of available workers
   int get_num_available_workers();
 
-  /* Get number of total workers */
+  /// get number of total workers
   int get_num_workers();
 
-  /* Set number of total workers */
+  /// set number of total workers
   void set_num_workers(int nworkers);
 
-  /*Increase number of notified workers*/
+  /// increase number of notified workers
   int increase_num_notified_workers();
 
-  /*Decrease number of notified workers*/
+  // decrease number of notified workers
   int decrease_num_notified_workers();
 
-  /*Get number of notified workers*/
+  // get number of notified workers
   inline int get_num_notified_workers() {
     return this->notified_workers.load();
   }
 
-  /*Blocking for spawn/await so that other threads can take the GIL*/
+  /// @brief barrier to block additional for spawns so that other waiting
+  /// workers threads can take the GIL*/
   void spawn_wait();
 
-  /* Remove a worker from the all pool */
+  /// Remove a worker from the all pool
   // void remove_worker(InnerWorker* worker);
 };
 
@@ -948,10 +1034,10 @@ public:
   void spawn_task(InnerTask *task);
 
   /* Enqueue task. */
-  void enqueue_task(InnerTask *task, Task::StatusFlags flags);
+  void enqueue_task(InnerTask *task, TaskStatusFlags flags);
 
   /* Enqueue more than one task */
-  void enqueue_tasks(TaskStateList &tasks);
+  void enqueue_tasks(TaskStatusList &tasks);
 
   /* Add worker */
   void add_worker(InnerWorker *worker);

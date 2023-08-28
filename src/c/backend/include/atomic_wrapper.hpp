@@ -1,3 +1,7 @@
+/*! @file atomic_wrapper.hpp
+ *  @brief Provides a copyable atomic class for use in STL containers.
+ */
+
 #ifndef PARLA_ATOMIC_WRAPPER_HPP
 #define PARLA_ATOMIC_WRAPPER_HPP
 

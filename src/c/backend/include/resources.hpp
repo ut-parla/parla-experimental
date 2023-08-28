@@ -1,3 +1,7 @@
+/*! @file resources.hpp
+ *  @brief Provides a resource pool for tracking resource usage.
+ */
+
 #ifndef RESOURCES_HPP
 #define RESOURCES_HPP
 

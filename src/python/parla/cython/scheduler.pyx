@@ -1,3 +1,8 @@
+"""!
+@file scheduler.pyx
+@brief Contains the core Python logic to manage workers and launch tasks.
+"""
+
 from abc import abstractmethod, ABCMeta
 from typing import Collection, Optional, Union, List, Dict
 import threading

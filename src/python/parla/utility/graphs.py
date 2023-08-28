@@ -1,3 +1,9 @@
+
+"""!
+@file graphs.py
+@brief Provides the core classes for representing and generating synthetic task graphs.
+"""
+
 import pprint
 import os
 from ast import literal_eval as make_tuple
@@ -219,7 +225,7 @@ class ReductionScatterConfig(GraphConfig):
     # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
     #       with 2 bridge tasks.
     task_count: int = 1
-    levels: int = 4 # Number of levels in the tree
+    levels: int = 4  # Number of levels in the tree
 
 
 @dataclass
@@ -680,7 +686,6 @@ def generate_serial_graph(config: SerialConfig) -> str:
         if config.data_pattern == DataInitType.OVERLAPPED_DATA:
             inout_data_index = 0
         for j in range(config.chains): # width
-
             dependency_string = ""
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
@@ -843,15 +848,16 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     levels = tgraph_config.levels
     # Calcualte the number of bridge tasks in the graph.
     num_bridge_tasks = levels // 2
-    num_bridge_tasks += 1 if (levels % 2 > 0) else  0
+    num_bridge_tasks += 1 if (levels % 2 > 0) else 0
     # Calculate the number of bulk tasks in the graph.
     num_bulk_tasks = (num_tasks - num_bridge_tasks)
     # Calculate the number of bulk tasks per level.
     num_levels_for_bulk_tasks = levels // 2 + 1
     num_bulk_tasks_per_level = num_bulk_tasks // num_levels_for_bulk_tasks
     # All the remaining bulk tasks are added to the last level.
-    num_bulk_tasks_last_level = (num_bulk_tasks % num_levels_for_bulk_tasks) + num_bulk_tasks_per_level
-    # Calculate the number of tasks per gpu per level. 
+    num_bulk_tasks_last_level = (
+        num_bulk_tasks % num_levels_for_bulk_tasks) + num_bulk_tasks_per_level
+    # Calculate the number of tasks per gpu per level.
     num_bulk_tasks_per_gpu = (num_bulk_tasks_per_level) // num_gpus
     """
     for l in range(levels + 1):
@@ -891,17 +897,18 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     # Construct task graphs.
     task_id = 0
     bridge_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
-                         DeviceType.ANY_GPU_DEVICE
+        DeviceType.ANY_GPU_DEVICE
     last_bridge_task_id_str = ""
-    last_bridge_task_id = 0 
+    last_bridge_task_id = 0
     for l in range(levels + 1):
         # If the last level has a bridge task, the previous level should take all remaining bulk
         # tasks.
         if levels % 2 > 0:
-            l_num_bulk_tasks = num_bulk_tasks_per_level if l < (levels - 1) else num_bulk_tasks_last_level
+            l_num_bulk_tasks = num_bulk_tasks_per_level if l < (
+                levels - 1) else num_bulk_tasks_last_level
         else:
             l_num_bulk_tasks = num_bulk_tasks_per_level if l < levels else num_bulk_tasks_last_level
-        if l % 2 > 0: # Bridge task condition
+        if l % 2 > 0:  # Bridge task condition
             dependency_block = ""
             inout_data_block = ""
             for d in range(l_num_bulk_tasks):
@@ -927,10 +934,10 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
             last_bridge_task_id_str = f"{task_id}"
             last_bridge_task_id = int(task_id)
             task_id += 1
-        else: # Bulk tasks condition
+        else:  # Bulk tasks condition
             bulk_task_id_per_gpu = 0
             bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
-                               DeviceType.ANY_GPU_DEVICE
+                DeviceType.ANY_GPU_DEVICE
             for bulk_task_id in range(l_num_bulk_tasks):
                 inout_data_block = f"{bulk_task_id}"
                 # TODO(hc): assume a single device task.
@@ -952,6 +959,7 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
                             bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
                 task_id += 1
     return graph
+
 
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read_pgraph,

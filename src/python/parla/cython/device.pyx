@@ -4,6 +4,11 @@
 import cython 
 cimport cython 
 
+"""!
+@file device.pyx
+@brief Contains the user-facing device and architectures classes.
+"""
+
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType

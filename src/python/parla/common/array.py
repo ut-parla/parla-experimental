@@ -1,3 +1,11 @@
+"""!
+@file array.py
+@brief Contains the dispatching logic for CuPy & NumPy arrays based on the active Task Environment.
+
+This file contains the dispatching logic for CuPy & NumPy arrays based on the active Task Environment. 
+This is used to determine which array type to use for a given task. The manual data movement functions `copy` and `clone_here` are defined here.
+"""
+
 # This implementation is adapted from the original Parla <0.2 implementation.
 # Original author: @arthurp
 # In this refactor we have removed MemoryKind types (Fast/Slow) and added more consistent control over the active stream.

@@ -1,3 +1,8 @@
+"""!
+@file device_manager.pyx
+@brief Contains the cython wrapper and python layer DeviceManager and StreamPool classes.
+"""
+
 from parla.cython import device
 from parla.cython.device cimport Device
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE

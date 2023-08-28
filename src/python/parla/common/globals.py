@@ -1,4 +1,10 @@
+"""!
+@file globals.py
+@brief Contains the core user-facing and internal global and configuration variables.
+"""
+
 from __future__ import annotations # For type hints of unloaded classes
+
 
 from enum import IntEnum
 import threading
@@ -34,7 +40,7 @@ print("PREINIT_THREADS: ", PREINIT_THREADS)
 _global_data_tasks = {}
 
 
-VCU_BASELINE=1000
+VCU_BASELINE = 1000
 
 
 class SynchronizationType(IntEnum):
