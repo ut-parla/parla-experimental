@@ -1,6 +1,0 @@
-var searchData=
-[
-  ['_5fschedulerlocals_1250',['_SchedulerLocals',['../classparla_1_1cython_1_1scheduler_1_1__SchedulerLocals.html',1,'parla::cython::scheduler']]],
-  ['_5ftasklocals_1251',['_TaskLocals',['../classparla_1_1cython_1_1tasks_1_1__TaskLocals.html',1,'parla::cython::tasks']]],
-  ['_5fvariantfunction_1252',['_VariantFunction',['../classparla_1_1cython_1_1variants_1_1__VariantFunction.html',1,'parla::cython::variants']]]
-];

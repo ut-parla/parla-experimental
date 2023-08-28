@@ -1,9 +1,0 @@
-<map id="src/c/backend/include/gpu_utility.hpp" name="src/c/backend/include/gpu_utility.hpp">
-<area shape="rect" id="node1" title="Provides architecture independent interface to event and stream creation &amp; synchronization." alt="" coords="181,5,342,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,95,72,121"/>
-<area shape="rect" id="node3" title=" " alt="" coords="96,95,163,121"/>
-<area shape="rect" id="node4" title=" " alt="" coords="187,95,248,121"/>
-<area shape="rect" id="node5" title=" " alt="" coords="272,95,339,121"/>
-<area shape="rect" id="node6" title=" " alt="" coords="363,95,453,121"/>
-<area shape="rect" id="node7" title=" " alt="" coords="477,95,552,121"/>
-</map>

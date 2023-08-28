@@ -1,7 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classSchedulerPhase.html" title="Abstract Interface for general scheduler runtime phase." alt="" coords="5,81,131,108"/>
-<area shape="rect" id="node2" href="$classLauncher.html" title=" " alt="" coords="205,5,287,32"/>
-<area shape="rect" id="node3" href="$classMapper.html" title="Mapper phase of the scheduler." alt="" coords="211,56,281,83"/>
-<area shape="rect" id="node4" href="$classMemoryReserver.html" title="MemoryReserver phase of the scheduler." alt="" coords="179,107,313,133"/>
-<area shape="rect" id="node5" href="$classRuntimeReserver.html" title="RuntimeReserver phase of the scheduler." alt="" coords="179,157,313,184"/>
-</map>

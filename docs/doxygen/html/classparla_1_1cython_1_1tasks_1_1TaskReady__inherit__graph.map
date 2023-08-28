@@ -1,7 +1,0 @@
-<map id="parla.cython.tasks.TaskReady" name="parla.cython.tasks.TaskReady">
-<area shape="rect" id="node1" title="This state specifies that a task is &quot;ready&quot; to be launched." alt="" coords="29,155,245,181"/>
-<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1TaskState.html" title="Abstract base class for Task State." alt="" coords="32,80,241,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,5,68,32"/>
-<area shape="rect" id="node4" title=" " alt="" coords="92,5,181,32"/>
-<area shape="rect" id="node5" title=" " alt="" coords="206,5,289,32"/>
-</map>

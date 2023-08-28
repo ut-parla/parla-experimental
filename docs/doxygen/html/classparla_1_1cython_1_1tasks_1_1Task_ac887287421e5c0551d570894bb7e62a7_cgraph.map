@@ -1,7 +1,0 @@
-<map id="parla.cython.tasks.Task.update_name" name="parla.cython.tasks.Task.update_name">
-<area shape="rect" id="node1" title="Update the name of the task from the taskspace and index." alt="" coords="5,83,273,110"/>
-<area shape="rect" id="node2" href="$classparla_1_1common_1_1parray_1_1core_1_1PArray.html#a986892fcfca02c3198712eae6135ef41" title=" " alt="" coords="687,5,883,47"/>
-<area shape="rect" id="node3" href="$classparla_1_1cython_1_1device_1_1PyArchitecture.html#a5842820159b647eaa1d22f09323397a2" title=" " alt="" coords="640,77,931,103"/>
-<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1TaskSpace.html#aae88453c3c0c8a15d3ac0497a34f7ca8" title=" " alt="" coords="658,138,913,165"/>
-<area shape="rect" id="node5" href="$classparla_1_1cython_1_1tasks_1_1Task.html#a25aa67289e404c89b26861c5a9df04cf" title="Create the name of the task from the taskspace and index." alt="" coords="321,58,592,85"/>
-</map>

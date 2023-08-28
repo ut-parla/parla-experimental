@@ -5,14 +5,11 @@
 /**
  * @mainpage Parla Documentation
  *
- * Welcome to the core C++ & cython documentation for Parla. This is the landing
- * page for the Doxygen-generated HTML documentation.
- *
- * @section sec_about About
- *
- * Parla is a heterogenous parallel programming framework for Python.
- * The backend is a C++ runtime to avoid contention with the Python Global
- * Interpreter Lock.
+ * Welcome to the core C++ & Cython documentation for Parla.
+ * This is the landing page for the Doxygen-generated HTML documentation
+ * including call graphs and inheritance diagrams. You likely got here from the
+ * MKDocs documentation, which is the main user-facing documentation for Parla.
+ * This page exists to help contributors navigate the C++ runtime.
  *
  * @section sec_links Links
  *

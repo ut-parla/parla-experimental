@@ -1,7 +1,0 @@
-<map id="parla.cython.tasks.DataMovementTask._execute_task" name="parla.cython.tasks.DataMovementTask._execute_task">
-<area shape="rect" id="node1" title="Run the data movement task." alt="" coords="5,90,252,131"/>
-<area shape="rect" id="node2" href="$classparla_1_1common_1_1globals_1_1Locals.html#a9c2730dfe017a744ee299e41ad723277" title=" " alt="" coords="312,5,591,32"/>
-<area shape="rect" id="node3" href="$classparla_1_1cython_1_1scheduler_1_1SchedulerContext.html#acff4832b86659976a862b570a350f18b" title=" " alt="" coords="333,57,570,98"/>
-<area shape="rect" id="node4" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a3eda45e57a46c577f7597a8c82dff90c" title=" " alt="" coords="342,122,561,163"/>
-<area shape="rect" id="node5" href="$classparla_1_1cython_1_1scheduler_1_1Scheduler.html#a241fa98903ab52bd5ebe72822223b3ca" title=" " alt="" coords="300,188,603,215"/>
-</map>

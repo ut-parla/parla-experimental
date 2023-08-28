@@ -1,4 +1,0 @@
-<map id="InnerScheduler::get_num_ready_tasks" name="InnerScheduler::get_num_ready_tasks">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,153,47"/>
-<area shape="rect" id="node2" href="$classRuntimeReserver.html#a23475509344951f743f48f6239eda1bf" title="Get the number of tasks enqueued (and waiting) in the phase." alt="" coords="201,5,365,47"/>
-</map>

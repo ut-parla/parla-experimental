@@ -1,5 +1,0 @@
-<map id="Device::check_resource_availability" name="Device::check_resource_availability">
-<area shape="rect" id="node1" title=" " alt="" coords="5,27,181,69"/>
-<area shape="rect" id="node2" href="$classDevice.html#a1d755791d45e1d02a9a7afe470480367" title="Returns the device details (maximum resources available) This is assumed to be constant after device ..." alt="" coords="229,5,424,32"/>
-<area shape="rect" id="node3" href="$classDeviceRequirement.html#acba627b6f4055fa0516876802dd3e3c5" title=" " alt="" coords="247,57,406,98"/>
-</map>

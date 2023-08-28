@@ -1,4 +1,0 @@
-<map id="DeviceQueue::pop" name="DeviceQueue::pop">
-<area shape="rect" id="node1" title="Grabs the next task that can be dequeued on this device." alt="" coords="5,5,147,32"/>
-<area shape="rect" id="node2" href="$classDeviceQueue.html#a2556a5d5368adda5af85130d6f4b0e5b" title=" " alt="" coords="195,5,343,32"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" title=" " alt="" coords="57,137,175,163"/>
-<area shape="rect" id="node2" href="$classparla_1_1common_1_1globals_1_1LocalStack.html" title=" " alt="" coords="278,71,483,112"/>
-<area shape="rect" id="node3" href="$classparla_1_1common_1_1globals_1_1LocalStorage.html" title=" " alt="" coords="278,5,483,47"/>
-<area shape="rect" id="node4" href="$classparla_1_1common_1_1globals_1_1Locals.html" title=" " alt="" coords="275,137,487,163"/>
-<area shape="rect" id="node5" href="$classparla_1_1cython_1_1scheduler_1_1__SchedulerLocals.html" title=" " alt="" coords="294,188,467,229"/>
-<area shape="rect" id="node6" href="$classparla_1_1cython_1_1tasks_1_1__TaskLocals.html" title=" " alt="" coords="307,253,454,295"/>
-<area shape="rect" id="node7" href="$classparla_1_1common_1_1globals_1_1Storage.html" title=" " alt="" coords="5,13,227,39"/>
-</map>

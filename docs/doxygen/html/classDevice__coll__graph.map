@@ -1,4 +1,0 @@
-<map id="Device" name="Device">
-<area shape="rect" id="node1" title="Devices can be distinguished from other devices by a class type and its index." alt="" coords="27,124,94,151"/>
-<area shape="rect" id="node2" href="$classResourcePool.html" title="A pool of resources, allows for comparisons and updates of current values." alt="" coords="5,5,116,32"/>
-</map>

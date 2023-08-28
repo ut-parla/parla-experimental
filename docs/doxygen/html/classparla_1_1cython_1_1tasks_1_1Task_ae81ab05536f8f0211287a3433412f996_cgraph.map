@@ -1,4 +1,0 @@
-<map id="parla.cython.tasks.Task.handle_runahead_dependencies" name="parla.cython.tasks.Task.handle_runahead_dependencies">
-<area shape="rect" id="node1" title="Wait (or synchronize) on all events that the task depends on." alt="" coords="5,5,228,47"/>
-<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1Task.html#af977b9ed1ce6edb0de3991f62ffeba46" title="The active TaskEnvironment of the task." alt="" coords="276,13,539,39"/>
-</map>
