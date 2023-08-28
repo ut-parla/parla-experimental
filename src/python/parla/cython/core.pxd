@@ -24,7 +24,7 @@ cdef extern from "include/gpu_utility.hpp" nogil:
 
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
-    ctypedef void (*stopfunc_t)(void* scheduler)
+    ctypedef void (*stopfunc_t)(void*)
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
@@ -178,8 +178,3 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_scheduler_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
-
-
-
-
-

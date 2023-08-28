@@ -28,13 +28,21 @@ class _VariantFunction(object):
         self._variants = {}
         functools.update_wrapper(self, func)
 
-    def variant(self, spec_list, override=False):
+
+    def variant(self, spec_list, override=False, architecture=None, max_amount=8):
         """!
         @brief Decorator to declare a variant of this function for a specific architecture.
 
         @param spec_list A list of architectures to specialize this function for. Can be a single architecture, or a list of architectures. Each architecture can be a tuple of architectures to specialize for a multidevice configuration.
         @param override If true, allow overriding an existing variant for one of the given architectures.
+        @param architecture The type of device that the variant is defined on (used to specify a range of valid configurations)
+        @param max_amount If using architecture this will specify the configurations as valid for (1, max_amount) architecture devices
         """
+
+        if architecture is not None:
+            if spec_list is not None:
+                raise VariantDefinitionError("Cannot specify both architecture and spec_list.")
+            spec_list = [architecture*i for i in range(1, max_amount+1)]
 
         if not isinstance(spec_list, list):
             spec_list = [spec_list]
@@ -44,8 +52,9 @@ class _VariantFunction(object):
 
         def variant(f):
             for t in spec_list:
-                assert isinstance(t, PyArchitecture)
-                self._variants[t.id] = f
+                if not isinstance(t, tuple):
+                    t = (t,)
+                self._variants[t] = f
             return f
         
         variant.__name__ = "{}.variant".format(self._default.__name__)
@@ -72,8 +81,6 @@ class _VariantFunction(object):
 
         # Construct a architecture specialization key from the local devices.
         spec_key = tuple([d.architecture for d in local_devices])
-        # If a single architecture variant type, it needs a single id, not a tuple.
-        spec_key = spec_key[0] if len(spec_key) == 1 else spec_key
 
         # Get the variant for the current specialization key.
         variant_f = self.get_variant(spec_key)
@@ -92,7 +99,7 @@ def specialize(func):
     To provide a specialized variant use the `variant` member of the main function:
     .. testsetup::
         from parla.function_decorators import *
-    >>> @specialized
+    >>> @specialize
     ... def f():
     ...     raise NotImplementedError()
     >>> @f.variant(architecture)

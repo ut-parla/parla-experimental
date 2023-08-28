@@ -144,7 +144,10 @@ cdef void callback_launch(void* python_scheduler, void* python_task, void*
         #print("Done with callback", flush=True)
         #(<object>python_function)(<object>python_input)
 
-cdef void callback_stop(void* python_function) nogil:
+ctypedef void(*f_type)(void*) 
+
+@cython.binding(False)
+cdef void callback_stop(void* python_function) noexcept nogil:
     with gil:
         #print("Inside callback to cython (stop)", flush=True)
         scheduler = <object>python_function
@@ -344,7 +347,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_stream 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_stream, cupy.cuda.Stream):
+        if (py_stream is not None) and isinstance(py_stream, cupy.cuda.Stream):
             i_stream = <uintptr_t> py_stream.ptr
             c_self.add_stream(i_stream)
 
@@ -352,7 +355,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_event 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_event, cupy.cuda.Event):
+        if (py_event is not None) and isinstance(py_event, cupy.cuda.Event):
             i_event = <uintptr_t> py_event.ptr
             c_self.add_event(i_event)
 

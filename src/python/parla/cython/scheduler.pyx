@@ -30,6 +30,7 @@ Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
+AtomicTaskSpace = tasks.AtomicTaskSpace
 create_env = tasks.create_env
 
 from parla.utility.tracer import NVTXTracer
@@ -205,6 +206,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
                         self.task.instantiate(self.task_attrs, self.scheduler)
+                        self.task_attrs = None
                         #if USE_PYTHON_RUNAHEAD:
                             #This is a back up for testing
                             #Need to keep the python object alive
@@ -311,10 +313,13 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
+                            active_task.cleanup()
+
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
+                        self.task = None
 
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
@@ -354,7 +359,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         self.exception_stack = []
 
-        self.default_taskspace = TaskSpace("global")
+        self.default_taskspace = AtomicTaskSpace("global")
 
         #TODO: Handle resources better
         resources = 1.0

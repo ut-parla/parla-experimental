@@ -1,0 +1,307 @@
+==================
+strong scaling 500M
+==================
+
+cupy only
+gpus	all	lsort1	sp_comp	scatter_map	all2all	lsort2
+2 4.30421114E-01  1.15388136E-01  5.68857702E-04  1.60563430E-03  1.71892890E-01  1.40931080E-01
+3 3.58948328E-01  7.79944195E-02  8.44727608E-04  2.05807459E-03  1.92571960E-01  8.54445202E-02
+4 3.20432234E-01  5.93451607E-02  1.06588820E-03  2.50257170E-03  1.87090397E-01  7.03794646E-02
+
+crosspy w thread
+gpus	all	lsort1	sp_comp	scatter_map	all2all	lsort2
+2 3.49802462E-01  1.15576801E-01 8.04035703E-04,1.79865579E-03 1.13606636E-01  1.18005798E-01
+3 3.02869053E-01  7.79574179E-02 1.09557731E-03,2.38543470E-03 1.41963770E-01  7.94578821E-02
+4 2.52899075E-01  5.91583280E-02 1.49350250E-03,3.06496951E-03 1.28813135E-01  6.03589629E-02
+
+crosspy w parla
+gpus	all	lsort1	sp_comp	scatter_map	all2all	lsort2
+2 5.77890648E-01  1.26540012E-01  2.95795511E-03  1.20897191E-03  1.13726599E-01  3.13458907E-01
+3 4.49403549E-01  9.18094030E-02  3.92947550E-03  1.85868589E-03  1.63366586E-01  1.66963117E-01
+4 3.87961231E-01  9.08590368E-02  5.41076250E-03  2.70663939E-03  1.42294630E-01  1.26029552E-01
+
+Namespace(n=500000000, gpu=1, warm_up=5, runs=10, check=0)
+All -- 2.2915E-01
+  |Local sort 1 -- 2.2913E-01
+2.29148551E-01,2.29129795E-01,
+
+Namespace(n=500000000, gpu=2, warm_up=5, runs=10, check=0)
+All -- 4.3042E-01
+  |Local sort 1 -- 1.1539E-01
+  |Splitter comp.  -- 5.6886E-04
+  |Scatter map -- 1.6056E-03
+  |All to all  -- 1.7189E-01
+  |Local Sort 2 -- 1.4093E-01
+4.30421114E-01,1.15388136E-01,5.68857702E-04,1.60563430E-03,1.71892890E-01,1.40931080E-01,
+
+Namespace(n=500000000, gpu=3, warm_up=5, runs=10, check=0)
+All -- 3.5895E-01
+  |Local sort 1 -- 7.7994E-02
+  |Splitter comp.  -- 8.4473E-04
+  |Scatter map -- 2.0581E-03
+  |All to all  -- 1.9257E-01
+  |Local Sort 2 -- 8.5445E-02
+3.58948328E-01,7.79944195E-02,8.44727608E-04,2.05807459E-03,1.92571960E-01,8.54445202E-02,
+
+Namespace(n=500000000, gpu=4, warm_up=5, runs=10, check=0)
+All -- 3.2043E-01
+  |Local sort 1 -- 5.9345E-02
+  |Splitter comp.  -- 1.0659E-03
+  |Scatter map -- 2.5026E-03
+  |All to all  -- 1.8709E-01
+  |Local Sort 2 -- 7.0379E-02
+3.20432234E-01,5.93451607E-02,1.06588820E-03,2.50257170E-03,1.87090397E-01,7.03794646E-02,
+
+crosspy w thread
+2,3.49802462E-01,1.15576801E-01,8.04035703E-04,1.79865579E-03,1.13606636E-01,1.18005798E-01,
+3,3.02869053E-01,7.79574179E-02,1.09557731E-03,2.38543470E-03,1.41963770E-01,7.94578821E-02
+4,2.52899075E-01,5.91583280E-02,1.49350250E-03,3.06496951E-03,1.28813135E-01,6.03589629E-02
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=1, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 2.3002E-01
+  |Local sort 1 -- 2.3002E-01
+2.30022741E-01,2.30018934E-01,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=2, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 3.4980E-01
+  |Local sort 1 -- 1.1558E-01
+  |Splitter comp.  -- 8.0404E-04
+  |Scatter map -- 1.7987E-03
+  |All to all  -- 1.1361E-01
+  |Local Sort 2 -- 1.1801E-01
+3.49802462E-01,1.15576801E-01,8.04035703E-04,1.79865579E-03,1.13606636E-01,1.18005798E-01,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=3, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 3.0287E-01
+  |Local sort 1 -- 7.7957E-02
+  |Splitter comp.  -- 1.0956E-03
+  |Scatter map -- 2.3854E-03
+  |All to all  -- 1.4196E-01
+  |Local Sort 2 -- 7.9458E-02
+3.02869053E-01,7.79574179E-02,1.09557731E-03,2.38543470E-03,1.41963770E-01,7.94578821E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=4, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 2.5290E-01
+  |Local sort 1 -- 5.9158E-02
+  |Splitter comp.  -- 1.4935E-03
+  |Scatter map -- 3.0650E-03
+  |All to all  -- 1.2881E-01
+  |Local Sort 2 -- 6.0359E-02
+2.52899075E-01,5.91583280E-02,1.49350250E-03,3.06496951E-03,1.28813135E-01,6.03589629E-02,
+
+crosspy w parla
+2,5.77890648E-01,1.26540012E-01,2.95795511E-03,1.20897191E-03,1.13726599E-01,3.13458907E-01
+3,4.49403549E-01,9.18094030E-02,3.92947550E-03,1.85868589E-03,1.63366586E-01,1.66963117E-01
+4,3.87961231E-01,9.08590368E-02,5.41076250E-03,2.70663939E-03,1.42294630E-01,1.26029552E-01
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=1, warm_up=10, runs=10, mode='parla', check=0)
+All -- 3.5456E-01
+  |Local sort 1 -- 3.3340E-01
+3.54564987E-01,3.33402366E-01,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=2, warm_up=10, runs=10, mode='parla', check=0)
+All -- 5.7789E-01
+  |Local sort 1 -- 1.2654E-01
+  |Splitter comp.  -- 2.9580E-03
+  |Scatter map -- 1.2090E-03
+  |All to all  -- 1.1373E-01
+  |Local Sort 2 -- 3.1346E-01
+5.77890648E-01,1.26540012E-01,2.95795511E-03,1.20897191E-03,1.13726599E-01,3.13458907E-01,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=3, warm_up=10, runs=10, mode='parla', check=0)
+All -- 4.4940E-01
+  |Local sort 1 -- 9.1809E-02
+  |Splitter comp.  -- 3.9295E-03
+  |Scatter map -- 1.8587E-03
+  |All to all  -- 1.6337E-01
+  |Local Sort 2 -- 1.6696E-01
+4.49403549E-01,9.18094030E-02,3.92947550E-03,1.85868589E-03,1.63366586E-01,1.66963117E-01,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=500000000, gpu=4, warm_up=10, runs=10, mode='parla', check=0)
+All -- 3.8796E-01
+  |Local sort 1 -- 9.0859E-02
+  |Splitter comp.  -- 5.4108E-03
+  |Scatter map -- 2.7066E-03
+  |All to all  -- 1.4229E-01
+  |Local Sort 2 -- 1.2603E-01
+3.87961231E-01,9.08590368E-02,5.41076250E-03,2.70663939E-03,1.42294630E-01,1.26029552E-01,
+
+cupy only
+Namespace(n=100000000, gpu=1, warm_up=10, runs=10, check=0)
+All -- 4.7102E-02
+  |Local sort 1 -- 4.7078E-02
+4.71015733E-02,4.70779705E-02,
+
+Namespace(n=200000000, gpu=2, warm_up=10, runs=10, check=0)
+All -- 1.4722E-01
+  |Local sort 1 -- 4.6989E-02
+  |Splitter comp.  -- 6.0652E-04
+  |Scatter map -- 1.6897E-03
+  |All to all  -- 4.9992E-02
+  |Local Sort 2 -- 4.7902E-02
+1.47215191E-01,4.69888416E-02,6.06516900E-04,1.68972869E-03,4.99917173E-02,4.79017944E-02,
+
+Namespace(n=300000000, gpu=3, warm_up=10, runs=10, check=0)
+All -- 2.1428E-01
+  |Local sort 1 -- 4.7049E-02
+  |Splitter comp.  -- 8.0220E-04
+  |Scatter map -- 2.0283E-03
+  |All to all  -- 1.1491E-01
+  |Local Sort 2 -- 4.9459E-02
+2.14276175E-01,4.70493626E-02,8.02202406E-04,2.02832319E-03,1.14905252E-01,4.94592368E-02,
+
+Namespace(n=400000000, gpu=4, warm_up=10, runs=10, check=0)
+All -- 2.9637E-01
+  |Local sort 1 -- 4.8819E-02
+  |Splitter comp.  -- 1.0439E-03
+  |Scatter map -- 2.4726E-03
+  |All to all  -- 1.9257E-01
+  |Local Sort 2 -- 5.1418E-02
+2.96371046E-01,4.88189334E-02,1.04394690E-03,2.47261780E-03,1.92572438E-01,5.14181675E-02,
+
+
+===============
+Weak scaling 100M grain sz
+===============
+crosspy w thread
+gpus	all	lsort1	sp_comp	scatter_map	all2all	lsort2
+2 1.44663454E-01  4.71876461E-02  7.70231290E-04  1.83267320E-03  4.66794407E-02  4.81850781E-02
+3 1.86291886E-01  4.72853744E-02  1.10351570E-03  2.55180609E-03  8.69384002E-02  4.84042116E-02
+4 2.04527210E-01  4.75241148E-02  1.43491250E-03  3.07298410E-03  1.03705396E-01  4.87815639E-02
+
+crosspy w parla
+gpus	all	lsort1	sp_comp	scatter_map	all2all	lsort2
+2 2.00014174E-01  6.33237771E-02  2.86097311E-03  1.26846921E-03  4.67461797E-02  6.56800670E-02
+3 2.99150044E-01  8.18834063E-02  3.84188270E-03  1.82645641E-03  1.26442941E-01  6.49946585E-02
+4 3.29275617E-01  7.85926338E-02  5.42359711E-03  2.83029869E-03  1.35809122E-01  8.43319376E-02
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=100000000, gpu=1, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 4.7240E-02
+  |Local sort 1 -- 4.7237E-02
+4.72403154E-02,4.72366318E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=200000000, gpu=2, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 1.4466E-01
+  |Local sort 1 -- 4.7188E-02
+  |Splitter comp.  -- 7.7023E-04
+  |Scatter map -- 1.8327E-03
+  |All to all  -- 4.6679E-02
+  |Local Sort 2 -- 4.8185E-02
+1.44663454E-01,4.71876461E-02,7.70231290E-04,1.83267320E-03,4.66794407E-02,4.81850781E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=300000000, gpu=3, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 1.8629E-01
+  |Local sort 1 -- 4.7285E-02
+  |Splitter comp.  -- 1.1035E-03
+  |Scatter map -- 2.5518E-03
+  |All to all  -- 8.6938E-02
+  |Local Sort 2 -- 4.8404E-02
+1.86291886E-01,4.72853744E-02,1.10351570E-03,2.55180609E-03,8.69384002E-02,4.84042116E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=400000000, gpu=4, warm_up=10, runs=10, mode='crosspy', check=0)
+All -- 2.0453E-01
+  |Local sort 1 -- 4.7524E-02
+  |Splitter comp.  -- 1.4349E-03
+  |Scatter map -- 3.0730E-03
+  |All to all  -- 1.0371E-01
+  |Local Sort 2 -- 4.8782E-02
+2.04527210E-01,4.75241148E-02,1.43491250E-03,3.07298410E-03,1.03705396E-01,4.87815639E-02,
+
+crosspy w parla
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=100000000, gpu=1, warm_up=10, runs=10, mode='parla', check=0)
+All -- 7.6050E-02
+  |Local sort 1 -- 5.5860E-02
+7.60504303E-02,5.58600824E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=200000000, gpu=2, warm_up=10, runs=10, mode='parla', check=0)
+All -- 2.0001E-01
+  |Local sort 1 -- 6.3324E-02
+  |Splitter comp.  -- 2.8610E-03
+  |Scatter map -- 1.2685E-03
+  |All to all  -- 4.6746E-02
+  |Local Sort 2 -- 6.5680E-02
+2.00014174E-01,6.33237771E-02,2.86097311E-03,1.26846921E-03,4.67461797E-02,6.56800670E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=300000000, gpu=3, warm_up=10, runs=10, mode='parla', check=0)
+All -- 2.9915E-01
+  |Local sort 1 -- 8.1883E-02
+  |Splitter comp.  -- 3.8419E-03
+  |Scatter map -- 1.8265E-03
+  |All to all  -- 1.2644E-01
+  |Local Sort 2 -- 6.4995E-02
+2.99150044E-01,8.18834063E-02,3.84188270E-03,1.82645641E-03,1.26442941E-01,6.49946585E-02,
+
+USE_PYTHON_RUNAHEAD:  True
+CUPY_ENABLED:  True
+PREINIT_THREADS:  True
+DEFAULT SYNC:  0
+Namespace(n=400000000, gpu=4, warm_up=10, runs=10, mode='parla', check=0)
+All -- 3.2928E-01
+  |Local sort 1 -- 7.8593E-02
+  |Splitter comp.  -- 5.4236E-03
+  |Scatter map -- 2.8303E-03
+  |All to all  -- 1.3581E-01
+  |Local Sort 2 -- 8.4332E-02
+3.29275617E-01,7.85926338E-02,5.42359711E-03,2.83029869E-03,1.35809122E-01,8.43319376E-02,
+
+

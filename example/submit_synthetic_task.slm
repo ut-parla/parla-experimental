@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH -J synthetic           # Job name
+#SBATCH -o synthetic.o%j       # Name of stdout output file
+#SBATCH -e synthetic.e%j       # Name of stderr error file
+#SBATCH -p rtx-dev             # Queue (partition) name
+#SBATCH -N 1                   # Total # of nodes (must be 1 for serial)
+#SBATCH -n 1                   # Total # of mpi tasks (should be 1 for serial)
+#SBATCH -t 02:00:00            # Run time (hh:mm:ss)
+
+module purge
+source /work2/06398/hochan/frontera/workspace/miniconda3/etc/profile.d/conda.sh
+conda activate parla
+module load cuda
+
+#PATH=$PATH:. source benchmark/python/start_benchmark-10MB.sh
+#PATH=$PATH:. source benchmark/python/start_benchmark-100KB.sh
+#PATH=$PATH:. source benchmark/python/start_benchmark-1MB.sh
+#PATH=$PATH:. source benchmark/python/reduction/start_benchmark-10MB.sh
+#PATH=$PATH:. source benchmark/python/reduction/start_benchmark-100KB.sh
+PATH=$PATH:. source benchmark/python/reduction/start_benchmark-1MB.sh

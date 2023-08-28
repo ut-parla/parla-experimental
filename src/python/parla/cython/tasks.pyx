@@ -64,6 +64,12 @@ class TaskState(object, metaclass=ABCMeta):
     def is_terminal(self) -> bool:
         raise NotImplementedError()
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class TaskCreated(TaskState):
     """!
@@ -148,7 +154,7 @@ class TaskRunning(TaskState):
 
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[List]):
+    def __init__(self, func, args, dependencies: Optional[List] = None):
         #print("TaskRunning init", flush=True)
         if dependencies is not None:
             # d could be one of four types: Task, DataMovementTask, TaskID or other types.
@@ -293,6 +299,9 @@ class Task:
 
         self.taskspace = taskspace
         self.idx = idx
+        self.func = None
+        self.args = None
+
 
         self.state = state
         self.scheduler = scheduler
@@ -481,8 +490,8 @@ class Task:
         #assert isinstance(self.req, EnvironmentRequirements), "Task was not assigned to a enviornment before execution"
 
         task_state = None
+        self.state = TaskRunning(self.func, self.args)
         try:
-            #assert(self._state, TaskRunning)
 
             task_state = self._execute_task()
 
@@ -491,6 +500,7 @@ class Task:
         except Exception as e:
             tb = traceback.format_exc()
             task_state = TaskException(e, tb)
+            self.state = task_state
 
             print("Exception in Task ", self, ": ", e, tb, flush=True)
 
@@ -597,14 +607,14 @@ class Task:
                 # Single device.
                 self.inner_task.add_device_req(
                     req.device.get_cy_device(),
-                    req.res_req.memory_sz, req.res_req.num_vcus)
+                    req.res_req.memory, req.res_req.vcus)
             elif isinstance(req, FrozenSet):
                 # Single architecture
                 self.inner_task.begin_arch_req_addition()
                 for member in req:
                     self.inner_task.add_device_req(
                         member.device.get_cy_device(),
-                        member.res_req.memory_sz, member.res_req.num_vcus)
+                        member.res_req.memory, member.res_req.vcus)
                 self.inner_task.end_arch_req_addition()
             elif isinstance(req, List):
                 # Multi-optional requirements
@@ -634,6 +644,8 @@ class Task:
         """
         self.inner_task.add_event(event)
 
+    def cleanup(self):
+        raise NotImplementedError()
 
 class ComputeTask(Task):
     """!
@@ -742,6 +754,9 @@ class DataMovementTask(Task):
         #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
 
+    def cleanup(self):
+        pass
+
 ######
 # Task Environment
 ######
@@ -803,6 +818,7 @@ class TaskEnvironment:
                 self.device_list.append(dev)
                 self.device_dict[dev.architecture].append(dev)
 
+            self.stream_list.extend(env.streams)
             self._global_device_ids  = self._global_device_ids.union(env.global_ids)
             self.env_list.append(env)
 
@@ -850,10 +866,7 @@ class TaskEnvironment:
 
     @property
     def streams(self):
-        if self.is_terminal:
-            return self.stream_list
-        else:
-            return [None]
+        return self.stream_list
 
     @property
     def stream(self):
@@ -932,16 +945,23 @@ class TaskEnvironment:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
 
         Locals.push_context(self)
+        self.devices[0].enter_without_context()
 
+        return self
+
+    def enter_without_context(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting environment", self.env_list, flush=True)
         ret = False
-
+        self.devices[0].exit_without_context(exc_type, exc_val, exc_tb)
         Locals.pop_context()
         
         return ret 
+
+    def exit_without_context(self, exc_type, exc_val, exc_tb):
+        return False
 
     def __getitem__(self, index):
 
@@ -1230,6 +1250,8 @@ class TerminalEnvironment(TaskEnvironment):
         
         #for event in self.event_dict.values():
         #    task.add_event(event)
+
+        #Note: only adding default event for now
         task.add_event(self.event_dict['default'])
 
     def write_streams_to_task(self, task):
@@ -1305,12 +1327,23 @@ class GPUEnvironment(TerminalEnvironment):
         ret_stream = self.active_stream.__enter__()
         return self
 
+    def enter_without_context(self):
+        self.active_stream = self.stream_list[0]
+        ret_stream = self.active_stream.__enter__()
+        return self
+
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         #print("Exiting GPU Environment: ", self, flush=True)
         ret = False
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
         Locals.pop_context()
         return ret 
+
+    def exit_without_context(self, exc_type, exc_val, exc_tb):
+        ret = False
+        self.active_stream.__exit__(exc_type, exc_val, exc_tb)
+        return ret
 
     def finalize(self):
         stream_pool = get_stream_pool()

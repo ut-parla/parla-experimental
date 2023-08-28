@@ -1,0 +1,42 @@
+\documentclass[preview]{standalone}
+\usepackage{tikz,pgfplots}
+\usepackage{pgfplotstable}
+\usetikzlibrary{patterns}
+
+\makeatletter
+\newcommand\resetstackedplotsxa{
+	\makeatletter
+	\pgfplots@stacked@isfirstplottrue
+	\makeatother
+	\addplot [forget plot,draw=none] coordinates{(2, 0) (3, 0) (4, 0)};
+}
+\makeatother
+\begin{document}
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+		\tikzstyle{every node}=[font=\footnotesize]
+		\begin{axis}[
+			ybar stacked, bar width=0.35cm,
+			xlabel={number of GPUs $\rightarrow$},
+			ylabel={time (s) $\rightarrow$ },symbolic x coords={2, 3, 4},width=12cm,height=7cm,
+			xtick = data,
+			legend style={text=black, at={(0.48,1.3)}, anchor=north},legend columns=3,grid=major]
+			\addplot [fill=red!50,     fill opacity=0.5]  [bar shift=0.20cm] table[x={gpus}, y expr = \thisrow{lsort1}   + \thisrow{lsort2}]	   {ss_crosspy.txt};
+			\addplot [fill=blue!50,    fill opacity=0.5]  [bar shift=0.20cm] table[x={gpus}, y expr = \thisrow{sp_comp}  + \thisrow{scatter_map}] {ss_crosspy.txt};
+			\addplot [fill=orange!50,  fill opacity=0.5]  [bar shift=0.20cm] table[x={gpus}, y = {all2all}]    								   {ss_crosspy.txt};
+			
+			\resetstackedplotsxa
+			
+			\addplot [fill=red!50,     fill opacity=0.5, postaction={pattern=north east lines}]  [bar shift=-0.20cm] table[x={gpus}, y expr = \thisrow{lsort1}  + \thisrow{lsort1}]      {ss_parla.txt};
+			\addplot [fill=blue!50,    fill opacity=0.5, postaction={pattern=north east lines}]  [bar shift=-0.20cm] table[x={gpus}, y expr = \thisrow{sp_comp} + \thisrow{scatter_map}] {ss_parla.txt};
+			\addplot [fill=orange!50,  fill opacity=0.5, postaction={pattern=north east lines}]  [bar shift=-0.20cm] table[x={gpus}, y = {all2all}]    								    {ss_parla.txt};
+			\legend{local sort (xp + Threads), splitters (xp + Threads), alltoall(xp + Threads), local sort (xp + Parla), splitters (xp + Parla), alltoall(xp + Parla)};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Strong scaling with global problem size of 500M}
+\end{figure}
+
+\end{document}
+
+

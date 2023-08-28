@@ -17,6 +17,8 @@ PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
+ImportableCUDAArchitecture = device.ImportableCUDAArchitecture
+ImportableCPUArchitecture = device.ImportableCPUArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
 DeviceResource = device.DeviceResource
@@ -25,12 +27,9 @@ Stream = device.Stream
 CupyStream = device.CupyStream
 CUPY_ENABLED = device.CUPY_ENABLED
 
-# Architecture declaration.
-# To use these in the placement of @spawn,
-# declare these as global variables.
-gpu = PyCUDAArchitecture()
-cpu = PyCPUArchitecture()
-
+# Importable architecture declarations
+gpu = ImportableCUDAArchitecture()
+cpu = ImportableCPUArchitecture()
 
 cdef class CyDeviceManager:
     """
@@ -133,8 +132,7 @@ class PyDeviceManager:
 
     def __init__(self, dev_config = None):
         self.cy_device_manager = CyDeviceManager()
-        # Stores architectures to a dict so that device manager doesn't have
-        # to have all arch types.
+
         self.py_registered_archs = {}
         self.registered_devices = []
 
@@ -155,7 +153,7 @@ class PyDeviceManager:
         #self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
-        self.stream_pool = StreamPool(gpu.devices)
+        self.stream_pool = StreamPool(self.get_devices(DeviceType.CUDA))
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
@@ -177,7 +175,8 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
-            self.py_registered_archs[gpu] = gpu
+            gpu_arch = PyCUDAArchitecture()
+            self.py_registered_archs[gpu] = gpu_arch
 
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
@@ -187,7 +186,7 @@ class PyDeviceManager:
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
 
                 #Add device to the architecture
-                gpu.add_device(py_cuda_device)
+                gpu_arch.add_device(py_cuda_device)
 
                 #Add device to the device manager (list of devices)
                 self.registered_devices.append(py_cuda_device)
@@ -195,15 +194,6 @@ class PyDeviceManager:
                 #Register device to the C++ runtime
                 cy_device = py_cuda_device.get_cy_device()
                 self.cy_device_manager.register_device(cy_device)
-
-        #comment(wlr): Removing this path because it can lead to confusing runtime errors with envs.
-        #else:
-        #    # It is possible that the current system does not have CUDA devices.
-        #    # But users can still specify `gpu` to task placement.
-        #    # To handle this case, we add a CPU device as the CUDA architecture
-        #    # type (So, Parla assumes that the target system must be equipped
-        #    # with at least one CPU core).
-        #    self.register_cpu_devices(gpu)
 
     def register_cpu_devices(self, register_to_cuda: bool = False):
         #if register_to_cuda:
@@ -231,8 +221,11 @@ class PyDeviceManager:
             mem_sz = long(psutil.virtual_memory().total)
         
         py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
-        self.py_registered_archs[cpu] = cpu
-        cpu.add_device(py_cpu_device)
+
+        cpu_arch = PyCPUArchitecture()
+        self.py_registered_archs[cpu] = cpu_arch
+        cpu_arch.add_device(py_cpu_device)
+
         self.registered_devices.append(py_cpu_device)
         cy_device = py_cpu_device.get_cy_device()
         self.cy_device_manager.register_device(cy_device)
@@ -259,11 +252,19 @@ class PyDeviceManager:
     def get_cy_device_manager(self):
         return self.cy_device_manager
 
-    def get_num_gpus(self):
+    def get_num_gpus(self) -> int:
         return len(self.py_registered_archs[gpu].devices)
 
-    def get_num_cpus(self):
+    def get_devices(self, architecture_type):
+        if architecture_type not in self.py_registered_archs:
+            return []
+        return self.py_registered_archs[architecture_type].devices
+
+    def get_num_cpus(self) -> int:
         return len(self.py_registered_archs[cpu].devices)
+
+    def get_architecture(self, arch_type) -> PyArchitecture:
+        return self.py_registered_archs[arch_type]
 
     def parse_config_and_register_devices(self, yaml_config):
         with open(yaml_config, "r") as f:
@@ -271,17 +272,19 @@ class PyDeviceManager:
             # Parse CPU device information.
             cpu_num_cores = parsed_configs["CPU"]["num_cores"]
             if cpu_num_cores > 0:
-                self.py_registered_archs[cpu] = cpu
+                cpu_arch = PyCPUArchitecture()
+                self.py_registered_archs[cpu] = cpu_arch
                 cpu_mem_sz = parsed_configs["CPU"]["mem_sz"]
                 py_cpu_device = PyCPUDevice(0, cpu_mem_sz, VCU_BASELINE) 
-                cpu.add_device(py_cpu_device)
+                cpu_arch.add_device(py_cpu_device)
                 self.registered_devices.append(py_cpu_device)
                 cy_device = py_cpu_device.get_cy_device()
                 self.cy_device_manager.register_device(cy_device)
 
             num_of_gpus = parsed_configs["GPU"]["num_devices"]
             if num_of_gpus > 0:
-                self.py_registered_archs[gpu] = gpu
+                gpu_arch = PyCUDAArchitecture()
+                self.py_registered_archs[gpu] = gpu_arch
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(num_of_gpus == len(gpu_mem_sizes)) 
                 
@@ -295,7 +298,7 @@ class PyDeviceManager:
                     else:
                         py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
 
-                    gpu.add_device(py_cuda_device)
+                    gpu_arch.add_device(py_cuda_device)
                     self.registered_devices.append(py_cuda_device)
                     cy_device = py_cuda_device.get_cy_device()
                     self.cy_device_manager.register_device(cy_device)
@@ -328,9 +331,9 @@ class PyDeviceManager:
                 # In this case, the placement component consists of
                 # Device or Architecture, with its resource requirement.
                 placement, req = placement_component
-                req.memory_sz = req.memory_sz if req.memory_sz is not None else  \
+                req.memory = req.memory if req.memory is not None else  \
                     (0 if memory is None else memory)
-                req.num_vcus = req.num_vcus if req.num_vcus is not None else  \
+                req.vcus = req.vcus if req.vcus is not None else  \
                     (0 if vcus is not None else vcus)
                 # If a device specified by users does not exit 
                 # and was not registered to the Parla runtime,
