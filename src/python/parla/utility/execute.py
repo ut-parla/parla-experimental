@@ -283,7 +283,9 @@ def build_parla_device(mapping: Device, runtime_info: TaskRuntimeInfo):
     elif mapping.architecture == Architecture.GPU:
         arch = gpu
     elif mapping.architecture == Architecture.ANY:
-        arch = None 
+        arch = None
+    else:
+        raise ValueError(f"Invalid architecture: {mapping.architecture}")
 
     if arch is None:
         return None
@@ -360,6 +362,8 @@ def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: Ru
     #Data information
     data_information = task.data_dependencies
 
+
+    #TODO(wlr): Fix Lazy Movement
     if config.movement_type == MovementType.EAGER_MOVEMENT:
         read_data_list = data_information.read
         write_data_list = data_information.write
@@ -390,7 +394,7 @@ def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: Ru
         ]
     
     return task_name, (task_idx, taskspace, dependencies, placement_set), (IN, OUT, INOUT), runtime_info
-    
+
 def create_task(task_name, task_info, data_info, runtime_info, config: RunConfig):
     try:
         task_idx, T, dependencies, placement_set = task_info

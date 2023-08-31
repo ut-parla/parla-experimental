@@ -10,41 +10,56 @@ from fractions import Fraction
 from decimal import Decimal
 
 
-def write_object_to_dict(obj, ):
+def decimal_from_fraction(frac):
+    return frac.numerator / Decimal(frac.denominator)
+
+def convert_numerics_to_str(obj: Fraction | Decimal):
+    """
+    Convert other numeric types to strings of the form "0.00"
+    """
+    if isinstance(obj, Fraction):
+        return f"{decimal_from_fraction(obj):0.2f}"
+    elif isinstance(obj, Decimal):
+        return f"{obj:0.2f}"
+    else:
+        raise ValueError(f"Unsupported numeric type {type(obj)} of value {obj}")
+
+
+def write_object_to_dict(obj):
     """
     Write a single task to an open YAML file
     """
     sub_dict = {}
 
     def is_base(x): return isinstance(
-        x, (int, float, str, bool, type(None), Fraction, Decimal))
+        x, (int, float, str, bool, type(None)))
 
     def is_base_str(x): return isinstance(x, (tuple, Architecture, Device))
+
+    def is_base_value(x): return isinstance(x, (Decimal, Fraction))
+
+    def unpack_values(values):
+        if is_base_str(value):
+            return str(value)
+        elif is_base(value):
+            return value
+        elif is_base_value(value):
+            return convert_numerics_to_str(value)
+        elif isinstance(value, list):
+            return [write_object_to_dict(x) for x in value]
+        else:
+            return write_object_to_dict(value)
 
     if isinstance(obj, Dict):
         for key, value in obj.items():
             key = str(key)
-            if is_base_str(value):
-                sub_dict[key] = str(value)
-            elif is_base(value):
-                sub_dict[key] = value
-            elif isinstance(value, list):
-                sub_dict[key] = [write_object_to_dict(x) for x in value]
-            else:
-                sub_dict[key] = write_object_to_dict(value)
+            sub_dict[key] = unpack_values(value)
     elif is_base(obj):
         return obj
     else:
         for slot in obj.__slots__:
             value = getattr(obj, slot)
-            if is_base_str(value):
-                sub_dict[slot] = str(value)
-            elif is_base(value):
-                sub_dict[slot] = value
-            elif isinstance(value, list):
-                sub_dict[slot] = [write_object_to_dict(x) for x in value]
-            else:
-                sub_dict[slot] = write_object_to_dict(value)
+            sub_dict[slot] = unpack_values(value)
 
     return sub_dict
 
@@ -108,7 +123,7 @@ def write_to_pgraph(tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], ba
 
 def extract(string: str) -> int | Fraction:
     """
-    Extracts string as decimal or int
+    Extracts string as decimal (in Fraction form) or int
     """
     if "." in string:
         return Fraction(string)
@@ -124,83 +139,95 @@ def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], D
     filename = basename + ".pgraph"
 
     def extract_task_id(line: str) -> TaskID:
-        ids = line.strip()
-        ids = make_tuple(ids)
+        try:
+            ids = line.strip()
+            ids = make_tuple(ids)
 
-        if not isinstance(ids, tuple):
-            ids = (ids,)
+            if not isinstance(ids, tuple):
+                ids = (ids,)
 
-        if isinstance(ids[0], str) and ids[0].isalpha():
-            taskspace = ids[0]
-            task_idx = ids[1]
+            if isinstance(ids[0], str) and ids[0].isalpha():
+                taskspace = ids[0]
+                task_idx = ids[1]
 
-            if not isinstance(task_idx, tuple):
-                task_idx = (task_idx,)
-        
-        else:
-            taskspace = "T"
-            task_idx = ids 
-        
-        return TaskID(taskspace, task_idx, 0)
+                if not isinstance(task_idx, tuple):
+                    task_idx = (task_idx,)
+            
+            else:
+                taskspace = "T"
+                task_idx = ids 
+            
+            return TaskID(taskspace, task_idx, 0)
+        except Exception as e:
+            raise ValueError(f"Could not parse task id {line}: {e}")
 
     def extract_task_runtime(line: str) -> Dict[Device | Tuple[Device], TaskRuntimeInfo]:
+        try:
+            line = line.strip()
+            
+            configurations = line.split("},")
+            configurations = [config.strip().strip("{}").strip() for config in configurations]
+            task_runtime = {}
+            for config in configurations:
+                targets, details = config.split(":")
+                targets = device_from_string(targets)
 
-        line = line.strip()
-        
-        configurations = line.split("},")
-        configurations = [config.strip().strip("{}").strip() for config in configurations]
-        task_runtime = {}
-        for config in configurations:
-            targets, details = config.split(":")
-            targets = device_from_string(targets)
+                details = [extract(detail.strip()) for detail in details.split(",")]
 
-            details = [extract(detail.strip()) for detail in details.split(",")]
+                task_runtime[targets] = TaskRuntimeInfo(*details)
 
-            task_runtime[targets] = TaskRuntimeInfo(*details)
-
-        return task_runtime
+            return task_runtime
+        except Exception as e:
+            raise ValueError(f"Could not parse task runtime {line}: {e}")
     
     def extract_task_dependencies(line: str) -> list[TaskID]:
-        line = line.strip()
-        dependencies = line.split(":")
-        dependencies = [dependency.strip() for dependency in dependencies]
+        try:
+            line = line.strip()
+            dependencies = line.split(":")
+            dependencies = [dependency.strip() for dependency in dependencies]
 
-        if dependencies[0] == "":
-            return []
+            if dependencies[0] == "":
+                return []
 
-        return [extract_task_id(dependency) for dependency in dependencies]
+            return [extract_task_id(dependency) for dependency in dependencies]
+        except Exception as e:
+            raise ValueError(f"Could not parse task dependencies {line}: {e}")
+            
 
 
     def extract_data_dependencies(line: str) -> TaskDataInfo:
-        line = line.strip()
-        dependencies = line.split(":")
-        dependencies = [dependency.strip() for dependency in dependencies]
+        try:
+            line = line.strip()
+            dependencies = line.split(":")
+            dependencies = [dependency.strip() for dependency in dependencies]
 
-        check_has = [(not dependency.isspace()) and (not dependency == '')
-                     for dependency in dependencies]
+            check_has = [(not dependency.isspace()) and (not dependency == '')
+                        for dependency in dependencies]
 
-        if not any(check_has):
-            return TaskDataInfo([], [], [])
+            if not any(check_has):
+                return TaskDataInfo([], [], [])
 
-        if len(dependencies) > 3:
-            raise ValueError(f"Too many data movement types {dependencies}")
-        
-        if len(dependencies) < 1 or dependencies[0].isspace() or not check_has[0]:
-            read_data = []
-        else:
-            read_data = [int(x.strip()) for x in dependencies[0].split(",")]
+            if len(dependencies) > 3:
+                raise ValueError(f"Too many data movement types {dependencies}")
+            
+            if len(dependencies) < 1 or dependencies[0].isspace() or not check_has[0]:
+                read_data = []
+            else:
+                read_data = [int(x.strip()) for x in dependencies[0].split(",")]
 
-        if len(dependencies) < 2 or dependencies[1].isspace() or not check_has[1]:
-            write_data = []
-        else:
-            write_data = [int(x.strip()) for x in dependencies[1].split(",")]
+            if len(dependencies) < 2 or dependencies[1].isspace() or not check_has[1]:
+                write_data = []
+            else:
+                write_data = [int(x.strip()) for x in dependencies[1].split(",")]
 
-        if len(dependencies) < 3 or dependencies[2].isspace() or not check_has[2]:
-            read_write_data = []
-        else:
-            read_write_data = [int(x.strip()) if (x) else None for x in dependencies[2].split(",")]
+            if len(dependencies) < 3 or dependencies[2].isspace() or not check_has[2]:
+                read_write_data = []
+            else:
+                read_write_data = [int(x.strip()) if (x) else None for x in dependencies[2].split(",")]
 
-        return TaskDataInfo(read_data, write_data, read_write_data)
+            return TaskDataInfo(read_data, write_data, read_write_data)
+        except Exception as e:
+            raise ValueError(f"Could not parse data dependencies {line}: {e}")
 
     with open(filename, "r") as file:
 
@@ -335,6 +362,7 @@ def device_from_string(device_str: str) -> Device | Tuple[Device]:
     """
     if device_str is None:
         return None
+    
     device_str = device_str.strip()
     device_str = device_str.strip("()")
     device_str = device_str.strip()
@@ -432,6 +460,8 @@ def test_generate_single_device_independent():
     tasks, data = generate_single_device_serial(config)
 
 
+    write_to_yaml(tasks, data)
+    tasks, data = read_from_yaml()
     write_to_yaml(tasks, data)
     tasks, data = read_from_yaml()
 

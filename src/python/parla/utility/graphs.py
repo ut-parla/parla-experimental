@@ -882,6 +882,8 @@ def generate_single_device_independent(config: IndependentConfig) -> Tuple[Dict[
             num_data_blocks = config.task_count
         elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
             num_data_blocks = data_config.npartitions
+        else:
+            raise NotImplementedError(f"Data pattern {data_config.pattern} not implemented for independent task graph.")
         
         data_size = data_config.total_width // num_data_blocks
 
@@ -941,6 +943,8 @@ def generate_single_device_serial(config: SerialConfig) -> Tuple[Dict[TaskID, Ta
 
         elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
             num_data_blocks = config.chains
+        else:
+            raise NotImplementedError(f"Data pattern {data_config.pattern} not implemented for serial task graph.")
         
         data_size = data_config.total_width // num_data_blocks
 
