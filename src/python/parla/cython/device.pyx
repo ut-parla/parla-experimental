@@ -114,7 +114,7 @@ class PyDevice:
     """
     def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
         self._dev_type = dev_type
-        self._device_name = dev_type_name + ":" + str(dev_id)
+        self._device_name = f"{dev_type_name}[{str(dev_id)}]"
         self._device = self
         self._device_id = dev_id
 
@@ -233,7 +233,7 @@ class PyCUDADevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(DeviceType.CUDA, "GPU", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
         self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
 
@@ -333,7 +333,7 @@ class PyArchitecture(metaclass=ABCMeta):
         return hash(self._id)
 
     def __repr__(self):
-        return type(self).__name__
+        return f"{self.name}[-1]"
 
     def __mul__(self, num_archs: int):
         arch_ps = [self for i in range(0, num_archs)]
@@ -396,7 +396,7 @@ class ImportableArchitecture(PyArchitecture):
         return self._architecture_type
 
     def __repr__(self):
-        return type(self).__name__
+        return f"{self.name}[-1]"
 
     def __mul__(self, num_archs: int):
         #architecture = get_device_manager().get_architecture(self._architecture_type)
@@ -414,16 +414,16 @@ class ImportableArchitecture(PyArchitecture):
 
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("GPU", DeviceType.CUDA)
 
 class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
+        ImportableArchitecture.__init__(self, "GPU", DeviceType.CUDA)
  
 
 class PyCPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CPUArch", PyDeviceType.CPU)
+        super().__init__("CPU", PyDeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
@@ -431,7 +431,7 @@ class PyCPUArchitecture(PyArchitecture):
 
 class ImportableCPUArchitecture(PyCPUArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CPUArch", DeviceType.CPU)
+        ImportableArchitecture.__init__(self, "CPU", DeviceType.CPU)
 
 
 # TODO(hc): use dataclass later.
