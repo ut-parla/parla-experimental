@@ -326,6 +326,18 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         parray->decr_num_active_tasks(dev_id);
       }
       this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+      // XXX(hc): Test
+      if (task->name.find("gemm1") != std::string::npos) {
+        this->mapper->atomic_decr_num_mapped_gemm1_device(dev_id);
+      } else if (task->name.find("subcholesky") != std::string::npos) {
+        this->mapper->atomic_decr_num_mapped_subcholesky_device(dev_id);
+      } else if (task->name.find("gemm2") != std::string::npos) {
+        this->mapper->atomic_decr_num_mapped_gemm2_device(dev_id);
+      } else if (task->name.find("solve") != std::string::npos) {
+        this->mapper->atomic_decr_num_mapped_solve_device(dev_id);
+      } else {
+        this->mapper->atomic_decr_num_mapped_others_device(dev_id);
+      }
       device->reduce_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
           task->num_dependents);
     }
@@ -348,17 +360,21 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
   NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
-  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-    ParlaDevice *device = task->assigned_devices[i];
-    // TODO(hc):This assumes that VCU is 1.
-    if (task->name.find("begin_rl_task") == std::string::npos) {
-      device->begin_device_idle();
-    }
-  }
-
   task_cleanup_presync(worker, task, state);
   // synchronize task enviornment
   task->synchronize_events();
+  if (task->name.find("begin_rl_task") == std::string::npos) {
+    for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+      ParlaDevice *device = task->assigned_devices[i];
+      // TODO(hc):This assumes that VCU is 1.
+      device->begin_device_idle();
+    }
+    TimePoint now = std::chrono::system_clock::now();
+    TimePoint initial_time_epoch = this->get_initial_epoch();
+    this->epoch_begin_epochs =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - initial_time_epoch).count();
+  }
   task_cleanup_postsync(worker, task, state);
 }
 
@@ -399,10 +415,13 @@ int InnerScheduler::get_num_ready_tasks() {
 void InnerScheduler::spawn_wait() { this->workers.spawn_wait(); }
 
 void InnerScheduler::evaluate_completed_task(InnerTask *task) {
+  /*
+  XXX(hc): make no-op to use a different reward
   if (dynamic_cast<RLTaskMappingPolicy*>(this->
           mapper->get_policy_raw_pointer()) != nullptr) {
     this->mapper->get_policy_raw_pointer()->
         evaluate_and_append_task_mapping(task);
   }
+  */
 }
 

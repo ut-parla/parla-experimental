@@ -18,7 +18,13 @@
 Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
        PArrayTracker *parray_tracker, MappingPolicyType policy_type)
     : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
-  this->dev_num_mapped_tasks_.resize(devices->get_num_devices());
+  DevID_t num_devices = devices->get_num_devices();
+  this->dev_num_mapped_tasks_.resize(num_devices);
+  this->dev_num_mapped_gemm1_.resize(num_devices);
+  this->dev_num_mapped_subcholesky_.resize(num_devices);
+  this->dev_num_mapped_gemm2_.resize(num_devices);
+  this->dev_num_mapped_solve_.resize(num_devices);
+  this->dev_num_mapped_others_.resize(num_devices);
   if (policy_type == MappingPolicyType::LoadBalancingLocality) {
     std::cout << "Locality- and load balancing-aware heuristic is enabled\n";
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
@@ -82,7 +88,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
-
     policy_->run_task_mapping(task, this, &chosen_devices, parray_list,
         &placement_req_options_vec);
 
@@ -107,6 +112,19 @@ void Mapper::run(SchedulerPhase *next_phase) {
         // Increase the number of mapped tasks as the number of PArrays
         // since the corresponding data movement tasks will be created.
         this->atomic_incr_num_mapped_tasks_device(global_dev_id);
+
+        // XXX(hc): Test
+        if (task->name.find("gemm1") != std::string::npos) {
+          this->atomic_incr_num_mapped_gemm1_device(global_dev_id);
+        } else if (task->name.find("subcholesky") != std::string::npos) {
+          this->atomic_incr_num_mapped_subcholesky_device(global_dev_id);
+        } else if (task->name.find("gemm2") != std::string::npos) {
+          this->atomic_incr_num_mapped_gemm2_device(global_dev_id);
+        } else if (task->name.find("solve") != std::string::npos) {
+          this->atomic_incr_num_mapped_solve_device(global_dev_id);
+        } else {
+          this->atomic_incr_num_mapped_others_device(global_dev_id);
+        }
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(*parray,
@@ -499,10 +517,29 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
     ParlaDevice *device = task->assigned_devices[i];
     device->end_device_idle();
+    //std::cout << task->name << " <- " << device->get_global_id() << "\n";
   }
 
   this->scheduler->assign_task_launching_id(task);
   if (task->name.find("end_rl_task") != std::string::npos) {
+    TimePoint now = std::chrono::system_clock::now();
+    TimePoint initial_time_epoch = this->scheduler->get_initial_epoch();
+    this->scheduler->epoch_end_epochs =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - initial_time_epoch).count();
+    double exec_time_ms =
+        this->scheduler->epoch_end_epochs - this->scheduler->epoch_begin_epochs;
+    std::cout << "Exec. time on scheduler side:" <<
+        this->scheduler->epoch_end_epochs - this->scheduler->epoch_begin_epochs << "\n";
+
+    if (dynamic_cast<RLTaskMappingPolicy*>(this->
+            scheduler->mapper->get_policy_raw_pointer()) != nullptr) {
+      this->scheduler->mapper->get_policy_raw_pointer()->
+          evaluate_current_epoch(
+              exec_time_ms, this->scheduler->previous_exec_time);
+    }
+    this->scheduler->previous_exec_time =
+        std::min(this->scheduler->previous_exec_time, exec_time_ms);
     this->scheduler->reset_task_mapping_id();
     this->scheduler->reset_task_launching_id();
   }

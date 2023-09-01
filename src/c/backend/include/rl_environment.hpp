@@ -6,6 +6,11 @@
 
 #include <torch/torch.h>
 
+#define NUM_TASK_FEATURES 11
+#define NUM_DEP_TASK_FEATURES 10
+#define NUM_DEVICE_FEATURES 9
+#define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
+
 class Mapper;
 
 class RLEnvironment {
@@ -35,8 +40,14 @@ public:
                                  torch::Tensor current_state, double base_score);
   torch::Tensor calculate_reward2(DevID_t chosen_device_id,
                                   InnerTask* task,
-                                  torch::Tensor current_state, double base_score);
-
+                                  torch::Tensor current_state);
+  torch::Tensor calculate_reward_loadbalancing(DevID_t chosen_device_id,
+                                 InnerTask *task,
+                                 torch::Tensor current_state);
+  torch::Tensor calculate_reward_parla(
+                               DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state);
 
   double check_task_type(InnerTask *task);
   double check_task_type_using_name(InnerTask *task);

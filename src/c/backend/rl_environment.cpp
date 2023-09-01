@@ -6,12 +6,7 @@
 #include <chrono>
 #include <cmath>
 
-#define NUM_TASK_FEATURES 4
-#define NUM_DEP_TASK_FEATURES 3
-#define NUM_DEVICE_FEATURES 4
-#define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
-
-#define PRINT_LOG false
+#define PRINT_LOG false 
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -49,7 +44,8 @@ void RLEnvironment::make_current_task_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
     size_t offset, bool accum) {
   // 1) # of active dependencies:
-  int64_t num_active_dependencies{0};
+  uint32_t num_task_state_types{8};
+  std::vector<int64_t> num_active_dependencies(num_task_state_types, 0);
   for (size_t i = 0; i < task->dependencies.size(); ++i) {
     // Access each dependency of the compute task.
     InnerTask *dependency = task->dependencies.at(i);
@@ -60,19 +56,14 @@ void RLEnvironment::make_current_task_state(
         task->name.find("Reset") != std::string::npos ||
         task->name.find("CopyBack") != std::string::npos) { continue; }
 
+    ++num_active_dependencies[task->get_state()];
     if (dependency->get_state() < Task::State::COMPLETED) {
-      ++num_active_dependencies;
       // XXX: it assumes a single device task.
       // So, always use 0th device id.
       // XXX: temporarily update device state.
       auto& dependency_devices = task->get_assigned_devices();
       if (dependency_devices.size() > 0) {
         DevID_t device_id = dependency_devices[0]->get_global_id();
-
-#if PRINT_LOG
-        std::cout << "attempting current state[" <<
-            DEVICE_FEATURE_OFFSET + device_id * NUM_DEVICE_FEATURES + 3 << "] \n";
-#endif
         current_state[0][
             DEVICE_FEATURE_OFFSET + device_id * NUM_DEVICE_FEATURES + 3] += 1;
 
@@ -113,28 +104,38 @@ void RLEnvironment::make_current_task_state(
   }
 
   if (accum) {
-    current_state[0][offset] += num_active_dependencies;
-    current_state[0][offset + 1] += num_active_dependents;
-    current_state[0][offset + 2] += (total_bytes / double{1 << 20});
+    for (uint32_t i = 0; i < num_task_state_types; ++i) {
+      current_state[0][offset + i] += num_active_dependencies[i];
+    }
+    current_state[0][offset + num_task_state_types] += num_active_dependents;
+    current_state[0][offset + num_task_state_types + 1] += (total_bytes / double{1 << 30});
 
 #if PRINT_LOG
-    std::cout << "current state[" << offset << "] = " << current_state[0][offset] << "\n";
-    std::cout << "current state[" << offset+1 << "] = " << current_state[0][offset+1] << "\n";
-    std::cout << "current state[" << offset+2 << "] = " << current_state[0][offset+2] << "\n";
+    for (uint32_t i = 0; i <num_task_state_types; ++i) {
+      std::cout << "current state[" << offset + i << "] = " << current_state[0][offset + i] << "\n";
+    }
+    std::cout << "current state[" << offset + num_task_state_types << "] = " << current_state[0][offset + num_task_state_types] << "\n";
+    std::cout << "current state[" << offset + num_task_state_types + 1 << "] = " << current_state[0][offset + num_task_state_types + 1] << "\n";
 #endif
   } else {
-    current_state[0][offset] = num_active_dependencies;
-    current_state[0][offset + 1] = num_active_dependents;
-    current_state[0][offset + 2] = (total_bytes / double{1 << 20});
+    for (uint32_t i = 0; i < num_task_state_types; ++i) {
+      current_state[0][offset] = num_active_dependencies[i];
+    }
+    current_state[0][offset + num_task_state_types] = num_active_dependents;
+    current_state[0][offset + num_task_state_types + 1] = (total_bytes / double{1 << 30});
     // 4) Task type.
     double task_type = this->check_task_type_using_name(task);
-    current_state[0][offset + 3] = task_type;
+    //current_state[0][offset + num_task_state_types + 2] = task_type;
 
 #if PRINT_LOG
-    std::cout << "current state[" << offset << "] = " << current_state[0][offset] << "\n";
-    std::cout << "current state[" << offset+1 << "] = " << current_state[0][offset+1] << "\n";
-    std::cout << "current state[" << offset+2 << "] = " << current_state[0][offset+2] << "\n";
-    std::cout << "current state[" << offset+3 << "] = " << current_state[0][offset+3] << "\n";
+    std::cout << "task types ~ next\n";
+    for (uint32_t i = 0; i <num_task_state_types; ++i) {
+      std::cout << "current state[" << offset + i << "] = " << current_state[0][offset + i] << "\n";
+    }
+    std::cout << "current state[" << offset + num_task_state_types << "] = " << current_state[0][offset + num_task_state_types] << "\n";
+    std::cout << "current state[" << offset + num_task_state_types + 1 << "] = " << current_state[0][offset + num_task_state_types + 1] << "\n";
+    std::cout << "current state[" << offset + num_task_state_types + 2 << "] = " << current_state[0][offset + num_task_state_types + 2] << "\n";
+    std::cout << "task types ~ next [done]\n";
 #endif
   }
 }
@@ -164,11 +165,36 @@ void RLEnvironment::make_current_device_state(
     ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
     double nonlocal_bytes{0};
     // 1) # of tasks on queues.
-    int64_t dev_mapped_tasks =
+    double dev_mapped_tasks =
         this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES] =
         dev_mapped_tasks;
+    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] =
+        double{this->mapper_->atomic_load_dev_num_mapped_gemm1_device(d)};
+    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5] =
+        double{this->mapper_->atomic_load_dev_num_mapped_subcholesky_device(d)};
+    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6] =
+        double{this->mapper_->atomic_load_dev_num_mapped_gemm2_device(d)};
+    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7] =
+        double{this->mapper_->atomic_load_dev_num_mapped_solve_device(d)};
+    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8] =
+        double{this->mapper_->atomic_load_dev_num_mapped_others_device(d)};
 #if PRINT_LOG
+    std::cout << "gemm1 current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4
+      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4]
+      << "\n";
+    std::cout << "subchol current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5
+      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5]
+      << "\n";
+    std::cout << "gemm2 current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6
+      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6]
+      << "\n";
+    std::cout << "solve current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7
+      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7]
+      << "\n";
+    std::cout << "others current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8
+      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8]
+      << "\n";
     std::cout << "current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES
       << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES]
       << "\n";
@@ -216,7 +242,7 @@ void RLEnvironment::make_current_device_state(
     int64_t total_memory = device_pool.get(Resource::Memory);
     int64_t remaining_memory = reserved_device_pool.get(Resource::Memory);
     current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2] =
-      (total_memory > 0)? (remaining_memory / double{total_memory}) * 100 : 0;
+      (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
 
 #if PRINT_LOG
     std::cout << "current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2
@@ -327,13 +353,55 @@ torch::Tensor RLEnvironment::make_next_state(
   int64_t task_memory = task_pool.get(Resource::Memory);
   int64_t total_memory = device_pool.get(Resource::Memory);
   int64_t remaining_memory =
-      reserved_device_pool.get(Resource::Memory) + task_memory;
+      reserved_device_pool.get(Resource::Memory) - task_memory;
+
+  current_state[0][
+      DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES] += 1;
+
+  if (task->name.find("gemm1") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 4] += 1;
+  } else if (task->name.find("subcholesky") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 5] += 1;
+  } else if (task->name.find("gemm2") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 6] += 1;
+  } else if (task->name.find("solve") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 7] += 1;
+  } else {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 8] += 1;
+  }
 
   next_state[0][
       DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 1] = 0;
   next_state[0][
       DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 2] =
       (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
+
+#if 0
+  if (task->name.find("gemm1") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 4] += 1;
+  }
+  else if (task->name.find("subcholesky") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 5] += 1;
+  }
+  else if (task->name.find("gemm2") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 6] += 1;
+  }
+  else if (task->name.find("solve") != std::string::npos) {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 7] += 1;
+  } else {
+    current_state[0][
+        DEVICE_FEATURE_OFFSET + chosen_device_id * NUM_DEVICE_FEATURES + 8] += 1;
+  }
+#endif
 
 #if 0
   // Average idle and non-idle time features.
@@ -426,7 +494,7 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
 
 torch::Tensor RLEnvironment::calculate_reward2(DevID_t chosen_device_id,
                                InnerTask* task,
-                               torch::Tensor current_state, double base_score) {
+                               torch::Tensor current_state) {
   double score{0};
   if (chosen_device_id == 0) {
 #if PRINT_LOG
@@ -452,38 +520,29 @@ torch::Tensor RLEnvironment::calculate_reward2(DevID_t chosen_device_id,
     */
     double delta =
         (task->completion_time_epochs - task->max_depcompl_time_epochs);
+    double old_delta{0};
     auto found = this->task_compltime_delta_map_.find(task_name);
     if (found != this->task_compltime_delta_map_.end()) {
-      int64_t weight =
-          task->launching_order_id - task->mapping_order_id;
-      weight = (weight <= 0)? 1 : weight;
-      weight = (weight / num_devices);
-      weight = (weight < 1)? 1 : weight;
-
-      double old_delta = (found->second.first / found->second.second);
+      old_delta = (found->second.first / found->second.second);
       if (old_delta > 0.8 * delta) {
         score = 1;
-      } else if (delta > 100 && 0.8 * delta > old_delta) {
-        score = -1;
-      } else if (delta <= 100 && 0.6 * delta > old_delta) {
+      } else if (0.8 * delta > old_delta) {
         score = -1;
       }
-
-      std::cout << task_name << " chosen dev:" << chosen_device_id <<
-        " orig delta " << delta << ", weight:" << weight <<
-        " delta " << (delta / weight) <<
-        " vs old delta " << old_delta << " score:" << score << "\n";
-      log_rl_msg(2, "calc_reward,"+task->name+", "+
-          std::to_string(chosen_device_id)+", "+
-          std::to_string(task->completion_time_epochs)+", "+
-          std::to_string(task->max_depcompl_time_epochs)+", "+
-          std::to_string(delta));
-      // Only update when the current delta is smaller than the old delta.
       found->second.first += delta;
       found->second.second += 1;
     } else {
       this->task_compltime_delta_map_[task_name] = {delta, 1};
     }
+
+    std::cout << task_name << " chosen dev:" << chosen_device_id <<
+      " orig delta " << delta << 
+      " vs old delta " << old_delta << " score:" << score << "\n";
+    log_rl_msg(2, "calc_reward,"+task->name+", "+
+        std::to_string(chosen_device_id)+", "+
+        std::to_string(task->completion_time_epochs)+", "+
+        std::to_string(task->max_depcompl_time_epochs)+", "+
+        std::to_string(delta));
   }
   ++this->num_reward_accumulation_;
   this->reward_accumulation_ += score;
@@ -598,35 +657,46 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
 }
 #endif
 
-#if 0
-torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
+torch::Tensor RLEnvironment::calculate_reward_loadbalancing(
+                               DevID_t chosen_device_id,
                                InnerTask* task,
                                torch::Tensor current_state) {
   double score = 0;
-  if (current_state[0][chosen_device_id * 2].item<int64_t>() == 0) {
+  size_t total_running_planned_tasks =
+      this->mapper_->atomic_load_total_num_mapped_tasks();
+  size_t dev_running_planned_tasks =
+      this->mapper_->atomic_load_dev_num_mapped_tasks_device(
+          chosen_device_id);
+  if (dev_running_planned_tasks == 0) {
     // If the chosen device was idle, give a reward 1.
     score = 1.f;
   } else {
-    size_t total_running_planned_tasks =
-        this->mapper_->atomic_load_total_num_mapped_tasks();
-    size_t dev_running_planned_tasks =
-        this->mapper_->atomic_load_dev_num_mapped_tasks_device(
-            chosen_device_id);
     if (total_running_planned_tasks != 0) {
-      score = double{1 - (dev_running_planned_tasks / float(total_running_planned_tasks))};
-    }
-
-    DevID_t num_devices =
-        this->device_manager_->template get_num_devices(ParlaDeviceType::All);
-    double threshold = (1 - (1 / double(num_devices))) - 0.1;
-    if (total_running_planned_tasks >= dev_running_planned_tasks) {
-      if (score <= threshold) {
-        score = -(1 - score);
+      //score = double{1 - (dev_running_planned_tasks / double(total_running_planned_tasks))};
+      score = dev_running_planned_tasks / double(total_running_planned_tasks);
+      DevID_t num_devices =
+          this->device_manager_->template get_num_devices(
+              ParlaDeviceType::CUDA);
+      // choosing device having task ratio over the total num. of tasks more than
+      // (num_devices - 1) / (num_devices) is "bad" choice.
+      // 0.1 is constant.
+      double lower_threshold = (1 - (2 / double(num_devices)));
+      double upper_threshold = (1 / double(num_devices));
+      //std::cout << "threshold:" << lower_threshold << 
+      //  ", upper threshold:" << upper_threshold << ", score:" << score << "\n";
+      if (score >= lower_threshold) {
+        score = -score;
+      } else if (score <= upper_threshold) {
+        // If score does not exceed the threshold, just set it to 0.
+        score = (double{1} - score);
+      } else {
+        score = 0;
       }
     }
-    std::cout << "score:" << score << ", " <<
-      total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
   }
+
+  //std::cout << "score:" << score << ", " <<
+  //  total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
 
   ++this->num_reward_accumulation_;
   this->reward_accumulation_ += score;
@@ -634,6 +704,82 @@ torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
   return torch::tensor({score}, torch::kDouble);
 }
 
+torch::Tensor RLEnvironment::calculate_reward_parla(
+                               DevID_t chosen_device_id,
+                               InnerTask* task,
+                               torch::Tensor current_state) {
+  double score = 0;
+  DevID_t num_devices =
+      this->device_manager_->template get_num_devices(
+          ParlaDeviceType::CUDA);
+  double best_dev_score{-(std::numeric_limits<double>::max())};
+  double worst_dev_score{std::numeric_limits<double>::max()};
+  double chosen_dev_score{0};
+  DevID_t best_dev{0};
+  DevID_t worst_dev{0};
+  bool found_best_dev{false};
+  bool found_worst_dev{false};
+#if 0
+  std::cout << "Task name:" << task->name << " device selection " << chosen_device_id << "\n";
+  std::cout << "best_dev :" << best_dev_score << "\n";
+#endif
+  for (DevID_t i = 1 ; i < num_devices + 1; ++i) {
+    size_t dev_running_planned_tasks =
+        this->mapper_->atomic_load_dev_num_mapped_tasks_device(i);
+    double device_load =
+        current_state[0][DEVICE_FEATURE_OFFSET + i * NUM_DEVICE_FEATURES].item<double>(); 
+    double nonlocal_data = current_state[0][
+        DEVICE_FEATURE_OFFSET +
+        i * NUM_DEVICE_FEATURES + 1].item<double>();
+    double curr_dev_score = -(3 * device_load + nonlocal_data);
+#if 0
+    std::cout << "\t " << i << ", 1:" << device_load << "\n";
+    std::cout << "\t " << i << ", 2:" << nonlocal_data << "\n";
+#endif
+    if (best_dev_score < curr_dev_score) {
+      best_dev_score = curr_dev_score;
+      best_dev = i;
+      found_best_dev = true;
+#if 0
+      std::cout << "\t best score: " << best_dev_score << "\n";
+      std::cout << "\t best idx: " << best_dev << "\n";
+#endif
+    }
+    if (worst_dev_score > curr_dev_score) {
+      worst_dev_score = curr_dev_score;
+      worst_dev = i;
+      found_worst_dev = true;
+#if 0
+      std::cout << "\t worst score: " << worst_dev_score << "\n";
+      std::cout << "\t worst idx: " << worst_dev << "\n";
+#endif
+    }
+    if (chosen_device_id == i) {
+      chosen_dev_score = curr_dev_score;
+    }
+  }
+  if (found_best_dev &&
+          (best_dev == chosen_device_id ||
+           chosen_dev_score == best_dev_score)) { score += 1; }
+  if (found_worst_dev &&
+          (worst_dev == chosen_device_id ||
+           chosen_dev_score == worst_dev_score)) { score -= 1; }
+  if (found_worst_dev && found_best_dev && worst_dev == best_dev &&
+      chosen_dev_score == worst_dev_score) { score -= 1; }
+
+  //std::cout << "Score:" << score << "\n";
+
+  //std::cout << "score:" << score << ", " <<
+  //  total_running_planned_tasks << ", " << dev_running_planned_tasks << "\n";
+
+  ++this->num_reward_accumulation_;
+  this->reward_accumulation_ += score;
+
+  return torch::tensor({score}, torch::kDouble);
+}
+
+
+#if 0
 torch::Tensor RLEnvironment::calculate_reward(DevID_t chosen_device_id,
                                torch::Tensor current_state) {
   std::cout << "Calculate reward\n";

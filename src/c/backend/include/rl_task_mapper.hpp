@@ -9,11 +9,6 @@
 #include <random>
 #include <torch/torch.h>
 
-#define NUM_TASK_FEATURES 4
-#define NUM_DEP_TASK_FEATURES 3
-#define NUM_DEVICE_FEATURES 4
-#define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
-
 class Mapper;
 
 class ExperienceReplay {
@@ -101,9 +96,11 @@ private:
 
 class RLStateTransition {
   public:
+    std::string task_name;
     torch::Tensor current_state;
+    torch::Tensor next_state;
     torch::Tensor chosen_device;
-    double base_score{0};
+    torch::Tensor reward;
 };
 
 struct FullyConnectedDQNImpl : public torch::nn::Module {
@@ -114,11 +111,15 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
     fc1_->to(torch::kDouble);
     fc1_ = register_module("fc1", fc1_);
     fc1_->to(device_);
-    fc2_ = torch::nn::Linear(in_dim * 4, in_dim * 4);
+    //batch_norm1_ = torch::nn::BatchNorm1d(in_dim * 4);
+    //batch_norm1_->to(device_);
+    fc2_ = torch::nn::Linear(in_dim * 4, in_dim * 8);
     fc2_->to(torch::kDouble);
     fc2_ = register_module("fc2", fc2_);
     fc2_->to(device_);
-    out_ = torch::nn::Linear(in_dim * 4, out_dim);
+    //batch_norm2_ = torch::nn::BatchNorm1d(in_dim * 8);
+    //batch_norm2_->to(device_);
+    out_ = torch::nn::Linear(in_dim * 8, out_dim);
     out_->to(torch::kDouble);
     out_ = register_module("out", out_);
     out_->to(device_);
@@ -126,15 +127,23 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
 
   torch::Tensor forward(torch::Tensor x) {
     x = x.to(device_);
-    x = torch::relu(fc1_(x.view({x.size(0), in_dim_})));
-    x = torch::relu(fc2_(x));
+    //std::cout << "f1:" << x << "\n";
+    x = torch::leaky_relu(torch::nn::functional::normalize(fc1_(x.view({x.size(0), in_dim_}))));
+    //x = torch::leaky_relu(fc1_(x.view({x.size(0), in_dim_})));
+    //std::cout << "f2:" << x << "\n";
+    //x = torch::leaky_relu(batch_norm2_(fc2_(x)));
+    x = torch::leaky_relu(torch::nn::functional::normalize(fc2_(x)));
+    //x = torch::leaky_relu(fc2_(x));
+    //std::cout << "f3:" << x << "\n";
     //x = out_(x);
-    x = torch::log_softmax(out_(x), 1);
+    x = torch::log_softmax(torch::nn::functional::normalize(out_(x)), 1);
+    //std::cout << "out:" << x << "\n";
     return x.squeeze(0);
   }
 
   uint32_t in_dim_, out_dim_;
   torch::nn::Linear fc1_{nullptr}, fc2_{nullptr}, out_{nullptr};
+  //torch::nn::BatchNorm1d batch_norm1_{nullptr}, batch_norm2_{nullptr};
   torch::Device device_;
 };
 
@@ -148,14 +157,14 @@ public:
   RLAgent(size_t in_dim, size_t out_dim, uint32_t n_actions, bool is_training_mode = true,
           torch::Device device = torch::kCUDA,
           float eps_start = 0.9, float eps_end = 0.05, float eps_decay = 1000,
-          size_t batch_size = 128, float gamma = 0.999)
+          size_t batch_size = 516, float gamma = 0.999)
       : policy_net_(in_dim, out_dim), target_net_(in_dim, out_dim),
         device_(device), n_actions_(n_actions), is_training_mode_(is_training_mode),
         eps_start_(eps_start), eps_end_(eps_end), eps_decay_(eps_decay),
         batch_size_(batch_size), gamma_(gamma), steps_(0),
         replay_memory_(10000),
-        //rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.025)),
-        adam_optimizer_(policy_net_.parameters(), torch::optim::AdamOptions(3e-4)),
+        rms_optimizer_(policy_net_.parameters(), torch::optim::RMSpropOptions(0.002)),
+        //adam_optimizer_(policy_net_.parameters(), torch::optim::AdamOptions(3e-4)),
         episode_(0) {
     this->load_models();      
   }
@@ -174,8 +183,8 @@ public:
     this->target_net_.save(target_net_output_archive);
     policy_net_output_archive.save_to("policy_net.pt");
     target_net_output_archive.save_to("target_net.pt");
-    //torch::save(this->rms_optimizer_, "rms_optimizer.pt");
-    torch::save(this->adam_optimizer_, "adam_optimizer.pt");
+    torch::save(this->rms_optimizer_, "rms_optimizer.pt");
+    //torch::save(this->adam_optimizer_, "adam_optimizer.pt");
 #if 0
     std::ofstream fp_p("policy_net.out");
     size_t p_i{0};
@@ -240,10 +249,10 @@ public:
       }
     }
     
-    if (std::ifstream fp("adam_optimizer.pt"); fp) {
+    if (std::ifstream fp("rms_optimizer.pt"); fp) {
       std::cout << "Load ADAM optimizer\n";
-      //torch::load(this->rms_optimizer_, "rms_optimizer.pt");
-      torch::load(this->adam_optimizer_, "adam_optimizer.pt");
+      torch::load(this->rms_optimizer_, "rms_optimizer.pt");
+      //torch::load(this->adam_optimizer_, "adam_optimizer.pt");
     }
 #if 0
     std::ofstream fp_p("policy_net.in");
@@ -275,6 +284,14 @@ public:
   DevID_t select_device(torch::Tensor state,
                         std::vector<ParlaDevice *> device_candidates,
                         std::vector<bool> *mask = nullptr) {
+#if 0
+    DevID_t target_test_dev = test_dev_;
+    test_dev_++; 
+    if (test_dev_ == this->n_actions_) {
+      test_dev_ = 0;
+    }
+    return target_test_dev;
+#endif
     // Random number generation.
     std::uniform_real_distribution<double> distribution(0, 1);
     std::mt19937_64 mt(random());
@@ -293,10 +310,12 @@ public:
         torch::Tensor max_tensor = std::get<0>(max_action_pair);
         max_tensor_idx = (std::get<1>(max_action_pair)).item<int64_t>();
         if (mask == nullptr || (mask != nullptr && (*mask)[max_tensor_idx])) {
+          //std::cout << "State:" << state << "\n";
+          //std::cout << "Output:" << out_tensor << "\n";
           //std::cout << "\t" << max_tensor_idx << "\n";
           return static_cast<DevID_t>(max_tensor_idx);
         } else {
-          std::cout << "\t " << max_tensor_idx << " fail \n";
+          //std::cout << "\t " << max_tensor_idx << " fail \n";
         }
 
         out_tensor[max_tensor_idx] = -9999999;
@@ -371,36 +390,44 @@ public:
 
     // Calculate expected Q value.
     torch::Tensor q_values = this->policy_net_.forward(curr_states_tensor);
-    //std::cout << "Before current Q values:" << q_values << "\n";
-    //std::cout << "Before action:" << actions_tensor << "\n";
+    //std::cout << "Current state tensor:" << curr_states_tensor << "\n";
+    /*
+    std::cout << "Before current Q values:" << q_values << "\n";
+    std::cout << "Before action:" << actions_tensor << "\n";
+    */
     // Gather q values corresponding to chosen actions.
     q_values = q_values.gather(1, actions_tensor);
     torch::Tensor next_target_q_values =
         this->target_net_.forward(next_states_tensor);
-    //std::cout << "current Q values:" << curr_states_tensor << "\n";
-    //std::cout << "next Q values:" << next_states_tensor << "\n";
-    //std::cout << "next Q max values:" << std::get<0>(next_target_q_values.max(1)) << "\n";
-    //std::cout << "Before next Q values:" << next_target_q_values << "\n";
+    /*
+    std::cout << "current Q values:" << curr_states_tensor << "\n";
+    std::cout << "next Q values:" << next_states_tensor << "\n";
+    std::cout << "next Q max values:" << std::get<0>(next_target_q_values.max(1)) << "\n";
+    std::cout << "Before next Q values:" << next_target_q_values << "\n";
+    */
     next_target_q_values = std::get<0>(next_target_q_values.max(1)).detach();
-    //std::cout << "Max next Q values:" << next_target_q_values << "\n";
-    //std::cout << "Reward values:" << rewards_tensor << "\n";
+    /*
+    std::cout << "Max next Q values:" << next_target_q_values << "\n";
+    std::cout << "Reward values:" << rewards_tensor << "\n";
+    */
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
-    //std::cout << next_target_q_values << " vs reward: " << rewards_tensor << " =\n";
-    //std::cout << "Expected q values:" << expected_q_values.unsqueeze(0) << "\n";
-    //std::cout << "q values:" << q_values << "\n";
+    /*
+    std::cout << next_target_q_values << " vs reward: " << rewards_tensor << " =\n";
+    std::cout << "Expected q values:" << expected_q_values.unsqueeze(1) << "\n";
+    std::cout << "q values:" << q_values << "\n";
+    */
 
 #if 0
     std::cout << "curr_states_tensor:" << curr_states_tensor << "\n";
     std::cout << "rewards:" << rewards_tensor << "\n";
     std::cout << "action:" << actions_tensor.squeeze(0) << "\n";
-#endif
-    /*std::cout << " qvals:" << q_values << ", "
+    std::cout << " qvals:" << q_values << ", "
               << " action_tensor:" << actions_tensor << ", "
               << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
               << ", reward tensor:" << rewards_tensor << ", "
               << ", expected q values:" << expected_q_values << "\n";
-    */
+#endif
     //std::cout << "q values:" << q_values << "\n";
     //std::cout << "expectedq vals:" << expected_q_values.unsqueeze(1) <<"\n";
     torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.unsqueeze(1));
@@ -408,8 +435,8 @@ public:
     std::cout << "\n Loss:" << loss << "\n";
 
     // Zerofying gradients in the optimizer.
-    //this->rms_optimizer_.zero_grad();
-    this->adam_optimizer_.zero_grad();
+    this->rms_optimizer_.zero_grad();
+    //this->adam_optimizer_.zero_grad();
     /*
     for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
       std::cout << "After zerofying parameter:" << parameter.grad() << "\n";
@@ -418,10 +445,10 @@ public:
 
     // Update gradients.
     loss.backward();
+    /*
     std::ofstream fp("loss.out", std::ios_base::app);
     fp << this->episode_ << ", " << loss.item<float>() << "\n";
     fp.close();
-    /*
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       std::cout << "Before parameter:" << parameter.grad().data() << "\n";
       parameter.grad().data() =
@@ -431,6 +458,8 @@ public:
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       std::cout << "Before parameter:" << parameter << "\n";
     }
+    */
+    /*
     torch::nn::utils::clip_grad_norm_(this->policy_net_.parameters(), 100);
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
       std::cout << "After parameter gradient:" << parameter.grad() << "\n";
@@ -443,11 +472,11 @@ public:
     }
     */
 
-    //this->rms_optimizer_.step();
-    this->adam_optimizer_.step();
+    this->rms_optimizer_.step();
+    //this->adam_optimizer_.step();
     /*
     for (torch::Tensor parameter : this->policy_net_.parameters()) {
-      std::cout << "After parameter:" << parameter.grad().data() << "\n";
+      std::cout << "After parameter:" << parameter << "\n";
     }
 
     for (torch::Tensor parameter : this->rms_optimizer_.parameters()) {
@@ -456,6 +485,7 @@ public:
     */
 
 
+    std::cout << "optimization step done\n";
     /*
     size_t p_i = 0;
     std::ofstream fp_a(std::to_string(this->episode_) + "-" + std::to_string(this->subepisode_) + ".after");
@@ -528,8 +558,8 @@ public:
   }
 
   void append_mapped_task_info(
-      InnerTask *task, torch::Tensor current_state,
-      torch::Tensor chosen_device) {
+      InnerTask *task, torch::Tensor current_state, torch::Tensor next_state,
+      torch::Tensor chosen_device, torch::Tensor reward) {
     if (task->name.find("global_0") != std::string::npos ||
         task->name.find("begin_rl_task") != std::string::npos ||
         task->name.find("end_rl_task") != std::string::npos ||
@@ -539,12 +569,11 @@ public:
     }
     //auto current_time = std::chrono::high_resolution_clock::now();
     RLStateTransition *tinfo = new RLStateTransition();
+    tinfo->task_name = task->name;
     tinfo->current_state = current_state;
+    tinfo->next_state = next_state;
     tinfo->chosen_device = chosen_device;
-    tinfo->base_score = (current_state[0][
-        DEVICE_FEATURE_OFFSET +
-        chosen_device.item<int64_t>() *
-        NUM_DEVICE_FEATURES].item<double>() == 0)? 1 : 0;
+    tinfo->reward = reward;
     this->replay_mem_buffer_mtx_.lock();
     task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
     this->replay_memory_buffer_.push_back(tinfo);
@@ -581,17 +610,81 @@ public:
       DevID_t chosen_device_id = static_cast<DevID_t>(
           tinfo->chosen_device[0].item<int64_t>());
       torch::Tensor reward = rl_env->calculate_reward2(
-            chosen_device_id, task, tinfo->current_state, tinfo->base_score);
+            chosen_device_id, task, tinfo->current_state);
       //torch::Tensor next_state = rl_env->make_current_state(task);
       torch::Tensor next_state = rl_env->make_next_state(
           tinfo->current_state, chosen_device_id, task);
       this->append_replay_memory(
           tinfo->current_state, tinfo->chosen_device, next_state, reward);
-      this->optimize_model();
-      std::cout << this->get_episode() << " episode task " << task->name <<
+      //this->optimize_model();
+      /*std::cout << this->get_episode() << " episode task " << task->name <<
           " current state:" << tinfo->current_state << ", device id:" <<
           tinfo->chosen_device << ", reward:" << reward << "\n";
+          */
     }
+  }
+
+  void evaluate_current_epoch(double exec_time_ms, double best_exec_time_ms_exec_time_ms) {
+#if 0
+    std::cout << "Evaluate current epoch:" << exec_time_ms << " vs " <<
+      best_exec_time_ms_exec_time_ms << "\n";
+#endif
+    if (this->is_training_mode_) {
+      bool is_worth = (exec_time_ms <= best_exec_time_ms_exec_time_ms);
+      this->replay_mem_buffer_mtx_.lock();
+      double positive_weight = (exec_time_ms == 0)? 0 : (best_exec_time_ms_exec_time_ms / exec_time_ms);
+      double negative_weight = (best_exec_time_ms_exec_time_ms == 0)? 0 : (exec_time_ms / best_exec_time_ms_exec_time_ms);
+      double constant =
+        (exec_time_ms == 0 ||
+        best_exec_time_ms_exec_time_ms == std::numeric_limits<double>::max())?
+            0 : (best_exec_time_ms_exec_time_ms / exec_time_ms);
+      if (constant < 0.8) {
+        constant = 0; 
+      }
+      for (size_t i = 0; i < this->replay_memory_buffer_.size(); ++i) {
+        RLStateTransition *tinfo = this->replay_memory_buffer_[i];
+        // All (S, A, R)s get constant reward if the current episode 
+        // is fast.
+        torch::Tensor final_reward =
+            torch::tensor({tinfo->reward.item<double>() + constant}, torch::kDouble);
+#if 0
+        //torch::Tensor final_reward = tinfo->reward;
+        torch::Tensor final_reward = torch::tensor({-1}, torch::kDouble);
+        if (tinfo->reward.item<double>() > 0) {
+          final_reward = (tinfo->reward) * positive_weight;
+        } else if (tinfo->reward.item<double>() < 0) {
+          final_reward = (tinfo->reward) * negative_weight;
+        }
+#endif
+#if 0
+        if (is_worth) {
+          // Only consider postiive reward if this epoch's execution time
+          // is faster than the previous epoch's one.
+          if (tinfo->reward.item<double>() > 0) {
+            final_reward = tinfo->reward;
+          }
+        } else {
+          // Only consider negative reward if this epoch's execution time
+          // is slower than the previous epoch's one.
+          if (tinfo->reward.item<double>() < 0) {
+            final_reward = tinfo->reward;
+          }
+        }
+#endif
+        this->append_replay_memory(
+            tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
+            final_reward);
+#if 0
+        std::cout << this->get_episode() << " episode task " << tinfo->task_name <<
+            " current state:" << tinfo->current_state << 
+            //" next state:" << tinfo->next_state <<
+            ", device id:" <<
+            tinfo->chosen_device << ", reward:" << final_reward << "\n";
+#endif
+      }
+      this->replay_mem_buffer_mtx_.unlock();
+    }
+    this->optimize_model();
   }
 
   void print() { this->replay_memory_.print(); }
@@ -637,12 +730,13 @@ private:
   float gamma_;
   uint64_t steps_;
   ExperienceReplay replay_memory_;
-  //torch::optim::RMSprop rms_optimizer_;
-  torch::optim::Adam adam_optimizer_;
+  torch::optim::RMSprop rms_optimizer_;
+  //torch::optim::Adam adam_optimizer_;
   size_t episode_;
   size_t subepisode_{0};
   std::vector<RLStateTransition*> replay_memory_buffer_;
   std::mutex replay_mem_buffer_mtx_;
+  DevID_t test_dev_{0};
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
@@ -700,6 +794,19 @@ public:
     this->rl_agent_->evaluate_and_append_task_mapping(task, this->rl_env_);
   }
 
+  void evaluate_current_epoch(double exec_time_ms, double previous_exec_time_ms) {
+    this->rl_agent_->evaluate_current_epoch(exec_time_ms, previous_exec_time_ms);
+    this->rl_agent_->incr_episode();
+    this->rl_agent_->target_net_soft_update_simpler();
+    this->rl_env_->output_reward(this->rl_agent_->get_episode());
+    this->rl_agent_->clear_replay_memory_buffer();
+    if (this->rl_agent_->get_episode() % 10 == 0 && this->rl_agent_->is_training_mode()) {
+      std::cout << "Episode " << this->rl_agent_->get_episode() <<
+          ": store models..\n";
+      this->rl_agent_->save_models();
+    }
+  }
+
 #if 0
   // RL forwarding.
   bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement();
@@ -719,7 +826,7 @@ private:
   /// RL environment.
   RLEnvironment *rl_env_;
   torch::Tensor rl_current_state_;
-  //torch::Tensor rl_next_state_;
+  torch::Tensor rl_next_state_;
 };
 
 #endif

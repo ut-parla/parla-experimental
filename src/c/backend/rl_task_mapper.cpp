@@ -5,7 +5,9 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     Mapper *mapper, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
-  this->rl_agent_ = new RLAgent(10 + num_devices * 4, num_devices, num_devices, is_training_mode);
+  this->rl_agent_ = new RLAgent(NUM_TASK_FEATURES +
+      NUM_DEP_TASK_FEATURES * 2 + num_devices * NUM_DEVICE_FEATURES,
+      num_devices, num_devices, is_training_mode);
   this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, mapper);
 }
 
@@ -174,7 +176,7 @@ void RLTaskMappingPolicy::run_task_mapping(
 
   chosen_devices->clear();
   if (num_compatible_devices == 1) {
-    std::cout << task->name << " only has a single compatible device\n";
+    //std::cout << task->name << " only has a single compatible device\n";
     chosen_devices->push_back(device_requirements[chosen_device_gid]);
   } else {
     this->rl_current_state_ =
@@ -203,24 +205,34 @@ void RLTaskMappingPolicy::run_task_mapping(
    //    task->num_dependents);
 
     if (this->rl_agent_->is_training_mode()) {
-      this->rl_agent_->append_mapped_task_info(
-          task, this->rl_current_state_,
-          torch::tensor({float{chosen_device_gid}}, torch::kInt64));
+      if (task->name.find("global_0") == std::string::npos &&
+          task->name.find("begin_rl_task") == std::string::npos &&
+          task->name.find("end_rl_task") == std::string::npos &&
+          task->name.find("Reset") == std::string::npos &&
+          task->name.find("CopyBack") == std::string::npos) {
+        this->rl_next_state_ = this->rl_env_->make_next_state(
+            this->rl_current_state_, chosen_device_gid, task);
+        torch::Tensor reward = this->rl_env_->calculate_reward_parla(
+            chosen_device_gid, task, this->rl_current_state_);
+        this->rl_agent_->append_mapped_task_info(
+            task, this->rl_current_state_, this->rl_next_state_,
+            torch::tensor({float{chosen_device_gid}}, torch::kInt64),
+            reward);
 #if 0
-      torch::Tensor reward = this->rl_env_->calculate_reward(
-          chosen_device_gid, task, this->rl_current_state_);
-      this->rl_agent_->append_replay_memory(
-          this->rl_current_state_,
-          torch::tensor({float{chosen_device_gid}}, torch::kInt64),
-          this->rl_next_state_, reward);
-      this->rl_agent_->optimize_model();
-      this->rl_agent_->target_net_soft_update();
-      std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
-        " current state:" << this->rl_current_state_ << " next state:" <<
-        this->rl_next_state_ <<
-        " device id: " << chosen_device_gid << " reward:" <<
-        reward.item<float>() << "\n";
+        torch::Tensor reward = this->rl_env_->calculate_reward(
+            chosen_device_gid, task, this->rl_current_state_);
+        this->rl_agent_->append_replay_memory(
+            this->rl_current_state_,
+            torch::tensor({float{chosen_device_gid}}, torch::kInt64),
+            this->rl_next_state_, reward);
+        this->rl_agent_->target_net_soft_update();
+        std::cout << this->rl_agent_->get_episode() << " episode task " << task->get_name() <<
+          " current state:" << this->rl_current_state_ << " next state:" <<
+          this->rl_next_state_ <<
+          " device id: " << chosen_device_gid << " reward:" <<
+          reward.item<float>() << "\n";
 #endif
+      }
     } else {
 
       /* XXX(hc)
@@ -234,6 +246,8 @@ void RLTaskMappingPolicy::run_task_mapping(
     if (task->get_name().find("begin_rl_task") != std::string::npos) {
       this->device_manager_->reset_device_timers();
     }
+    /*
+      TODO(hc): enable this if we reuse a finer-grained task reawrd
     if (task->get_name().find("end_rl_task") != std::string::npos) {
       this->rl_agent_->incr_episode();
       this->rl_agent_->target_net_soft_update_simpler();
@@ -244,5 +258,6 @@ void RLTaskMappingPolicy::run_task_mapping(
         this->rl_agent_->save_models();
       }
     }
+    */
   }
 }

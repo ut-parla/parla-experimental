@@ -144,6 +144,73 @@ public:
     return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
   }
 
+  /// XXX(hc): Test
+  size_t atomic_incr_num_mapped_gemm1_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_gemm1_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+  size_t atomic_decr_num_mapped_gemm1_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_gemm1_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+  const size_t atomic_load_dev_num_mapped_gemm1_device(DevID_t dev_id) const {
+    return dev_num_mapped_gemm1_[dev_id].load(std::memory_order_relaxed);
+  }
+  size_t atomic_incr_num_mapped_subcholesky_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_subcholesky_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+  size_t atomic_decr_num_mapped_subcholesky_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_subcholesky_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+  const size_t atomic_load_dev_num_mapped_subcholesky_device(DevID_t dev_id) const {
+    return dev_num_mapped_subcholesky_[dev_id].load(std::memory_order_relaxed);
+  }
+  size_t atomic_incr_num_mapped_gemm2_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_gemm2_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+  size_t atomic_decr_num_mapped_gemm2_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_gemm2_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+  const size_t atomic_load_dev_num_mapped_gemm2_device(DevID_t dev_id) const {
+    return dev_num_mapped_gemm2_[dev_id].load(std::memory_order_relaxed);
+  }
+  size_t atomic_incr_num_mapped_solve_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_solve_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+  size_t atomic_decr_num_mapped_solve_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_solve_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+  const size_t atomic_load_dev_num_mapped_solve_device(DevID_t dev_id) const {
+    return dev_num_mapped_solve_[dev_id].load(std::memory_order_relaxed);
+  }
+  size_t atomic_incr_num_mapped_others_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_others_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+  size_t atomic_decr_num_mapped_others_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    return dev_num_mapped_others_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+  const size_t atomic_load_dev_num_mapped_others_device(DevID_t dev_id) const {
+    return dev_num_mapped_others_[dev_id].load(std::memory_order_relaxed);
+  }
+
   /// @brief Return a raw pointer to a policy.
   /// @detail It exposes a mapping policy object to enable programmers to
   /// call policy-specific features.
@@ -165,6 +232,11 @@ protected:
   std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
   std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_gemm1_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_subcholesky_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_gemm2_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_solve_;
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_others_;
 };
 
 /**

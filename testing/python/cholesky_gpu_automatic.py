@@ -135,10 +135,10 @@ def cholesky_blocked_inplace(a, block_size, trial):
     # print("Initial Array", a, flush=True)
     # block_size = a[0][0].array.shape[0]
     # Define task spaces
-    gemm1 = TaskSpace("gemm1-" + trial)        # Inter-block GEMM
-    subcholesky = TaskSpace("subcholesky-", trial)  # Cholesky on block
-    gemm2 = TaskSpace("gemm2-" + trial)        # Inter-block GEMM
-    solve = TaskSpace("solve-" + trial)        # Triangular solve
+    gemm1 = TaskSpace("gemm1")        # Inter-block GEMM
+    subcholesky = TaskSpace("subcholesky")  # Cholesky on block
+    gemm2 = TaskSpace("gemm2")        # Inter-block GEMM
+    solve = TaskSpace("solve")        # Triangular solve
 
     for j in range(len(a)):
         for k in range(j):
@@ -274,13 +274,6 @@ def main():
             begin_rl_ts = TaskSpace("begin_rl_task")
             end_rl_ts = TaskSpace("end_rl_task")
 
-            @spawn(begin_rl_ts[0])
-            def begin_rl_task():
-                pass
-
-            await begin_rl_ts[0]
-
-
             if k == 0:
                 ap_list = list()
                 for i in range(n//block_size):
@@ -307,7 +300,7 @@ def main():
                             ap_parray[i][j].array[:] = cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F')
 
-                            print("i, j size:", ap_parray[i][j].nbytes)
+#print("i, j size:", ap_parray[i][j].nbytes)
                             cp.cuda.stream.get_current_stream().synchronize()
 
                 await rs
@@ -316,9 +309,22 @@ def main():
             print("------------", flush=True)
             start = time.perf_counter()
 
+            @spawn(begin_rl_ts[0])
+            def begin_rl_task():
+                pass
+
+            await begin_rl_ts[0]
+
             # Call Parla Cholesky result and wait for completion
             await cholesky_blocked_inplace(ap_parray, block_size, str(k))
             # print(ap_parray)
+
+            @spawn(end_rl_ts[0])
+            def end_rl_task():
+                pass
+
+            await end_rl_ts[0]
+
 
             # print(ap)
             end = time.perf_counter()
@@ -360,16 +366,10 @@ def main():
                 error = np.max(np.absolute(a - computed_L @ computed_L.T))
                 print("Error", error)
 
-
-            @spawn(end_rl_ts[0])
-            def end_rl_task():
-                pass
-
-            await end_rl_ts[0]
-
 if __name__ == '__main__':
     np.random.seed(10)
     random.seed(10)
     with Parla(mapping_policy = PyMappingPolicyType.RLTest):
+#with Parla(mapping_policy = PyMappingPolicyType.RLTraining):
 #with Parla():
         main()

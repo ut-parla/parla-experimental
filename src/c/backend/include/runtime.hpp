@@ -934,8 +934,15 @@ public:
 class InnerScheduler {
 
 public:
+  std::vector<InnerTask *> tasks_mapping_order;
+
   uint64_t task_mapping_order_{0};
   uint64_t task_launching_order_{0};
+
+  double epoch_begin_epochs{0};
+  double epoch_end_epochs{0};
+  // in ms
+  double previous_exec_time{std::numeric_limits<double>::max()};
 
   /* Sleep Between Loops */
   bool sleep_flag = false;
