@@ -143,7 +143,10 @@ class PArray:
                 print("Creating parray in scheduler context", flush=True)
                 scheduler.create_parray(self._cy_parray, target_dev_id)
         else:
-            create_parray(self._cy_parray, target_dev_id)
+            #TODO(wlr): Allow PArrays to be created outside of a task 
+            #create_parray(self._cy_parray, target_dev_id)
+            raise NotImplementedError("PArrays cannot be created outside of a scheduler context")
+            
 
         print("Completed PArray creation", flush=True)
         

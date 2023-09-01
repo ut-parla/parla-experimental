@@ -7,12 +7,14 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 
 cdef extern from "include/device_manager.hpp" nogil:
+
+    unsigned int g2p "globalid_to_parrayid" (int) 
+    int p2g "parrayid_to_globalid" (unsigned int)
+
     cdef cppclass DeviceManager:
         DeviceManager() 
         void register_device(Device*) 
         void print_registered_devices() 
-        int globalid_to_parrayid(int) 
-        int parrayid_to_globalid(int)
         void free_memory_by_parray_id(int parray_dev_id, unsigned long memory_size)
         void free_memory(unsigned int global_dev_id, unsigned long memory_size)
         

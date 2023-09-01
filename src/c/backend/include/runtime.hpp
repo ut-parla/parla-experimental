@@ -1,8 +1,8 @@
 #pragma once
-
-#include "device.hpp"
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
+
+#include "device.hpp"
 #include "resources.hpp"
 #include <algorithm>
 #include <assert.h>
@@ -73,18 +73,6 @@ inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
 /* C*+ -> Cython callback to stop the main scheduler. Called at runtime exit. */
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
-}
-
-inline const DevID_t parrayid_to_globalid(int parray_dev_id) {
-  if (parray_dev_id == -1) {
-    // XXX: This assumes that a CPU device is always single and
-    //      is added at first.
-    //      Otherwise, we need a loop iterating all devices and
-    //      comparing device ids.
-    return 0;
-  } else {
-    return parray_dev_id + 1;
-  }
 }
 
 inline void add_unmapped_created_parray(InnerPArray *parray, DevID_t dev_id,

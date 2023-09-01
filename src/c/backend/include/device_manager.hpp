@@ -1,14 +1,35 @@
 #pragma once
-#include "resources.hpp"
 #ifndef PARLA_DEVICE_MANAGER_HPP
 #define PARLA_DEVICE_MANAGER_HPP
 
 #include "device.hpp"
-
+#include "resources.hpp"
 #include <iostream>
 #include <vector>
 
 using DevID_t = uint32_t;
+
+inline const DevID_t parrayid_to_globalid(int parray_dev_id) {
+  if (parray_dev_id == -1) {
+    // XXX: This assumes that a CPU device is always single and
+    //      is added at first.
+    //      Otherwise, we need a loop iterating all devices and
+    //      comparing device ids.
+    return 0;
+  } else {
+    return parray_dev_id + 1;
+  }
+}
+
+inline const int globalid_to_parrayid(DevID_t global_dev_id) {
+  if (global_dev_id == 0) {
+    // XXX: This assumes that a CPU device is always single and
+    //      is added at first.
+    return -1;
+  } else {
+    return static_cast<int>(global_dev_id) - 1;
+  }
+}
 
 /// `DeviceManager` registers/provides devices and their
 /// information on the current system to the Parla runtime.
@@ -72,7 +93,7 @@ public:
   }
 
   Device *get_device_by_parray_id(int parray_dev_id) const {
-    DevID_t global_dev_id = this->parrayid_to_globalid(parray_dev_id);
+    DevID_t global_dev_id = parrayid_to_globalid(parray_dev_id);
     return all_devices_[global_dev_id];
   }
 
@@ -92,28 +113,6 @@ public:
   }
 
   size_t get_num_devices() { return all_devices_.size(); }
-
-  // TODO(hc): use a customized type for device id.
-  const int globalid_to_parrayid(DevID_t global_dev_id) const {
-    Device *dev = all_devices_[global_dev_id];
-    if (dev->get_type() == DeviceType::CPU) {
-      return -1;
-    } else {
-      return dev->get_id();
-    }
-  }
-
-  const DevID_t parrayid_to_globalid(int parray_dev_id) const {
-    if (parray_dev_id == -1) {
-      // XXX: This assumes that a CPU device is always single and
-      //      is added at first.
-      //      Otherwise, we need a loop iterating all devices and
-      //      comparing device ids.
-      return 0;
-    } else {
-      return parray_dev_id + 1;
-    }
-  }
 
   /**
    * @brief Free both the mapped and reserved memory on the device by global

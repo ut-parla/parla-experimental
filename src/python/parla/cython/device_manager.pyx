@@ -48,10 +48,10 @@ cdef class CyDeviceManager:
         self.cpp_device_manager_.print_registered_devices()
 
     cpdef globalid_to_parrayid(self, global_dev_id):
-        return self.cpp_device_manager_.globalid_to_parrayid(global_dev_id)
+        return g2p(global_dev_id)
 
     cpdef parrayid_to_globalid(self, parray_dev_id):
-        return self.cpp_device_manager_.parrayid_to_globalid(parray_dev_id)
+        return p2g(parray_dev_id)
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_

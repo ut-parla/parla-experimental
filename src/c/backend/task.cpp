@@ -240,8 +240,7 @@ void InnerTask::create_parray(InnerPArray *parray, int parray_device_id) {
   auto reserved_parray_tracker =
       this->scheduler->memory_reserver->get_parray_tracker();
 
-  DevID_t global_dev_id =
-      device_manager->parrayid_to_globalid(parray_device_id);
+  DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
 
   size_t to_move_mapped =
       mapped_parray_tracker->do_log(global_dev_id, parray_access);
