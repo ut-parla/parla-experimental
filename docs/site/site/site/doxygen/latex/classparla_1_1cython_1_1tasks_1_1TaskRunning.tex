@@ -1,0 +1,278 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning}{}\doxysection{parla.\+cython.\+tasks.\+Task\+Running Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1TaskRunning}\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+
+
+This state specifies that a task is executing in a stream.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Task\+Running\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskRunning__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Task\+Running\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskRunning__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_ab6198955dbcf2b0b493cfbed35267a38}{value}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a1f4295fce47a4735ca7c1fa77470e456}{is\+\_\+terminal}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a3898e683a958dff9df7d38675e5d3de0}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_aa54f2aa280310dd0cea630a1040537d5}{func}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}{args}}, Optional\mbox{[}List\mbox{]} \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}{dependencies}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6e5e39cca1ab85594586cb94a3811b78}{clear\+\_\+dependencies}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_af56a9bc26d93ecc7f49fddd27e2c767b}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}{dependencies}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}{args}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_aa54f2aa280310dd0cea630a1040537d5}{func}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+list \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6a9774c1ce830a487937ad8e339ee744}{\+\_\+\+\_\+slots\+\_\+\+\_\+}} = \mbox{[}\char`\"{}func\char`\"{}, \char`\"{}\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}{args}}\char`\"{}, \char`\"{}\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}{dependencies}}\char`\"{}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This state specifies that a task is executing in a stream. 
+
+Definition at line 134 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_a3898e683a958dff9df7d38675e5d3de0}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_a3898e683a958dff9df7d38675e5d3de0}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{func,  }\item[{}]{args,  }\item[{Optional\mbox{[}List\mbox{]}}]{dependencies }\end{DoxyParamCaption})}
+
+
+
+Definition at line 151 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{151     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, func, args, dependencies: Optional[List]):}
+\DoxyCodeLine{152         \textcolor{comment}{\#print("{}TaskRunning init"{}, flush=True)}}
+\DoxyCodeLine{153         \textcolor{keywordflow}{if} dependencies \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{154             \textcolor{comment}{\# d could be one of four types: Task, DataMovementTask, TaskID or other types.}}
+\DoxyCodeLine{155             \textcolor{comment}{\#assert all(isinstance(d, (Task, TaskID)) for d in dependencies)}}
+\DoxyCodeLine{156             \textcolor{comment}{\#self.dependencies = [}}
+\DoxyCodeLine{157             \textcolor{comment}{\#    d for d in dependencies if isinstance(d, Task)]}}
+\DoxyCodeLine{158 }
+\DoxyCodeLine{159             \textcolor{comment}{\#COMMENT(wlr): I think we shouldn't filter out the TaskID here. Otherwise, we cannot barrier on unspawned tasks}}
+\DoxyCodeLine{160             self.dependencies = dependencies}
+\DoxyCodeLine{161         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{162             self.dependencies = []}
+\DoxyCodeLine{163 }
+\DoxyCodeLine{164         self.args = args}
+\DoxyCodeLine{165         self.func = func}
+\DoxyCodeLine{166         \textcolor{comment}{\#print("{}TaskRunning init done"{}, flush=True)}}
+\DoxyCodeLine{167 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_af56a9bc26d93ecc7f49fddd27e2c767b}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_af56a9bc26d93ecc7f49fddd27e2c767b}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 171 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{171     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{172         \textcolor{keywordflow}{if} self.func:}
+\DoxyCodeLine{173             \textcolor{comment}{\# return "{}TaskRunning(\{\}, \{\}, \{\})"{}.format(self.func.\_\_name\_\_, self.args, self.dependencies)}}
+\DoxyCodeLine{174             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}TaskRunning(\{\})"{}}.format(self.func.\_\_name\_\_)}
+\DoxyCodeLine{175         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{176             \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}Functionless task"{}}}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Running.\+func, and parla.\+cython.\+tasks.\+Compute\+Task.\+func.
+
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskRunning_af56a9bc26d93ecc7f49fddd27e2c767b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6e5e39cca1ab85594586cb94a3811b78}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6e5e39cca1ab85594586cb94a3811b78}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!clear\_dependencies@{clear\_dependencies}}
+\index{clear\_dependencies@{clear\_dependencies}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{clear\_dependencies()}{clear\_dependencies()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Running.\+clear\+\_\+dependencies (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 168 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{168     \textcolor{keyword}{def }clear\_dependencies(self):}
+\DoxyCodeLine{169         self.dependencies = []}
+\DoxyCodeLine{170 }
+
+\end{DoxyCode}
+
+
+References Inner\+Task.\+dependencies, parla.\+cython.\+tasks.\+Task\+Running.\+dependencies, and parla.\+cython.\+tasks.\+Task.\+dependencies.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_a1f4295fce47a4735ca7c1fa77470e456}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_a1f4295fce47a4735ca7c1fa77470e456}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!is\_terminal@{is\_terminal}}
+\index{is\_terminal@{is\_terminal}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{is\_terminal()}{is\_terminal()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Running.\+is\+\_\+terminal (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_a85fd56c1e5c4b02b45fadb8b3f293fd1}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 146 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{146     \textcolor{keyword}{def }is\_terminal(self):}
+\DoxyCodeLine{147         \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{148 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+streams(), and parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskRunning_a1f4295fce47a4735ca7c1fa77470e456_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_ab6198955dbcf2b0b493cfbed35267a38}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_ab6198955dbcf2b0b493cfbed35267a38}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!value@{value}}
+\index{value@{value}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Running.\+value (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_ad5b5f8bdd3cec8fd04da782d658dc3ca}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 142 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{142     \textcolor{keyword}{def }value(self):}
+\DoxyCodeLine{143         \textcolor{keywordflow}{return} 5}
+\DoxyCodeLine{144 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+threads.\+Propagate.\+run().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskRunning_ab6198955dbcf2b0b493cfbed35267a38_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6a9774c1ce830a487937ad8e339ee744}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_a6a9774c1ce830a487937ad8e339ee744}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!\_\_slots\_\_@{\_\_slots\_\_}}
+\index{\_\_slots\_\_@{\_\_slots\_\_}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{\_\_slots\_\_}{\_\_slots\_\_}}
+{\footnotesize\ttfamily list parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+slots\+\_\+\+\_\+ = \mbox{[}\char`\"{}func\char`\"{}, \char`\"{}\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}{args}}\char`\"{}, \char`\"{}\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}{dependencies}}\char`\"{}\mbox{]}\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+
+
+Definition at line 139 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_af4fa85d5edf6b865dd359b824d20f312}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!args@{args}}
+\index{args@{args}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{args}{args}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Task\+Running.\+args}
+
+
+
+Definition at line 164 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+execute\+\_\+task(), parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), and parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_a01270fa795d0645071fbb53e0d82223e}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!dependencies@{dependencies}}
+\index{dependencies@{dependencies}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{dependencies}{dependencies}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Task\+Running.\+dependencies}
+
+
+
+Definition at line 160 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Running.\+clear\+\_\+dependencies().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskRunning_aa54f2aa280310dd0cea630a1040537d5}\label{classparla_1_1cython_1_1tasks_1_1TaskRunning_aa54f2aa280310dd0cea630a1040537d5}} 
+\index{parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}!func@{func}}
+\index{func@{func}!parla.cython.tasks.TaskRunning@{parla.cython.tasks.TaskRunning}}
+\doxysubsubsection{\texorpdfstring{func}{func}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Task\+Running.\+func}
+
+
+
+Definition at line 165 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+execute\+\_\+task(), and parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

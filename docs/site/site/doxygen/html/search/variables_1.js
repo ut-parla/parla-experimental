@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['access_5fmode_2127',['access_mode',['../classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes.html#aaab8afa84a0ee5706c1e176ee11e26c6',1,'parla.cython.core.DataMovementTaskAttributes.access_mode()'],['../classparla_1_1cython_1_1tasks_1_1DataMovementTask.html#a00c1358228fa80690d6e1a82dbd22130',1,'parla.cython.tasks.DataMovementTask.access_mode()'],['../classparla_1_1cython_1_1core_1_1PyInnerWorker.html#ad5a78b6d55fdd84ca53c8f9d8186dc97',1,'parla.cython.core.PyInnerWorker.access_mode()']]],
+  ['access_5fmode_5f_2128',['access_mode_',['../classInnerDataTask.html#a9f8ad9019274386620293f83d8828780',1,'InnerDataTask']]],
+  ['active_5fdevice_2129',['active_device',['../classparla_1_1cython_1_1device_1_1CupyStream.html#af9de19218bcb2738ac42e1d45bb70b09',1,'parla::cython::device::CupyStream']]],
+  ['active_5fstream_2130',['active_stream',['../classparla_1_1cython_1_1tasks_1_1GPUEnvironment.html#adf02d76fc118e542522f1769374b10f2',1,'parla::cython::tasks::GPUEnvironment']]],
+  ['active_5fworkers_2131',['active_workers',['../classWorkerPool.html#a5ce99651db234fd06c6ba69996a1ac73',1,'WorkerPool']]],
+  ['add_5fconstraint_2132',['ADD_CONSTRAINT',['../classparla_1_1utility_1_1graphs_1_1LogState.html#a6cbc8e36b42b479ac593585c97455b0b',1,'parla::utility::graphs::LogState']]],
+  ['adding_5fdependencies_2133',['ADDING_DEPENDENCIES',['../classparla_1_1utility_1_1graphs_1_1LogState.html#ae1b060ef68894a80bb1ef0a62c9f2b40',1,'parla::utility::graphs::LogState']]],
+  ['all_5fdevices_5f_2134',['all_devices_',['../classDeviceManager.html#a4892a2bc14ffa7329f3fa05d638f1e8a',1,'DeviceManager']]],
+  ['all_5fworkers_2135',['all_workers',['../classWorkerPool.html#a6a5de6e802725a3ac685aea8e4a88963',1,'WorkerPool']]],
+  ['any_2136',['ANY',['../classparla_1_1common_1_1globals_1_1DeviceType.html#a2427c62d6c72ddf7d546faf90b3354b0',1,'parla::common::globals::DeviceType']]],
+  ['any_5fdevice_2137',['ANY_DEVICE',['../classparla_1_1utility_1_1graphs_1_1DeviceType.html#ade05bf0bab343b85e0ff035e13fb00ed',1,'parla::utility::graphs::DeviceType']]],
+  ['any_5fgpu_5fdevice_2138',['ANY_GPU_DEVICE',['../classparla_1_1utility_1_1graphs_1_1DeviceType.html#a4d5609f9f07366588b6cd16905d4da76',1,'parla::utility::graphs::DeviceType']]],
+  ['arch_5fdevices_5f_2139',['arch_devices_',['../classDeviceManager.html#a625329a513378b46361fbd60f9ee7b82',1,'DeviceManager']]],
+  ['architecture_2140',['architecture',['../classparla_1_1cython_1_1device_1_1PyDevice.html#a5b39b88b365abdff3add88bd5a305ee4',1,'parla::cython::device::PyDevice']]],
+  ['architecture_5fnames_2141',['architecture_names',['../device_8hpp.html#a8080609036eca963d0496dbb9c24724e',1,'device.hpp']]],
+  ['architecture_5ftypes_2142',['architecture_types',['../device_8hpp.html#a0d1543ce78494ee034dc5f68c714bcbd',1,'device.hpp']]],
+  ['args_2143',['args',['../classparla_1_1common_1_1containers_1_1Tasks.html#ae036bf9d0f52e2cb03385b3eb1bb9444',1,'parla.common.containers.Tasks.args()'],['../classparla_1_1cython_1_1tasks_1_1TaskRunning.html#af4fa85d5edf6b865dd359b824d20f312',1,'parla.cython.tasks.TaskRunning.args()'],['../classparla_1_1cython_1_1tasks_1_1Task.html#aa1fdfb2d5a84df598ab338d8a3f8918e',1,'parla.cython.tasks.Task.args()'],['../classparla_1_1cython_1_1tasks_1_1ComputeTask.html#ad9f6bd42e7e432596a5a2371cb6f6258',1,'parla.cython.tasks.ComputeTask.args()']]],
+  ['assigned_5fdevices_2144',['assigned_devices',['../classInnerTask.html#a232da08bc8cca3776cc5317612f7eaaf',1,'InnerTask::assigned_devices()'],['../classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes.html#a5bcb793083fac3ca8d7f86e7a866bd60',1,'parla.cython.core.DataMovementTaskAttributes.assigned_devices()'],['../classparla_1_1cython_1_1tasks_1_1DataMovementTask.html#ae19df396b53b1f57801da78ea4bb61fc',1,'parla.cython.tasks.DataMovementTask.assigned_devices()']]],
+  ['assigned_5ftask_2145',['ASSIGNED_TASK',['../classparla_1_1utility_1_1graphs_1_1LogState.html#add6384a560153ce6b72ffd0b6e39d02a',1,'parla::utility::graphs::LogState']]],
+  ['atomictaskspace_2146',['AtomicTaskSpace',['../namespaceparla_1_1cython_1_1scheduler.html#a8b742569094275feefebc080975be1bf',1,'parla.cython.scheduler.AtomicTaskSpace()'],['../namespaceparla_1_1tasks.html#ae2d7528a06c2d3083cea74d10346af23',1,'parla.tasks.AtomicTaskSpace()']]]
+];

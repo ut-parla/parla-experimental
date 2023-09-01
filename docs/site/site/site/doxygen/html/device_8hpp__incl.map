@@ -1,0 +1,12 @@
+<map id="src/c/backend/include/device.hpp" name="src/c/backend/include/device.hpp">
+<area shape="rect" id="node1" title="Provides interface for abstract device object." alt="" coords="195,5,357,47"/>
+<area shape="rect" id="node2" href="$resources_8hpp.html" title="Provides a resource pool for tracking resource usage." alt="" coords="267,95,381,121"/>
+<area shape="rect" id="node4" title=" " alt="" coords="5,169,72,196"/>
+<area shape="rect" id="node5" title=" " alt="" coords="96,169,176,196"/>
+<area shape="rect" id="node6" title=" " alt="" coords="200,169,259,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="601,169,725,196"/>
+<area shape="rect" id="node9" title=" " alt="" coords="749,169,811,196"/>
+<area shape="rect" id="node3" title=" " alt="" coords="283,169,339,196"/>
+<area shape="rect" id="node7" title=" " alt="" coords="363,169,455,196"/>
+<area shape="rect" id="node10" title=" " alt="" coords="479,169,577,196"/>
+</map>

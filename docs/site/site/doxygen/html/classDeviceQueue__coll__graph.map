@@ -1,0 +1,6 @@
+<map id="DeviceQueue&lt; category &gt;" name="DeviceQueue&lt; category &gt;">
+<area shape="rect" id="node1" title="Per&#45;device container for tasks that are waiting to be dequeued." alt="" coords="32,228,228,255"/>
+<area shape="rect" id="node2" href="$classDevice.html" title="Devices can be distinguished from other devices by a class type and its index." alt="" coords="27,124,94,151"/>
+<area shape="rect" id="node3" href="$classResourcePool.html" title="A pool of resources, allows for comparisons and updates of current values." alt="" coords="5,5,116,32"/>
+<area shape="rect" id="node4" href="$classProtectedQueue.html" title=" " alt="" coords="119,124,283,151"/>
+</map>

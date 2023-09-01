@@ -1,0 +1,212 @@
+\hypertarget{classInnerTaskSpace}{}\doxysection{Inner\+Task\+Space Class Reference}
+\label{classInnerTaskSpace}\index{InnerTaskSpace@{InnerTaskSpace}}
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+
+
+Inheritance diagram for Inner\+Task\+Space\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classInnerTaskSpace__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Inner\+Task\+Space\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classInnerTaskSpace__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classInnerTaskSpace_af4ece171b5bc8fc0cdb53288c64e7179}{Inner\+Task\+Space}} ()=default
+\item 
+void \mbox{\hyperlink{classInnerTaskSpace_ad02cc387fbad344dcddc06189b7becc7}{add\+\_\+task}} (int64\+\_\+t key, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\item 
+void \mbox{\hyperlink{classInnerTaskSpace_a322183f36096b48c2a2d2f9cae952d29}{add\+\_\+tasks}} (std\+::vector$<$ int64\+\_\+t $>$ \&keys, std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&tasks)
+\item 
+void \mbox{\hyperlink{classInnerTaskSpace_a10b4e2578e70fe84158a07f7c361aab2}{get\+\_\+tasks}} (std\+::vector$<$ int64\+\_\+t $>$ \&keys, std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&tasks)
+\item 
+void \mbox{\hyperlink{classInnerTaskSpace_a7173e18b92319aa26c07d6319615c042}{wait}} ()
+\item 
+void \mbox{\hyperlink{classInnerTaskSpace_a7cd1cb6a2043e11a188b1ba3790cddc5}{notify}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unordered\+\_\+map$<$ int64\+\_\+t, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \mbox{\hyperlink{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}{task\+\_\+map}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 677 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classInnerTaskSpace_af4ece171b5bc8fc0cdb53288c64e7179}\label{classInnerTaskSpace_af4ece171b5bc8fc0cdb53288c64e7179}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!InnerTaskSpace@{InnerTaskSpace}}
+\index{InnerTaskSpace@{InnerTaskSpace}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{InnerTaskSpace()}{InnerTaskSpace()}}
+{\footnotesize\ttfamily Inner\+Task\+Space\+::\+Inner\+Task\+Space (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classInnerTaskSpace_ad02cc387fbad344dcddc06189b7becc7}\label{classInnerTaskSpace_ad02cc387fbad344dcddc06189b7becc7}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!add\_task@{add\_task}}
+\index{add\_task@{add\_task}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{add\_task()}{add\_task()}}
+{\footnotesize\ttfamily void Inner\+Task\+Space\+::add\+\_\+task (\begin{DoxyParamCaption}\item[{int64\+\_\+t}]{key,  }\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 684 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{684                                               \{}
+\DoxyCodeLine{685     \mbox{\hyperlink{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}{task\_map}}.insert(\{key, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}\});}
+\DoxyCodeLine{686     \mbox{\hyperlink{classTaskBarrier_a8b07b88250c671ec0e7de6a378014e74}{TaskBarrier::add\_task}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}});}
+\DoxyCodeLine{687   \}}
+
+\end{DoxyCode}
+
+
+References Task\+Barrier\+::add\+\_\+task().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTaskSpace_ad02cc387fbad344dcddc06189b7becc7_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTaskSpace_a322183f36096b48c2a2d2f9cae952d29}\label{classInnerTaskSpace_a322183f36096b48c2a2d2f9cae952d29}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!add\_tasks@{add\_tasks}}
+\index{add\_tasks@{add\_tasks}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{add\_tasks()}{add\_tasks()}}
+{\footnotesize\ttfamily void Inner\+Task\+Space\+::add\+\_\+tasks (\begin{DoxyParamCaption}\item[{std\+::vector$<$ int64\+\_\+t $>$ \&}]{keys,  }\item[{std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&}]{tasks }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 689 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{689                                                                           \{}
+\DoxyCodeLine{690     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a83206470aa63f6e6fb8614d30dcbbe74}{keys}}.size(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{691       \mbox{\hyperlink{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}{task\_map}}.insert(\{\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a83206470aa63f6e6fb8614d30dcbbe74}{keys}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}], \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]\});}
+\DoxyCodeLine{692     \}}
+\DoxyCodeLine{693     \mbox{\hyperlink{classTaskBarrier_a67451be979de6590af0487c2030403de}{TaskBarrier::add\_tasks}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}});}
+\DoxyCodeLine{694   \}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+core.\+Py\+Task\+Barrier\+::\+\_\+\+\_\+init\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerTaskSpace_a322183f36096b48c2a2d2f9cae952d29_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTaskSpace_a10b4e2578e70fe84158a07f7c361aab2}\label{classInnerTaskSpace_a10b4e2578e70fe84158a07f7c361aab2}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!get\_tasks@{get\_tasks}}
+\index{get\_tasks@{get\_tasks}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{get\_tasks()}{get\_tasks()}}
+{\footnotesize\ttfamily void Inner\+Task\+Space\+::get\+\_\+tasks (\begin{DoxyParamCaption}\item[{std\+::vector$<$ int64\+\_\+t $>$ \&}]{keys,  }\item[{std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&}]{tasks }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 696 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{696                                                                           \{}
+\DoxyCodeLine{697     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a83206470aa63f6e6fb8614d30dcbbe74}{keys}}.size(); \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{698       \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}.push\_back(\mbox{\hyperlink{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}{task\_map}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a83206470aa63f6e6fb8614d30dcbbe74}{keys}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]]);}
+\DoxyCodeLine{699     \}}
+\DoxyCodeLine{700   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerTaskSpace_a7cd1cb6a2043e11a188b1ba3790cddc5}\label{classInnerTaskSpace_a7cd1cb6a2043e11a188b1ba3790cddc5}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!notify@{notify}}
+\index{notify@{notify}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{notify()}{notify()}}
+{\footnotesize\ttfamily void Inner\+Task\+Space\+::notify (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 704 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{704 \{ \mbox{\hyperlink{classTaskBarrier_aa1bd621360c4b81af231890dc886f3f2}{TaskBarrier::notify}}(); \}}
+
+\end{DoxyCode}
+
+
+References Task\+Barrier\+::notify().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=347pt]{classInnerTaskSpace_a7cd1cb6a2043e11a188b1ba3790cddc5_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerTaskSpace_a7173e18b92319aa26c07d6319615c042}\label{classInnerTaskSpace_a7173e18b92319aa26c07d6319615c042}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!wait@{wait}}
+\index{wait@{wait}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{wait()}{wait()}}
+{\footnotesize\ttfamily void Inner\+Task\+Space\+::wait (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 702 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{702 \{ \mbox{\hyperlink{classTaskBarrier_ae1c64de1a23fc048a95f61ff7cb102e5}{TaskBarrier::wait}}(); \}}
+
+\end{DoxyCode}
+
+
+References Task\+Barrier\+::wait().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=333pt]{classInnerTaskSpace_a7173e18b92319aa26c07d6319615c042_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}\label{classInnerTaskSpace_acb12a5c2dc532669ace21dcca5e477ee}} 
+\index{InnerTaskSpace@{InnerTaskSpace}!task\_map@{task\_map}}
+\index{task\_map@{task\_map}!InnerTaskSpace@{InnerTaskSpace}}
+\doxysubsubsection{\texorpdfstring{task\_map}{task\_map}}
+{\footnotesize\ttfamily std\+::unordered\+\_\+map$<$int64\+\_\+t, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$ Inner\+Task\+Space\+::task\+\_\+map}
+
+
+
+Definition at line 682 of file runtime.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\end{DoxyCompactItemize}

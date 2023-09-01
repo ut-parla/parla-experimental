@@ -1,0 +1,118 @@
+\hypertarget{classparla_1_1utility_1_1execute_1_1GPUInfo}{}\doxysection{parla.\+utility.\+execute.\+GPUInfo Class Reference}
+\label{classparla_1_1utility_1_1execute_1_1GPUInfo}\index{parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo_a1d88c59dae869887eca75eb31f00658f}{update\+\_\+cycles}} (self, cycles=None)
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo_a7312eedf22bd317534c1749d1ac44ce8}{get\+\_\+cycles\+\_\+per\+\_\+second}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo_a1646b83b85bd5fdfc4095ee2d31b8272}{cycles\+\_\+per\+\_\+second}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo_add46e2c87e17b1a563a37f586a48cbab}{cycles\+\_\+per\+\_\+second}} = 1949802881.\+4819772
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 79 of file execute.\+py.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GPUInfo_a7312eedf22bd317534c1749d1ac44ce8}\label{classparla_1_1utility_1_1execute_1_1GPUInfo_a7312eedf22bd317534c1749d1ac44ce8}} 
+\index{parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}!get\_cycles\_per\_second@{get\_cycles\_per\_second}}
+\index{get\_cycles\_per\_second@{get\_cycles\_per\_second}!parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}}
+\doxysubsubsection{\texorpdfstring{get\_cycles\_per\_second()}{get\_cycles\_per\_second()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+GPUInfo.\+get\+\_\+cycles\+\_\+per\+\_\+second (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 94 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{94     \textcolor{keyword}{def }get\_cycles\_per\_second(self):}
+\DoxyCodeLine{95         \textcolor{keywordflow}{return} self.cycles\_per\_second}
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+GPUInfo.\+cycles\+\_\+per\+\_\+second.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GPUInfo_a1d88c59dae869887eca75eb31f00658f}\label{classparla_1_1utility_1_1execute_1_1GPUInfo_a1d88c59dae869887eca75eb31f00658f}} 
+\index{parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}!update\_cycles@{update\_cycles}}
+\index{update\_cycles@{update\_cycles}!parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}}
+\doxysubsubsection{\texorpdfstring{update\_cycles()}{update\_cycles()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+GPUInfo.\+update\+\_\+cycles (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{cycles = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 87 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{87     \textcolor{keyword}{def }update\_cycles(self, cycles=None):}
+\DoxyCodeLine{88 }
+\DoxyCodeLine{89         \textcolor{keywordflow}{if} cycles \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{90             cycles = \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}{estimate\_frequency}}()}
+\DoxyCodeLine{91         }
+\DoxyCodeLine{92         self.cycles\_per\_second = cycles}
+\DoxyCodeLine{93 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+estimate\+\_\+frequency().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1utility_1_1execute_1_1GPUInfo_a1d88c59dae869887eca75eb31f00658f_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GPUInfo_add46e2c87e17b1a563a37f586a48cbab}\label{classparla_1_1utility_1_1execute_1_1GPUInfo_add46e2c87e17b1a563a37f586a48cbab}} 
+\index{parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}!cycles\_per\_second@{cycles\_per\_second}}
+\index{cycles\_per\_second@{cycles\_per\_second}!parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}}
+\doxysubsubsection{\texorpdfstring{cycles\_per\_second}{cycles\_per\_second}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily float parla.\+utility.\+execute.\+GPUInfo.\+cycles\+\_\+per\+\_\+second = 1949802881.\+4819772\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 85 of file execute.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+GPUInfo.\+get\+\_\+cycles\+\_\+per\+\_\+second().
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GPUInfo_a1646b83b85bd5fdfc4095ee2d31b8272}\label{classparla_1_1utility_1_1execute_1_1GPUInfo_a1646b83b85bd5fdfc4095ee2d31b8272}} 
+\index{parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}!cycles\_per\_second@{cycles\_per\_second}}
+\index{cycles\_per\_second@{cycles\_per\_second}!parla.utility.execute.GPUInfo@{parla.utility.execute.GPUInfo}}
+\doxysubsubsection{\texorpdfstring{cycles\_per\_second}{cycles\_per\_second}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+GPUInfo.\+cycles\+\_\+per\+\_\+second}
+
+
+
+Definition at line 92 of file execute.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+GPUInfo.\+get\+\_\+cycles\+\_\+per\+\_\+second().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/utility/\mbox{\hyperlink{execute_8py}{execute.\+py}}\end{DoxyCompactItemize}

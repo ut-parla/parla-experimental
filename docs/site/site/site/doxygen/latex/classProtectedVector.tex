@@ -1,0 +1,998 @@
+\hypertarget{classProtectedVector}{}\doxysection{Protected\+Vector$<$ T $>$ Class Template Reference}
+\label{classProtectedVector}\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+
+
+{\ttfamily \#include $<$containers.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classProtectedVector_a8193f4867ac1af2ddccd5ddad156b279}{Protected\+Vector}} ()=default
+\item 
+\mbox{\hyperlink{classProtectedVector_a869fa17268e831006449a70cbb22b646}{Protected\+Vector}} (std\+::string \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}})
+\item 
+\mbox{\hyperlink{classProtectedVector_a605502e63c8b3f390d2f36b3f7d9351a}{Protected\+Vector}} (std\+::string \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}}, std\+::vector$<$ T $>$ \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}})
+\item 
+\mbox{\hyperlink{classProtectedVector_a87baf9e0faaaa4dcb702b3a286343af2}{Protected\+Vector}} (std\+::string \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}}, size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}})
+\item 
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} \& \mbox{\hyperlink{classProtectedVector_a88efc468fe1de16e4b42ca7bcdfc6a72}{operator=}} (\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} \&\&other)
+\begin{DoxyCompactList}\small\item\em Explicit move assignment due to the atomic size member. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}{lock}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}{unlock}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}{push\+\_\+back}} (T a)
+\item 
+void \mbox{\hyperlink{classProtectedVector_a07d1ec0c123afd6234bd46570d1af11f}{push\+\_\+back}} (std\+::vector$<$ T $>$ \&a)
+\item 
+void \mbox{\hyperlink{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}{push\+\_\+back\+\_\+unsafe}} (T a)
+\item 
+void \mbox{\hyperlink{classProtectedVector_a7b40a6a9a40349486f11ef32689de630}{push\+\_\+back\+\_\+unsafe}} (std\+::vector$<$ T $>$ \&a)
+\item 
+void \mbox{\hyperlink{classProtectedVector_a35b2a36a9a960ae5d4ede0d707edab9c}{pop\+\_\+back}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_a5fbea75e92f8101d1242686da67b5119}{pop\+\_\+back\+\_\+unsafe}} ()
+\item 
+int \mbox{\hyperlink{classProtectedVector_a0688fe32eabc5e9984130716c153c07f}{atomic\+\_\+size}} ()
+\item 
+size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}} ()
+\item 
+size\+\_\+t \mbox{\hyperlink{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}{size\+\_\+unsafe}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_ad401e742d99f82910393e01d80add905}{operator\mbox{[}$\,$\mbox{]}}} (size\+\_\+t i)
+\item 
+T \mbox{\hyperlink{classProtectedVector_ab56982e441aafc306a7f117f0d9c37dd}{at}} (size\+\_\+t i)
+\item 
+T \mbox{\hyperlink{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}{at\+\_\+unsafe}} (size\+\_\+t i)
+\item 
+T \mbox{\hyperlink{classProtectedVector_abde780eddd81d5f0be2698abcc209bd1}{back}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_a56a765a65a04bd497f2d979c95750113}{back\+\_\+unsafe}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_a40ed6771d80c3eff9649bc1d445cd4b7}{back\+\_\+and\+\_\+pop}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_ac1ff9bf754622dca60175385bfc8d481}{back\+\_\+and\+\_\+pop\+\_\+unsafe}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_a534266555c246401e231ed977152699e}{front}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_af5eec39a756daf53d0d0aa0560817c5d}{front\+\_\+unsafe}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_a869d98ebecb67f653888392229d2c3f4}{front\+\_\+and\+\_\+pop}} ()
+\item 
+T \mbox{\hyperlink{classProtectedVector_a8c5ea7b1958ba5d1aa769285738c00bd}{front\+\_\+and\+\_\+pop\+\_\+unsafe}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}{clear}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_ad77e34b65a63300e801ed26e137f5098}{clear\+\_\+unsafe}} ()
+\item 
+void \mbox{\hyperlink{classProtectedVector_a55515f8fc133fb4a0e9c7ea04a5aaba1}{reserve}} (size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}})
+\item 
+void \mbox{\hyperlink{classProtectedVector_a47e8a977dc30499bb8c758b404822949}{reserve\+\_\+unsafe}} (size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}})
+\item 
+void \mbox{\hyperlink{classProtectedVector_a7ce52c7b92b7731b3c54e81a94e31263}{resize}} (size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}})
+\item 
+void \mbox{\hyperlink{classProtectedVector_acd8aaa30b72fbc06ab911cac8c8fc2f9}{resize\+\_\+unsafe}} (size\+\_\+t \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}})
+\item 
+T \mbox{\hyperlink{classProtectedVector_a7dc06210d51fc1e9ba33fed9d0d955b4}{get}} (size\+\_\+t i)
+\item 
+T \mbox{\hyperlink{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}{get\+\_\+unsafe}} (size\+\_\+t i)
+\item 
+void \mbox{\hyperlink{classProtectedVector_a6c65a910e26ab9297f4dad6eed98e45a}{set}} (size\+\_\+t i, T val)
+\item 
+void \mbox{\hyperlink{classProtectedVector_a09aaf1156ef17c5efe8128197a9c9596}{set\+\_\+unsafe}} (size\+\_\+t i, T val)
+\item 
+std\+::vector$<$ T $>$ \mbox{\hyperlink{classProtectedVector_a63331a739b955109c944935da33336ec}{get\+\_\+vector\+\_\+copy}} ()
+\item 
+std\+::vector$<$ T $>$ \mbox{\hyperlink{classProtectedVector_a9b611f80a8be543704a1cdc97a6da56d}{get\+\_\+vector\+\_\+copy\+\_\+unsafe}} ()
+\item 
+std\+::vector$<$ T $>$ \& \mbox{\hyperlink{classProtectedVector_a509f779f30178e7a2d10f1775402f60e}{get\+\_\+vector}} ()
+\item 
+std\+::vector$<$ T $>$ \& \mbox{\hyperlink{classProtectedVector_a5efa23146f51d65b9c52e33f9fbf1ead}{get\+\_\+vector\+\_\+unsafe}} ()
+\item 
+bool \mbox{\hyperlink{classProtectedVector_a0ff3d46a10f379061f20c82029635a1d}{empty}} ()
+\item 
+bool \mbox{\hyperlink{classProtectedVector_a20d86b6c866c725d7c5a940ee91435ab}{empty\+\_\+unsafe}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ T $>$ \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = std\+::vector$<$T$>$()
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}} \{0\}
+\item 
+std\+::mutex \mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}
+\item 
+std\+::string \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename T$>$\newline
+class Protected\+Vector$<$ T $>$}
+
+
+
+Definition at line 40 of file containers.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classProtectedVector_a8193f4867ac1af2ddccd5ddad156b279}\label{classProtectedVector_a8193f4867ac1af2ddccd5ddad156b279}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!ProtectedVector@{ProtectedVector}}
+\index{ProtectedVector@{ProtectedVector}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{ProtectedVector()}{ProtectedVector()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\mbox{\Hypertarget{classProtectedVector_a869fa17268e831006449a70cbb22b646}\label{classProtectedVector_a869fa17268e831006449a70cbb22b646}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!ProtectedVector@{ProtectedVector}}
+\index{ProtectedVector@{ProtectedVector}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{ProtectedVector()}{ProtectedVector()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 51 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{51                                   \{}
+\DoxyCodeLine{52     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{53     this-\/>\mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}} = \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}};}
+\DoxyCodeLine{54     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{55   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a605502e63c8b3f390d2f36b3f7d9351a}\label{classProtectedVector_a605502e63c8b3f390d2f36b3f7d9351a}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!ProtectedVector@{ProtectedVector}}
+\index{ProtectedVector@{ProtectedVector}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{ProtectedVector()}{ProtectedVector()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name,  }\item[{std\+::vector$<$ T $>$}]{vec }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 57 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{57                                                     \{}
+\DoxyCodeLine{58     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{59     this-\/>\mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}} = \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}};}
+\DoxyCodeLine{60     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{61     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{62   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a87baf9e0faaaa4dcb702b3a286343af2}\label{classProtectedVector_a87baf9e0faaaa4dcb702b3a286343af2}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!ProtectedVector@{ProtectedVector}}
+\index{ProtectedVector@{ProtectedVector}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{ProtectedVector()}{ProtectedVector()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 64 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{64                                                \{}
+\DoxyCodeLine{65     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{66     this-\/>\mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}} = \mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}};}
+\DoxyCodeLine{67     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.reserve(\mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}});}
+\DoxyCodeLine{68     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{69   \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classProtectedVector_ab56982e441aafc306a7f117f0d9c37dd}\label{classProtectedVector_ab56982e441aafc306a7f117f0d9c37dd}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!at@{at}}
+\index{at@{at}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{at()}{at()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::at (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 138 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{138                  \{}
+\DoxyCodeLine{139     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{140     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.at(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}});}
+\DoxyCodeLine{141     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{142     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{143   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}\label{classProtectedVector_a1818bd8729c939f0645954cc6702d72f}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!at\_unsafe@{at\_unsafe}}
+\index{at\_unsafe@{at\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{at\_unsafe()}{at\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::at\+\_\+unsafe (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 145 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{145 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.at(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a0688fe32eabc5e9984130716c153c07f}\label{classProtectedVector_a0688fe32eabc5e9984130716c153c07f}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!atomic\_size@{atomic\_size}}
+\index{atomic\_size@{atomic\_size}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{atomic\_size()}{atomic\_size()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+int \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::atomic\+\_\+size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 120 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{120 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}.load(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_abde780eddd81d5f0be2698abcc209bd1}\label{classProtectedVector_abde780eddd81d5f0be2698abcc209bd1}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!back@{back}}
+\index{back@{back}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{back()}{back()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::back (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 147 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{147            \{}
+\DoxyCodeLine{148     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{149     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.back();}
+\DoxyCodeLine{150     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{151     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{152   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a40ed6771d80c3eff9649bc1d445cd4b7}\label{classProtectedVector_a40ed6771d80c3eff9649bc1d445cd4b7}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!back\_and\_pop@{back\_and\_pop}}
+\index{back\_and\_pop@{back\_and\_pop}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{back\_and\_pop()}{back\_and\_pop()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::back\+\_\+and\+\_\+pop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 156 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{156                    \{}
+\DoxyCodeLine{157     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{158     T val = this-\/>\mbox{\hyperlink{classProtectedVector_a56a765a65a04bd497f2d979c95750113}{back\_unsafe}}();}
+\DoxyCodeLine{159     this-\/>\mbox{\hyperlink{classProtectedVector_a5fbea75e92f8101d1242686da67b5119}{pop\_back\_unsafe}}();}
+\DoxyCodeLine{160     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{161     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{162   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_ac1ff9bf754622dca60175385bfc8d481}\label{classProtectedVector_ac1ff9bf754622dca60175385bfc8d481}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!back\_and\_pop\_unsafe@{back\_and\_pop\_unsafe}}
+\index{back\_and\_pop\_unsafe@{back\_and\_pop\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{back\_and\_pop\_unsafe()}{back\_and\_pop\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::back\+\_\+and\+\_\+pop\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 164 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{164                                  \{}
+\DoxyCodeLine{165     T val = this-\/>\mbox{\hyperlink{classProtectedVector_a56a765a65a04bd497f2d979c95750113}{back\_unsafe}}();}
+\DoxyCodeLine{166     this-\/>\mbox{\hyperlink{classProtectedVector_a5fbea75e92f8101d1242686da67b5119}{pop\_back\_unsafe}}();}
+\DoxyCodeLine{167     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{168   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a56a765a65a04bd497f2d979c95750113}\label{classProtectedVector_a56a765a65a04bd497f2d979c95750113}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!back\_unsafe@{back\_unsafe}}
+\index{back\_unsafe@{back\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{back\_unsafe()}{back\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::back\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 154 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{154 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.back(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}\label{classProtectedVector_a5b21dcd2826d806e8a72725f3fde539e}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!clear@{clear}}
+\index{clear@{clear}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{clear()}{clear()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::clear (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 196 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{196                \{}
+\DoxyCodeLine{197     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{198     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.clear();}
+\DoxyCodeLine{199     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{200     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}} = 0;}
+\DoxyCodeLine{201   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_ad77e34b65a63300e801ed26e137f5098}\label{classProtectedVector_ad77e34b65a63300e801ed26e137f5098}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!clear\_unsafe@{clear\_unsafe}}
+\index{clear\_unsafe@{clear\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{clear\_unsafe()}{clear\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::clear\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 203 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{203                              \{}
+\DoxyCodeLine{204     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.clear();}
+\DoxyCodeLine{205     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}} = 0;}
+\DoxyCodeLine{206   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a0ff3d46a10f379061f20c82029635a1d}\label{classProtectedVector_a0ff3d46a10f379061f20c82029635a1d}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!empty@{empty}}
+\index{empty@{empty}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{empty()}{empty()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+bool \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::empty (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 267 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{267                \{}
+\DoxyCodeLine{268     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{269     \textcolor{keywordtype}{bool} \mbox{\hyperlink{classProtectedVector_a0ff3d46a10f379061f20c82029635a1d}{empty}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.empty();}
+\DoxyCodeLine{270     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{271     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_a0ff3d46a10f379061f20c82029635a1d}{empty}};}
+\DoxyCodeLine{272   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a20d86b6c866c725d7c5a940ee91435ab}\label{classProtectedVector_a20d86b6c866c725d7c5a940ee91435ab}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!empty\_unsafe@{empty\_unsafe}}
+\index{empty\_unsafe@{empty\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{empty\_unsafe()}{empty\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+bool \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::empty\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 274 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{274 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.empty(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a534266555c246401e231ed977152699e}\label{classProtectedVector_a534266555c246401e231ed977152699e}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!front@{front}}
+\index{front@{front}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{front()}{front()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::front (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 170 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{170             \{}
+\DoxyCodeLine{171     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{172     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.front();}
+\DoxyCodeLine{173     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{174     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{175   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a869d98ebecb67f653888392229d2c3f4}\label{classProtectedVector_a869d98ebecb67f653888392229d2c3f4}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!front\_and\_pop@{front\_and\_pop}}
+\index{front\_and\_pop@{front\_and\_pop}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{front\_and\_pop()}{front\_and\_pop()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::front\+\_\+and\+\_\+pop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 182 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{182                     \{}
+\DoxyCodeLine{183     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{184     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af5eec39a756daf53d0d0aa0560817c5d}{front\_unsafe}}();}
+\DoxyCodeLine{185     this-\/>pop\_front\_unsafe();}
+\DoxyCodeLine{186     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{187     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{188   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a8c5ea7b1958ba5d1aa769285738c00bd}\label{classProtectedVector_a8c5ea7b1958ba5d1aa769285738c00bd}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!front\_and\_pop\_unsafe@{front\_and\_pop\_unsafe}}
+\index{front\_and\_pop\_unsafe@{front\_and\_pop\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{front\_and\_pop\_unsafe()}{front\_and\_pop\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::front\+\_\+and\+\_\+pop\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 190 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{190                            \{}
+\DoxyCodeLine{191     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af5eec39a756daf53d0d0aa0560817c5d}{front\_unsafe}}();}
+\DoxyCodeLine{192     this-\/>pop\_front\_unsafe();}
+\DoxyCodeLine{193     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{194   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_af5eec39a756daf53d0d0aa0560817c5d}\label{classProtectedVector_af5eec39a756daf53d0d0aa0560817c5d}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!front\_unsafe@{front\_unsafe}}
+\index{front\_unsafe@{front\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{front\_unsafe()}{front\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::front\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 177 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{177 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.front(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a7dc06210d51fc1e9ba33fed9d0d955b4}\label{classProtectedVector_a7dc06210d51fc1e9ba33fed9d0d955b4}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get@{get}}
+\index{get@{get}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 224 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{224                   \{}
+\DoxyCodeLine{225     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{226     T val = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}];}
+\DoxyCodeLine{227     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{228     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{229   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}\label{classProtectedVector_a4c701108bba22a21c7626c2bf1bdc379}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get\_unsafe@{get\_unsafe}}
+\index{get\_unsafe@{get\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_unsafe()}{get\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get\+\_\+unsafe (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 231 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{231 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a509f779f30178e7a2d10f1775402f60e}\label{classProtectedVector_a509f779f30178e7a2d10f1775402f60e}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get\_vector@{get\_vector}}
+\index{get\_vector@{get\_vector}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_vector()}{get\_vector()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::vector$<$T$>$\& \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get\+\_\+vector (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 253 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{253                              \{}
+\DoxyCodeLine{254     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{255     std::vector<T> \&\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{256     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{257     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{258   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a63331a739b955109c944935da33336ec}\label{classProtectedVector_a63331a739b955109c944935da33336ec}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get\_vector\_copy@{get\_vector\_copy}}
+\index{get\_vector\_copy@{get\_vector\_copy}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_vector\_copy()}{get\_vector\_copy()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::vector$<$T$>$ \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get\+\_\+vector\+\_\+copy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 241 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{241                                  \{}
+\DoxyCodeLine{242     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{243     std::vector<T> \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{244     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{245     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{246   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a9b611f80a8be543704a1cdc97a6da56d}\label{classProtectedVector_a9b611f80a8be543704a1cdc97a6da56d}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get\_vector\_copy\_unsafe@{get\_vector\_copy\_unsafe}}
+\index{get\_vector\_copy\_unsafe@{get\_vector\_copy\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_vector\_copy\_unsafe()}{get\_vector\_copy\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::vector$<$T$>$ \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get\+\_\+vector\+\_\+copy\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 248 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{248                                                \{}
+\DoxyCodeLine{249     std::vector<T> \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{250     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{251   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a5efa23146f51d65b9c52e33f9fbf1ead}\label{classProtectedVector_a5efa23146f51d65b9c52e33f9fbf1ead}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!get\_vector\_unsafe@{get\_vector\_unsafe}}
+\index{get\_vector\_unsafe@{get\_vector\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_vector\_unsafe()}{get\_vector\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::vector$<$T$>$\& \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::get\+\_\+vector\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 260 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{260                                     \{}
+\DoxyCodeLine{261     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{262     std::vector<T> \&\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{263     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{264     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}};}
+\DoxyCodeLine{265   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}\label{classProtectedVector_a616c7eb996e5fa584c780e3ec6cbd74a}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!lock@{lock}}
+\index{lock@{lock}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{lock()}{lock()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::lock (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 80 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{80 \{ this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a88efc468fe1de16e4b42ca7bcdfc6a72}\label{classProtectedVector_a88efc468fe1de16e4b42ca7bcdfc6a72}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}\& \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::operator= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$ \&\&}]{other }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Explicit move assignment due to the atomic size member. 
+
+
+
+Definition at line 72 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{72                                                       \{}
+\DoxyCodeLine{73     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}.exchange(other.\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}});}
+\DoxyCodeLine{74     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}} = std::move(other.\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}});}
+\DoxyCodeLine{75     \textcolor{comment}{// The string should be small}}
+\DoxyCodeLine{76     this-\/>\mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}} = std::move(other.\mbox{\hyperlink{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}{name}});}
+\DoxyCodeLine{77     \textcolor{keywordflow}{return} *\textcolor{keyword}{this};}
+\DoxyCodeLine{78   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_ad401e742d99f82910393e01d80add905}\label{classProtectedVector_ad401e742d99f82910393e01d80add905}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator[]()}{operator[]()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+T \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::operator\mbox{[}$\,$\mbox{]} (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 131 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{131                          \{}
+\DoxyCodeLine{132     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{133     \textcolor{keyword}{auto} val = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}];}
+\DoxyCodeLine{134     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{135     \textcolor{keywordflow}{return} val;}
+\DoxyCodeLine{136   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a35b2a36a9a960ae5d4ede0d707edab9c}\label{classProtectedVector_a35b2a36a9a960ae5d4ede0d707edab9c}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!pop\_back@{pop\_back}}
+\index{pop\_back@{pop\_back}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{pop\_back()}{pop\_back()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::pop\+\_\+back (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 108 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{108                   \{}
+\DoxyCodeLine{109     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{110     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.pop\_back();}
+\DoxyCodeLine{111     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{112     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}-\/-\/;}
+\DoxyCodeLine{113   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a5fbea75e92f8101d1242686da67b5119}\label{classProtectedVector_a5fbea75e92f8101d1242686da67b5119}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!pop\_back\_unsafe@{pop\_back\_unsafe}}
+\index{pop\_back\_unsafe@{pop\_back\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{pop\_back\_unsafe()}{pop\_back\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::pop\+\_\+back\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 115 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{115                          \{}
+\DoxyCodeLine{116     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.pop\_back();}
+\DoxyCodeLine{117     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}-\/-\/;}
+\DoxyCodeLine{118   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a07d1ec0c123afd6234bd46570d1af11f}\label{classProtectedVector_a07d1ec0c123afd6234bd46570d1af11f}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!push\_back@{push\_back}}
+\index{push\_back@{push\_back}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{push\_back()}{push\_back()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::push\+\_\+back (\begin{DoxyParamCaption}\item[{std\+::vector$<$ T $>$ \&}]{a }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 91 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{91                                   \{}
+\DoxyCodeLine{92     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{93     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.insert(this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.end(), a.begin(), a.end());}
+\DoxyCodeLine{94     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{95     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}} += a.size();}
+\DoxyCodeLine{96   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}\label{classProtectedVector_abe8b8621e3c2c69773c523c6d503b517}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!push\_back@{push\_back}}
+\index{push\_back@{push\_back}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{push\_back()}{push\_back()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::push\+\_\+back (\begin{DoxyParamCaption}\item[{T}]{a }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 84 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{84                       \{}
+\DoxyCodeLine{85     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{86     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.push\_back(a);}
+\DoxyCodeLine{87     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{88     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}++;}
+\DoxyCodeLine{89   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a7b40a6a9a40349486f11ef32689de630}\label{classProtectedVector_a7b40a6a9a40349486f11ef32689de630}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!push\_back\_unsafe@{push\_back\_unsafe}}
+\index{push\_back\_unsafe@{push\_back\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{push\_back\_unsafe()}{push\_back\_unsafe()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::push\+\_\+back\+\_\+unsafe (\begin{DoxyParamCaption}\item[{std\+::vector$<$ T $>$ \&}]{a }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 103 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{103                                          \{}
+\DoxyCodeLine{104     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.insert(this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.end(), a.begin(), a.end());}
+\DoxyCodeLine{105     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}} += a.size();}
+\DoxyCodeLine{106   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}\label{classProtectedVector_af3e86f53a66f935597b338b578c1d35c}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!push\_back\_unsafe@{push\_back\_unsafe}}
+\index{push\_back\_unsafe@{push\_back\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{push\_back\_unsafe()}{push\_back\_unsafe()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::push\+\_\+back\+\_\+unsafe (\begin{DoxyParamCaption}\item[{T}]{a }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 98 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{98                              \{}
+\DoxyCodeLine{99     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.push\_back(a);}
+\DoxyCodeLine{100     this-\/>\mbox{\hyperlink{classProtectedVector_abb8e3458112028da844c9badb03087a6}{length}}++;}
+\DoxyCodeLine{101   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a55515f8fc133fb4a0e9c7ea04a5aaba1}\label{classProtectedVector_a55515f8fc133fb4a0e9c7ea04a5aaba1}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!reserve@{reserve}}
+\index{reserve@{reserve}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{reserve()}{reserve()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::reserve (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 208 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{208                             \{}
+\DoxyCodeLine{209     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{210     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.reserve(\mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}});}
+\DoxyCodeLine{211     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{212   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a47e8a977dc30499bb8c758b404822949}\label{classProtectedVector_a47e8a977dc30499bb8c758b404822949}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!reserve\_unsafe@{reserve\_unsafe}}
+\index{reserve\_unsafe@{reserve\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{reserve\_unsafe()}{reserve\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::reserve\+\_\+unsafe (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 214 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{214 \{ this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.reserve(\mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}}); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a7ce52c7b92b7731b3c54e81a94e31263}\label{classProtectedVector_a7ce52c7b92b7731b3c54e81a94e31263}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!resize@{resize}}
+\index{resize@{resize}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{resize()}{resize()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::resize (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 216 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{216                            \{}
+\DoxyCodeLine{217     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{218     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.resize(\mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}});}
+\DoxyCodeLine{219     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{220   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_acd8aaa30b72fbc06ab911cac8c8fc2f9}\label{classProtectedVector_acd8aaa30b72fbc06ab911cac8c8fc2f9}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!resize\_unsafe@{resize\_unsafe}}
+\index{resize\_unsafe@{resize\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{resize\_unsafe()}{resize\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::resize\+\_\+unsafe (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 222 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{222 \{ this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.resize(\mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}}); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a6c65a910e26ab9297f4dad6eed98e45a}\label{classProtectedVector_a6c65a910e26ab9297f4dad6eed98e45a}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!set@{set}}
+\index{set@{set}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{set()}{set()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::set (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i,  }\item[{T}]{val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 233 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{233                             \{}
+\DoxyCodeLine{234     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{235     this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}] = val;}
+\DoxyCodeLine{236     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{237   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a09aaf1156ef17c5efe8128197a9c9596}\label{classProtectedVector_a09aaf1156ef17c5efe8128197a9c9596}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!set\_unsafe@{set\_unsafe}}
+\index{set\_unsafe@{set\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{set\_unsafe()}{set\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::set\+\_\+unsafe (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{i,  }\item[{T}]{val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 239 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{239 \{ this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}] = val; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}\label{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!size@{size}}
+\index{size@{size}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{size()}{size()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+size\+\_\+t \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 122 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{122                 \{}
+\DoxyCodeLine{123     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.lock();}
+\DoxyCodeLine{124     \textcolor{keywordtype}{int} \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}} = this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.size();}
+\DoxyCodeLine{125     this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock();}
+\DoxyCodeLine{126     \textcolor{keywordflow}{return} \mbox{\hyperlink{classProtectedVector_a9c5b71e7ba8cad5c24a00bc531355c43}{size}};}
+\DoxyCodeLine{127   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}\label{classProtectedVector_ab0987538373a2f8d8c8c9044fa750c2b}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!size\_unsafe@{size\_unsafe}}
+\index{size\_unsafe@{size\_unsafe}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{size\_unsafe()}{size\_unsafe()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+size\+\_\+t \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::size\+\_\+unsafe (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 129 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{129 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classProtectedVector_af29167f5adc0ae6934dc122029556efe}{vec}}.size(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}\label{classProtectedVector_a81f47fe5ea0670a6d2e0ddbddf638d82}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!unlock@{unlock}}
+\index{unlock@{unlock}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{unlock()}{unlock()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::unlock (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 82 of file containers.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{82 \{ this-\/>\mbox{\hyperlink{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}{mtx}}.unlock(); \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classProtectedVector_abb8e3458112028da844c9badb03087a6}\label{classProtectedVector_abb8e3458112028da844c9badb03087a6}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!length@{length}}
+\index{length@{length}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{length}{length}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::atomic$<$int$>$ \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::length \{0\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 44 of file containers.\+hpp.
+
+\mbox{\Hypertarget{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}\label{classProtectedVector_aebef9661435a92a71fdf74abf062c9a3}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!mtx@{mtx}}
+\index{mtx@{mtx}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{mtx}{mtx}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::mutex \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::mtx\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 45 of file containers.\+hpp.
+
+\mbox{\Hypertarget{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}\label{classProtectedVector_a4ea84abdf092e316b89c56189b98e2f9}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!name@{name}}
+\index{name@{name}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::string \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::name\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 46 of file containers.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+::get\+\_\+name(), parla.\+cython.\+tasks.\+Task\+::unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task\+::update\+\_\+name().
+
+\mbox{\Hypertarget{classProtectedVector_af29167f5adc0ae6934dc122029556efe}\label{classProtectedVector_af29167f5adc0ae6934dc122029556efe}} 
+\index{ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}!vec@{vec}}
+\index{vec@{vec}!ProtectedVector$<$ T $>$@{ProtectedVector$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{vec}{vec}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+std\+::vector$<$T$>$ \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ T $>$\+::vec = std\+::vector$<$T$>$()\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 43 of file containers.\+hpp.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{containers_8hpp}{containers.\+hpp}}\end{DoxyCompactItemize}

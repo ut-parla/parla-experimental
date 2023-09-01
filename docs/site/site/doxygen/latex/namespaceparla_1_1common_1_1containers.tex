@@ -1,0 +1,123 @@
+\hypertarget{namespaceparla_1_1common_1_1containers}{}\doxysection{parla.\+common.\+containers Namespace Reference}
+\label{namespaceparla_1_1common_1_1containers}\index{parla.common.containers@{parla.common.containers}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet}{Task\+Set}}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1Tasks}{Tasks}}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSpace}{Task\+Space}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}{parse\+\_\+index}} (prefix, index, step, stop)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1containers_abfe869ec43ee2e49f768af61fb870151}{Task\+Await\+Tasks}} = tasks.\+Task\+Await\+Tasks
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1containers_a083fd0da0443ae93f8122a0ddc23c6e5}{Task}} = tasks.\+Compute\+Task
+\item 
+dictionary \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_a518f7a6a414f30f681f896eb322a9c6a}{\+\_\+task\+\_\+space\+\_\+globals}} = \{\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}\label{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}} 
+\index{parla.common.containers@{parla.common.containers}!parse\_index@{parse\_index}}
+\index{parse\_index@{parse\_index}!parla.common.containers@{parla.common.containers}}
+\doxysubsubsection{\texorpdfstring{parse\_index()}{parse\_index()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+parse\+\_\+index (\begin{DoxyParamCaption}\item[{}]{prefix,  }\item[{}]{index,  }\item[{}]{step,  }\item[{}]{stop }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Traverse :param:`index`, update :param:`prefix` by applying :param:`step`, :param:`stop` at leaf calls.
+
+:param prefix: the initial state
+:param index: the index tuple containing subindexes
+:param step: a function with 2 input arguments (current_state, subindex) which returns the next state, applied for each subindex.
+:param stop: a function with 1 input argument (final_state), applied each time subindexes exhaust.
+\end{DoxyVerb}
+ 
+
+Definition at line 61 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{61 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}{parse\_index}}(prefix, index,  step,  stop):}
+\DoxyCodeLine{62     \textcolor{stringliteral}{"{}"{}"{}Traverse :param:`index`, update :param:`prefix` by applying :param:`step`, :param:`stop` at leaf calls.}}
+\DoxyCodeLine{63 \textcolor{stringliteral}{}}
+\DoxyCodeLine{64 \textcolor{stringliteral}{    :param prefix: the initial state}}
+\DoxyCodeLine{65 \textcolor{stringliteral}{    :param index: the index tuple containing subindexes}}
+\DoxyCodeLine{66 \textcolor{stringliteral}{    :param step: a function with 2 input arguments (current\_state, subindex) which returns the next state, applied for each subindex.}}
+\DoxyCodeLine{67 \textcolor{stringliteral}{    :param stop: a function with 1 input argument (final\_state), applied each time subindexes exhaust.}}
+\DoxyCodeLine{68 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{69     \textcolor{keywordflow}{if} len(index) > 0:}
+\DoxyCodeLine{70         i, *rest = index}
+\DoxyCodeLine{71         \textcolor{keywordflow}{if} isinstance(i, slice):}
+\DoxyCodeLine{72             \textcolor{keywordflow}{for} v \textcolor{keywordflow}{in} range(i.start \textcolor{keywordflow}{or} 0, i.stop, i.step \textcolor{keywordflow}{or} 1):}
+\DoxyCodeLine{73                 \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}{parse\_index}}(step(prefix, v), rest, step, stop)}
+\DoxyCodeLine{74         \textcolor{keywordflow}{elif} isinstance(i, Iterable):}
+\DoxyCodeLine{75             \textcolor{keywordflow}{for} v \textcolor{keywordflow}{in} i:}
+\DoxyCodeLine{76                 \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}{parse\_index}}(step(prefix, v), rest, step, stop)}
+\DoxyCodeLine{77         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{78             \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318}{parse\_index}}(step(prefix, i), rest, step, stop)}
+\DoxyCodeLine{79     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{80         stop(prefix)}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+containers.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1common_1_1containers_ad54ed966ad5e2266cee6be2e59031318_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1containers_a518f7a6a414f30f681f896eb322a9c6a}\label{namespaceparla_1_1common_1_1containers_a518f7a6a414f30f681f896eb322a9c6a}} 
+\index{parla.common.containers@{parla.common.containers}!\_task\_space\_globals@{\_task\_space\_globals}}
+\index{\_task\_space\_globals@{\_task\_space\_globals}!parla.common.containers@{parla.common.containers}}
+\doxysubsubsection{\texorpdfstring{\_task\_space\_globals}{\_task\_space\_globals}}
+{\footnotesize\ttfamily dictionary parla.\+common.\+containers.\+\_\+task\+\_\+space\+\_\+globals = \{\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 83 of file containers.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1containers_a083fd0da0443ae93f8122a0ddc23c6e5}\label{namespaceparla_1_1common_1_1containers_a083fd0da0443ae93f8122a0ddc23c6e5}} 
+\index{parla.common.containers@{parla.common.containers}!Task@{Task}}
+\index{Task@{Task}!parla.common.containers@{parla.common.containers}}
+\doxysubsubsection{\texorpdfstring{Task}{Task}}
+{\footnotesize\ttfamily parla.\+common.\+containers.\+Task = tasks.\+Compute\+Task}
+
+
+
+Definition at line 10 of file containers.\+py.
+
+
+
+Referenced by parla.\+common.\+containers.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+().
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1containers_abfe869ec43ee2e49f768af61fb870151}\label{namespaceparla_1_1common_1_1containers_abfe869ec43ee2e49f768af61fb870151}} 
+\index{parla.common.containers@{parla.common.containers}!TaskAwaitTasks@{TaskAwaitTasks}}
+\index{TaskAwaitTasks@{TaskAwaitTasks}!parla.common.containers@{parla.common.containers}}
+\doxysubsubsection{\texorpdfstring{TaskAwaitTasks}{TaskAwaitTasks}}
+{\footnotesize\ttfamily parla.\+common.\+containers.\+Task\+Await\+Tasks = tasks.\+Task\+Await\+Tasks}
+
+
+
+Definition at line 9 of file containers.\+py.
+
+
+
+Referenced by parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+await\+\_\+\+\_\+().
+

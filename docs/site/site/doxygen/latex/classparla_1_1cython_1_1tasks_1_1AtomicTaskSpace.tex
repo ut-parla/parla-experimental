@@ -1,0 +1,226 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace}{}\doxysection{parla.\+cython.\+tasks.\+Atomic\+Task\+Space Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace}\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Atomic\+Task\+Space\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=260pt]{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Atomic\+Task\+Space\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=260pt]{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_acae42cbb9943ab2b31b135ae4ad75e24}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_aae88453c3c0c8a15d3ac0497a34f7ca8}{name}}=\char`\"{}\char`\"{}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ab80fbcc3f22dfd587dd48df843871126}{create}}=True, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_aad0dc9056ca3458483bfb72aa53bb119}{shape}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_a685fa83afc003411633a53dc2fc84865}{start}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a1d07b864fe5004d055525690e44ffd1d}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a91472ba64b98b2c652e7e4e5e456f1d2}{\+\_\+\+\_\+getitem\+\_\+\+\_\+}} (self, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a6051e1607a75f5e7f15dbd3d8e9f7e30}{index}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_ab5b2963cb06737dc81963e1845775c0b}{wait}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a015fcc17b9b0be4afed02ddefb4694c7}{inner\+\_\+space}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 1708 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_acae42cbb9943ab2b31b135ae4ad75e24}\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_acae42cbb9943ab2b31b135ae4ad75e24}} 
+\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{name = {\ttfamily \char`\"{}\char`\"{}},  }\item[{}]{create = {\ttfamily True},  }\item[{}]{shape = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{start = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}} }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_a152174629811e97fe9de81ac4cfaefa7}{parla.\+cython.\+tasks.\+Task\+Space}}.
+
+
+
+Definition at line 1710 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1710     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, name="{}"{}, create=True, shape=None, start=None):}
+\DoxyCodeLine{1711         super().\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(name, create, shape, start)}
+\DoxyCodeLine{1712         self.inner\_space = core.PyTaskBarrier()}
+\DoxyCodeLine{1713 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a91472ba64b98b2c652e7e4e5e456f1d2}\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a91472ba64b98b2c652e7e4e5e456f1d2}} 
+\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}!\_\_getitem\_\_@{\_\_getitem\_\_}}
+\index{\_\_getitem\_\_@{\_\_getitem\_\_}!parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+\doxysubsubsection{\texorpdfstring{\_\_getitem\_\_()}{\_\_getitem\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{index }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_ae635de6400f6b65ce4c5860424360f43}{parla.\+cython.\+tasks.\+Task\+Space}}.
+
+
+
+Definition at line 1718 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1718     \textcolor{keyword}{def }\_\_getitem\_\_(self, index):}
+\DoxyCodeLine{1719 }
+\DoxyCodeLine{1720         create = self.\_create}
+\DoxyCodeLine{1721         tasks = self.\_tasks}
+\DoxyCodeLine{1722 }
+\DoxyCodeLine{1723         \textcolor{keywordflow}{if} isinstance(index, int):}
+\DoxyCodeLine{1724             start\_flag = (self.start \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None})}
+\DoxyCodeLine{1725             shape\_flag = (self.shape \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None})}
+\DoxyCodeLine{1726             lower\_boundary = self.start[0] \textcolor{keywordflow}{if} start\_flag \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{1727             upper\_boundary = lower\_boundary + self.shape[0] \textcolor{keywordflow}{if} shape\_flag \textcolor{keywordflow}{else} -\/1}
+\DoxyCodeLine{1728 }
+\DoxyCodeLine{1729             idx = [(index,)] \textcolor{keywordflow}{if} (index >= lower\_boundary) \textcolor{keywordflow}{and} ((index <= upper\_boundary) \textcolor{keywordflow}{or} (upper\_boundary  < 0)) \textcolor{keywordflow}{else} []}
+\DoxyCodeLine{1730             task\_list, (new\_tasks, new\_idx) = get\_or\_create\_tasks(self, idx, create=create)}
+\DoxyCodeLine{1731 }
+\DoxyCodeLine{1732             \textcolor{comment}{\#self.inner\_space.add\_tasks(new\_idx, new\_tasks)}}
+\DoxyCodeLine{1733             self.inner\_space.add\_tasks(new\_tasks)}
+\DoxyCodeLine{1734 }
+\DoxyCodeLine{1735             \textcolor{keywordflow}{if} len(task\_list) == 1:}
+\DoxyCodeLine{1736                 \textcolor{keywordflow}{return} task\_list[0]}
+\DoxyCodeLine{1737 }
+\DoxyCodeLine{1738             \textcolor{keywordflow}{return} AtomicTaskList(task\_list)}
+\DoxyCodeLine{1739 }
+\DoxyCodeLine{1740         \textcolor{keywordflow}{if} isinstance(index, str):}
+\DoxyCodeLine{1741             task\_list, (new\_tasks, new\_index) = get\_or\_create\_tasks(self, [(index,)], create=create)}
+\DoxyCodeLine{1742             \textcolor{comment}{\#self.inner\_space.add\_tasks(new\_idx, new\_tasks)}}
+\DoxyCodeLine{1743             self.inner\_space.add\_tasks(new\_tasks)}
+\DoxyCodeLine{1744 }
+\DoxyCodeLine{1745             \textcolor{keywordflow}{if} len(task\_list) == 1:}
+\DoxyCodeLine{1746                 \textcolor{keywordflow}{return} task\_list[0]}
+\DoxyCodeLine{1747 }
+\DoxyCodeLine{1748             \textcolor{keywordflow}{return} AtomicTaskList(task\_list)}
+\DoxyCodeLine{1749 }
+\DoxyCodeLine{1750 }
+\DoxyCodeLine{1751         \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(index, tuple):}
+\DoxyCodeLine{1752             index = (index,)}
+\DoxyCodeLine{1753 }
+\DoxyCodeLine{1754         index\_list = []}
+\DoxyCodeLine{1755         cy\_parse\_index((), index, index\_list, shape=self.shape, start=self.start)}
+\DoxyCodeLine{1756         task\_list, (new\_tasks, new\_index) = get\_or\_create\_tasks(self, index\_list, create=self.\_create)}
+\DoxyCodeLine{1757         \textcolor{comment}{\#self.inner\_space.add\_tasks(new\_idx, new\_tasks)}}
+\DoxyCodeLine{1758         self.inner\_space.add\_tasks(new\_tasks)}
+\DoxyCodeLine{1759 }
+\DoxyCodeLine{1760         \textcolor{keywordflow}{if} len(task\_list) == 1:}
+\DoxyCodeLine{1761             \textcolor{keywordflow}{return} task\_list[0]}
+\DoxyCodeLine{1762 }
+\DoxyCodeLine{1763         \textcolor{keywordflow}{return} AtomicTaskList(task\_list)}
+\DoxyCodeLine{1764 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Space.\+\_\+create, parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks, parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+inner\+\_\+space, parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+inner\+\_\+space, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape, parla.\+cython.\+tasks.\+Task\+Space.\+shape, parla.\+cython.\+scheduler.\+Worker\+Thread.\+start(), and parla.\+cython.\+tasks.\+Task\+Space.\+start.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a91472ba64b98b2c652e7e4e5e456f1d2_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a1d07b864fe5004d055525690e44ffd1d}\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a1d07b864fe5004d055525690e44ffd1d}} 
+\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace_a471add4efea2f623cee8799428d7f16c}{parla.\+cython.\+tasks.\+Task\+Space}}.
+
+
+
+Definition at line 1714 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1714     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{1715         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}AtomicTaskSpace(\{self.\_name\}, ntasks=\{len(self)\})"{}}}
+\DoxyCodeLine{1716 }
+\DoxyCodeLine{1717     }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a1d07b864fe5004d055525690e44ffd1d_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_ab5b2963cb06737dc81963e1845775c0b}\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_ab5b2963cb06737dc81963e1845775c0b}} 
+\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}!wait@{wait}}
+\index{wait@{wait}!parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+\doxysubsubsection{\texorpdfstring{wait()}{wait()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+wait (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1765 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1765     \textcolor{keyword}{def }wait(self):}
+\DoxyCodeLine{1766         self.inner\_space.wait()}
+\DoxyCodeLine{1767 }
+\DoxyCodeLine{1768 }
+\DoxyCodeLine{1769 \textcolor{comment}{\#TODO(wlr): This is incredibly experimental. }}
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+inner\+\_\+space, and parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+inner\+\_\+space.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a015fcc17b9b0be4afed02ddefb4694c7}\label{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace_a015fcc17b9b0be4afed02ddefb4694c7}} 
+\index{parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}!inner\_space@{inner\_space}}
+\index{inner\_space@{inner\_space}!parla.cython.tasks.AtomicTaskSpace@{parla.cython.tasks.AtomicTaskSpace}}
+\doxysubsubsection{\texorpdfstring{inner\_space}{inner\_space}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+inner\+\_\+space}
+
+
+
+Definition at line 1712 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+wait(), and parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+wait().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

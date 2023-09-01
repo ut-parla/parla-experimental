@@ -1,0 +1,305 @@
+\hypertarget{namespaceparla_1_1common_1_1spawn}{}\doxysection{parla.\+common.\+spawn Namespace Reference}
+\label{namespaceparla_1_1common_1_1spawn}\index{parla.common.spawn@{parla.common.spawn}}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd}{\+\_\+make\+\_\+cell}} (val)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a27dbac1918b0acf96e4f138b8d3b8058}{spawn}} (task=None, dependencies=\mbox{[}$\,$\mbox{]}, Collection\mbox{[}Union\mbox{[}Collection\mbox{[}\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_af3a0ab620da7bcac78e5cbfe1545493b}{Placement\+Source}}\mbox{]}, Any, None\mbox{]}\mbox{]} placement=None, List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} input=None, List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} output=None, List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} inout=None, float vcus=None, int memory=None, \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1SynchronizationType}{Synchronization\+Type}} runahead=default\+\_\+sync)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_ab6753de50df8ba7a0b1a02d9170f3e69}{Compute\+Task}} = tasks.\+Compute\+Task
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a3de05882c59bf7c9149a2c2d4f39cabc}{task\+\_\+locals}} = tasks.\+task\+\_\+locals
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a455baa8769fe77f29aceac743daa9cbf}{Py\+Architecture}} = device\+\_\+manager.\+Py\+Architecture
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a426b73f664f9a589f2fc092f255f41b7}{Py\+Device}} = device\+\_\+manager.\+Py\+Device
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_af3a0ab620da7bcac78e5cbfe1545493b}{Placement\+Source}} = device.\+Placement\+Source
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_afaa5b9530cd7aad13d8483f122679664}{Worker\+Thread}} = scheduler.\+Worker\+Thread
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a03a95deb9065752b4bc55b1fa4e72577}{\+\_\+task\+\_\+callback}} = scheduler.\+\_\+task\+\_\+callback
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a026b52a46e7adac939c35756e3d78814}{get\+\_\+scheduler\+\_\+context}} = scheduler.\+get\+\_\+scheduler\+\_\+context
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_ad535481b50729495d01f77c0b127e4af}{nvtx}} = \mbox{\hyperlink{classparla_1_1utility_1_1tracer_1_1NVTXTracer}{NVTXTracer}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a567b7479f48b495a6a2605cf14f3d4a4}{Resources}} = core.\+Resources
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd}\label{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd}} 
+\index{parla.common.spawn@{parla.common.spawn}!\_make\_cell@{\_make\_cell}}
+\index{\_make\_cell@{\_make\_cell}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{\_make\_cell()}{\_make\_cell()}}
+{\footnotesize\ttfamily def parla.\+common.\+spawn.\+\_\+make\+\_\+cell (\begin{DoxyParamCaption}\item[{}]{val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyVerb}Create a new Python closure cell object.
+
+You should not be using this. I shouldn't be either, but I don't know a way around Python's broken semantics. (Arthur)
+\end{DoxyVerb}
+ 
+
+Definition at line 41 of file spawn.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{41 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd}{\_make\_cell}}(val):}
+\DoxyCodeLine{42     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{43 \textcolor{stringliteral}{    Create a new Python closure cell object.}}
+\DoxyCodeLine{44 \textcolor{stringliteral}{}}
+\DoxyCodeLine{45 \textcolor{stringliteral}{    You should not be using this. I shouldn't be either, but I don't know a way around Python's broken semantics. (Arthur)}}
+\DoxyCodeLine{46 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{47     x = val}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49     \textcolor{keyword}{def }closure():}
+\DoxyCodeLine{50         \textcolor{keywordflow}{return} x}
+\DoxyCodeLine{51 }
+\DoxyCodeLine{52     \textcolor{keywordflow}{return} closure.\_\_closure\_\_[0]}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54 }
+\DoxyCodeLine{55 \textcolor{comment}{\# @profile}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+spawn.\+spawn().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a27dbac1918b0acf96e4f138b8d3b8058}\label{namespaceparla_1_1common_1_1spawn_a27dbac1918b0acf96e4f138b8d3b8058}} 
+\index{parla.common.spawn@{parla.common.spawn}!spawn@{spawn}}
+\index{spawn@{spawn}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{spawn()}{spawn()}}
+{\footnotesize\ttfamily def parla.\+common.\+spawn.\+spawn (\begin{DoxyParamCaption}\item[{}]{task = {\ttfamily None},  }\item[{}]{dependencies = {\ttfamily \mbox{[}\mbox{]}},  }\item[{Collection\mbox{[}Union\mbox{[}Collection\mbox{[}\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_af3a0ab620da7bcac78e5cbfe1545493b}{Placement\+Source}}\mbox{]},                                       Any, None\mbox{]}\mbox{]} }]{placement = {\ttfamily None},  }\item[{List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} }]{input = {\ttfamily None},  }\item[{List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} }]{output = {\ttfamily None},  }\item[{List\mbox{[}Union\mbox{[}crosspy.\+Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} }]{inout = {\ttfamily None},  }\item[{float }]{vcus = {\ttfamily None},  }\item[{int }]{memory = {\ttfamily None},  }\item[{\mbox{\hyperlink{classparla_1_1common_1_1globals_1_1SynchronizationType}{Synchronization\+Type}} }]{runahead = {\ttfamily default\+\_\+sync} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 56 of file spawn.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{71           ):}
+\DoxyCodeLine{72     nvtx.push\_range(message=\textcolor{stringliteral}{"{}Spawn::spawn"{}}, domain=\textcolor{stringliteral}{"{}launch"{}}, color=\textcolor{stringliteral}{"{}blue"{}})}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{74     scheduler = \mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a026b52a46e7adac939c35756e3d78814}{get\_scheduler\_context}}().scheduler}
+\DoxyCodeLine{75 }
+\DoxyCodeLine{76     \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(task, tasks.Task):}
+\DoxyCodeLine{77         taskspace = scheduler.default\_taskspace}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79         \textcolor{keywordflow}{if} task \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{80             idx = len(taskspace)}
+\DoxyCodeLine{81         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{82             idx = task}
+\DoxyCodeLine{83             }
+\DoxyCodeLine{84         task = taskspace[idx]}
+\DoxyCodeLine{85 }
+\DoxyCodeLine{86     \textcolor{comment}{\# @profile}}
+\DoxyCodeLine{87     \textcolor{keyword}{def }decorator(body):}
+\DoxyCodeLine{88         nonlocal vcus}
+\DoxyCodeLine{89         nonlocal memory}
+\DoxyCodeLine{90         nonlocal dependencies}
+\DoxyCodeLine{91         nonlocal task}
+\DoxyCodeLine{92         nonlocal placement}
+\DoxyCodeLine{93         nonlocal runahead}
+\DoxyCodeLine{94 }
+\DoxyCodeLine{95         \textcolor{comment}{\# COMMENT(wlr): Just added this back to revert my commit 30 min ago.}}
+\DoxyCodeLine{96         \textcolor{keywordflow}{if} vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{97             \textcolor{comment}{\# Default behavior the same as Parla 0.2.}}
+\DoxyCodeLine{98             \textcolor{comment}{\# The baseline should not be multiplied when placement is None.}}
+\DoxyCodeLine{99             \textcolor{comment}{\# This is because architecture's \_\_getitem\_\_ also multiplies}}
+\DoxyCodeLine{100             \textcolor{comment}{\# the baseline, and it multiplies (baseline\string^2).}}
+\DoxyCodeLine{101             \textcolor{keywordflow}{if} vcus <= 1 \textcolor{keywordflow}{and} placement \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{102                 vcus = int(vcus * VCU\_BASELINE)}
+\DoxyCodeLine{103             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{104                 \textcolor{comment}{\# Only large values for ease of testing}}
+\DoxyCodeLine{105                 vcus = int(vcus)}
+\DoxyCodeLine{106         \textcolor{keywordflow}{if} memory \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{107             memory = int(memory)}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{109         \textcolor{keywordflow}{if} inspect.iscoroutine(body):}
+\DoxyCodeLine{110             separated\_body = body}
+\DoxyCodeLine{111         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{112             separated\_body = type(body)(}
+\DoxyCodeLine{113                 body.\_\_code\_\_, body.\_\_globals\_\_, body.\_\_name\_\_, body.\_\_defaults\_\_,}
+\DoxyCodeLine{114                 closure=body.\_\_closure\_\_ \textcolor{keywordflow}{and} tuple(\mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a65134bacde3f1ac0c4b928bf7d68aafd}{\_make\_cell}}(x.cell\_contents) \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} body.\_\_closure\_\_))}
+\DoxyCodeLine{115             separated\_body.\_\_annotations\_\_ = body.\_\_annotations\_\_}
+\DoxyCodeLine{116             separated\_body.\_\_doc\_\_ = body.\_\_doc\_\_}
+\DoxyCodeLine{117             separated\_body.\_\_kwdefaults\_\_ = body.\_\_kwdefaults\_\_}
+\DoxyCodeLine{118             separated\_body.\_\_module\_\_ = body.\_\_module\_\_}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{120         flattened\_dependencies = []}
+\DoxyCodeLine{121         tasks.flatten\_tasks(dependencies, flattened\_dependencies)}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123         scheduler = \mbox{\hyperlink{namespaceparla_1_1common_1_1spawn_a026b52a46e7adac939c35756e3d78814}{get\_scheduler\_context}}().scheduler}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{125         device\_manager = scheduler.device\_manager}
+\DoxyCodeLine{126 }
+\DoxyCodeLine{127         \textcolor{comment}{\# Get a set of candidate devices for a task.}}
+\DoxyCodeLine{128         \textcolor{comment}{\# If none of the placement is passed, make}}
+\DoxyCodeLine{129         \textcolor{comment}{\# all devices candidate.}}
+\DoxyCodeLine{130         placement = placement \textcolor{keywordflow}{if} placement \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} [}
+\DoxyCodeLine{131             arch[\{\textcolor{stringliteral}{'vcus'}: vcus \textcolor{keywordflow}{if} vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0,}
+\DoxyCodeLine{132                   \textcolor{stringliteral}{'memory'}: memory \textcolor{keywordflow}{if} memory \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0\}]}
+\DoxyCodeLine{133             \textcolor{keywordflow}{for} arch \textcolor{keywordflow}{in} device\_manager.get\_all\_architectures()]}
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135         \textcolor{comment}{\# print("{}placement: "{}, placement)}}
+\DoxyCodeLine{136 }
+\DoxyCodeLine{137         device\_reqs = scheduler.get\_device\_reqs\_from\_placement(}
+\DoxyCodeLine{138             placement, vcus, memory)}
+\DoxyCodeLine{139         task.set\_device\_reqs(device\_reqs)}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141         dataflow = Dataflow(input, output, inout)}
+\DoxyCodeLine{142         task.set\_scheduler(scheduler)}
+\DoxyCodeLine{143         task.instantiate(function=\_task\_callback,}
+\DoxyCodeLine{144                          args=(separated\_body,),}
+\DoxyCodeLine{145                          dependencies=flattened\_dependencies,}
+\DoxyCodeLine{146                          dataflow=dataflow,}
+\DoxyCodeLine{147                          runahead=runahead}
+\DoxyCodeLine{148                          )}
+\DoxyCodeLine{149 }
+\DoxyCodeLine{150         scheduler.spawn\_task(task)}
+\DoxyCodeLine{151         \textcolor{comment}{\# scheduler.run\_scheduler()}}
+\DoxyCodeLine{152         nvtx.pop\_range(domain=\textcolor{stringliteral}{"{}launch"{}})}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{154         \textcolor{comment}{\# This is a complete hack but somehow performs better than doing the "{}right"{} thing of signaling from waiting threads that the compute bound thread needs to release the GIL.}}
+\DoxyCodeLine{155         \textcolor{comment}{\# TODO: Make this an optional flag.}}
+\DoxyCodeLine{156         \textcolor{keywordflow}{if} ((task\_locals.spawn\_count \% 10 == 0)):}
+\DoxyCodeLine{157             scheduler.spawn\_wait()}
+\DoxyCodeLine{158         task\_locals.spawn\_count += 1}
+\DoxyCodeLine{159 }
+\DoxyCodeLine{160         \textcolor{keywordflow}{return} task}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162     \textcolor{keywordflow}{return} decorator}
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+spawn.\+\_\+make\+\_\+cell(), and parla.\+common.\+spawn.\+get\+\_\+scheduler\+\_\+context.
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1common_1_1spawn_a27dbac1918b0acf96e4f138b8d3b8058_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a03a95deb9065752b4bc55b1fa4e72577}\label{namespaceparla_1_1common_1_1spawn_a03a95deb9065752b4bc55b1fa4e72577}} 
+\index{parla.common.spawn@{parla.common.spawn}!\_task\_callback@{\_task\_callback}}
+\index{\_task\_callback@{\_task\_callback}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{\_task\_callback}{\_task\_callback}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+\_\+task\+\_\+callback = scheduler.\+\_\+task\+\_\+callback\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 29 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_ab6753de50df8ba7a0b1a02d9170f3e69}\label{namespaceparla_1_1common_1_1spawn_ab6753de50df8ba7a0b1a02d9170f3e69}} 
+\index{parla.common.spawn@{parla.common.spawn}!ComputeTask@{ComputeTask}}
+\index{ComputeTask@{ComputeTask}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{ComputeTask}{ComputeTask}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Compute\+Task = tasks.\+Compute\+Task}
+
+
+
+Definition at line 22 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a026b52a46e7adac939c35756e3d78814}\label{namespaceparla_1_1common_1_1spawn_a026b52a46e7adac939c35756e3d78814}} 
+\index{parla.common.spawn@{parla.common.spawn}!get\_scheduler\_context@{get\_scheduler\_context}}
+\index{get\_scheduler\_context@{get\_scheduler\_context}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{get\_scheduler\_context}{get\_scheduler\_context}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+get\+\_\+scheduler\+\_\+context = scheduler.\+get\+\_\+scheduler\+\_\+context}
+
+
+
+Definition at line 30 of file spawn.\+py.
+
+
+
+Referenced by parla.\+common.\+spawn.\+spawn().
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_ad535481b50729495d01f77c0b127e4af}\label{namespaceparla_1_1common_1_1spawn_ad535481b50729495d01f77c0b127e4af}} 
+\index{parla.common.spawn@{parla.common.spawn}!nvtx@{nvtx}}
+\index{nvtx@{nvtx}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{nvtx}{nvtx}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+nvtx = \mbox{\hyperlink{classparla_1_1utility_1_1tracer_1_1NVTXTracer}{NVTXTracer}}}
+
+
+
+Definition at line 32 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_af3a0ab620da7bcac78e5cbfe1545493b}\label{namespaceparla_1_1common_1_1spawn_af3a0ab620da7bcac78e5cbfe1545493b}} 
+\index{parla.common.spawn@{parla.common.spawn}!PlacementSource@{PlacementSource}}
+\index{PlacementSource@{PlacementSource}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{PlacementSource}{PlacementSource}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Placement\+Source = device.\+Placement\+Source}
+
+
+
+Definition at line 26 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a455baa8769fe77f29aceac743daa9cbf}\label{namespaceparla_1_1common_1_1spawn_a455baa8769fe77f29aceac743daa9cbf}} 
+\index{parla.common.spawn@{parla.common.spawn}!PyArchitecture@{PyArchitecture}}
+\index{PyArchitecture@{PyArchitecture}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{PyArchitecture}{PyArchitecture}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Py\+Architecture = device\+\_\+manager.\+Py\+Architecture}
+
+
+
+Definition at line 24 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a426b73f664f9a589f2fc092f255f41b7}\label{namespaceparla_1_1common_1_1spawn_a426b73f664f9a589f2fc092f255f41b7}} 
+\index{parla.common.spawn@{parla.common.spawn}!PyDevice@{PyDevice}}
+\index{PyDevice@{PyDevice}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{PyDevice}{PyDevice}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Py\+Device = device\+\_\+manager.\+Py\+Device}
+
+
+
+Definition at line 25 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a567b7479f48b495a6a2605cf14f3d4a4}\label{namespaceparla_1_1common_1_1spawn_a567b7479f48b495a6a2605cf14f3d4a4}} 
+\index{parla.common.spawn@{parla.common.spawn}!Resources@{Resources}}
+\index{Resources@{Resources}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{Resources}{Resources}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Resources = core.\+Resources}
+
+
+
+Definition at line 35 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_a3de05882c59bf7c9149a2c2d4f39cabc}\label{namespaceparla_1_1common_1_1spawn_a3de05882c59bf7c9149a2c2d4f39cabc}} 
+\index{parla.common.spawn@{parla.common.spawn}!task\_locals@{task\_locals}}
+\index{task\_locals@{task\_locals}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{task\_locals}{task\_locals}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+task\+\_\+locals = tasks.\+task\+\_\+locals}
+
+
+
+Definition at line 23 of file spawn.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1common_1_1spawn_afaa5b9530cd7aad13d8483f122679664}\label{namespaceparla_1_1common_1_1spawn_afaa5b9530cd7aad13d8483f122679664}} 
+\index{parla.common.spawn@{parla.common.spawn}!WorkerThread@{WorkerThread}}
+\index{WorkerThread@{WorkerThread}!parla.common.spawn@{parla.common.spawn}}
+\doxysubsubsection{\texorpdfstring{WorkerThread}{WorkerThread}}
+{\footnotesize\ttfamily parla.\+common.\+spawn.\+Worker\+Thread = scheduler.\+Worker\+Thread}
+
+
+
+Definition at line 28 of file spawn.\+py.
+

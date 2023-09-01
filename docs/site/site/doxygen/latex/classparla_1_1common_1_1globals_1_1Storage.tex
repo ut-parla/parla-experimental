@@ -1,0 +1,260 @@
+\hypertarget{classparla_1_1common_1_1globals_1_1Storage}{}\doxysection{parla.\+common.\+globals.\+Storage Class Reference}
+\label{classparla_1_1common_1_1globals_1_1Storage}\index{parla.common.globals.Storage@{parla.common.globals.Storage}}
+
+
+Inheritance diagram for parla.\+common.\+globals.\+Storage\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=246pt]{classparla_1_1common_1_1globals_1_1Storage__inherit__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a3cc6ad5ee2df427e6a1c6b5c7e0004bf}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_aff9276820c6e269047df3e95b6f09c94}{store}} (self, key, value)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a7938ded6c5aef598f6f133ddbf058def}{retrieve}} (self, key)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_af9c80cfb9862ad346faafb4c2a73f0d1}{clear}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a5f5aeb5fa4876e01bc0ef83183db7242}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_ad6c48b63836ac81ba4d5164ce7d00955}{\+\_\+\+\_\+str\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a37f6d0ab53c576fa8540a9baed62f46a}{\+\_\+\+\_\+contains\+\_\+\+\_\+}} (self, key)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a26abc92a9bb86b88f840f9792189be6a}{\+\_\+\+\_\+getitem\+\_\+\+\_\+}} (self, key)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1globals_1_1Storage_a0bb14e5e71e1ac3b606cd42790a57721}{\+\_\+store}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 99 of file globals.\+py.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a3cc6ad5ee2df427e6a1c6b5c7e0004bf}\label{classparla_1_1common_1_1globals_1_1Storage_a3cc6ad5ee2df427e6a1c6b5c7e0004bf}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1LocalStorage_a845dab044f37b64746d7ee0c92dbb6e5}{parla.\+common.\+globals.\+Local\+Storage}}.
+
+
+
+Definition at line 105 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{105     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self):}
+\DoxyCodeLine{106         self.\_store = \{\}}
+\DoxyCodeLine{107 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a37f6d0ab53c576fa8540a9baed62f46a}\label{classparla_1_1common_1_1globals_1_1Storage_a37f6d0ab53c576fa8540a9baed62f46a}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_\_contains\_\_@{\_\_contains\_\_}}
+\index{\_\_contains\_\_@{\_\_contains\_\_}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_\_contains\_\_()}{\_\_contains\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+contains\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{key }\end{DoxyParamCaption})}
+
+
+
+Definition at line 123 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{123     \textcolor{keyword}{def }\_\_contains\_\_(self, key):}
+\DoxyCodeLine{124         \textcolor{keywordflow}{return} key \textcolor{keywordflow}{in} self.\_store}
+\DoxyCodeLine{125 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a26abc92a9bb86b88f840f9792189be6a}\label{classparla_1_1common_1_1globals_1_1Storage_a26abc92a9bb86b88f840f9792189be6a}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_\_getitem\_\_@{\_\_getitem\_\_}}
+\index{\_\_getitem\_\_@{\_\_getitem\_\_}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_\_getitem\_\_()}{\_\_getitem\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+getitem\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{key }\end{DoxyParamCaption})}
+
+
+
+Definition at line 126 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{126     \textcolor{keyword}{def }\_\_getitem\_\_(self, key):}
+\DoxyCodeLine{127         \textcolor{keywordflow}{return} self.\_store[key]}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129 }
+\DoxyCodeLine{130 \textcolor{comment}{\# TODO(wlr): Move this to the scheduler context.}}
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a5f5aeb5fa4876e01bc0ef83183db7242}\label{classparla_1_1common_1_1globals_1_1Storage_a5f5aeb5fa4876e01bc0ef83183db7242}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 117 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{117     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{118         \textcolor{keywordflow}{return} str(self.\_store)}
+\DoxyCodeLine{119 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1globals_1_1Storage_a5f5aeb5fa4876e01bc0ef83183db7242_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_ad6c48b63836ac81ba4d5164ce7d00955}\label{classparla_1_1common_1_1globals_1_1Storage_ad6c48b63836ac81ba4d5164ce7d00955}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_\_str\_\_@{\_\_str\_\_}}
+\index{\_\_str\_\_@{\_\_str\_\_}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_\_str\_\_()}{\_\_str\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 120 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{120     \textcolor{keyword}{def }\_\_str\_\_(self):}
+\DoxyCodeLine{121         \textcolor{keywordflow}{return} self.\_\_repr\_\_()}
+\DoxyCodeLine{122 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Space.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+parray.\+core.\+PArray.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Device\+Configuration.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Device.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Architecture.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Importable\+Architecture.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Device\+Resource\+Requirement.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device\+\_\+manager.\+Printable\+Frozen\+Set.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+device\+\_\+manager.\+Stream\+Pool.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Runahead.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Completed.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Exception.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+CPUEnvironment.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+List.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+List.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+repr\+\_\+\+\_\+(), and parla.\+cython.\+variants.\+\_\+\+Variant\+Function.\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=550pt]{classparla_1_1common_1_1globals_1_1Storage_ad6c48b63836ac81ba4d5164ce7d00955_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_af9c80cfb9862ad346faafb4c2a73f0d1}\label{classparla_1_1common_1_1globals_1_1Storage_af9c80cfb9862ad346faafb4c2a73f0d1}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!clear@{clear}}
+\index{clear@{clear}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{clear()}{clear()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+clear (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 114 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{114     \textcolor{keyword}{def }clear(self):}
+\DoxyCodeLine{115         self.\_store = \{\}}
+\DoxyCodeLine{116 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a7938ded6c5aef598f6f133ddbf058def}\label{classparla_1_1common_1_1globals_1_1Storage_a7938ded6c5aef598f6f133ddbf058def}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!retrieve@{retrieve}}
+\index{retrieve@{retrieve}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{retrieve()}{retrieve()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+retrieve (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{key }\end{DoxyParamCaption})}
+
+
+
+Definition at line 111 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{111     \textcolor{keyword}{def }retrieve(self, key):}
+\DoxyCodeLine{112         \textcolor{keywordflow}{return} self.\_store[key]}
+\DoxyCodeLine{113 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_aff9276820c6e269047df3e95b6f09c94}\label{classparla_1_1common_1_1globals_1_1Storage_aff9276820c6e269047df3e95b6f09c94}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!store@{store}}
+\index{store@{store}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{store()}{store()}}
+{\footnotesize\ttfamily def parla.\+common.\+globals.\+Storage.\+store (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{key,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Definition at line 108 of file globals.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{108     \textcolor{keyword}{def }store(self, key, value):}
+\DoxyCodeLine{109         self.\_store[key] = value}
+\DoxyCodeLine{110 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+Storage.\+\_\+store, parla.\+common.\+globals.\+Locals.\+\_\+store, and parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+store.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1Storage_a0bb14e5e71e1ac3b606cd42790a57721}\label{classparla_1_1common_1_1globals_1_1Storage_a0bb14e5e71e1ac3b606cd42790a57721}} 
+\index{parla.common.globals.Storage@{parla.common.globals.Storage}!\_store@{\_store}}
+\index{\_store@{\_store}!parla.common.globals.Storage@{parla.common.globals.Storage}}
+\doxysubsubsection{\texorpdfstring{\_store}{\_store}}
+{\footnotesize\ttfamily parla.\+common.\+globals.\+Storage.\+\_\+store\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 106 of file globals.\+py.
+
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+globals.\+Storage.\+clear(), parla.\+common.\+globals.\+Storage.\+retrieve(), parla.\+common.\+globals.\+Locals.\+retrieve(), parla.\+cython.\+tasks.\+Task\+Environment.\+retrieve(), parla.\+common.\+globals.\+Locals.\+storage(), parla.\+cython.\+tasks.\+Task\+Environment.\+storage(), parla.\+common.\+globals.\+Storage.\+store(), parla.\+common.\+globals.\+Locals.\+store(), and parla.\+cython.\+tasks.\+Task\+Environment.\+store().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/\mbox{\hyperlink{globals_8py}{globals.\+py}}\end{DoxyCompactItemize}

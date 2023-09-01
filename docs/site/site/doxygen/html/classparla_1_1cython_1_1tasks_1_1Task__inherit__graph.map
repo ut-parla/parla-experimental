@@ -1,0 +1,5 @@
+<map id="parla.cython.tasks.Task" name="parla.cython.tasks.Task">
+<area shape="rect" id="node1" title="Python Task interface." alt="" coords="175,5,350,32"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1ComputeTask.html" title="A compute task is a task that executes a user defined Python function on a device." alt="" coords="5,80,240,107"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1DataMovementTask.html" title="A data movement task is a task that moves data between devices." alt="" coords="265,80,541,107"/>
+</map>

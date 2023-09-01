@@ -1,0 +1,12 @@
+<map id="src/c/backend/include/parray_tracker.hpp" name="src/c/backend/include/parray_tracker.hpp">
+<area shape="rect" id="node1" title="Provides interface to scheduler tracking of parray data objects." alt="" coords="119,5,280,47"/>
+<area shape="rect" id="node2" href="$parray__tracker_8cpp.html" title=" " alt="" coords="5,95,161,136"/>
+<area shape="rect" id="node3" href="$policy_8hpp.html" title="Interface for mapping policies." alt="" coords="60,184,221,225"/>
+<area shape="rect" id="node8" href="$runtime_8hpp.html" title="The core C++ runtime for Parla. Includes the main scheduler and task classes." alt="" coords="297,95,459,136"/>
+<area shape="rect" id="node4" href="$phases_8cpp.html" title=" " alt="" coords="235,363,422,389"/>
+<area shape="rect" id="node5" href="$phases_8hpp.html" title="Interface for scheduler runtime phases." alt="" coords="255,273,416,315"/>
+<area shape="rect" id="node6" href="$policy_8cpp.html" title=" " alt="" coords="30,363,209,389"/>
+<area shape="rect" id="node7" href="$scheduler_8cpp.html" title=" " alt="" coords="446,363,649,389"/>
+<area shape="rect" id="node9" href="$device__queues_8hpp.html" title="Provides interface for task queues and collections of task queues for multidevice tasks." alt="" coords="297,184,459,225"/>
+<area shape="rect" id="node10" href="$task_8cpp.html" title=" " alt="" coords="483,191,652,218"/>
+</map>

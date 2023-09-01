@@ -1,0 +1,169 @@
+\hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler}{}\doxysection{parla.\+cython.\+core.\+Py\+Inner\+Scheduler Class Reference}
+\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler}\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a4a5eb10e13510a981169f9c1cca9155b}{\+\_\+\+\_\+cinit\+\_\+\+\_\+}} (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a65de75622cbceb94f770cf12bd228338}{self}}, Cy\+Device\+Manager, cy\+\_\+device\+\_\+manager, int, num\+\_\+workers, float, vcus, object, python\+\_\+scheduler)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ac3308be8aea083c660d5001d16f68394}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a65de75622cbceb94f770cf12bd228338}{self}}, Cy\+Device\+Manager, cy\+\_\+device\+\_\+manager, int, num\+\_\+workers, float, vcus, object, python\+\_\+scheduler)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_af2c215a8a1c17ed3eb88b91f9fb8303e}{\+\_\+\+\_\+dealloc\+\_\+\+\_\+}} (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a65de75622cbceb94f770cf12bd228338}{self}})
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a20ace4aa64b587d1465a76292695cc17}{inner\+\_\+scheduler}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_aca66d66aeeeedf09059368a21ce2b470}{c\+\_\+self}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ab9f78ed1f9610c7dc59990ebfb2940a9}{c\+\_\+task}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a3b4112dd7b50a9ff2ab06522cbfa8a2f}{c\+\_\+worker}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 578 of file core.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ac3308be8aea083c660d5001d16f68394}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ac3308be8aea083c660d5001d16f68394}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{Cy\+Device\+Manager,  }\item[{}]{cy\+\_\+device\+\_\+manager,  }\item[{}]{int,  }\item[{}]{num\+\_\+workers,  }\item[{}]{float,  }\item[{}]{vcus,  }\item[{}]{object,  }\item[{}]{python\+\_\+scheduler }\end{DoxyParamCaption})}
+
+
+
+Definition at line 588 of file core.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{588     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, CyDeviceManager cy\_device\_manager, int num\_workers, float vcus, object python\_scheduler):}
+\DoxyCodeLine{589         cdef InnerScheduler* \_inner\_scheduler}
+\DoxyCodeLine{590         \_inner\_scheduler = self.inner\_scheduler}
+\DoxyCodeLine{591 }
+\DoxyCodeLine{592         \_inner\_scheduler.set\_num\_workers(num\_workers)}
+\DoxyCodeLine{593         }
+\DoxyCodeLine{594         \_inner\_scheduler.set\_py\_scheduler(<void *> python\_scheduler)}
+\DoxyCodeLine{595 }
+\DoxyCodeLine{596         cdef stopfunc\_t py\_stop = callback\_stop}
+\DoxyCodeLine{597         \_inner\_scheduler.set\_stop\_callback(py\_stop)}
+\DoxyCodeLine{598 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+inner\+\_\+scheduler, and parla.\+cython.\+scheduler.\+Scheduler.\+inner\+\_\+scheduler.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a4a5eb10e13510a981169f9c1cca9155b}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a4a5eb10e13510a981169f9c1cca9155b}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!\_\_cinit\_\_@{\_\_cinit\_\_}}
+\index{\_\_cinit\_\_@{\_\_cinit\_\_}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{\_\_cinit\_\_()}{\_\_cinit\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+cinit\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{Cy\+Device\+Manager,  }\item[{}]{cy\+\_\+device\+\_\+manager,  }\item[{}]{int,  }\item[{}]{num\+\_\+workers,  }\item[{}]{float,  }\item[{}]{vcus,  }\item[{}]{object,  }\item[{}]{python\+\_\+scheduler }\end{DoxyParamCaption})}
+
+
+
+Definition at line 581 of file core.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{581     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a3cb2995d895c8a995d3a848ff2701c7e}{\_\_cinit\_\_}}(self, CyDeviceManager cy\_device\_manager, int num\_workers, float vcus, object python\_scheduler):}
+\DoxyCodeLine{582         cdef InnerScheduler* \_inner\_scheduler}
+\DoxyCodeLine{583         cdef DeviceManager* \_cpp\_device\_manager = <DeviceManager*> cy\_device\_manager.get\_cpp\_device\_manager()}
+\DoxyCodeLine{584 }
+\DoxyCodeLine{585         \_inner\_scheduler = new \mbox{\hyperlink{classInnerScheduler}{InnerScheduler}}(\_cpp\_device\_manager)}
+\DoxyCodeLine{586         self.inner\_scheduler = \_inner\_scheduler}
+\DoxyCodeLine{587 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_af2c215a8a1c17ed3eb88b91f9fb8303e}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_af2c215a8a1c17ed3eb88b91f9fb8303e}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!\_\_dealloc\_\_@{\_\_dealloc\_\_}}
+\index{\_\_dealloc\_\_@{\_\_dealloc\_\_}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{\_\_dealloc\_\_()}{\_\_dealloc\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+dealloc\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 603 of file core.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{603     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a669240eab57eb830c4cfab9d9b2ac9ad}{\_\_dealloc\_\_}}(self):}
+\DoxyCodeLine{604         del self.inner\_scheduler}
+\DoxyCodeLine{605 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+inner\+\_\+scheduler, parla.\+cython.\+scheduler.\+Scheduler.\+inner\+\_\+scheduler, and parla.\+utility.\+execute.\+run().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1core_1_1PyInnerScheduler_af2c215a8a1c17ed3eb88b91f9fb8303e_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_aca66d66aeeeedf09059368a21ce2b470}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_aca66d66aeeeedf09059368a21ce2b470}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!c\_self@{c\_self}}
+\index{c\_self@{c\_self}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{c\_self}{c\_self}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+c\+\_\+self\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 600 of file core.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ab9f78ed1f9610c7dc59990ebfb2940a9}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_ab9f78ed1f9610c7dc59990ebfb2940a9}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!c\_task@{c\_task}}
+\index{c\_task@{c\_task}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{c\_task}{c\_task}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+c\+\_\+task\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 621 of file core.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a3b4112dd7b50a9ff2ab06522cbfa8a2f}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a3b4112dd7b50a9ff2ab06522cbfa8a2f}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!c\_worker@{c\_worker}}
+\index{c\_worker@{c\_worker}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{c\_worker}{c\_worker}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+c\+\_\+worker\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 627 of file core.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a20ace4aa64b587d1465a76292695cc17}\label{classparla_1_1cython_1_1core_1_1PyInnerScheduler_a20ace4aa64b587d1465a76292695cc17}} 
+\index{parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}!inner\_scheduler@{inner\_scheduler}}
+\index{inner\_scheduler@{inner\_scheduler}!parla.cython.core.PyInnerScheduler@{parla.cython.core.PyInnerScheduler}}
+\doxysubsubsection{\texorpdfstring{inner\_scheduler}{inner\_scheduler}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+inner\+\_\+scheduler}
+
+
+
+Definition at line 586 of file core.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+dealloc\+\_\+\+\_\+(), parla.\+cython.\+scheduler.\+Scheduler.\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+scheduler.\+Scheduler.\+\_\+\+\_\+exit\+\_\+\+\_\+(), parla.\+cython.\+core.\+Py\+Inner\+Scheduler.\+\_\+\+\_\+init\+\_\+\+\_\+(), parla.\+cython.\+scheduler.\+Scheduler.\+get\+\_\+num\+\_\+notified\+\_\+workers(), parla.\+cython.\+scheduler.\+Scheduler.\+get\+\_\+num\+\_\+running\+\_\+tasks(), parla.\+cython.\+scheduler.\+Scheduler.\+get\+\_\+parray\+\_\+state(), parla.\+cython.\+scheduler.\+Scheduler.\+release\+\_\+parray(), parla.\+cython.\+scheduler.\+Scheduler.\+reserve\+\_\+parray(), parla.\+cython.\+scheduler.\+Scheduler.\+run(), parla.\+cython.\+scheduler.\+Scheduler.\+spawn\+\_\+task(), parla.\+cython.\+scheduler.\+Scheduler.\+spawn\+\_\+wait(), and parla.\+cython.\+scheduler.\+Scheduler.\+stop().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{core_8pyx}{core.\+pyx}}\end{DoxyCompactItemize}

@@ -1,0 +1,8 @@
+var searchData=
+[
+  ['finalize_1712',['finalize',['../classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#a59cc52ecd65912803f1d3c1e418e3ac7',1,'parla.cython.tasks.TaskEnvironment.finalize()'],['../classparla_1_1cython_1_1tasks_1_1CPUEnvironment.html#a32eb9ff5d1adf972fe44f2c917ee4e7a',1,'parla.cython.tasks.CPUEnvironment.finalize()'],['../classparla_1_1cython_1_1tasks_1_1GPUEnvironment.html#ae1390f9bfdd7e5f595cee2d2dd5552a0',1,'parla.cython.tasks.GPUEnvironment.finalize()']]],
+  ['front_1713',['front',['../classProtectedVector.html#a534266555c246401e231ed977152699e',1,'ProtectedVector::front()'],['../classProtectedQueue.html#afed4fff282f51147f062814fccc261a7',1,'ProtectedQueue::front()'],['../classDeviceQueue.html#a2556a5d5368adda5af85130d6f4b0e5b',1,'DeviceQueue::front()'],['../classPhaseManager.html#a1bd00c28f5e5b9963078dbb867f193b9',1,'PhaseManager::front()']]],
+  ['front_5fand_5fpop_1714',['front_and_pop',['../classProtectedVector.html#a869d98ebecb67f653888392229d2c3f4',1,'ProtectedVector::front_and_pop()'],['../classProtectedQueue.html#aea030d0a97437e889fcc8ca1d371863b',1,'ProtectedQueue::front_and_pop()']]],
+  ['front_5fand_5fpop_5funsafe_1715',['front_and_pop_unsafe',['../classProtectedVector.html#a8c5ea7b1958ba5d1aa769285738c00bd',1,'ProtectedVector::front_and_pop_unsafe()'],['../classProtectedQueue.html#a095fb7971d5b8a56e5bf8623b14bf2ef',1,'ProtectedQueue::front_and_pop_unsafe()']]],
+  ['front_5funsafe_1716',['front_unsafe',['../classProtectedVector.html#af5eec39a756daf53d0d0aa0560817c5d',1,'ProtectedVector::front_unsafe()'],['../classProtectedQueue.html#a967575e48ad429dc6ea8321c46ebb8f5',1,'ProtectedQueue::front_unsafe()']]]
+];

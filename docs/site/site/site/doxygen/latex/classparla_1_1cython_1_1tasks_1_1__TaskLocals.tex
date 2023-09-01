@@ -1,0 +1,240 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals}{}\doxysection{parla.\+cython.\+tasks.\+\_\+\+Task\+Locals Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals}\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+\_\+\+Task\+Locals\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+\_\+\+Task\+Locals\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a4135a20a38679b11443bfc73e6f98fe0}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_afc5b74f182dc9728fee6adf6d12578bc}{ctx}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_aaaf8d3993b9fcfb0f07dbfc0fdd1e562}{ctx}} (self, v)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_acb1bbe67d57c8524fe709cae799d5c6b}{global\+\_\+tasks}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2df65aa71f808eaba88f3476fb8030c2}{global\+\_\+tasks}} (self, v)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2c4a4757108e214fee31b18733b2737d}{task\+\_\+scopes}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a9043a4ea6ef8cc20281cdeb546249bb5}{spawn\+\_\+count}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a40954a6172e0090af1f59876856a92c5}{\+\_\+ctx}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a878fa8a17cc754b92a0d004e22079712}{\+\_\+global\+\_\+tasks}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 248 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a4135a20a38679b11443bfc73e6f98fe0}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a4135a20a38679b11443bfc73e6f98fe0}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 249 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{249     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self):}
+\DoxyCodeLine{250         super(\_TaskLocals, self).\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}()}
+\DoxyCodeLine{251         self.task\_scopes = []}
+\DoxyCodeLine{252         self.spawn\_count = 0}
+\DoxyCodeLine{253 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_afc5b74f182dc9728fee6adf6d12578bc}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_afc5b74f182dc9728fee6adf6d12578bc}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!ctx@{ctx}}
+\index{ctx@{ctx}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{ctx()}{ctx()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+ctx (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 255 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{255     \textcolor{keyword}{def }ctx(self):}
+\DoxyCodeLine{256         \textcolor{keywordflow}{return} getattr(self, \textcolor{stringliteral}{"{}\_ctx"{}}, \textcolor{keywordtype}{None})}
+\DoxyCodeLine{257 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+ctx().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=336pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals_afc5b74f182dc9728fee6adf6d12578bc_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_aaaf8d3993b9fcfb0f07dbfc0fdd1e562}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_aaaf8d3993b9fcfb0f07dbfc0fdd1e562}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!ctx@{ctx}}
+\index{ctx@{ctx}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{ctx()}{ctx()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+ctx (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{v }\end{DoxyParamCaption})}
+
+
+
+Definition at line 259 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{259     \textcolor{keyword}{def }ctx(self, v):}
+\DoxyCodeLine{260         self.\_ctx = v}
+\DoxyCodeLine{261 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+ctx().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=336pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals_aaaf8d3993b9fcfb0f07dbfc0fdd1e562_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_acb1bbe67d57c8524fe709cae799d5c6b}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_acb1bbe67d57c8524fe709cae799d5c6b}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!global\_tasks@{global\_tasks}}
+\index{global\_tasks@{global\_tasks}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{global\_tasks()}{global\_tasks()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+global\+\_\+tasks (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 263 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{263     \textcolor{keyword}{def }global\_tasks(self):}
+\DoxyCodeLine{264         \textcolor{keywordflow}{return} getattr(self, \textcolor{stringliteral}{"{}\_global\_tasks"{}}, [])}
+\DoxyCodeLine{265 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+global\+\_\+tasks().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals_acb1bbe67d57c8524fe709cae799d5c6b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2df65aa71f808eaba88f3476fb8030c2}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2df65aa71f808eaba88f3476fb8030c2}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!global\_tasks@{global\_tasks}}
+\index{global\_tasks@{global\_tasks}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{global\_tasks()}{global\_tasks()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+global\+\_\+tasks (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{v }\end{DoxyParamCaption})}
+
+
+
+Definition at line 267 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{267     \textcolor{keyword}{def }global\_tasks(self, v):}
+\DoxyCodeLine{268         self.\_global\_tasks = v}
+\DoxyCodeLine{269 }
+\DoxyCodeLine{270 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+global\+\_\+tasks().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2df65aa71f808eaba88f3476fb8030c2_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a40954a6172e0090af1f59876856a92c5}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a40954a6172e0090af1f59876856a92c5}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!\_ctx@{\_ctx}}
+\index{\_ctx@{\_ctx}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{\_ctx}{\_ctx}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+\_\+ctx\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 260 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a878fa8a17cc754b92a0d004e22079712}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a878fa8a17cc754b92a0d004e22079712}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!\_global\_tasks@{\_global\_tasks}}
+\index{\_global\_tasks@{\_global\_tasks}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{\_global\_tasks}{\_global\_tasks}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+\_\+global\+\_\+tasks\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 268 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a9043a4ea6ef8cc20281cdeb546249bb5}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a9043a4ea6ef8cc20281cdeb546249bb5}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!spawn\_count@{spawn\_count}}
+\index{spawn\_count@{spawn\_count}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{spawn\_count}{spawn\_count}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+spawn\+\_\+count}
+
+
+
+Definition at line 252 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2c4a4757108e214fee31b18733b2737d}\label{classparla_1_1cython_1_1tasks_1_1__TaskLocals_a2c4a4757108e214fee31b18733b2737d}} 
+\index{parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}!task\_scopes@{task\_scopes}}
+\index{task\_scopes@{task\_scopes}!parla.cython.tasks.\_TaskLocals@{parla.cython.tasks.\_TaskLocals}}
+\doxysubsubsection{\texorpdfstring{task\_scopes}{task\_scopes}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+\_\+\+Task\+Locals.\+task\+\_\+scopes}
+
+
+
+Definition at line 251 of file tasks.\+pyx.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

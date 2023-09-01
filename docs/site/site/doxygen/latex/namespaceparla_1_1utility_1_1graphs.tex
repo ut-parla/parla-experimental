@@ -1,0 +1,1138 @@
+\hypertarget{namespaceparla_1_1utility_1_1graphs}{}\doxysection{parla.\+utility.\+graphs Namespace Reference}
+\label{namespaceparla_1_1utility_1_1graphs}\index{parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DeviceType}{Device\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1LogState}{Log\+State}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1MovementType}{Movement\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInitType}{Data\+Init\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskRuntimeInfo}{Task\+Runtime\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskDataInfo}{Task\+Data\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{Time\+Sample}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskConfig}{Task\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskConfigs}{Task\+Configs}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1GraphConfig}{Graph\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1IndependentConfig}{Independent\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1SerialConfig}{Serial\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionConfig}{Reduction\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionScatterConfig}{Reduction\+Scatter\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}{convert\+\_\+to\+\_\+dictionary}} (List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} task\+\_\+list)
+\item 
+Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed}{shuffle\+\_\+tasks}} (Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} tasks)
+\item 
+Union\mbox{[}int, Fraction\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}{extract}} (str string)
+\item 
+Tuple\mbox{[}Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]}, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}{read\+\_\+pgraph}} (str filename)
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\+\_\+time}} (str line)
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}{check\+\_\+log\+\_\+line}} (str line)
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}{convert\+\_\+task\+\_\+id}} (str task\+\_\+id, int instance=0)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\+\_\+task\+\_\+properties}} (str line)
+\item 
+Tuple\mbox{[}Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]}, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1}{parse\+\_\+blog}} (str filename=\textquotesingle{}parla.\+blog\textquotesingle{})
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5f39eb578ed535adc1aaf6732fa9b018}{generate\+\_\+serial\+\_\+graph}} (\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1SerialConfig}{Serial\+Config}} config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ab0c7670d2bc11735677b41be708863d0}{generate\+\_\+reduction\+\_\+graph}} (\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionConfig}{Reduction\+Config}} config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a64b229b169c8b31245540d05fa70198f}{generate\+\_\+independent\+\_\+graph}} (\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1IndependentConfig}{Independent\+Config}} config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a520c9919c5811c7f167dc9322d688f27}{generate\+\_\+reduction\+\_\+scatter\+\_\+graph}} (\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionScatterConfig}{Reduction\+Scatter\+Config}} tgraph\+\_\+config)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ac4eb344f9f706421c6ca4559f15967cb}{num\+\_\+gpus}} = 4
+\item 
+\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a960ebc3be7f47b455783b439a7a884fd}{task\+\_\+filter}} = re.\+compile(r\textquotesingle{}Inner\+Task\textbackslash{}\{ .$\ast$? \textbackslash{}\}\textquotesingle{})
+\item 
+list \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae9d9fca669cb92e7995c50e4ae3d8632}{\+\_\+\+\_\+all\+\_\+\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}\label{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!check\_log\_line@{check\_log\_line}}
+\index{check\_log\_line@{check\_log\_line}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{check\_log\_line()}{check\_log\_line()}}
+{\footnotesize\ttfamily  int parla.\+utility.\+graphs.\+check\+\_\+log\+\_\+line (\begin{DoxyParamCaption}\item[{str}]{line }\end{DoxyParamCaption})}
+
+
+
+Definition at line 438 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{438 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}{check\_log\_line}}(line: str) -\/> int:}
+\DoxyCodeLine{439     \textcolor{keywordflow}{if} \textcolor{stringliteral}{"{}Running task"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{440         \textcolor{keywordflow}{return} LogState.START\_TASK}
+\DoxyCodeLine{441     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}Notified dependents"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{442         \textcolor{keywordflow}{return} LogState.NOTIFY\_DEPENDENTS}
+\DoxyCodeLine{443     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}Assigned "{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{444         \textcolor{keywordflow}{return} LogState.ASSIGNED\_TASK}
+\DoxyCodeLine{445     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}Runahead task"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{446         \textcolor{keywordflow}{return} LogState.RUNAHEAD\_TASK}
+\DoxyCodeLine{447     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}Completed task"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{448         \textcolor{keywordflow}{return} LogState.COMPLETED\_TASK}
+\DoxyCodeLine{449     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}Adding dependencies"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{450         \textcolor{keywordflow}{return} LogState.ADDING\_DEPENDENCIES}
+\DoxyCodeLine{451     \textcolor{keywordflow}{elif} \textcolor{stringliteral}{"{}has constraints"{}} \textcolor{keywordflow}{in} line:}
+\DoxyCodeLine{452         \textcolor{keywordflow}{return} LogState.ADD\_CONSTRAINT}
+\DoxyCodeLine{453     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{454         \textcolor{keywordflow}{return} LogState.UNKNOWN}
+\DoxyCodeLine{455 }
+\DoxyCodeLine{456 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+graphs.\+parse\+\_\+blog().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}\label{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!convert\_task\_id@{convert\_task\_id}}
+\index{convert\_task\_id@{convert\_task\_id}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{convert\_task\_id()}{convert\_task\_id()}}
+{\footnotesize\ttfamily  \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}} parla.\+utility.\+graphs.\+convert\+\_\+task\+\_\+id (\begin{DoxyParamCaption}\item[{str}]{task\+\_\+id,  }\item[{int }]{instance = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 457 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{457 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}{convert\_task\_id}}(task\_id: str, instance: int = 0) -\/> TaskID:}
+\DoxyCodeLine{458     id = task\_id.strip().split(\textcolor{stringliteral}{'\_'})}
+\DoxyCodeLine{459     taskspace = id[0]}
+\DoxyCodeLine{460     task\_idx = tuple([int(i) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} id[1:]])}
+\DoxyCodeLine{461     \textcolor{keywordflow}{return} TaskID(taskspace, task\_idx, int(instance))}
+\DoxyCodeLine{462 }
+\DoxyCodeLine{463 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+graphs.\+get\+\_\+task\+\_\+properties().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}\label{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!convert\_to\_dictionary@{convert\_to\_dictionary}}
+\index{convert\_to\_dictionary@{convert\_to\_dictionary}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{convert\_to\_dictionary()}{convert\_to\_dictionary()}}
+{\footnotesize\ttfamily  Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} parla.\+utility.\+graphs.\+convert\+\_\+to\+\_\+dictionary (\begin{DoxyParamCaption}\item[{List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}}]{task\+\_\+list }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Converts a task list to a task graph dictionary
+\end{DoxyVerb}
+ 
+
+Definition at line 263 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{263 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}{convert\_to\_dictionary}}(task\_list: List[TaskInfo]) -\/> Dict[TaskID, TaskInfo]:}
+\DoxyCodeLine{264     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{265 \textcolor{stringliteral}{    Converts a task list to a task graph dictionary}}
+\DoxyCodeLine{266 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{267     task\_dict = dict()}
+\DoxyCodeLine{268     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} task\_list:}
+\DoxyCodeLine{269         task\_dict[task.task\_id] = task}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271     \textcolor{keywordflow}{return} task\_dict}
+\DoxyCodeLine{272 }
+\DoxyCodeLine{273 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+graphs.\+read\+\_\+pgraph(), and parla.\+utility.\+graphs.\+shuffle\+\_\+tasks().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}\label{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!extract@{extract}}
+\index{extract@{extract}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{extract()}{extract()}}
+{\footnotesize\ttfamily  Union\mbox{[}int, Fraction\mbox{]} parla.\+utility.\+graphs.\+extract (\begin{DoxyParamCaption}\item[{str}]{string }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Extracts string as decimal or int
+\end{DoxyVerb}
+ 
+
+Definition at line 283 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{283 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}{extract}}(string: str) -\/> Union[int, Fraction]:}
+\DoxyCodeLine{284     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{285 \textcolor{stringliteral}{    Extracts string as decimal or int}}
+\DoxyCodeLine{286 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{287     \textcolor{keywordflow}{if} \textcolor{stringliteral}{"{}."{}} \textcolor{keywordflow}{in} string:}
+\DoxyCodeLine{288         \textcolor{keywordflow}{return} Fraction(string)}
+\DoxyCodeLine{289     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{290         \textcolor{keywordflow}{return} int(string)}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+graphs.\+read\+\_\+pgraph().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a64b229b169c8b31245540d05fa70198f}\label{namespaceparla_1_1utility_1_1graphs_a64b229b169c8b31245540d05fa70198f}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!generate\_independent\_graph@{generate\_independent\_graph}}
+\index{generate\_independent\_graph@{generate\_independent\_graph}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{generate\_independent\_graph()}{generate\_independent\_graph()}}
+{\footnotesize\ttfamily  str parla.\+utility.\+graphs.\+generate\+\_\+independent\+\_\+graph (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1IndependentConfig}{Independent\+Config}}}]{config }\end{DoxyParamCaption})}
+
+
+
+Definition at line 787 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{787 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a64b229b169c8b31245540d05fa70198f}{generate\_independent\_graph}}(config: IndependentConfig) -\/> str:}
+\DoxyCodeLine{788     task\_config = config.task\_config}
+\DoxyCodeLine{789     configurations = task\_config.configurations}
+\DoxyCodeLine{790     num\_gpus = config.num\_gpus}
+\DoxyCodeLine{791 }
+\DoxyCodeLine{792     graph = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{793 }
+\DoxyCodeLine{794     data\_config\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{795     \textcolor{comment}{\# TODO(hc): for now, assume that data allocation starts from cpu.}}
+\DoxyCodeLine{796     \textcolor{keywordflow}{if} config.data\_pattern == DataInitType.NO\_DATA:}
+\DoxyCodeLine{797         data\_config\_string = f\textcolor{stringliteral}{"{}\{\{1 : -\/1\}\}"{}}}
+\DoxyCodeLine{798     \textcolor{keywordflow}{elif} config.data\_pattern == DataInitType.INDEPENDENT\_DATA:}
+\DoxyCodeLine{799         single\_data\_block\_size = config.total\_data\_width}
+\DoxyCodeLine{800         config.data\_partitions = 64}
+\DoxyCodeLine{801         \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.data\_partitions):}
+\DoxyCodeLine{802             data\_config\_string += f\textcolor{stringliteral}{"{}\{\{\{single\_data\_block\_size\} : -\/1\}\}"{}}}
+\DoxyCodeLine{803             \textcolor{keywordflow}{if} i+1 < config.data\_partitions:}
+\DoxyCodeLine{804                 data\_config\_string += f\textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{805     \textcolor{keywordflow}{elif} config.data\_pattern == DataInitType.OVERLAPPED\_DATA:}
+\DoxyCodeLine{806         \textcolor{keywordflow}{raise} NotImplementedError(}
+\DoxyCodeLine{807             \textcolor{stringliteral}{"{}[Independent] Data patterns not implemented"{}})}
+\DoxyCodeLine{808     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{809         \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}[Independent] Data patterns not implemented"{}})}
+\DoxyCodeLine{810     data\_config\_string += \textcolor{stringliteral}{"{}\(\backslash\)n"{}}}
+\DoxyCodeLine{811 }
+\DoxyCodeLine{812     \textcolor{keywordflow}{if} task\_config \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{813         \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Task config must be specified"{}})}
+\DoxyCodeLine{814 }
+\DoxyCodeLine{815     graph += data\_config\_string}
+\DoxyCodeLine{816     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.task\_count):}
+\DoxyCodeLine{817         read\_data\_block = i \% config.data\_partitions}
+\DoxyCodeLine{818         configuration\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{819         \textcolor{keywordflow}{for} device\_id, task\_config \textcolor{keywordflow}{in} configurations.items():}
+\DoxyCodeLine{820             last\_flag = 1 \textcolor{keywordflow}{if} device\_id == list(}
+\DoxyCodeLine{821                 configurations.keys())[-\/1] \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{822             \textcolor{keywordflow}{if} config.fixed\_placement:}
+\DoxyCodeLine{823                 device\_id = int(DeviceType.USER\_CHOSEN\_DEVICE + i \% num\_gpus)}
+\DoxyCodeLine{824             configuration\_string += f\textcolor{stringliteral}{"{}\{\{ \{device\_id\} : \{task\_config.task\_time\}, \{task\_config.device\_fraction\}, \{task\_config.gil\_accesses\}, \{task\_config.gil\_fraction\}, \{task\_config.memory\} \}\}"{}}}
+\DoxyCodeLine{825             \textcolor{keywordflow}{if} last\_flag == 0:}
+\DoxyCodeLine{826                 configuration\_string += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{827         graph += f\textcolor{stringliteral}{"{}\{i\} |  \{configuration\_string\} | | \{read\_data\_block\} : :\(\backslash\)n"{}}}
+\DoxyCodeLine{828     \textcolor{keywordflow}{return} graph}
+\DoxyCodeLine{829 }
+\DoxyCodeLine{830 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ab0c7670d2bc11735677b41be708863d0}\label{namespaceparla_1_1utility_1_1graphs_ab0c7670d2bc11735677b41be708863d0}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!generate\_reduction\_graph@{generate\_reduction\_graph}}
+\index{generate\_reduction\_graph@{generate\_reduction\_graph}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{generate\_reduction\_graph()}{generate\_reduction\_graph()}}
+{\footnotesize\ttfamily  str parla.\+utility.\+graphs.\+generate\+\_\+reduction\+\_\+graph (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionConfig}{Reduction\+Config}}}]{config }\end{DoxyParamCaption})}
+
+
+
+Definition at line 703 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{703 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ab0c7670d2bc11735677b41be708863d0}{generate\_reduction\_graph}}(config: ReductionConfig) -\/> str:}
+\DoxyCodeLine{704     task\_config = config.task\_config}
+\DoxyCodeLine{705     num\_gpus = config.num\_gpus}
+\DoxyCodeLine{706     configurations = task\_config.configurations}
+\DoxyCodeLine{707 }
+\DoxyCodeLine{708     graph = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{709 }
+\DoxyCodeLine{710     \textcolor{keywordflow}{if} task\_config \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{711         \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Task config must be specified"{}})}
+\DoxyCodeLine{712 }
+\DoxyCodeLine{713     data\_config\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{714     \textcolor{keywordflow}{if} config.data\_pattern == DataInitType.NO\_DATA:}
+\DoxyCodeLine{715         data\_config\_string = \textcolor{stringliteral}{"{}\{\{1 : -\/1\}\}\(\backslash\)n"{}}}
+\DoxyCodeLine{716     \textcolor{keywordflow}{elif} config.data\_pattern == DataInitType.INDEPENDENT\_DATA:}
+\DoxyCodeLine{717         \textcolor{keywordflow}{raise} NotImplementedError(\textcolor{stringliteral}{"{}[Reduction] Data patterns not implemented"{}})}
+\DoxyCodeLine{718     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{719         single\_data\_block\_size = config.total\_data\_width}
+\DoxyCodeLine{720         \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.branch\_factor**config.levels):}
+\DoxyCodeLine{721             \textcolor{keywordflow}{if} i > 0:}
+\DoxyCodeLine{722                 data\_config\_string += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{723             data\_config\_string += f\textcolor{stringliteral}{"{}\{\{ \{single\_data\_block\_size\} : -\/1\}\}"{}}}
+\DoxyCodeLine{724     data\_config\_string += \textcolor{stringliteral}{"{}\(\backslash\)n"{}}}
+\DoxyCodeLine{725     graph += data\_config\_string}
+\DoxyCodeLine{726 }
+\DoxyCodeLine{727     post\_configuration\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{728 }
+\DoxyCodeLine{729     \textcolor{comment}{\# TODO(hc): when this was designed, we considered multidevice placement.}}
+\DoxyCodeLine{730     \textcolor{comment}{\#           but for now, we only consider a single device placement and so,}}
+\DoxyCodeLine{731     \textcolor{comment}{\#           follow the old generator's graph generation rule.}}
+\DoxyCodeLine{732 }
+\DoxyCodeLine{733     device\_id = DeviceType.ANY\_GPU\_DEVICE}
+\DoxyCodeLine{734     \textcolor{keywordflow}{for} config\_device\_id, task\_config \textcolor{keywordflow}{in} configurations.items():}
+\DoxyCodeLine{735         last\_flag = 1 \textcolor{keywordflow}{if} config\_device\_id == list(}
+\DoxyCodeLine{736             configurations.keys())[-\/1] \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{737 }
+\DoxyCodeLine{738         post\_configuration\_string += f\textcolor{stringliteral}{"{}\{task\_config.task\_time\}, \{task\_config.device\_fraction\}, \{task\_config.gil\_accesses\}, \{task\_config.gil\_fraction\}, \{task\_config.memory\} \}\}"{}}}
+\DoxyCodeLine{739         \textcolor{comment}{\# TODO(hc): This should be refined.}}
+\DoxyCodeLine{740         \textcolor{comment}{\#           If users did not set "{}fixed"{}, then it should be any cpu or gpu.}}
+\DoxyCodeLine{741         device\_id = config\_device\_id[-\/1]}
+\DoxyCodeLine{742 }
+\DoxyCodeLine{743         \textcolor{keywordflow}{if} last\_flag == 0:}
+\DoxyCodeLine{744             post\_configuration\_string += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{745 }
+\DoxyCodeLine{746     reverse\_level = 0}
+\DoxyCodeLine{747     global\_idx = 0}
+\DoxyCodeLine{748     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.levels, -\/1, -\/1):}
+\DoxyCodeLine{749         total\_tasks\_in\_level = config.branch\_factor ** i}
+\DoxyCodeLine{750         segment = total\_tasks\_in\_level / num\_gpus}
+\DoxyCodeLine{751         \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(total\_tasks\_in\_level):}
+\DoxyCodeLine{752             \textcolor{keywordflow}{if} reverse\_level > 0:}
+\DoxyCodeLine{753                 dependency\_string = \textcolor{stringliteral}{"{} "{}}}
+\DoxyCodeLine{754                 \textcolor{keywordflow}{for} k \textcolor{keywordflow}{in} range(config.branch\_factor):}
+\DoxyCodeLine{755                     dependency\_string += f\textcolor{stringliteral}{"{}\{reverse\_level-\/1, config.branch\_factor*j + k\}"{}}}
+\DoxyCodeLine{756                     \textcolor{keywordflow}{if} k+1 < config.branch\_factor:}
+\DoxyCodeLine{757                         dependency\_string += \textcolor{stringliteral}{"{} : "{}}}
+\DoxyCodeLine{758             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{759                 dependency\_string = \textcolor{stringliteral}{"{} "{}}}
+\DoxyCodeLine{760 }
+\DoxyCodeLine{761             \textcolor{keywordflow}{if} reverse\_level > 0:}
+\DoxyCodeLine{762                 l = 0}
+\DoxyCodeLine{763                 read\_dependency = \textcolor{stringliteral}{"{} "{}}}
+\DoxyCodeLine{764                 targets = [config.branch\_factor**(reverse\_level-\/1)]}
+\DoxyCodeLine{765                 \textcolor{keywordflow}{for} k \textcolor{keywordflow}{in} targets:}
+\DoxyCodeLine{766                     read\_dependency += f\textcolor{stringliteral}{"{}\{(config.branch\_factor**(reverse\_level))*j+k\}"{}}}
+\DoxyCodeLine{767                     l += 1}
+\DoxyCodeLine{768                     \textcolor{keywordflow}{if} l < len(targets):}
+\DoxyCodeLine{769                         read\_dependency += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{770                 write\_dependency = f\textcolor{stringliteral}{"{}\{config.branch\_factor**(reverse\_level)*j\}"{}}}
+\DoxyCodeLine{771             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{772                 read\_dependency = \textcolor{stringliteral}{"{} "{}}}
+\DoxyCodeLine{773                 write\_dependency = f\textcolor{stringliteral}{"{}\{global\_idx\}"{}}}
+\DoxyCodeLine{774             \textcolor{keywordflow}{if} config.fixed\_placement:}
+\DoxyCodeLine{775                 \textcolor{comment}{\# USER\_CHOSEN\_DEVICE acts as an offset.}}
+\DoxyCodeLine{776                 device\_id = int(DeviceType.USER\_CHOSEN\_DEVICE + j // segment)}
+\DoxyCodeLine{777             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{778                 \textcolor{keyword}{assert} device\_id == DeviceType.CPU\_DEVICE \textcolor{keywordflow}{or} device\_id == DeviceType.ANY\_GPU\_DEVICE}
+\DoxyCodeLine{779             pre\_configuration\_string = f\textcolor{stringliteral}{"{}\{\{ \{device\_id\} : "{}}}
+\DoxyCodeLine{780             configuration\_string = pre\_configuration\_string + post\_configuration\_string}
+\DoxyCodeLine{781             graph += f\textcolor{stringliteral}{"{}\{reverse\_level, j\} |  \{configuration\_string\} | \{dependency\_string\} | \{read\_dependency\} : : \{write\_dependency\} \(\backslash\)n"{}}}
+\DoxyCodeLine{782             global\_idx += 1}
+\DoxyCodeLine{783         reverse\_level += 1}
+\DoxyCodeLine{784     \textcolor{keywordflow}{return} graph}
+\DoxyCodeLine{785 }
+\DoxyCodeLine{786 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a520c9919c5811c7f167dc9322d688f27}\label{namespaceparla_1_1utility_1_1graphs_a520c9919c5811c7f167dc9322d688f27}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!generate\_reduction\_scatter\_graph@{generate\_reduction\_scatter\_graph}}
+\index{generate\_reduction\_scatter\_graph@{generate\_reduction\_scatter\_graph}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{generate\_reduction\_scatter\_graph()}{generate\_reduction\_scatter\_graph()}}
+{\footnotesize\ttfamily  str parla.\+utility.\+graphs.\+generate\+\_\+reduction\+\_\+scatter\+\_\+graph (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionScatterConfig}{Reduction\+Scatter\+Config}}}]{tgraph\+\_\+config }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Generate reduction-scatter graph input file.
+
+e.g.,
+* * * * * * (bulk tasks) 
+\ | | | | /
+     *      (bridge task)
+/ | | | | \
+* * * * * *
+...
+\end{DoxyVerb}
+ 
+
+Definition at line 831 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{831 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a520c9919c5811c7f167dc9322d688f27}{generate\_reduction\_scatter\_graph}}(tgraph\_config: ReductionScatterConfig) -\/> str:}
+\DoxyCodeLine{832     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{833 \textcolor{stringliteral}{    Generate reduction-\/scatter graph input file.}}
+\DoxyCodeLine{834 \textcolor{stringliteral}{}}
+\DoxyCodeLine{835 \textcolor{stringliteral}{    e.g.,}}
+\DoxyCodeLine{836 \textcolor{stringliteral}{    * * * * * * (bulk tasks) }}
+\DoxyCodeLine{837 \textcolor{stringliteral}{    \(\backslash\) | | | | /}}
+\DoxyCodeLine{838 \textcolor{stringliteral}{         *      (bridge task)}}
+\DoxyCodeLine{839 \textcolor{stringliteral}{    / | | | | \(\backslash\)}}
+\DoxyCodeLine{840 \textcolor{stringliteral}{    * * * * * *}}
+\DoxyCodeLine{841 \textcolor{stringliteral}{    ...}}
+\DoxyCodeLine{842 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{843     task\_config = tgraph\_config.task\_config}
+\DoxyCodeLine{844     configurations = task\_config.configurations}
+\DoxyCodeLine{845     num\_gpus = tgraph\_config.num\_gpus}
+\DoxyCodeLine{846     num\_tasks = tgraph\_config.task\_count}
+\DoxyCodeLine{847     \textcolor{comment}{\# Level starts from 1}}
+\DoxyCodeLine{848     levels = tgraph\_config.levels}
+\DoxyCodeLine{849     \textcolor{comment}{\# Calcualte the number of bridge tasks in the graph.}}
+\DoxyCodeLine{850     num\_bridge\_tasks = levels // 2}
+\DoxyCodeLine{851     num\_bridge\_tasks += 1 \textcolor{keywordflow}{if} (levels \% 2 > 0) \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{852     \textcolor{comment}{\# Calculate the number of bulk tasks in the graph.}}
+\DoxyCodeLine{853     num\_bulk\_tasks = (num\_tasks -\/ num\_bridge\_tasks)}
+\DoxyCodeLine{854     \textcolor{comment}{\# Calculate the number of bulk tasks per level.}}
+\DoxyCodeLine{855     num\_levels\_for\_bulk\_tasks = levels // 2 + 1}
+\DoxyCodeLine{856     num\_bulk\_tasks\_per\_level = num\_bulk\_tasks // num\_levels\_for\_bulk\_tasks}
+\DoxyCodeLine{857     \textcolor{comment}{\# All the remaining bulk tasks are added to the last level.}}
+\DoxyCodeLine{858     num\_bulk\_tasks\_last\_level = (}
+\DoxyCodeLine{859         num\_bulk\_tasks \% num\_levels\_for\_bulk\_tasks) + num\_bulk\_tasks\_per\_level}
+\DoxyCodeLine{860     \textcolor{comment}{\# Calculate the number of tasks per gpu per level.}}
+\DoxyCodeLine{861     num\_bulk\_tasks\_per\_gpu = (num\_bulk\_tasks\_per\_level) // num\_gpus}
+\DoxyCodeLine{862     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{863 \textcolor{stringliteral}{    for l in range(levels + 1):}}
+\DoxyCodeLine{864 \textcolor{stringliteral}{        if l \% 2 > 0:}}
+\DoxyCodeLine{865 \textcolor{stringliteral}{            print(f"{}Level \{l\}: -\/-\/ 1 -\/-\/"{}, flush=True)}}
+\DoxyCodeLine{866 \textcolor{stringliteral}{        else:}}
+\DoxyCodeLine{867 \textcolor{stringliteral}{            if l == levels:}}
+\DoxyCodeLine{868 \textcolor{stringliteral}{                print(f"{}Level \{l\}: \{num\_bulk\_tasks\_last\_level\}, \{num\_bulk\_tasks\_per\_gpu\}"{}, flush=True)}}
+\DoxyCodeLine{869 \textcolor{stringliteral}{            else:}}
+\DoxyCodeLine{870 \textcolor{stringliteral}{                print(f"{}Level \{l\}: \{num\_bulk\_tasks\_per\_level\}, \{num\_bulk\_tasks\_per\_gpu\}"{}, flush=True)}}
+\DoxyCodeLine{871 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{872 }
+\DoxyCodeLine{873     graph = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{874 }
+\DoxyCodeLine{875     data\_config\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{876     \textcolor{comment}{\# TODO(hc): for now, assume that data allocation starts from cpu.}}
+\DoxyCodeLine{877     \textcolor{keywordflow}{if} tgraph\_config.data\_pattern == DataInitType.NO\_DATA:}
+\DoxyCodeLine{878         data\_config\_string = f\textcolor{stringliteral}{"{}\{\{1 : -\/1\}\}"{}}}
+\DoxyCodeLine{879     \textcolor{keywordflow}{elif} tgraph\_config.data\_pattern == DataInitType.OVERLAPPED\_DATA:}
+\DoxyCodeLine{880         \textcolor{comment}{\# Each bulk task takes an individual (non-\/overlapped) data block.}}
+\DoxyCodeLine{881         \textcolor{comment}{\# A bridge task reduces all data blocks from the bulk tasks in the previous level.}}
+\DoxyCodeLine{882         single\_data\_block\_size = tgraph\_config.total\_data\_width}
+\DoxyCodeLine{883         \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} range(num\_bulk\_tasks\_last\_level):}
+\DoxyCodeLine{884             \textcolor{keywordflow}{if} d > 0:}
+\DoxyCodeLine{885                 data\_config\_string += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{886             data\_config\_string += f\textcolor{stringliteral}{"{}\{\{\{single\_data\_block\_size\} : -\/1\}\}"{}}}
+\DoxyCodeLine{887     \textcolor{keywordflow}{elif} tgraph\_config.data\_pattern == DataInitType.INDEPENDENT\_DATA:}
+\DoxyCodeLine{888         \textcolor{keywordflow}{raise} NotImplementedError(}
+\DoxyCodeLine{889             \textcolor{stringliteral}{"{}[Independent] Data patterns not implemented"{}})}
+\DoxyCodeLine{890     data\_config\_string += \textcolor{stringliteral}{"{}\(\backslash\)n"{}}}
+\DoxyCodeLine{891     graph += data\_config\_string}
+\DoxyCodeLine{892 }
+\DoxyCodeLine{893     \textcolor{comment}{\# TODO(hc): I don't know how to handle user-\/fixed placement on multi-\/device}}
+\DoxyCodeLine{894     \textcolor{comment}{\#           tasks. Let me design single device task workload.}}
+\DoxyCodeLine{895     \textcolor{keyword}{assert} len(task\_config.configurations) == 1}
+\DoxyCodeLine{896 }
+\DoxyCodeLine{897     \textcolor{comment}{\# Construct task graphs.}}
+\DoxyCodeLine{898     task\_id = 0}
+\DoxyCodeLine{899     bridge\_task\_dev\_id = DeviceType.USER\_CHOSEN\_DEVICE \textcolor{keywordflow}{if} tgraph\_config.fixed\_placement \textcolor{keywordflow}{else} \(\backslash\)}
+\DoxyCodeLine{900         DeviceType.ANY\_GPU\_DEVICE}
+\DoxyCodeLine{901     last\_bridge\_task\_id\_str = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{902     last\_bridge\_task\_id = 0}
+\DoxyCodeLine{903     \textcolor{keywordflow}{for} l \textcolor{keywordflow}{in} range(levels + 1):}
+\DoxyCodeLine{904         \textcolor{comment}{\# If the last level has a bridge task, the previous level should take all remaining bulk}}
+\DoxyCodeLine{905         \textcolor{comment}{\# tasks.}}
+\DoxyCodeLine{906         \textcolor{keywordflow}{if} levels \% 2 > 0:}
+\DoxyCodeLine{907             l\_num\_bulk\_tasks = num\_bulk\_tasks\_per\_level \textcolor{keywordflow}{if} l < (}
+\DoxyCodeLine{908                 levels -\/ 1) \textcolor{keywordflow}{else} num\_bulk\_tasks\_last\_level}
+\DoxyCodeLine{909         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{910             l\_num\_bulk\_tasks = num\_bulk\_tasks\_per\_level \textcolor{keywordflow}{if} l < levels \textcolor{keywordflow}{else} num\_bulk\_tasks\_last\_level}
+\DoxyCodeLine{911         \textcolor{keywordflow}{if} l \% 2 > 0:  \textcolor{comment}{\# Bridge task condition}}
+\DoxyCodeLine{912             dependency\_block = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{913             inout\_data\_block = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{914             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} range(l\_num\_bulk\_tasks):}
+\DoxyCodeLine{915                 inout\_data\_block += f\textcolor{stringliteral}{"{}\{d\}"{}}}
+\DoxyCodeLine{916                 \textcolor{keywordflow}{if} l == 1:}
+\DoxyCodeLine{917                     dependency\_block += f\textcolor{stringliteral}{"{}\{d + last\_bridge\_task\_id\}"{}}}
+\DoxyCodeLine{918                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{919                     dependency\_block += f\textcolor{stringliteral}{"{}\{d + last\_bridge\_task\_id + 1\}"{}}}
+\DoxyCodeLine{920                 \textcolor{keywordflow}{if} d != (l\_num\_bulk\_tasks -\/ 1):}
+\DoxyCodeLine{921                     inout\_data\_block += \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{922                     dependency\_block += \textcolor{stringliteral}{"{} : "{}}}
+\DoxyCodeLine{923             \textcolor{comment}{\# TODO(hc): assume a single device task.}}
+\DoxyCodeLine{924             \textcolor{keywordflow}{for} \_, sdevice\_task\_config \textcolor{keywordflow}{in} task\_config.configurations.items():}
+\DoxyCodeLine{925                 graph += (f\textcolor{stringliteral}{"{}\{task\_id\} | \{\{ \{bridge\_task\_dev\_id\} : \{sdevice\_task\_config.task\_time\}, "{}}}
+\DoxyCodeLine{926                           f\textcolor{stringliteral}{"{}\{sdevice\_task\_config.device\_fraction\}, \{sdevice\_task\_config.gil\_accesses\}, "{}}}
+\DoxyCodeLine{927                           f\textcolor{stringliteral}{"{}\{sdevice\_task\_config.gil\_fraction\}, \{sdevice\_task\_config.memory\} \}\}"{}})}
+\DoxyCodeLine{928             graph += f\textcolor{stringliteral}{"{} | \{dependency\_block\}"{}}}
+\DoxyCodeLine{929             graph += f\textcolor{stringliteral}{"{} | : : \{inout\_data\_block\}\(\backslash\)n"{}}}
+\DoxyCodeLine{930             \textcolor{keywordflow}{if} tgraph\_config.fixed\_placement:}
+\DoxyCodeLine{931                 bridge\_task\_dev\_id += 1}
+\DoxyCodeLine{932                 \textcolor{keywordflow}{if} bridge\_task\_dev\_id == num\_gpus + DeviceType.USER\_CHOSEN\_DEVICE:}
+\DoxyCodeLine{933                     bridge\_task\_dev\_id = DeviceType.USER\_CHOSEN\_DEVICE}
+\DoxyCodeLine{934             last\_bridge\_task\_id\_str = f\textcolor{stringliteral}{"{}\{task\_id\}"{}}}
+\DoxyCodeLine{935             last\_bridge\_task\_id = int(task\_id)}
+\DoxyCodeLine{936             task\_id += 1}
+\DoxyCodeLine{937         \textcolor{keywordflow}{else}:  \textcolor{comment}{\# Bulk tasks condition}}
+\DoxyCodeLine{938             bulk\_task\_id\_per\_gpu = 0}
+\DoxyCodeLine{939             bulk\_task\_dev\_id = DeviceType.USER\_CHOSEN\_DEVICE \textcolor{keywordflow}{if} tgraph\_config.fixed\_placement \textcolor{keywordflow}{else} \(\backslash\)}
+\DoxyCodeLine{940                 DeviceType.ANY\_GPU\_DEVICE}
+\DoxyCodeLine{941             \textcolor{keywordflow}{for} bulk\_task\_id \textcolor{keywordflow}{in} range(l\_num\_bulk\_tasks):}
+\DoxyCodeLine{942                 inout\_data\_block = f\textcolor{stringliteral}{"{}\{bulk\_task\_id\}"{}}}
+\DoxyCodeLine{943                 \textcolor{comment}{\# TODO(hc): assume a single device task.}}
+\DoxyCodeLine{944                 \textcolor{keywordflow}{for} \_, sdevice\_task\_config \textcolor{keywordflow}{in} task\_config.configurations.items():}
+\DoxyCodeLine{945                     graph += (f\textcolor{stringliteral}{"{}\{task\_id\} | \{\{ \{bulk\_task\_dev\_id\} : \{sdevice\_task\_config.task\_time\}, "{}}}
+\DoxyCodeLine{946                               f\textcolor{stringliteral}{"{}\{sdevice\_task\_config.device\_fraction\}, \{sdevice\_task\_config.gil\_accesses\}, "{}}}
+\DoxyCodeLine{947                               f\textcolor{stringliteral}{"{}\{sdevice\_task\_config.gil\_fraction\}, \{sdevice\_task\_config.memory\} \}\}"{}})}
+\DoxyCodeLine{948                 graph += f\textcolor{stringliteral}{"{} | \{last\_bridge\_task\_id\_str\}"{}}}
+\DoxyCodeLine{949                 graph += f\textcolor{stringliteral}{"{} | : : \{inout\_data\_block\}\(\backslash\)n"{}}}
+\DoxyCodeLine{950                 l\_num\_bulk\_tasks\_per\_gpu = l\_num\_bulk\_tasks // num\_gpus}
+\DoxyCodeLine{951                 \textcolor{keywordflow}{if} tgraph\_config.fixed\_placement:}
+\DoxyCodeLine{952                     \textcolor{keywordflow}{if} l\_num\_bulk\_tasks \% num\_gpus >= (bulk\_task\_dev\_id -\/ DeviceType.USER\_CHOSEN\_DEVICE):}
+\DoxyCodeLine{953                         l\_num\_bulk\_tasks\_per\_gpu += 1}
+\DoxyCodeLine{954                     bulk\_task\_id\_per\_gpu += 1}
+\DoxyCodeLine{955                     \textcolor{keywordflow}{if} bulk\_task\_id\_per\_gpu == l\_num\_bulk\_tasks\_per\_gpu:}
+\DoxyCodeLine{956                         bulk\_task\_id\_per\_gpu = 0}
+\DoxyCodeLine{957                         bulk\_task\_dev\_id += 1}
+\DoxyCodeLine{958                         \textcolor{keywordflow}{if} bulk\_task\_dev\_id == num\_gpus + DeviceType.USER\_CHOSEN\_DEVICE:}
+\DoxyCodeLine{959                             bulk\_task\_dev\_id = DeviceType.USER\_CHOSEN\_DEVICE}
+\DoxyCodeLine{960                 task\_id += 1}
+\DoxyCodeLine{961     \textcolor{keywordflow}{return} graph}
+\DoxyCodeLine{962 }
+\DoxyCodeLine{963 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a5f39eb578ed535adc1aaf6732fa9b018}\label{namespaceparla_1_1utility_1_1graphs_a5f39eb578ed535adc1aaf6732fa9b018}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!generate\_serial\_graph@{generate\_serial\_graph}}
+\index{generate\_serial\_graph@{generate\_serial\_graph}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{generate\_serial\_graph()}{generate\_serial\_graph()}}
+{\footnotesize\ttfamily  str parla.\+utility.\+graphs.\+generate\+\_\+serial\+\_\+graph (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1SerialConfig}{Serial\+Config}}}]{config }\end{DoxyParamCaption})}
+
+
+
+Definition at line 644 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{644 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5f39eb578ed535adc1aaf6732fa9b018}{generate\_serial\_graph}}(config: SerialConfig) -\/> str:}
+\DoxyCodeLine{645     task\_config = config.task\_config}
+\DoxyCodeLine{646     configurations = task\_config.configurations}
+\DoxyCodeLine{647 }
+\DoxyCodeLine{648     graph = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{649 }
+\DoxyCodeLine{650     data\_config\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{651     \textcolor{keywordflow}{if} config.data\_pattern == DataInitType.NO\_DATA:}
+\DoxyCodeLine{652         data\_config\_string = \textcolor{stringliteral}{"{}\{1 : -\/1\}\(\backslash\)n"{}}}
+\DoxyCodeLine{653     \textcolor{keywordflow}{elif} config.data\_pattern == DataInitType.OVERLAPPED\_DATA:}
+\DoxyCodeLine{654         config.data\_partitions = 1}
+\DoxyCodeLine{655         single\_data\_block\_size = (}
+\DoxyCodeLine{656             config.total\_data\_width // config.data\_partitions)}
+\DoxyCodeLine{657         \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.data\_partitions):}
+\DoxyCodeLine{658             data\_config\_string += f\textcolor{stringliteral}{"{}\{\{ \{single\_data\_block\_size\} : -\/1\}\}"{}}}
+\DoxyCodeLine{659             \textcolor{keywordflow}{if} i+1 < config.data\_partitions:}
+\DoxyCodeLine{660                 data\_config\_string += f\textcolor{stringliteral}{"{} , "{}}}
+\DoxyCodeLine{661     \textcolor{keywordflow}{elif} config.data\_pattern == DataInitType.INDEPENDENT\_DATA:}
+\DoxyCodeLine{662         \textcolor{keywordflow}{raise} NotImplementedError(\textcolor{stringliteral}{"{}[Serial] Data patterns not implemented"{}})}
+\DoxyCodeLine{663     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{664         \textcolor{keywordflow}{raise} ValueError(}
+\DoxyCodeLine{665             f\textcolor{stringliteral}{"{}[Serial] Not supported data configuration: \{config.data\_pattern\}"{}})}
+\DoxyCodeLine{666     data\_config\_string += \textcolor{stringliteral}{"{}\(\backslash\)n"{}}}
+\DoxyCodeLine{667 }
+\DoxyCodeLine{668     \textcolor{keywordflow}{if} task\_config \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{669         \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Task config must be specified"{}})}
+\DoxyCodeLine{670 }
+\DoxyCodeLine{671     configuration\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{672     \textcolor{keywordflow}{for} device\_id, task\_config \textcolor{keywordflow}{in} configurations.items():}
+\DoxyCodeLine{673         last\_flag = 1 \textcolor{keywordflow}{if} device\_id == list(}
+\DoxyCodeLine{674             configurations.keys())[-\/1] \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{675         \textcolor{keywordflow}{if} config.fixed\_placement:}
+\DoxyCodeLine{676             device\_id = DeviceType.GPU\_0}
+\DoxyCodeLine{677         \textcolor{comment}{\# Othrewise, expect any cpu or any gpu.}}
+\DoxyCodeLine{678         configuration\_string += f\textcolor{stringliteral}{"{}\{\{ \{device\_id\} : \{task\_config.task\_time\}, \{task\_config.device\_fraction\}, \{task\_config.gil\_accesses\}, \{task\_config.gil\_fraction\}, \{task\_config.memory\} \}\}"{}}}
+\DoxyCodeLine{679 }
+\DoxyCodeLine{680         \textcolor{keywordflow}{if} last\_flag == 0:}
+\DoxyCodeLine{681             configuration\_string += \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{682 }
+\DoxyCodeLine{683     graph += data\_config\_string}
+\DoxyCodeLine{684     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(config.steps):  \textcolor{comment}{\# height}}
+\DoxyCodeLine{685         inout\_data\_index = i}
+\DoxyCodeLine{686         \textcolor{keywordflow}{if} config.data\_pattern == DataInitType.OVERLAPPED\_DATA:}
+\DoxyCodeLine{687             inout\_data\_index = 0}
+\DoxyCodeLine{688         \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(config.chains): \textcolor{comment}{\# width}}
+\DoxyCodeLine{689             dependency\_string = \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{690             dependency\_limit = min(i, config.dependency\_count)}
+\DoxyCodeLine{691             \textcolor{keywordflow}{for} k \textcolor{keywordflow}{in} range(1, dependency\_limit+1):}
+\DoxyCodeLine{692                 \textcolor{keyword}{assert} (i-\/k >= 0)}
+\DoxyCodeLine{693                 dependency\_string += f\textcolor{stringliteral}{"{}\{i-\/k, j\}"{}}}
+\DoxyCodeLine{694 }
+\DoxyCodeLine{695                 \textcolor{keywordflow}{if} k < dependency\_limit:}
+\DoxyCodeLine{696                     dependency\_string += \textcolor{stringliteral}{"{} : "{}}}
+\DoxyCodeLine{697 }
+\DoxyCodeLine{698             graph += f\textcolor{stringliteral}{"{}\{i, j\} |  \{configuration\_string\} | \{dependency\_string\} | : : \{inout\_data\_index\} \(\backslash\)n"{}}}
+\DoxyCodeLine{699 }
+\DoxyCodeLine{700     \textcolor{keywordflow}{return} graph}
+\DoxyCodeLine{701 }
+\DoxyCodeLine{702 \textcolor{comment}{\#TODO(wlr): Refactor this. It is terribly hard to read}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}\label{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!get\_task\_properties@{get\_task\_properties}}
+\index{get\_task\_properties@{get\_task\_properties}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{get\_task\_properties()}{get\_task\_properties()}}
+{\footnotesize\ttfamily def parla.\+utility.\+graphs.\+get\+\_\+task\+\_\+properties (\begin{DoxyParamCaption}\item[{str}]{line }\end{DoxyParamCaption})}
+
+
+
+Definition at line 464 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{464 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line: str):}
+\DoxyCodeLine{465     message = line.split(\textcolor{stringliteral}{'>>'})[1].strip()}
+\DoxyCodeLine{466     tasks = re.findall(task\_filter, message)}
+\DoxyCodeLine{467     tprops = []}
+\DoxyCodeLine{468     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} tasks:}
+\DoxyCodeLine{469         properties = \{\}}
+\DoxyCodeLine{470         task = task.strip(\textcolor{stringliteral}{'InnerTask\{'}).strip(\textcolor{stringliteral}{'\}'}).strip()}
+\DoxyCodeLine{471         task\_properties = task.split(\textcolor{stringliteral}{','})}
+\DoxyCodeLine{472         \textcolor{keywordflow}{for} prop \textcolor{keywordflow}{in} task\_properties:}
+\DoxyCodeLine{473             prop\_name, prop\_value = prop.strip().split(\textcolor{stringliteral}{':'})}
+\DoxyCodeLine{474             properties[prop\_name] = prop\_value.strip()}
+\DoxyCodeLine{475 }
+\DoxyCodeLine{476         \textcolor{comment}{\# If "{}.dm."{} is in the task name, ignore it since}}
+\DoxyCodeLine{477         \textcolor{comment}{\# this is a data movement task.}}
+\DoxyCodeLine{478         \textcolor{comment}{\# TODO(hc): we may need to verify data movemnt task too.}}
+\DoxyCodeLine{479         \textcolor{keywordflow}{if} \textcolor{stringliteral}{"{}.dm."{}} \textcolor{keywordflow}{in} properties[\textcolor{stringliteral}{'name'}]:}
+\DoxyCodeLine{480             \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{481 }
+\DoxyCodeLine{482         properties[\textcolor{stringliteral}{'name'}] = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}{convert\_task\_id}}(}
+\DoxyCodeLine{483             properties[\textcolor{stringliteral}{'name'}], properties[\textcolor{stringliteral}{'instance'}])}
+\DoxyCodeLine{484 }
+\DoxyCodeLine{485         tprops.append(properties)}
+\DoxyCodeLine{486 }
+\DoxyCodeLine{487     \textcolor{keywordflow}{return} tprops}
+\DoxyCodeLine{488 }
+\DoxyCodeLine{489 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+graphs.\+convert\+\_\+task\+\_\+id().
+
+
+
+Referenced by parla.\+utility.\+graphs.\+parse\+\_\+blog().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}\label{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!get\_time@{get\_time}}
+\index{get\_time@{get\_time}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{get\_time()}{get\_time()}}
+{\footnotesize\ttfamily  int parla.\+utility.\+graphs.\+get\+\_\+time (\begin{DoxyParamCaption}\item[{str}]{line }\end{DoxyParamCaption})}
+
+
+
+Definition at line 433 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{433 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line: str) -\/> int:}
+\DoxyCodeLine{434     logged\_time = line.split(\textcolor{stringliteral}{'>>'})[0].strip().strip(\textcolor{stringliteral}{"{}\(\backslash\)`"{}}).strip(\textcolor{stringliteral}{'[]'})}
+\DoxyCodeLine{435     \textcolor{keywordflow}{return} int(logged\_time)}
+\DoxyCodeLine{436 }
+\DoxyCodeLine{437 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+graphs.\+parse\+\_\+blog().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1}\label{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!parse\_blog@{parse\_blog}}
+\index{parse\_blog@{parse\_blog}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{parse\_blog()}{parse\_blog()}}
+{\footnotesize\ttfamily  Tuple\mbox{[}Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{Task\+Time}}\mbox{]},  Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, List\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}\mbox{]}\mbox{]}\mbox{]} parla.\+utility.\+graphs.\+parse\+\_\+blog (\begin{DoxyParamCaption}\item[{str }]{filename = {\ttfamily \textquotesingle{}parla.blog\textquotesingle{}} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 490 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{490 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1}{parse\_blog}}(filename: str = \textcolor{stringliteral}{'parla.blog'}) -\/> Tuple[Dict[TaskID, TaskTime],  Dict[TaskID, List[TaskID]]]:}
+\DoxyCodeLine{491 }
+\DoxyCodeLine{492     \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{493         result = subprocess.run(}
+\DoxyCodeLine{494             [\textcolor{stringliteral}{'bread'}, \textcolor{stringliteral}{'-\/s'}, \textcolor{stringliteral}{r"{}-\/f `[\%r] >> \%m`"{}}, filename], stdout=subprocess.PIPE)}
+\DoxyCodeLine{495 }
+\DoxyCodeLine{496         output = result.stdout.decode(\textcolor{stringliteral}{'utf-\/8'})}
+\DoxyCodeLine{497     \textcolor{keywordflow}{except} subprocess.CalledProcessError \textcolor{keyword}{as} e:}
+\DoxyCodeLine{498         \textcolor{keywordflow}{raise} Exception(e.output)}
+\DoxyCodeLine{499 }
+\DoxyCodeLine{500     output = output.splitlines()}
+\DoxyCodeLine{501 }
+\DoxyCodeLine{502     task\_start\_times = \{\}}
+\DoxyCodeLine{503     task\_runahead\_times = \{\}}
+\DoxyCodeLine{504     task\_notify\_times = \{\}}
+\DoxyCodeLine{505     task\_end\_times = \{\}}
+\DoxyCodeLine{506     task\_assigned\_times = \{\}}
+\DoxyCodeLine{507 }
+\DoxyCodeLine{508     task\_start\_order = []}
+\DoxyCodeLine{509     task\_end\_order = []}
+\DoxyCodeLine{510     task\_runahead\_order = []}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{512     task\_times = \{\}}
+\DoxyCodeLine{513     task\_states = defaultdict(list)}
+\DoxyCodeLine{514 }
+\DoxyCodeLine{515     task\_dependencies = \{\}}
+\DoxyCodeLine{516 }
+\DoxyCodeLine{517     final\_instance\_map = \{\}}
+\DoxyCodeLine{518 }
+\DoxyCodeLine{519     \textcolor{keywordflow}{for} line \textcolor{keywordflow}{in} output:}
+\DoxyCodeLine{520         line\_type = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}{check\_log\_line}}(line)}
+\DoxyCodeLine{521         \textcolor{keywordflow}{if} line\_type == LogState.START\_TASK:}
+\DoxyCodeLine{522             start\_time = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line)}
+\DoxyCodeLine{523             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{524 }
+\DoxyCodeLine{525             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{526                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{527 }
+\DoxyCodeLine{528             task\_properties = task\_properties[0]}
+\DoxyCodeLine{529 }
+\DoxyCodeLine{530             task\_start\_times[task\_properties[\textcolor{stringliteral}{'name'}]] = start\_time}
+\DoxyCodeLine{531             task\_start\_order.append(task\_properties[\textcolor{stringliteral}{'name'}])}
+\DoxyCodeLine{532 }
+\DoxyCodeLine{533             current\_name = task\_properties[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{534 }
+\DoxyCodeLine{535             base\_name = TaskID(current\_name.taskspace,}
+\DoxyCodeLine{536                                current\_name.task\_idx,}
+\DoxyCodeLine{537                                0)}
+\DoxyCodeLine{538 }
+\DoxyCodeLine{539             \textcolor{keywordflow}{if} base\_name \textcolor{keywordflow}{in} final\_instance\_map:}
+\DoxyCodeLine{540                 \textcolor{keywordflow}{if} current\_name.instance > final\_instance\_map[base\_name].instance:}
+\DoxyCodeLine{541                     final\_instance\_map[base\_name] = current\_name}
+\DoxyCodeLine{542             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{543                 \textcolor{comment}{\# if current\_name.instance > 0:}}
+\DoxyCodeLine{544                 \textcolor{comment}{\#    raise RuntimeError(}}
+\DoxyCodeLine{545                 \textcolor{comment}{\#        "{}Instance number is not 0 for first instance of task"{})}}
+\DoxyCodeLine{546                 final\_instance\_map[base\_name] = base\_name}
+\DoxyCodeLine{547 }
+\DoxyCodeLine{548         \textcolor{keywordflow}{elif} line\_type == LogState.RUNAHEAD\_TASK:}
+\DoxyCodeLine{549             runahead\_time = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line)}
+\DoxyCodeLine{550             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{551 }
+\DoxyCodeLine{552             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{553                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{554 }
+\DoxyCodeLine{555             task\_properties = task\_properties[0]}
+\DoxyCodeLine{556 }
+\DoxyCodeLine{557             current\_name = task\_properties[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{558             base\_name = TaskID(current\_name.taskspace,}
+\DoxyCodeLine{559                                current\_name.task\_idx,}
+\DoxyCodeLine{560                                0)}
+\DoxyCodeLine{561 }
+\DoxyCodeLine{562             task\_runahead\_times[base\_name] = runahead\_time}
+\DoxyCodeLine{563             task\_runahead\_order.append(base\_name)}
+\DoxyCodeLine{564 }
+\DoxyCodeLine{565         \textcolor{keywordflow}{elif} line\_type == LogState.COMPLETED\_TASK:}
+\DoxyCodeLine{566             end\_time = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line)}
+\DoxyCodeLine{567             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{568 }
+\DoxyCodeLine{569             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{570                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{571 }
+\DoxyCodeLine{572             task\_properties = task\_properties[0]}
+\DoxyCodeLine{573 }
+\DoxyCodeLine{574             current\_name = task\_properties[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{575             base\_name = TaskID(current\_name.taskspace,}
+\DoxyCodeLine{576                                current\_name.task\_idx,}
+\DoxyCodeLine{577                                0)}
+\DoxyCodeLine{578 }
+\DoxyCodeLine{579             task\_end\_times[base\_name] = end\_time}
+\DoxyCodeLine{580             task\_end\_order.append(base\_name)}
+\DoxyCodeLine{581 }
+\DoxyCodeLine{582         \textcolor{keywordflow}{elif} line\_type == LogState.NOTIFY\_DEPENDENTS:}
+\DoxyCodeLine{583             notify\_time = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line)}
+\DoxyCodeLine{584             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{585 }
+\DoxyCodeLine{586             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{587                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{588 }
+\DoxyCodeLine{589             notifying\_task = task\_properties[0]}
+\DoxyCodeLine{590             current\_name = notifying\_task[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{591             current\_state = notifying\_task[\textcolor{stringliteral}{'get\_state'}]}
+\DoxyCodeLine{592             instance = notifying\_task[\textcolor{stringliteral}{'instance'}]}
+\DoxyCodeLine{593 }
+\DoxyCodeLine{594             \textcolor{keywordflow}{if} int(instance) > 0:}
+\DoxyCodeLine{595                 base\_name = TaskID(current\_name.taskspace,}
+\DoxyCodeLine{596                                    current\_name.task\_idx,}
+\DoxyCodeLine{597                                    0)}
+\DoxyCodeLine{598                 task\_states[base\_name] += [current\_state]}
+\DoxyCodeLine{599 }
+\DoxyCodeLine{600             task\_states[current\_name] += [current\_state]}
+\DoxyCodeLine{601 }
+\DoxyCodeLine{602         \textcolor{keywordflow}{elif} line\_type == LogState.ASSIGNED\_TASK:}
+\DoxyCodeLine{603             assigned\_time = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{get\_time}}(line)}
+\DoxyCodeLine{604             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{605 }
+\DoxyCodeLine{606             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{607                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{608 }
+\DoxyCodeLine{609             task\_properties = task\_properties[0]}
+\DoxyCodeLine{610 }
+\DoxyCodeLine{611             current\_name = task\_properties[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{612             base\_name = TaskID(current\_name.taskspace,}
+\DoxyCodeLine{613                                current\_name.task\_idx,}
+\DoxyCodeLine{614                                0)}
+\DoxyCodeLine{615 }
+\DoxyCodeLine{616             task\_assigned\_times[base\_name] = assigned\_time}
+\DoxyCodeLine{617 }
+\DoxyCodeLine{618         \textcolor{keywordflow}{elif} line\_type == LogState.ADDING\_DEPENDENCIES:}
+\DoxyCodeLine{619             task\_properties = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{get\_task\_properties}}(line)}
+\DoxyCodeLine{620 }
+\DoxyCodeLine{621             \textcolor{keywordflow}{if} task\_properties[0][\textcolor{stringliteral}{"{}is\_data\_task"{}}] == \textcolor{stringliteral}{"{}1"{}}:}
+\DoxyCodeLine{622                 \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{623 }
+\DoxyCodeLine{624             current\_task = task\_properties[0][\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{625             current\_dependencies = []}
+\DoxyCodeLine{626 }
+\DoxyCodeLine{627             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} task\_properties[1:]:}
+\DoxyCodeLine{628                 dependency = d[\textcolor{stringliteral}{'name'}]}
+\DoxyCodeLine{629                 current\_dependencies.append(dependency)}
+\DoxyCodeLine{630 }
+\DoxyCodeLine{631             task\_dependencies[current\_task] = current\_dependencies}
+\DoxyCodeLine{632 }
+\DoxyCodeLine{633     \textcolor{keywordflow}{for} task \textcolor{keywordflow}{in} task\_end\_times:}
+\DoxyCodeLine{634         assigned\_t = task\_assigned\_times[task]}
+\DoxyCodeLine{635         start\_t = task\_start\_times[task]}
+\DoxyCodeLine{636         \textcolor{comment}{\# end\_t = task\_end\_times[task]}}
+\DoxyCodeLine{637         end\_t = task\_end\_times[task]}
+\DoxyCodeLine{638         duration = end\_t -\/ start\_t}
+\DoxyCodeLine{639         task\_times[task] = TaskTime(assigned\_t, start\_t, end\_t, duration)}
+\DoxyCodeLine{640 }
+\DoxyCodeLine{641     \textcolor{keywordflow}{return} task\_times, task\_dependencies, task\_states}
+\DoxyCodeLine{642 }
+\DoxyCodeLine{643 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+graphs.\+check\+\_\+log\+\_\+line(), parla.\+utility.\+graphs.\+get\+\_\+task\+\_\+properties(), and parla.\+utility.\+graphs.\+get\+\_\+time().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}\label{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!read\_pgraph@{read\_pgraph}}
+\index{read\_pgraph@{read\_pgraph}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{read\_pgraph()}{read\_pgraph()}}
+{\footnotesize\ttfamily  Tuple\mbox{[}Dict\mbox{[}int, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{Data\+Info}}\mbox{]}, Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}\mbox{]} parla.\+utility.\+graphs.\+read\+\_\+pgraph (\begin{DoxyParamCaption}\item[{str}]{filename }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Reads a pgraph file and returns:
+1. A list of the nodes in the graph
+2. The initial data configuration
+\end{DoxyVerb}
+ 
+
+Definition at line 293 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{293 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}{read\_pgraph}}(filename: str) -\/> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskInfo]]:}
+\DoxyCodeLine{294     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{295 \textcolor{stringliteral}{    Reads a pgraph file and returns:}}
+\DoxyCodeLine{296 \textcolor{stringliteral}{    1. A list of the nodes in the graph}}
+\DoxyCodeLine{297 \textcolor{stringliteral}{    2. The initial data configuration}}
+\DoxyCodeLine{298 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{299 }
+\DoxyCodeLine{300     task\_list = []}
+\DoxyCodeLine{301     data\_config = dict()}
+\DoxyCodeLine{302 }
+\DoxyCodeLine{303     \textcolor{keyword}{with} open(filename, \textcolor{stringliteral}{'r'}) \textcolor{keyword}{as} graph\_file:}
+\DoxyCodeLine{304 }
+\DoxyCodeLine{305         lines = graph\_file.readlines()}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307         \textcolor{comment}{\# Read the initial data configuration}}
+\DoxyCodeLine{308         data\_info = lines.pop(0)}
+\DoxyCodeLine{309         data\_info = data\_info.split(\textcolor{stringliteral}{','})}
+\DoxyCodeLine{310         idx = 0}
+\DoxyCodeLine{311         \textcolor{keywordflow}{for} data \textcolor{keywordflow}{in} data\_info:}
+\DoxyCodeLine{312             info = data.strip().strip(\textcolor{stringliteral}{"{}\{\}"{}}).strip().split(\textcolor{stringliteral}{"{}:"{}})}
+\DoxyCodeLine{313             size = int(info[0].strip())}
+\DoxyCodeLine{314             location = int(info[1].strip())}
+\DoxyCodeLine{315             data\_config[idx] = DataInfo(idx, size, location)}
+\DoxyCodeLine{316             idx += 1}
+\DoxyCodeLine{317 }
+\DoxyCodeLine{318         \textcolor{comment}{\# print("{}Data Config"{}, data\_config)}}
+\DoxyCodeLine{319         \textcolor{comment}{\# Read the task graph}}
+\DoxyCodeLine{320         \textcolor{keywordflow}{for} line \textcolor{keywordflow}{in} lines:}
+\DoxyCodeLine{321 }
+\DoxyCodeLine{322             task = line.split(\textcolor{stringliteral}{"{}|"{}})}
+\DoxyCodeLine{323             \textcolor{comment}{\# Breaks into [task\_id, task\_runtime, task\_dependencies, data\_dependencies]}}
+\DoxyCodeLine{324 }
+\DoxyCodeLine{325             \textcolor{comment}{\# Process task id (can't be empty)}}
+\DoxyCodeLine{326             ids = task[0].strip()}
+\DoxyCodeLine{327             ids = make\_tuple(ids)}
+\DoxyCodeLine{328 }
+\DoxyCodeLine{329             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(ids, tuple):}
+\DoxyCodeLine{330                 ids = (ids,)}
+\DoxyCodeLine{331 }
+\DoxyCodeLine{332             \textcolor{keywordflow}{if} isinstance(ids[0], str) \textcolor{keywordflow}{and} ids[0].isalpha():}
+\DoxyCodeLine{333                 taskspace = ids[0]}
+\DoxyCodeLine{334                 idx = ids[1]}
+\DoxyCodeLine{335 }
+\DoxyCodeLine{336                 \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(idx, tuple):}
+\DoxyCodeLine{337                     idx = (idx, )}
+\DoxyCodeLine{338 }
+\DoxyCodeLine{339                 task\_ids = TaskID(taskspace, idx, 0)}
+\DoxyCodeLine{340             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{341                 taskspace = \textcolor{stringliteral}{"{}T"{}}}
+\DoxyCodeLine{342                 task\_ids = TaskID(taskspace, ids, 0)}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344             \textcolor{comment}{\# Process task runtime (can't be empty)}}
+\DoxyCodeLine{345             configurations = task[1].strip().split(\textcolor{stringliteral}{"{}\},"{}})}
+\DoxyCodeLine{346             task\_runtime = dict()}
+\DoxyCodeLine{347             \textcolor{keywordflow}{for} config \textcolor{keywordflow}{in} configurations:}
+\DoxyCodeLine{348                 config = config.strip().strip(\textcolor{stringliteral}{"{}\{\}"{}}).strip()}
+\DoxyCodeLine{349                 config = config.split(\textcolor{stringliteral}{"{}:"{}})}
+\DoxyCodeLine{350 }
+\DoxyCodeLine{351                 targets = config[0].strip().strip(\textcolor{stringliteral}{"{}()"{}}).strip().split(\textcolor{stringliteral}{"{},"{}})}
+\DoxyCodeLine{352                 targets = [int(target.strip())}
+\DoxyCodeLine{353                            \textcolor{keywordflow}{for} target \textcolor{keywordflow}{in} targets \textcolor{keywordflow}{if} target.strip() != \textcolor{stringliteral}{"{}"{}}]}
+\DoxyCodeLine{354                 target = tuple(targets)}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{356                 details = config[1].strip().split(\textcolor{stringliteral}{"{},"{}})}
+\DoxyCodeLine{357 }
+\DoxyCodeLine{358                 details = [\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}{extract}}(detail.strip()) \textcolor{keywordflow}{for} detail \textcolor{keywordflow}{in} details]}
+\DoxyCodeLine{359                 details = TaskRuntimeInfo(*details)}
+\DoxyCodeLine{360 }
+\DoxyCodeLine{361                 task\_runtime[target] = details}
+\DoxyCodeLine{362 }
+\DoxyCodeLine{363             \textcolor{comment}{\# Process task dependencies (can be empty)}}
+\DoxyCodeLine{364             \textcolor{keywordflow}{if} len(task) > 2:}
+\DoxyCodeLine{365                 dependencies = task[2].split(\textcolor{stringliteral}{"{}:"{}})}
+\DoxyCodeLine{366                 \textcolor{keywordflow}{if} (len(dependencies) > 0) \textcolor{keywordflow}{and} (\textcolor{keywordflow}{not} dependencies[0].isspace()):}
+\DoxyCodeLine{367                     task\_dependencies = []}
+\DoxyCodeLine{368 }
+\DoxyCodeLine{369                     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(dependencies)):}
+\DoxyCodeLine{370                         \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} dependencies[i].isspace():}
+\DoxyCodeLine{371                             ids = dependencies[i].strip()}
+\DoxyCodeLine{372 }
+\DoxyCodeLine{373                             ids = make\_tuple(ids)}
+\DoxyCodeLine{374 }
+\DoxyCodeLine{375                             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(ids, tuple):}
+\DoxyCodeLine{376                                 ids = (ids,)}
+\DoxyCodeLine{377 }
+\DoxyCodeLine{378                             \textcolor{keywordflow}{if} isinstance(ids[0], str) \textcolor{keywordflow}{and} ids[0].isalpha():}
+\DoxyCodeLine{379                                 name, idx = ids[0], ids[1]}
+\DoxyCodeLine{380 }
+\DoxyCodeLine{381                                 \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(idx, tuple):}
+\DoxyCodeLine{382                                     idx = (idx, )}
+\DoxyCodeLine{383                                 dep\_id = TaskID(name, idx, 0)}
+\DoxyCodeLine{384 }
+\DoxyCodeLine{385                             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{386                                 dep\_id = TaskID(taskspace, ids, 0)}
+\DoxyCodeLine{387 }
+\DoxyCodeLine{388                             task\_dependencies.append(dep\_id)}
+\DoxyCodeLine{389                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{390                     task\_dependencies = []}
+\DoxyCodeLine{391 }
+\DoxyCodeLine{392             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{393                 task\_dependencies = []}
+\DoxyCodeLine{394 }
+\DoxyCodeLine{395             task\_dependencies = task\_dependencies}
+\DoxyCodeLine{396 }
+\DoxyCodeLine{397             \textcolor{comment}{\# Process data dependencies (can be empty)}}
+\DoxyCodeLine{398             \textcolor{keywordflow}{if} len(task) > 3:}
+\DoxyCodeLine{399                 \textcolor{comment}{\# Split into [read, write, read/write]}}
+\DoxyCodeLine{400                 types = task[3].split(\textcolor{stringliteral}{"{}:"{}})}
+\DoxyCodeLine{401 }
+\DoxyCodeLine{402                 check = [\textcolor{keywordflow}{not} t.isspace() \textcolor{keywordflow}{for} t \textcolor{keywordflow}{in} types]}
+\DoxyCodeLine{403 }
+\DoxyCodeLine{404                 \textcolor{keywordflow}{if} any(check):}
+\DoxyCodeLine{405                     task\_data = [[], [], []]}
+\DoxyCodeLine{406 }
+\DoxyCodeLine{407                     \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(types)):}
+\DoxyCodeLine{408                         \textcolor{keywordflow}{if} check[i]:}
+\DoxyCodeLine{409                             data = types[i].strip().split(\textcolor{stringliteral}{"{},"{}})}
+\DoxyCodeLine{410                             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} data[0].isspace():}
+\DoxyCodeLine{411                                 task\_data[i] = [0 \textcolor{keywordflow}{for} \_ \textcolor{keywordflow}{in} range(len(data))]}
+\DoxyCodeLine{412 }
+\DoxyCodeLine{413                                 \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(len(data)):}
+\DoxyCodeLine{414                                     \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} data[j].isspace():}
+\DoxyCodeLine{415                                         task\_data[i][j] = int(data[j])}
+\DoxyCodeLine{416                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{417                     task\_data = [[], [], []]}
+\DoxyCodeLine{418             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{419                 task\_data = [[], [], []]}
+\DoxyCodeLine{420 }
+\DoxyCodeLine{421             task\_data = TaskDataInfo(*task\_data)}
+\DoxyCodeLine{422 }
+\DoxyCodeLine{423             task\_tuple = TaskInfo(task\_ids, task\_runtime,}
+\DoxyCodeLine{424                                   task\_dependencies, task\_data)}
+\DoxyCodeLine{425 }
+\DoxyCodeLine{426             task\_list.append(task\_tuple)}
+\DoxyCodeLine{427 }
+\DoxyCodeLine{428     task\_graph = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}{convert\_to\_dictionary}}(task\_list)}
+\DoxyCodeLine{429 }
+\DoxyCodeLine{430     \textcolor{keywordflow}{return} data\_config, task\_graph}
+\DoxyCodeLine{431 }
+\DoxyCodeLine{432 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+graphs.\+convert\+\_\+to\+\_\+dictionary(), and parla.\+utility.\+graphs.\+extract().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed}\label{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!shuffle\_tasks@{shuffle\_tasks}}
+\index{shuffle\_tasks@{shuffle\_tasks}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{shuffle\_tasks()}{shuffle\_tasks()}}
+{\footnotesize\ttfamily  Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]} parla.\+utility.\+graphs.\+shuffle\+\_\+tasks (\begin{DoxyParamCaption}\item[{Dict\mbox{[}\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{Task\+ID}}, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{Task\+Info}}\mbox{]}}]{tasks }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Shuffles the task graph
+\end{DoxyVerb}
+ 
+
+Definition at line 274 of file graphs.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{274 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed}{shuffle\_tasks}}(tasks: Dict[TaskID, TaskInfo]) -\/> Dict[TaskID, TaskInfo]:}
+\DoxyCodeLine{275     \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{276 \textcolor{stringliteral}{    Shuffles the task graph}}
+\DoxyCodeLine{277 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{278     task\_list = list(tasks.values())}
+\DoxyCodeLine{279     np.random.shuffle(task\_list)}
+\DoxyCodeLine{280     \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}{convert\_to\_dictionary}}(task\_list)}
+\DoxyCodeLine{281 }
+\DoxyCodeLine{282 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+graphs.\+convert\+\_\+to\+\_\+dictionary().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ae9d9fca669cb92e7995c50e4ae3d8632}\label{namespaceparla_1_1utility_1_1graphs_ae9d9fca669cb92e7995c50e4ae3d8632}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!\_\_all\_\_@{\_\_all\_\_}}
+\index{\_\_all\_\_@{\_\_all\_\_}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{\_\_all\_\_}{\_\_all\_\_}}
+{\footnotesize\ttfamily list parla.\+utility.\+graphs.\+\_\+\+\_\+all\+\_\+\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 =  [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,}
+\DoxyCodeLine{2            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read\_pgraph,}
+\DoxyCodeLine{3            parse\_blog, TaskConfigs, RunConfig, shuffle\_tasks,}
+\DoxyCodeLine{4            generate\_independent\_graph, generate\_serial\_graph, generate\_reduction\_graph]}
+
+\end{DoxyCode}
+
+
+Definition at line 964 of file graphs.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_ac4eb344f9f706421c6ca4559f15967cb}\label{namespaceparla_1_1utility_1_1graphs_ac4eb344f9f706421c6ca4559f15967cb}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!num\_gpus@{num\_gpus}}
+\index{num\_gpus@{num\_gpus}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{num\_gpus}{num\_gpus}}
+{\footnotesize\ttfamily int parla.\+utility.\+graphs.\+num\+\_\+gpus = 4}
+
+
+
+Definition at line 25 of file graphs.\+py.
+
+\mbox{\Hypertarget{namespaceparla_1_1utility_1_1graphs_a960ebc3be7f47b455783b439a7a884fd}\label{namespaceparla_1_1utility_1_1graphs_a960ebc3be7f47b455783b439a7a884fd}} 
+\index{parla.utility.graphs@{parla.utility.graphs}!task\_filter@{task\_filter}}
+\index{task\_filter@{task\_filter}!parla.utility.graphs@{parla.utility.graphs}}
+\doxysubsubsection{\texorpdfstring{task\_filter}{task\_filter}}
+{\footnotesize\ttfamily parla.\+utility.\+graphs.\+task\+\_\+filter = re.\+compile(r\textquotesingle{}Inner\+Task\textbackslash{}\{ .$\ast$? \textbackslash{}\}\textquotesingle{})}
+
+
+
+Definition at line 260 of file graphs.\+py.
+

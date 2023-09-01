@@ -1,0 +1,176 @@
+\hypertarget{classScheduler_1_1Status}{}\doxysection{Scheduler\+::Status Class Reference}
+\label{classScheduler_1_1Status}\index{Scheduler::Status@{Scheduler::Status}}
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classScheduler_1_1Status_ae82648734cb64b132d1d92a153ca77b6}{reset}} ()
+\item 
+void \mbox{\hyperlink{classScheduler_1_1Status_ae2ca20afac6fc2beeccba7c65d131cce}{set}} (int index, int value)
+\item 
+int \mbox{\hyperlink{classScheduler_1_1Status_a31ded11c6282a7349d35a1750c316692}{get}} (int index)
+\item 
+void \mbox{\hyperlink{classScheduler_1_1Status_ab725a7822f5ce02d4b542264120d154b}{update}} (\mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379}{State}} state)
+\item 
+void \mbox{\hyperlink{classScheduler_1_1Status_a4192c68f08f86eb7a208f380e588bae1}{print}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}} \mbox{[}8\mbox{]} = \{0, 0, 0, 0, 0, 0, 0, 0\}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const int \mbox{\hyperlink{classScheduler_1_1Status_af70dc915929fc26891590d63249243a2}{size}} = 8
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 932 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classScheduler_1_1Status_a31ded11c6282a7349d35a1750c316692}\label{classScheduler_1_1Status_a31ded11c6282a7349d35a1750c316692}} 
+\index{Scheduler::Status@{Scheduler::Status}!get@{get}}
+\index{get@{get}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily int Scheduler\+::\+Status\+::get (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 947 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{947 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a6051e1607a75f5e7f15dbd3d8e9f7e30}{index}}]; \}}
+
+\end{DoxyCode}
+
+
+References status.
+
+\mbox{\Hypertarget{classScheduler_1_1Status_a4192c68f08f86eb7a208f380e588bae1}\label{classScheduler_1_1Status_a4192c68f08f86eb7a208f380e588bae1}} 
+\index{Scheduler::Status@{Scheduler::Status}!print@{print}}
+\index{print@{print}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{print()}{print()}}
+{\footnotesize\ttfamily void Scheduler\+::\+Status\+::print (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 951 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{951                \{}
+\DoxyCodeLine{952     std::cout << \textcolor{stringliteral}{"{}Scheduler Status: ("{}} << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[0] << \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{953               << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[1] << \textcolor{stringliteral}{"{}, "{}} << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[2] << \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{954               << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[3] << \textcolor{stringliteral}{"{}, "{}} << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[4] << \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{955               << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[5] << \textcolor{stringliteral}{"{}, "{}} << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[6] << \textcolor{stringliteral}{"{}, "{}}}
+\DoxyCodeLine{956               << this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[7] << \textcolor{stringliteral}{"{})"{}} << std::endl;}
+\DoxyCodeLine{957   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classScheduler_1_1Status_ae82648734cb64b132d1d92a153ca77b6}\label{classScheduler_1_1Status_ae82648734cb64b132d1d92a153ca77b6}} 
+\index{Scheduler::Status@{Scheduler::Status}!reset@{reset}}
+\index{reset@{reset}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{reset()}{reset()}}
+{\footnotesize\ttfamily void Scheduler\+::\+Status\+::reset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 939 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{939                \{}
+\DoxyCodeLine{940     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{classScheduler_1_1Status_af70dc915929fc26891590d63249243a2}{size}}; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}++) \{}
+\DoxyCodeLine{941       \mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}] = 0;}
+\DoxyCodeLine{942     \}}
+\DoxyCodeLine{943   \}}
+
+\end{DoxyCode}
+
+
+References size, and status.
+
+\mbox{\Hypertarget{classScheduler_1_1Status_ae2ca20afac6fc2beeccba7c65d131cce}\label{classScheduler_1_1Status_ae2ca20afac6fc2beeccba7c65d131cce}} 
+\index{Scheduler::Status@{Scheduler::Status}!set@{set}}
+\index{set@{set}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{set()}{set()}}
+{\footnotesize\ttfamily void Scheduler\+::\+Status\+::set (\begin{DoxyParamCaption}\item[{int}]{index,  }\item[{int}]{value }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 945 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{945 \{ this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a6051e1607a75f5e7f15dbd3d8e9f7e30}{index}}] = value; \}}
+
+\end{DoxyCode}
+
+
+References status.
+
+\mbox{\Hypertarget{classScheduler_1_1Status_ab725a7822f5ce02d4b542264120d154b}\label{classScheduler_1_1Status_ab725a7822f5ce02d4b542264120d154b}} 
+\index{Scheduler::Status@{Scheduler::Status}!update@{update}}
+\index{update@{update}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{update()}{update()}}
+{\footnotesize\ttfamily void Scheduler\+::\+Status\+::update (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379}{State}}}]{state }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 949 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{949 \{ this-\/>\mbox{\hyperlink{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}{status}}[state]++; \}}
+
+\end{DoxyCode}
+
+
+References status.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classScheduler_1_1Status_af70dc915929fc26891590d63249243a2}\label{classScheduler_1_1Status_af70dc915929fc26891590d63249243a2}} 
+\index{Scheduler::Status@{Scheduler::Status}!size@{size}}
+\index{size@{size}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{size}{size}}
+{\footnotesize\ttfamily const int Scheduler\+::\+Status\+::size = 8\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+
+
+Definition at line 934 of file runtime.\+hpp.
+
+
+
+Referenced by reset().
+
+\mbox{\Hypertarget{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}\label{classScheduler_1_1Status_a115a0f47d5404d4029cd69573077b05d}} 
+\index{Scheduler::Status@{Scheduler::Status}!status@{status}}
+\index{status@{status}!Scheduler::Status@{Scheduler::Status}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily int Scheduler\+::\+Status\+::status\mbox{[}8\mbox{]} = \{0, 0, 0, 0, 0, 0, 0, 0\}}
+
+
+
+Definition at line 937 of file runtime.\+hpp.
+
+
+
+Referenced by get(), reset(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::run(), set(), and update().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\end{DoxyCompactItemize}

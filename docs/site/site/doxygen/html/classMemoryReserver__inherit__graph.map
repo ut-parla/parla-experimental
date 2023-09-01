@@ -1,0 +1,4 @@
+<map id="MemoryReserver" name="MemoryReserver">
+<area shape="rect" id="node1" title="MemoryReserver phase of the scheduler." alt="" coords="5,80,140,107"/>
+<area shape="rect" id="node2" href="$classSchedulerPhase.html" title="Abstract Interface for general scheduler runtime phase." alt="" coords="10,5,135,32"/>
+</map>

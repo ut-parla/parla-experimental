@@ -1,0 +1,303 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask}{}\doxysection{parla.\+cython.\+tasks.\+Compute\+Task Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1ComputeTask}\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+
+
+A compute task is a task that executes a user defined Python function on a device.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Compute\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=256pt]{classparla_1_1cython_1_1tasks_1_1ComputeTask__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Compute\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=256pt]{classparla_1_1cython_1_1tasks_1_1ComputeTask__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_adbfd90a2807d154f0902f6ea4b57cf57}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_aaf9e1de696216116548050fd551147ba}{taskspace}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_a47d0170c8ce39cfe063a6ce48a5ce9fa}{idx}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_a3020fda2f4f204150956310d704c6ad2}{state}}=\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCreated}{Task\+Created}}(), \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_a4dd1c91646df9715c4136f5c94b9e734}{scheduler}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_aba08889b1a1bd4c07d68c21021b47a7f}{name}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}})
+\begin{DoxyCompactList}\small\item\em Create a new task empty object. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a5db3d9f72043c0deae618494f7571a21}{instantiate}} (self, function, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_ad9f6bd42e7e432596a5a2371cb6f6258}{args}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_a4c3414095d9edf9ae4e2aba6fd4a787a}{dependencies}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a60c8e08de138f6bfa6c645261129136c}{dataflow}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_aebb1e0880f7c15b0ac33b56565666348}{priority}}=0, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_aab0c95ca1f408807a9e43a366e336e8e}{runahead}}=Sync\+Type.\+BLOCKING)
+\begin{DoxyCompactList}\small\item\em Instantiate the task with a function and arguments. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a578c5dd5703048708c461e20893b3942}{cleanup}} (self)
+\begin{DoxyCompactList}\small\item\em Cleanup the task by removing the function, arguments, and references to its data objects. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a2614b15343fe023a3aa9cdffb1fdb32f}{base\+\_\+function}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_af8c0124a1b035f09ad61735750b245c2}{func}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_ad9f6bd42e7e432596a5a2371cb6f6258}{args}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a60c8e08de138f6bfa6c645261129136c}{dataflow}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a334beb4dab088546e04d2039b3203e8e}{\+\_\+execute\+\_\+task}} (self)
+\begin{DoxyCompactList}\small\item\em Run the task body with the saved arguments. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask_a9ec4b8052b16861ec1ae1c31a2dc64d3}{\+\_\+finish}} (self, context)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A compute task is a task that executes a user defined Python function on a device. 
+
+Definition at line 638 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_adbfd90a2807d154f0902f6ea4b57cf57}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_adbfd90a2807d154f0902f6ea4b57cf57}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{taskspace = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{idx = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{state = {\ttfamily \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCreated}{Task\+Created}}()},  }\item[{}]{scheduler = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{name = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}} }\end{DoxyParamCaption})}
+
+
+
+Create a new task empty object. 
+
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task}{Task}} objects are always created empty on first reference and are populated by the runtime when they are spawned. 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_abfaf97cf0302b1674098ad732a2e1318}{parla.\+cython.\+tasks.\+Task}}.
+
+
+
+Definition at line 644 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{644     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=\textcolor{keywordtype}{None}, name=\textcolor{keywordtype}{None}):}
+\DoxyCodeLine{645         super().\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(taskspace, idx, state, scheduler, name)}
+\DoxyCodeLine{646 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a334beb4dab088546e04d2039b3203e8e}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a334beb4dab088546e04d2039b3203e8e}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!\_execute\_task@{\_execute\_task}}
+\index{\_execute\_task@{\_execute\_task}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{\_execute\_task()}{\_execute\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+execute\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Run the task body with the saved arguments. 
+
+If the body is a continuation, run the continuation. 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_ab1ac6b05cfcd2416a4f72bf63aaf95d3}{parla.\+cython.\+tasks.\+Task}}.
+
+
+
+Definition at line 672 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{672     \textcolor{keyword}{def }\_execute\_task(self):}
+\DoxyCodeLine{673         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{674 \textcolor{stringliteral}{        @brief Run the task body with the saved arguments. If the body is a continuation, run the continuation.}}
+\DoxyCodeLine{675 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{676         \textcolor{keywordflow}{return} self.func(self, *self.args)}
+\DoxyCodeLine{677 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Tasks.\+args, parla.\+cython.\+tasks.\+Task\+Running.\+args, parla.\+cython.\+tasks.\+Compute\+Task.\+args, parla.\+cython.\+tasks.\+Task\+Running.\+func, and parla.\+cython.\+tasks.\+Compute\+Task.\+func.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task.\+run().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1ComputeTask_a334beb4dab088546e04d2039b3203e8e_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a9ec4b8052b16861ec1ae1c31a2dc64d3}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a9ec4b8052b16861ec1ae1c31a2dc64d3}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!\_finish@{\_finish}}
+\index{\_finish@{\_finish}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{\_finish()}{\_finish()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+finish (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{context }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task_a0a4fdab83e1893e920ff8a9b9e91bcbc}{parla.\+cython.\+tasks.\+Task}}.
+
+
+
+Definition at line 686 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{686     \textcolor{keyword}{def }\_finish(self, context):}
+\DoxyCodeLine{687         \textcolor{keywordflow}{pass}}
+\DoxyCodeLine{688 }
+\DoxyCodeLine{689 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a578c5dd5703048708c461e20893b3942}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a578c5dd5703048708c461e20893b3942}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!cleanup@{cleanup}}
+\index{cleanup@{cleanup}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{cleanup()}{cleanup()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Cleanup the task by removing the function, arguments, and references to its data objects. 
+
+
+
+Definition at line 678 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{678     \textcolor{keyword}{def }cleanup(self):}
+\DoxyCodeLine{679         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{680 \textcolor{stringliteral}{        @brief Cleanup the task by removing the function, arguments, and references to its data objects.}}
+\DoxyCodeLine{681 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{682         self.func = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{683         self.args = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{684         self.dataflow = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{685 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Tasks.\+args, parla.\+cython.\+tasks.\+Task\+Running.\+args, parla.\+cython.\+tasks.\+Compute\+Task.\+args, parla.\+cython.\+tasks.\+Compute\+Task.\+dataflow, parla.\+cython.\+tasks.\+Task\+Running.\+func, and parla.\+cython.\+tasks.\+Compute\+Task.\+func.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a5db3d9f72043c0deae618494f7571a21}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a5db3d9f72043c0deae618494f7571a21}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!instantiate@{instantiate}}
+\index{instantiate@{instantiate}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{instantiate()}{instantiate()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Compute\+Task.\+instantiate (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{function,  }\item[{}]{args,  }\item[{}]{dependencies = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{dataflow = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{priority = {\ttfamily 0},  }\item[{}]{runahead = {\ttfamily SyncType.BLOCKING} }\end{DoxyParamCaption})}
+
+
+
+Instantiate the task with a function and arguments. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em function} & The function to execute. \\
+\hline
+{\em args} & The arguments to the function. \\
+\hline
+{\em dependencies} & A list of tasks that this task depends on. \\
+\hline
+{\em dataflow} & The dataflow object that describes the data dependencies of the task. (Crosspy and data direction (IN/\+OUT/\+INOUT)) \\
+\hline
+{\em priority} & The priority of the task. \\
+\hline
+{\em runahead} & The type of synchronization the task uses for runahead scheduling. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 647 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{647     \textcolor{keyword}{def }instantiate(self, function, args, dependencies=None, dataflow=None, priority=0, runahead=SyncType.BLOCKING):}
+\DoxyCodeLine{648         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{649 \textcolor{stringliteral}{        @brief Instantiate the task with a function and arguments.}}
+\DoxyCodeLine{650 \textcolor{stringliteral}{        @param function The function to execute.}}
+\DoxyCodeLine{651 \textcolor{stringliteral}{        @param args The arguments to the function.}}
+\DoxyCodeLine{652 \textcolor{stringliteral}{        @param dependencies A list of tasks that this task depends on.}}
+\DoxyCodeLine{653 \textcolor{stringliteral}{        @param dataflow The dataflow object that describes the data dependencies of the task. (Crosspy and data direction (IN/OUT/INOUT))}}
+\DoxyCodeLine{654 \textcolor{stringliteral}{        @param priority The priority of the task.}}
+\DoxyCodeLine{655 \textcolor{stringliteral}{        @param runahead The type of synchronization the task uses for runahead scheduling.}}
+\DoxyCodeLine{656 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{657 }
+\DoxyCodeLine{658         \textcolor{comment}{\#Holds the original function}}
+\DoxyCodeLine{659         self.base\_function = function}
+\DoxyCodeLine{660 }
+\DoxyCodeLine{661         \textcolor{comment}{\#Holds the function that will be executed (and its continuation)}}
+\DoxyCodeLine{662         self.func = function}
+\DoxyCodeLine{663 }
+\DoxyCodeLine{664         \textcolor{comment}{\#Holds the arguments to the function}}
+\DoxyCodeLine{665         self.args = args}
+\DoxyCodeLine{666 }
+\DoxyCodeLine{667         \textcolor{comment}{\#Holds the dataflow object (in/out parrays)}}
+\DoxyCodeLine{668         self.dataflow = dataflow}
+\DoxyCodeLine{669         }
+\DoxyCodeLine{670         super().instantiate(dependencies=dependencies, priority=priority, dataflow=dataflow, runahead=runahead)}
+\DoxyCodeLine{671 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_ad9f6bd42e7e432596a5a2371cb6f6258}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_ad9f6bd42e7e432596a5a2371cb6f6258}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!args@{args}}
+\index{args@{args}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{args}{args}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Compute\+Task.\+args}
+
+
+
+Definition at line 665 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+execute\+\_\+task(), parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), and parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a2614b15343fe023a3aa9cdffb1fdb32f}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a2614b15343fe023a3aa9cdffb1fdb32f}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!base\_function@{base\_function}}
+\index{base\_function@{base\_function}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{base\_function}{base\_function}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Compute\+Task.\+base\+\_\+function}
+
+
+
+Definition at line 659 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_a60c8e08de138f6bfa6c645261129136c}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_a60c8e08de138f6bfa6c645261129136c}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!dataflow@{dataflow}}
+\index{dataflow@{dataflow}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{dataflow}{dataflow}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Compute\+Task.\+dataflow}
+
+
+
+Definition at line 668 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1ComputeTask_af8c0124a1b035f09ad61735750b245c2}\label{classparla_1_1cython_1_1tasks_1_1ComputeTask_af8c0124a1b035f09ad61735750b245c2}} 
+\index{parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}!func@{func}}
+\index{func@{func}!parla.cython.tasks.ComputeTask@{parla.cython.tasks.ComputeTask}}
+\doxysubsubsection{\texorpdfstring{func}{func}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Compute\+Task.\+func}
+
+
+
+Definition at line 662 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Running.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Compute\+Task.\+\_\+execute\+\_\+task(), and parla.\+cython.\+tasks.\+Compute\+Task.\+cleanup().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

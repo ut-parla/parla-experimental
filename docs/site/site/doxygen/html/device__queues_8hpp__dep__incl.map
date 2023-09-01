@@ -1,0 +1,7 @@
+<map id="src/c/backend/include/device_queues.hpp" name="src/c/backend/include/device_queues.hpp">
+<area shape="rect" id="node1" title="Provides interface for task queues and collections of task queues for multidevice tasks." alt="" coords="225,5,386,47"/>
+<area shape="rect" id="node2" href="$phases_8hpp.html" title="Interface for scheduler runtime phases." alt="" coords="225,95,386,136"/>
+<area shape="rect" id="node3" href="$phases_8cpp.html" title=" " alt="" coords="5,184,192,211"/>
+<area shape="rect" id="node4" href="$policy_8cpp.html" title=" " alt="" coords="216,184,395,211"/>
+<area shape="rect" id="node5" href="$scheduler_8cpp.html" title=" " alt="" coords="419,184,621,211"/>
+</map>

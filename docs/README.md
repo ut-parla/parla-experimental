@@ -1,6 +1,6 @@
 # Parla 
 
-The classical C++ Doxygen Style documentation including Call Graph and Inheritance diagrams can be found [here](doxygen/html/index.html). 
+The classical C++ Doxygen Style documentation including Call Graph and Inheritance diagrams can be found [here](https://ut-parla.github.io/parla-experimental/site/doxygen/html/index.html). 
 
 # Installation and Use
 

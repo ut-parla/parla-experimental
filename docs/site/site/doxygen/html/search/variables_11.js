@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['ready_2413',['ready',['../classInnerWorker.html#ad2bb642bde24263fd2633ad9e2f49dbd',1,'InnerWorker']]],
+  ['registered_5fdevices_2414',['registered_devices',['../classparla_1_1cython_1_1device__manager_1_1PyDeviceManager.html#a796da49b3d52e712fddc8c7431e86aae',1,'parla::cython::device_manager::PyDeviceManager']]],
+  ['released_2415',['released',['../classparla_1_1Parla.html#a177341cdf582f006a182a41109f5cbdd',1,'parla::Parla']]],
+  ['remainder_2416',['remainder',['../namespaceparla_1_1cython_1_1tasks.html#ad86e5c5e40b5bf338a6d10e714856b22',1,'parla::cython::tasks']]],
+  ['removed_5freserved_2417',['removed_reserved',['../classInnerTask.html#a12d4bf530fa1cbb8f1861af45edd6f09',1,'InnerTask']]],
+  ['removed_5fruntime_2418',['removed_runtime',['../classInnerTask.html#afab4e64aa800a0d6d1dbf9cfc1cf4aff',1,'InnerTask']]],
+  ['req_5faddition_5fmode_5f_2419',['req_addition_mode_',['../classInnerTask.html#a9ace9f5659b95b7963850ad81d852646',1,'InnerTask']]],
+  ['res_5f_2420',['res_',['../classDevice.html#a3cdeb8e06bcc822960ebeaf7c0de6c6c',1,'Device']]],
+  ['res_5freq_2421',['res_req',['../classparla_1_1cython_1_1device_1_1DeviceResourceRequirement.html#a9d646a9f3beba4e6ea7bbd128ac4c593',1,'parla::cython::device::DeviceResourceRequirement']]],
+  ['res_5freq_5f_2422',['res_req_',['../classDeviceRequirement.html#af063c5275197f000e385f29a131b08fa',1,'DeviceRequirement']]],
+  ['reservable_2423',['reservable',['../classTaskStatusFlags.html#a315007b8cc411a55d945f5952d637ad9',1,'TaskStatusFlags']]],
+  ['reservable_5ftasks_2424',['reservable_tasks',['../classMemoryReserver.html#a50abec0ef02597ad2b1d74d18c5ec954',1,'MemoryReserver']]],
+  ['reserved_5fres_5f_2425',['reserved_res_',['../classDevice.html#aacf896eac4bd447ac1e17a57aa3bcd29',1,'Device']]],
+  ['reserved_5ftasks_5fbuffer_2426',['reserved_tasks_buffer',['../classMemoryReserver.html#ac879854e744f973327d1c4c76bc2a0ef',1,'MemoryReserver']]],
+  ['resource_5fmap_5f_2427',['resource_map_',['../classDevice.html#ad3712adb7153fab746d9cae53325db5e',1,'Device']]],
+  ['resource_5fnames_2428',['resource_names',['../resources_8hpp.html#a4ba97032b12b225fab07466b735aea41',1,'resources.hpp']]],
+  ['resources_2429',['Resources',['../namespaceparla_1_1common_1_1spawn.html#a567b7479f48b495a6a2605cf14f3d4a4',1,'parla::common::spawn']]],
+  ['resources_2430',['resources',['../classparla_1_1cython_1_1core_1_1Resources.html#a19ff3389216b18d796c8c1c39f11831a',1,'parla.cython.core.Resources.resources()'],['../classResourcePool.html#a0708e027fd8c4004c75c0581efb63b54',1,'ResourcePool::resources()']]],
+  ['return_5fvalue_2431',['return_value',['../classparla_1_1cython_1_1tasks_1_1TaskCompleted.html#a2800c8f9ddb4e47e25525e96cb4eca27',1,'parla.cython.tasks.TaskCompleted.return_value()'],['../classparla_1_1cython_1_1tasks_1_1TaskRunahead.html#ae726f5ed3a0f9e8daeef98a757db9229',1,'parla.cython.tasks.TaskRunahead.return_value()']]],
+  ['rrcount_2432',['rrcount',['../classMappingPolicy.html#a3ae7076b9ebc8601ea06d3743cf12178',1,'MappingPolicy']]],
+  ['runahead_2433',['runahead',['../classparla_1_1cython_1_1tasks_1_1Task.html#aab0c95ca1f408807a9e43a366e336e8e',1,'parla.cython.tasks.Task.runahead()'],['../classparla_1_1cython_1_1tasks_1_1DataMovementTask.html#aa8f2d45e7145a0e6689cf4b585ddf2f9',1,'parla.cython.tasks.DataMovementTask.runahead()']]],
+  ['runahead_5ftask_2434',['RUNAHEAD_TASK',['../classparla_1_1utility_1_1graphs_1_1LogState.html#a206e07bb1a76ed07a4137a8fac2f8c4b',1,'parla::utility::graphs::LogState']]],
+  ['runnable_2435',['runnable',['../classTaskStatusFlags.html#a092a87d1885eb9e6e66979a8df568736',1,'TaskStatusFlags']]],
+  ['runnable_5ftasks_2436',['runnable_tasks',['../classRuntimeReserver.html#a269183fa13c16d2adb545b40513ba63f',1,'RuntimeReserver']]],
+  ['runtime_5freserver_2437',['runtime_reserver',['../classInnerScheduler.html#a84607342ed8e50f0c12322711821c9e4',1,'InnerScheduler']]]
+];

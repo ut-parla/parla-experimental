@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classDevice.html" title="Devices can be distinguished from other devices by a class type and its index." alt="" coords="5,31,72,57"/>
+<area shape="rect" id="node2" href="$classCPUDevice.html" title=" " alt="" coords="125,5,220,32"/>
+<area shape="rect" id="node3" href="$classCUDADevice.html" title=" " alt="" coords="120,56,225,83"/>
+</map>

@@ -1,0 +1,624 @@
+\hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread}{}\doxysection{parla.\+cython.\+scheduler.\+Worker\+Thread Class Reference}
+\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread}\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+
+
+Inheritance diagram for parla.\+cython.\+scheduler.\+Worker\+Thread\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+scheduler.\+Worker\+Thread\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a934e25a9f4f17d076c6127b0eaff4734}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a3eda45e57a46c577f7597a8c82dff90c}{scheduler}}, \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a90893ed686143a7d4421a65e34f2a31f}{index}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0d915912dd332944dad2cbef4b141648}{start}} (self, initialize=True)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a3eda45e57a46c577f7597a8c82dff90c}{scheduler}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a765867043ac830afa5a44e59ec631d8b}{assign\+\_\+task}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ab08a31dc4f503b6b2710d113126f466b}{task}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0b54988c60785da44ecf20e86c9f6b98}{remove\+\_\+task}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a17878a66843ff4463f81f1e0606b2adf}{run}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a93a8121c06ad835ad12ff793e2b44caa}{stop}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a90893ed686143a7d4421a65e34f2a31f}{index}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ab08a31dc4f503b6b2710d113126f466b}{task}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a1b4bc7bc8b48e2cef1f1a9408b434d15}{status}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_aeac9e0d4dc683464983a053c90b4a984}{inner\+\_\+worker}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a905aef5642cf34eccffe63a157bff6d8}{task\+\_\+attrs}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a00da869ac5b3aaa5ba15561698efe2aa}{\+\_\+initialize}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ac4034616fcecf73def73239fc0d3e5ff}{\+\_\+scheduler}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a019549adbeb605e509b551a3d9b1976f}{\+\_\+monitor}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 113 of file scheduler.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a934e25a9f4f17d076c6127b0eaff4734}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a934e25a9f4f17d076c6127b0eaff4734}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{scheduler,  }\item[{}]{index }\end{DoxyParamCaption})}
+
+
+
+Definition at line 114 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{114     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, scheduler, index):}
+\DoxyCodeLine{115         super().\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}()}
+\DoxyCodeLine{116         self.\_scheduler = scheduler}
+\DoxyCodeLine{117         self.\_monitor = threading.Condition(threading.Lock())}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119         self.index = index}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121         self.task = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{122         self.status = \textcolor{stringliteral}{"{}Initializing"{}}}
+\DoxyCodeLine{123 }
+\DoxyCodeLine{124         self.inner\_worker = \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_ad3dd68883caa4a130cf9663057a842ad}{PyInnerWorker}}(self, scheduler.inner\_scheduler)}
+\DoxyCodeLine{125 }
+\DoxyCodeLine{126         \textcolor{comment}{\#Add the worker to the scheduler pool of all workers (not yet active)}}
+\DoxyCodeLine{127         scheduler.inner\_scheduler.add\_worker(self.inner\_worker)}
+\DoxyCodeLine{128 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a00da869ac5b3aaa5ba15561698efe2aa}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a00da869ac5b3aaa5ba15561698efe2aa}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!\_initialize@{\_initialize}}
+\index{\_initialize@{\_initialize}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{\_initialize()}{\_initialize()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+initialize (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 135 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{135     \textcolor{keyword}{def }\_initialize(self):}
+\DoxyCodeLine{136         device\_manager = self.scheduler.device\_manager}
+\DoxyCodeLine{137 }
+\DoxyCodeLine{138         \textcolor{comment}{\#comment(wlr): wow, it is non-\/trivial to get the set of active cuda devices in the scheduler.}}
+\DoxyCodeLine{139         \textcolor{comment}{\#TODO(wlr): Fix this in device\_manager (see todo there)}}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141         \textcolor{keywordflow}{if} CUPY\_ENABLED:}
+\DoxyCodeLine{142             gpu\_arch = device\_manager.py\_registered\_archs[DeviceType.CUDA]}
+\DoxyCodeLine{143             ngpus = len(gpu\_arch)}
+\DoxyCodeLine{144 }
+\DoxyCodeLine{145             \textcolor{keywordflow}{for} index \textcolor{keywordflow}{in} range(ngpus):}
+\DoxyCodeLine{146                 \textcolor{comment}{\# Trigger cuBLAS/etc. initialization for this GPU in this thread.}}
+\DoxyCodeLine{147                 \textcolor{keyword}{with} cupy.cuda.Device(index \% device\_manager.num\_real\_gpus) \textcolor{keyword}{as} device:}
+\DoxyCodeLine{148                     a = cupy.asarray([2.])}
+\DoxyCodeLine{149                     cupy.cuda.get\_current\_stream().synchronize()}
+\DoxyCodeLine{150                     \textcolor{keyword}{with} cupy.cuda.Stream(\textcolor{keyword}{False}, \textcolor{keyword}{True}) \textcolor{keyword}{as} stream:}
+\DoxyCodeLine{151                         cupy.asnumpy(cupy.sqrt(a))}
+\DoxyCodeLine{152                         device.cublas\_handle}
+\DoxyCodeLine{153                         device.cusolver\_handle}
+\DoxyCodeLine{154                         device.cusolver\_sp\_handle}
+\DoxyCodeLine{155                         device.cusparse\_handle}
+\DoxyCodeLine{156                         stream.synchronize()}
+\DoxyCodeLine{157                         device.synchronize()}
+\DoxyCodeLine{158 }
+\DoxyCodeLine{159 }
+\DoxyCodeLine{160 }
+
+\end{DoxyCode}
+
+
+References Scheduler\+Phase.\+scheduler, Inner\+Task.\+scheduler, Inner\+Worker.\+scheduler, parla.\+common.\+globals.\+Locals.\+scheduler(), parla.\+cython.\+scheduler.\+Scheduler\+Context.\+scheduler(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+scheduler(), parla.\+cython.\+scheduler.\+Scheduler.\+scheduler(), parla.\+cython.\+tasks.\+Task.\+scheduler, and parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+scheduler.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread.\+start().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a00da869ac5b3aaa5ba15561698efe2aa_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a00da869ac5b3aaa5ba15561698efe2aa_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a765867043ac830afa5a44e59ec631d8b}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a765867043ac830afa5a44e59ec631d8b}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!assign\_task@{assign\_task}}
+\index{assign\_task@{assign\_task}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{assign\_task()}{assign\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+assign\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 165 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{165     \textcolor{keyword}{def }assign\_task(self, task):}
+\DoxyCodeLine{166         \textcolor{comment}{\#print("{}Worker waiting to assign task"{}, flush=True)}}
+\DoxyCodeLine{167         \textcolor{keyword}{with} self.\_monitor:}
+\DoxyCodeLine{168             \textcolor{keywordflow}{if} self.task:}
+\DoxyCodeLine{169                 \textcolor{keywordflow}{raise} Exception(\textcolor{stringliteral}{"{}Worker already has a task"{}})}
+\DoxyCodeLine{170             self.task = task}
+\DoxyCodeLine{171             \textcolor{comment}{\#print("{}Worker assigned task. Waking thread..."{}, flush=True)}}
+\DoxyCodeLine{172             self.\_monitor.notify()}
+\DoxyCodeLine{173 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+monitor, parla.\+cython.\+scheduler.\+Scheduler.\+\_\+monitor, Inner\+Worker.\+task, parla.\+common.\+globals.\+Locals.\+task(), parla.\+cython.\+core.\+Py\+Task\+Barrier.\+task, parla.\+cython.\+core.\+Py\+Task\+Space.\+task, and parla.\+cython.\+scheduler.\+Worker\+Thread.\+task.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a765867043ac830afa5a44e59ec631d8b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0b54988c60785da44ecf20e86c9f6b98}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0b54988c60785da44ecf20e86c9f6b98}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!remove\_task@{remove\_task}}
+\index{remove\_task@{remove\_task}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{remove\_task()}{remove\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+remove\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 174 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{174     \textcolor{keyword}{def }remove\_task(self):}
+\DoxyCodeLine{175         \textcolor{keyword}{with} self.\_monitor:}
+\DoxyCodeLine{176             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} self.task:}
+\DoxyCodeLine{177                 \textcolor{keywordflow}{raise} Exception(\textcolor{stringliteral}{"{}Worker does not have a task"{}})}
+\DoxyCodeLine{178             self.task = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{179 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+monitor, parla.\+cython.\+scheduler.\+Scheduler.\+\_\+monitor, Inner\+Worker.\+task, parla.\+common.\+globals.\+Locals.\+task(), parla.\+cython.\+core.\+Py\+Task\+Barrier.\+task, parla.\+cython.\+core.\+Py\+Task\+Space.\+task, and parla.\+cython.\+scheduler.\+Worker\+Thread.\+task.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0b54988c60785da44ecf20e86c9f6b98_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a17878a66843ff4463f81f1e0606b2adf}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a17878a66843ff4463f81f1e0606b2adf}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!run@{run}}
+\index{run@{run}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+run (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1ControllableThread_a6601cb9df4401824e69855b8211a9916}{parla.\+cython.\+scheduler.\+Controllable\+Thread}}.
+
+
+
+Definition at line 180 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{180     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{run}}(self):}
+\DoxyCodeLine{181         \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{182             \textcolor{comment}{\#A worker thread is a scheduler context}}
+\DoxyCodeLine{183             \textcolor{keyword}{with} self:}
+\DoxyCodeLine{184                 \textcolor{comment}{\#TODO: Perform any thread initialization on enviornment components}}
+\DoxyCodeLine{185 }
+\DoxyCodeLine{186                 \textcolor{comment}{\#Add the worker to the scheduler pool of active \& availabe workers}}
+\DoxyCodeLine{187                 self.scheduler.inner\_scheduler.enqueue\_worker(self.inner\_worker)}
+\DoxyCodeLine{188 }
+\DoxyCodeLine{189                 \textcolor{keyword}{with} self.scheduler.start\_monitor:}
+\DoxyCodeLine{190                     \textcolor{comment}{\#print("{}NOTIFYING"{}, flush=True)}}
+\DoxyCodeLine{191                     self.scheduler.start\_monitor.notify\_all()}
+\DoxyCodeLine{192 }
+\DoxyCodeLine{193                 \textcolor{keywordflow}{while} self.\_should\_run:}
+\DoxyCodeLine{194                     self.status = \textcolor{stringliteral}{"{}Waiting"{}}}
+\DoxyCodeLine{195                     \textcolor{comment}{\#print("{}WAITING"{}, flush=True)}}
+\DoxyCodeLine{196 }
+\DoxyCodeLine{197                     \textcolor{comment}{\#with self.\_monitor:}}
+\DoxyCodeLine{198                     \textcolor{comment}{\#    if not self.task:}}
+\DoxyCodeLine{199                     \textcolor{comment}{\#        self.\_monitor.wait()}}
+\DoxyCodeLine{200                     nvtx.push\_range(message=\textcolor{stringliteral}{"{}worker::wait"{}}, domain=\textcolor{stringliteral}{"{}Python Runtime"{}}, color=\textcolor{stringliteral}{"{}blue"{}})}
+\DoxyCodeLine{201                     self.inner\_worker.wait\_for\_task()}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{203                     self.task = self.inner\_worker.get\_task()}
+\DoxyCodeLine{204                     \textcolor{keywordflow}{if} isinstance(self.task, core.DataMovementTaskAttributes):}
+\DoxyCodeLine{205                         self.task\_attrs = self.task}
+\DoxyCodeLine{206                         self.task = \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a0de604202e2ebf491a46339c6f907f37}{DataMovementTask}}()}
+\DoxyCodeLine{207                         self.task.instantiate(self.task\_attrs, self.scheduler)}
+\DoxyCodeLine{208                         \textcolor{comment}{\#if USE\_PYTHON\_RUNAHEAD:}}
+\DoxyCodeLine{209                             \textcolor{comment}{\#This is a back up for testing}}
+\DoxyCodeLine{210                             \textcolor{comment}{\#Need to keep the python object alive}}
+\DoxyCodeLine{211                             \textcolor{comment}{\#Currently this is never cleaned up}}
+\DoxyCodeLine{212                         \textcolor{comment}{\#comment(wlr): Need this is all cases currently. FIXME: Add stream/event creation in C++ so python isn't the owner.}}
+\DoxyCodeLine{213                         \_global\_data\_tasks[id(self.task)] = self.task}
+\DoxyCodeLine{214 }
+\DoxyCodeLine{215                     nvtx.pop\_range(domain=\textcolor{stringliteral}{"{}Python Runtime"{}})}
+\DoxyCodeLine{216 }
+\DoxyCodeLine{217                     \textcolor{comment}{\#print("{}THREAD AWAKE"{}, self.index, self.task, self.\_should\_run, flush=True)}}
+\DoxyCodeLine{218 }
+\DoxyCodeLine{219                     self.status = \textcolor{stringliteral}{"{}Running"{}}}
+\DoxyCodeLine{220 }
+\DoxyCodeLine{221                     \textcolor{keywordflow}{if} isinstance(self.task, Task):}
+\DoxyCodeLine{222                         active\_task = self.task }
+\DoxyCodeLine{223 }
+\DoxyCodeLine{224                         parla\_devices = active\_task.get\_assigned\_devices()}
+\DoxyCodeLine{225                         device\_context = \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_abc10cb50813e11852ca046c51423a642}{create\_env}}(parla\_devices)}
+\DoxyCodeLine{226 }
+\DoxyCodeLine{227                         \textcolor{comment}{\#Save device\_context with task object}}
+\DoxyCodeLine{228                         \textcolor{comment}{\#comment(wlr): This replaces the old enviornment (for continuation tasks)}}
+\DoxyCodeLine{229                         \textcolor{comment}{\#print("{}Setting environment for task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{230                         active\_task.environment = device\_context}
+\DoxyCodeLine{231 }
+\DoxyCodeLine{232 }
+\DoxyCodeLine{233                         \textcolor{comment}{\#Writes all 'default' streams and event pointers to c++ task}}
+\DoxyCodeLine{234                         \textcolor{comment}{\#This allows their synchronization without the GIL and faster iteration over them}}
+\DoxyCodeLine{235                         \textcolor{comment}{\#(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)}}
+\DoxyCodeLine{236                         device\_context.write\_to\_task(active\_task)}
+\DoxyCodeLine{237                         \textcolor{comment}{\#print("{}Wrote enviornment to task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{238 }
+\DoxyCodeLine{239                         \textcolor{comment}{\#handle event wait in python }}
+\DoxyCodeLine{240                         \textcolor{keywordflow}{if} USE\_PYTHON\_RUNAHEAD:}
+\DoxyCodeLine{241                             active\_task.py\_handle\_runahead\_dependencies() }
+\DoxyCodeLine{242                         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{243                             \textcolor{comment}{\#handle event wait in C++ (good if num\_dependencies large)}}
+\DoxyCodeLine{244                             active\_task.handle\_runahead\_dependencies()}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{246                         nvtx.push\_range(message=\textcolor{stringliteral}{"{}worker::run"{}}, domain=\textcolor{stringliteral}{"{}Python Runtime"{}}, color=\textcolor{stringliteral}{"{}blue"{}})}
+\DoxyCodeLine{247 }
+\DoxyCodeLine{248                         \textcolor{comment}{\# print("{}Running Task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250                         \textcolor{comment}{\#Push the task to the thread local stack}}
+\DoxyCodeLine{251                         Locals.push\_task(active\_task)}
+\DoxyCodeLine{252 }
+\DoxyCodeLine{253                         \textcolor{keyword}{with} device\_context \textcolor{keyword}{as} env:}
+\DoxyCodeLine{254                             }
+\DoxyCodeLine{255                             core.binlog\_2(\textcolor{stringliteral}{"{}Worker"{}}, \textcolor{stringliteral}{"{}Running task: "{}}, active\_task.inner\_task, \textcolor{stringliteral}{"{} on worker: "{}}, self.inner\_worker)}
+\DoxyCodeLine{256                             \textcolor{comment}{\#Run the task body (this may complete the task or return a continuation)}}
+\DoxyCodeLine{257                             \textcolor{comment}{\#The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead}}
+\DoxyCodeLine{258                             active\_task.run()}
+\DoxyCodeLine{259 }
+\DoxyCodeLine{260                         \textcolor{comment}{\#Pop the task from the thread local stack}}
+\DoxyCodeLine{261                         Locals.pop\_task()}
+\DoxyCodeLine{262 }
+\DoxyCodeLine{263                         \textcolor{comment}{\#Log events on all 'task default' streams}}
+\DoxyCodeLine{264                         device\_context.record\_events()}
+\DoxyCodeLine{265 }
+\DoxyCodeLine{266                         nvtx.pop\_range(domain=\textcolor{stringliteral}{"{}Python Runtime"{}})}
+\DoxyCodeLine{267                         \textcolor{comment}{\#print("{}Finished Task"{}, self.index, active\_task.taskid.full\_name, flush=True)}}
+\DoxyCodeLine{268 }
+\DoxyCodeLine{269                         nvtx.push\_range(message=\textcolor{stringliteral}{"{}worker::cleanup"{}}, domain=\textcolor{stringliteral}{"{}Python Runtime"{}}, color=\textcolor{stringliteral}{"{}blue"{}})}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271                         final\_state  = active\_task.state}
+\DoxyCodeLine{272 }
+\DoxyCodeLine{273                         \textcolor{comment}{\#FIXME: This can be cleaned up and hidden from this function with a better interface...}}
+\DoxyCodeLine{274                         \textcolor{keywordflow}{if} active\_task.runahead == SyncType.NONE:}
+\DoxyCodeLine{275                             device\_context.finalize()}
+\DoxyCodeLine{276 }
+\DoxyCodeLine{277                         \textcolor{comment}{\#TODO(wlr): Add better exception handling}}
+\DoxyCodeLine{278                         \textcolor{keywordflow}{if} isinstance(final\_state, tasks.TaskException):}
+\DoxyCodeLine{279                             \textcolor{keywordflow}{raise} TaskBodyException(active\_task.state.exception)}
+\DoxyCodeLine{280 }
+\DoxyCodeLine{281                         \textcolor{keywordflow}{elif} isinstance(final\_state, tasks.TaskRunning):}
+\DoxyCodeLine{282                             nvtx.push\_range(message=\textcolor{stringliteral}{"{}worker::continuation"{}}, domain=\textcolor{stringliteral}{"{}Python Runtime"{}}, color=\textcolor{stringliteral}{"{}red"{}})}
+\DoxyCodeLine{283                             \textcolor{comment}{\#print("{}CONTINUATION: "{}, active\_task.taskid.full\_name, active\_task.state.dependencies, flush=True)}}
+\DoxyCodeLine{284                             active\_task.dependencies = active\_task.state.dependencies}
+\DoxyCodeLine{285                             active\_task.func = active\_task.state.func}
+\DoxyCodeLine{286                             active\_task.args = active\_task.state.args}
+\DoxyCodeLine{287 }
+\DoxyCodeLine{288                             active\_task.inner\_task.clear\_dependencies()}
+\DoxyCodeLine{289                             active\_task.add\_dependencies(active\_task.dependencies, process=\textcolor{keyword}{False})}
+\DoxyCodeLine{290                             nvtx.pop\_range(domain=\textcolor{stringliteral}{"{}Python Runtime"{}})}
+\DoxyCodeLine{291                         }
+\DoxyCodeLine{292                         \textcolor{keywordflow}{elif}  isinstance(final\_state, tasks.TaskRunahead):}
+\DoxyCodeLine{293                             core.binlog\_2(\textcolor{stringliteral}{"{}Worker"{}}, \textcolor{stringliteral}{"{}Runahead task: "{}}, active\_task.inner\_task, \textcolor{stringliteral}{"{} on worker: "{}}, self.inner\_worker)}
+\DoxyCodeLine{294                     }
+\DoxyCodeLine{295                         \textcolor{comment}{\#print("{}Cleaning up Task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{296                         }
+\DoxyCodeLine{297                         \textcolor{keywordflow}{if} USE\_PYTHON\_RUNAHEAD:}
+\DoxyCodeLine{298                             \textcolor{comment}{\#Handle synchronization in Python (for debugging, works!)}}
+\DoxyCodeLine{299                             self.scheduler.inner\_scheduler.task\_cleanup\_presync(self.inner\_worker, active\_task.inner\_task, active\_task.state.value)}
+\DoxyCodeLine{300                             \textcolor{keywordflow}{if} active\_task.runahead != SyncType.NONE:}
+\DoxyCodeLine{301                                 device\_context.synchronize(events=\textcolor{keyword}{True})}
+\DoxyCodeLine{302                             self.scheduler.inner\_scheduler.task\_cleanup\_postsync(self.inner\_worker, active\_task.inner\_task, active\_task.state.value)}
+\DoxyCodeLine{303                         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{304                             \textcolor{comment}{\#Handle synchronization in C++}}
+\DoxyCodeLine{305                             self.scheduler.inner\_scheduler.task\_cleanup(self.inner\_worker, active\_task.inner\_task, active\_task.state.value)}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307                         \textcolor{comment}{\#print("{}Finished Cleaning up Task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{308 }
+\DoxyCodeLine{309                         \textcolor{keywordflow}{if} active\_task.runahead != SyncType.NONE:}
+\DoxyCodeLine{310                             device\_context.return\_streams()}
+\DoxyCodeLine{311 }
+\DoxyCodeLine{312                         \textcolor{keywordflow}{if} isinstance(final\_state, tasks.TaskRunahead):}
+\DoxyCodeLine{313                             final\_state = tasks.TaskCompleted(final\_state.return\_value)}
+\DoxyCodeLine{314                             core.binlog\_2(\textcolor{stringliteral}{"{}Worker"{}}, \textcolor{stringliteral}{"{}Completed task: "{}}, active\_task.inner\_task, \textcolor{stringliteral}{"{} on worker: "{}}, self.inner\_worker)}
+\DoxyCodeLine{315 }
+\DoxyCodeLine{316                         \textcolor{comment}{\# print("{}Finished Task"{}, active\_task, flush=True)}}
+\DoxyCodeLine{317                         active\_task.state = final\_state}
+\DoxyCodeLine{318 }
+\DoxyCodeLine{319                         nvtx.pop\_range(domain=\textcolor{stringliteral}{"{}Python Runtime"{}})}
+\DoxyCodeLine{320                     \textcolor{keywordflow}{elif} self.\_should\_run:}
+\DoxyCodeLine{321                         \textcolor{keywordflow}{raise} WorkerThreadException(\textcolor{stringliteral}{"{}\%r Worker: Woke without a task"{}}, self.index)}
+\DoxyCodeLine{322                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{323                         \textcolor{comment}{\#print("{}Worker Thread Stopping"{}, flush=True)}}
+\DoxyCodeLine{324                         \textcolor{keywordflow}{break}}
+\DoxyCodeLine{325 }
+\DoxyCodeLine{326         \textcolor{keywordflow}{except} Exception \textcolor{keyword}{as} e:}
+\DoxyCodeLine{327             tb = traceback.format\_exc()}
+\DoxyCodeLine{328             print(\textcolor{stringliteral}{"{}Exception in Worker Thread "{}}, self, \textcolor{stringliteral}{"{}: "{}}, e, tb, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{329 }
+\DoxyCodeLine{330             self.scheduler.exception\_stack.append(e)}
+\DoxyCodeLine{331             self.scheduler.stop()}
+\DoxyCodeLine{332 }
+\DoxyCodeLine{333             \textcolor{keywordflow}{if} isinstance(e, TaskBodyException):}
+\DoxyCodeLine{334                 \textcolor{keywordflow}{raise} WorkerThreadException(f\textcolor{stringliteral}{"{}Unhandled Exception in Task: \{self.task.get\_name()\}"{}}) \textcolor{keyword}{from} e}
+\DoxyCodeLine{335             \textcolor{keywordflow}{if} isinstance(e, KeyboardInterrupt):}
+\DoxyCodeLine{336                 print(\textcolor{stringliteral}{"{}You pressed Ctrl+C! In a worker!"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{337                 \textcolor{keywordflow}{raise} e}
+\DoxyCodeLine{338             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{339                 \textcolor{keywordflow}{raise} WorkerThreadException(\textcolor{stringliteral}{"{}Unhandled Exception on "{}}+str(self))}
+\DoxyCodeLine{340 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+scheduler.\+Controllable\+Thread.\+\_\+should\+\_\+run, parla.\+cython.\+core.\+Py\+Inner\+Worker.\+inner\+\_\+worker, parla.\+cython.\+scheduler.\+Worker\+Thread.\+inner\+\_\+worker, Scheduler\+Phase.\+scheduler, Inner\+Task.\+scheduler, Inner\+Worker.\+scheduler, parla.\+common.\+globals.\+Locals.\+scheduler(), parla.\+cython.\+scheduler.\+Scheduler\+Context.\+scheduler(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+scheduler(), parla.\+cython.\+scheduler.\+Scheduler.\+scheduler(), parla.\+cython.\+tasks.\+Task.\+scheduler, parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+scheduler, Scheduler\+::\+Status.\+status, Phase\+Status$<$ Mapper\+State $>$.\+status, Phase\+Status$<$ Runtime\+Reserver\+State $>$.\+status, Phase\+Status$<$ Memory\+Reserver\+State $>$.\+status, Phase\+Status$<$ Launcher\+State $>$.\+status, Phase\+Status$<$ S $>$.\+status, Mapper.\+status, Memory\+Reserver.\+status, Runtime\+Reserver.\+status, Launcher.\+status, Inner\+Task.\+status, Inner\+Scheduler.\+status, parla.\+cython.\+scheduler.\+Worker\+Thread.\+status, Inner\+Worker.\+task, parla.\+common.\+globals.\+Locals.\+task(), parla.\+cython.\+core.\+Py\+Task\+Barrier.\+task, parla.\+cython.\+core.\+Py\+Task\+Space.\+task, and parla.\+cython.\+scheduler.\+Worker\+Thread.\+task.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a17878a66843ff4463f81f1e0606b2adf_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a3eda45e57a46c577f7597a8c82dff90c}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a3eda45e57a46c577f7597a8c82dff90c}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!scheduler@{scheduler}}
+\index{scheduler@{scheduler}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{scheduler()}{scheduler()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+scheduler (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1SchedulerContext_acff4832b86659976a862b570a350f18b}{parla.\+cython.\+scheduler.\+Scheduler\+Context}}.
+
+
+
+Definition at line 162 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{162     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4195e084557aa94bf8abef00df0d727d}{scheduler}}(self):}
+\DoxyCodeLine{163         \textcolor{keywordflow}{return} self.\_scheduler}
+\DoxyCodeLine{164 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+scheduler.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler\+Context.\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+\_\+execute\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+initialize(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+run(), and parla.\+cython.\+tasks.\+Task.\+set\+\_\+scheduler().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a3eda45e57a46c577f7597a8c82dff90c_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0d915912dd332944dad2cbef4b141648}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0d915912dd332944dad2cbef4b141648}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!start@{start}}
+\index{start@{start}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+start (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{initialize = {\ttfamily True} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 129 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{129     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a7d5fca07d1b416bb4096f051626e4992}{start}}(self, initialize=True):}
+\DoxyCodeLine{130         super(ControllableThread, self).\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a7d5fca07d1b416bb4096f051626e4992}{start}}()}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{132         \textcolor{keywordflow}{if} PREINIT\_THREADS:}
+\DoxyCodeLine{133             self.\_initialize()}
+\DoxyCodeLine{134 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+initialize().
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+Space.\+view().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0d915912dd332944dad2cbef4b141648_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a0d915912dd332944dad2cbef4b141648_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a93a8121c06ad835ad12ff793e2b44caa}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a93a8121c06ad835ad12ff793e2b44caa}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!stop@{stop}}
+\index{stop@{stop}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily def parla.\+cython.\+scheduler.\+Worker\+Thread.\+stop (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1ControllableThread_a2d96e22394cc99a7eca3a67fc4f460bb}{parla.\+cython.\+scheduler.\+Controllable\+Thread}}.
+
+
+
+Definition at line 341 of file scheduler.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{341     \textcolor{keyword}{def }stop(self):}
+\DoxyCodeLine{342         super().stop()}
+\DoxyCodeLine{343         self.inner\_worker.stop()}
+\DoxyCodeLine{344         \textcolor{comment}{\#print("{}Stopped Thread"{}, self, flush=True)}}
+\DoxyCodeLine{345 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+core.\+Py\+Inner\+Worker.\+inner\+\_\+worker, and parla.\+cython.\+scheduler.\+Worker\+Thread.\+inner\+\_\+worker.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a019549adbeb605e509b551a3d9b1976f}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a019549adbeb605e509b551a3d9b1976f}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!\_monitor@{\_monitor}}
+\index{\_monitor@{\_monitor}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{\_monitor}{\_monitor}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+monitor\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 117 of file scheduler.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler.\+\_\+\+\_\+exit\+\_\+\+\_\+(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+assign\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+remove\+\_\+task(), and parla.\+cython.\+scheduler.\+Controllable\+Thread.\+stop().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ac4034616fcecf73def73239fc0d3e5ff}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ac4034616fcecf73def73239fc0d3e5ff}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!\_scheduler@{\_scheduler}}
+\index{\_scheduler@{\_scheduler}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{\_scheduler}{\_scheduler}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+\_\+scheduler\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 116 of file scheduler.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread.\+scheduler().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a90893ed686143a7d4421a65e34f2a31f}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a90893ed686143a7d4421a65e34f2a31f}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!index@{index}}
+\index{index@{index}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{index}{index}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+index}
+
+
+
+Definition at line 119 of file scheduler.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_aeac9e0d4dc683464983a053c90b4a984}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_aeac9e0d4dc683464983a053c90b4a984}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!inner\_worker@{inner\_worker}}
+\index{inner\_worker@{inner\_worker}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{inner\_worker}{inner\_worker}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+inner\+\_\+worker}
+
+
+
+Definition at line 124 of file scheduler.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+core.\+Py\+Inner\+Worker.\+\_\+\+\_\+dealloc\+\_\+\+\_\+(), parla.\+cython.\+core.\+Py\+Inner\+Worker.\+\_\+\+\_\+init\+\_\+\+\_\+(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+run(), and parla.\+cython.\+scheduler.\+Worker\+Thread.\+stop().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a1b4bc7bc8b48e2cef1f1a9408b434d15}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a1b4bc7bc8b48e2cef1f1a9408b434d15}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!status@{status}}
+\index{status@{status}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+status}
+
+
+
+Definition at line 122 of file scheduler.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread.\+run().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ab08a31dc4f503b6b2710d113126f466b}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_ab08a31dc4f503b6b2710d113126f466b}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!task@{task}}
+\index{task@{task}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{task}{task}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+task}
+
+
+
+Definition at line 121 of file scheduler.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread.\+assign\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread.\+remove\+\_\+task(), and parla.\+cython.\+scheduler.\+Worker\+Thread.\+run().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a905aef5642cf34eccffe63a157bff6d8}\label{classparla_1_1cython_1_1scheduler_1_1WorkerThread_a905aef5642cf34eccffe63a157bff6d8}} 
+\index{parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}!task\_attrs@{task\_attrs}}
+\index{task\_attrs@{task\_attrs}!parla.cython.scheduler.WorkerThread@{parla.cython.scheduler.WorkerThread}}
+\doxysubsubsection{\texorpdfstring{task\_attrs}{task\_attrs}}
+{\footnotesize\ttfamily parla.\+cython.\+scheduler.\+Worker\+Thread.\+task\+\_\+attrs}
+
+
+
+Definition at line 205 of file scheduler.\+pyx.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{scheduler_8pyx}{scheduler.\+pyx}}\end{DoxyCompactItemize}

@@ -1,0 +1,113 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1TaskSpawned}{}\doxysection{parla.\+cython.\+tasks.\+Task\+Spawned Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1TaskSpawned}\index{parla.cython.tasks.TaskSpawned@{parla.cython.tasks.TaskSpawned}}
+
+
+This state specifies that a task is ready to be mapped to a specific device set.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Task\+Spawned\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskSpawned__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Task\+Spawned\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskSpawned__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a8809cc489712f55d70079151efa0b343}{value}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a89ca666a731b4e31b087258c1c97ab22}{is\+\_\+terminal}} (self)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This state specifies that a task is ready to be mapped to a specific device set. 
+
+Definition at line 88 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a89ca666a731b4e31b087258c1c97ab22}\label{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a89ca666a731b4e31b087258c1c97ab22}} 
+\index{parla.cython.tasks.TaskSpawned@{parla.cython.tasks.TaskSpawned}!is\_terminal@{is\_terminal}}
+\index{is\_terminal@{is\_terminal}!parla.cython.tasks.TaskSpawned@{parla.cython.tasks.TaskSpawned}}
+\doxysubsubsection{\texorpdfstring{is\_terminal()}{is\_terminal()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Spawned.\+is\+\_\+terminal (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_a85fd56c1e5c4b02b45fadb8b3f293fd1}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 97 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{97     \textcolor{keyword}{def }is\_terminal(self):}
+\DoxyCodeLine{98         \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{99 }
+\DoxyCodeLine{100 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a89ca666a731b4e31b087258c1c97ab22_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a8809cc489712f55d70079151efa0b343}\label{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a8809cc489712f55d70079151efa0b343}} 
+\index{parla.cython.tasks.TaskSpawned@{parla.cython.tasks.TaskSpawned}!value@{value}}
+\index{value@{value}!parla.cython.tasks.TaskSpawned@{parla.cython.tasks.TaskSpawned}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Spawned.\+value (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_ad5b5f8bdd3cec8fd04da782d658dc3ca}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 93 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{93     \textcolor{keyword}{def }value(self):}
+\DoxyCodeLine{94         \textcolor{keywordflow}{return} 1}
+\DoxyCodeLine{95 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+threads.\+Propagate.\+run().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskSpawned_a8809cc489712f55d70079151efa0b343_icgraph}
+\end{center}
+\end{figure}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

@@ -1,0 +1,107 @@
+\hypertarget{classparla_1_1cython_1_1device_1_1CyCUDADevice}{}\doxysection{parla.\+cython.\+device.\+Cy\+CUDADevice Class Reference}
+\label{classparla_1_1cython_1_1device_1_1CyCUDADevice}\index{parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}}
+
+
+Inheritance diagram for parla.\+cython.\+device.\+Cy\+CUDADevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=271pt]{classparla_1_1cython_1_1device_1_1CyCUDADevice__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+device.\+Cy\+CUDADevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=271pt]{classparla_1_1cython_1_1device_1_1CyCUDADevice__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1CyCUDADevice_ae9610a91f76b55251510f14108f11a30}{\+\_\+\+\_\+cinit\+\_\+\+\_\+}} (self, int, dev\+\_\+id, long, mem\+\_\+sz, long, num\+\_\+vcus, py\+\_\+device)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa2394226779a69fa00e7ea9eea8d56c4}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, int, dev\+\_\+id, long, mem\+\_\+sz, long, num\+\_\+vcus, py\+\_\+device)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa091968acc84e9debca1c37adbc562c6}{\+\_\+cpp\+\_\+device}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}An inherited class from `CyDevice` for a device object specialized to CUDA.
+\end{DoxyVerb}
+ 
+
+Definition at line 47 of file device.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa2394226779a69fa00e7ea9eea8d56c4}\label{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa2394226779a69fa00e7ea9eea8d56c4}} 
+\index{parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Cy\+CUDADevice.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{int,  }\item[{}]{dev\+\_\+id,  }\item[{}]{long,  }\item[{}]{mem\+\_\+sz,  }\item[{}]{long,  }\item[{}]{num\+\_\+vcus,  }\item[{}]{py\+\_\+device }\end{DoxyParamCaption})}
+
+
+
+Definition at line 57 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{57     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, int dev\_id, long mem\_sz, long num\_vcus, py\_device):}
+\DoxyCodeLine{58         \textcolor{keywordflow}{pass}}
+\DoxyCodeLine{59 }
+\DoxyCodeLine{60 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1CyCUDADevice_ae9610a91f76b55251510f14108f11a30}\label{classparla_1_1cython_1_1device_1_1CyCUDADevice_ae9610a91f76b55251510f14108f11a30}} 
+\index{parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}!\_\_cinit\_\_@{\_\_cinit\_\_}}
+\index{\_\_cinit\_\_@{\_\_cinit\_\_}!parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_\_cinit\_\_()}{\_\_cinit\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Cy\+CUDADevice.\+\_\+\+\_\+cinit\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{int,  }\item[{}]{dev\+\_\+id,  }\item[{}]{long,  }\item[{}]{mem\+\_\+sz,  }\item[{}]{long,  }\item[{}]{num\+\_\+vcus,  }\item[{}]{py\+\_\+device }\end{DoxyParamCaption})}
+
+
+
+Definition at line 51 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{51     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a3cb2995d895c8a995d3a848ff2701c7e}{\_\_cinit\_\_}}(self, int dev\_id, long mem\_sz, long num\_vcus, py\_device):}
+\DoxyCodeLine{52         \textcolor{comment}{\# C++ device object.}}
+\DoxyCodeLine{53         \textcolor{comment}{\# This object is deallocated by the C++ device manager.}}
+\DoxyCodeLine{54         self.\_cpp\_device = new \mbox{\hyperlink{classCUDADevice}{CUDADevice}}(dev\_id, mem\_sz, num\_vcus, \(\backslash\)}
+\DoxyCodeLine{55                                           <void *> py\_device)}
+\DoxyCodeLine{56 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa091968acc84e9debca1c37adbc562c6}\label{classparla_1_1cython_1_1device_1_1CyCUDADevice_aa091968acc84e9debca1c37adbc562c6}} 
+\index{parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}!\_cpp\_device@{\_cpp\_device}}
+\index{\_cpp\_device@{\_cpp\_device}!parla.cython.device.CyCUDADevice@{parla.cython.device.CyCUDADevice}}
+\doxysubsubsection{\texorpdfstring{\_cpp\_device}{\_cpp\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Cy\+CUDADevice.\+\_\+cpp\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 54 of file device.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device.\+Cy\+Device.\+\_\+\+\_\+dealloc\+\_\+\+\_\+().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device_8pyx}{device.\+pyx}}\end{DoxyCompactItemize}

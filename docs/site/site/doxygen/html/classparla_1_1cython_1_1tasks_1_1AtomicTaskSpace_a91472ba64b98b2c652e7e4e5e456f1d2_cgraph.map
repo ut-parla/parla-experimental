@@ -1,0 +1,11 @@
+<map id="parla.cython.tasks.AtomicTaskSpace.__getitem__" name="parla.cython.tasks.AtomicTaskSpace.__getitem__">
+<area shape="rect" id="node1" title=" " alt="" coords="5,71,197,112"/>
+<area shape="rect" id="node2" href="$classparla_1_1common_1_1containers_1_1Tasks.html#a17f1c970b6a36f9ff0e29049644e100b" title=" " alt="" coords="259,5,451,47"/>
+<area shape="rect" id="node3" href="$classparla_1_1common_1_1containers_1_1TaskSpace.html#af8b92e99b36188e354e1094ad06ec330" title=" " alt="" coords="259,71,451,112"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a0d915912dd332944dad2cbef4b141648" title=" " alt="" coords="245,136,464,177"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a00da869ac5b3aaa5ba15561698efe2aa" title=" " alt="" coords="512,136,731,177"/>
+<area shape="rect" id="node6" href="$classparla_1_1common_1_1globals_1_1Locals.html#a9c2730dfe017a744ee299e41ad723277" title=" " alt="" coords="791,51,1069,78"/>
+<area shape="rect" id="node7" href="$classparla_1_1cython_1_1scheduler_1_1SchedulerContext.html#acff4832b86659976a862b570a350f18b" title=" " alt="" coords="811,103,1049,144"/>
+<area shape="rect" id="node8" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a3eda45e57a46c577f7597a8c82dff90c" title=" " alt="" coords="821,168,1039,209"/>
+<area shape="rect" id="node9" href="$classparla_1_1cython_1_1scheduler_1_1Scheduler.html#a241fa98903ab52bd5ebe72822223b3ca" title=" " alt="" coords="779,234,1081,261"/>
+</map>

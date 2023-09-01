@@ -1,0 +1,142 @@
+\hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes}{}\doxysection{parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes Class Reference}
+\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes}\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a2b60cfb30db281e4f89775dcec78fc17}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a65de75622cbceb94f770cf12bd228338}{self}}, \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a16d110bc96574ea6a1df7bf69b93d220}{name}}, \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}} py\+\_\+parray, \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aaab8afa84a0ee5706c1e176ee11e26c6}{access\+\_\+mode}}, \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a5bcb793083fac3ca8d7f86e7a866bd60}{assigned\+\_\+devices}}, \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1CyDataMovementTaskAttributes}{Cy\+Data\+Movement\+Task\+Attributes}} \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aa0f23175f79fac1fdf227b11998d43c4}{c\+\_\+attrs}}, \mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aca10ef7bec227e2ac34c33552a932215}{dev\+\_\+id}})
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a16d110bc96574ea6a1df7bf69b93d220}{name}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a3fde5ed6261abc654fe1e738ee517cee}{parray}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aaab8afa84a0ee5706c1e176ee11e26c6}{access\+\_\+mode}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a5bcb793083fac3ca8d7f86e7a866bd60}{assigned\+\_\+devices}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aa0f23175f79fac1fdf227b11998d43c4}{c\+\_\+attrs}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aca10ef7bec227e2ac34c33552a932215}{dev\+\_\+id}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}Hold necessary information to create a data move task.
+This is delcared to avoid circular imports that could happen
+when we import tasks.pyx in here.
+\end{DoxyVerb}
+ 
+
+Definition at line 735 of file core.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a2b60cfb30db281e4f89775dcec78fc17}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a2b60cfb30db281e4f89775dcec78fc17}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{name,  }\item[{\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}}]{py\+\_\+parray,  }\item[{}]{access\+\_\+mode,  }\item[{}]{assigned\+\_\+devices,  }\item[{\mbox{\hyperlink{classparla_1_1cython_1_1core_1_1CyDataMovementTaskAttributes}{Cy\+Data\+Movement\+Task\+Attributes}}}]{c\+\_\+attrs,  }\item[{}]{dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Definition at line 741 of file core.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{742                  c\_attrs: CyDataMovementTaskAttributes, dev\_id):}
+\DoxyCodeLine{743         self.name = name}
+\DoxyCodeLine{744         self.parray = py\_parray}
+\DoxyCodeLine{745         self.access\_mode = access\_mode}
+\DoxyCodeLine{746         self.assigned\_devices = assigned\_devices}
+\DoxyCodeLine{747         self.c\_attrs = c\_attrs}
+\DoxyCodeLine{748         self.dev\_id = dev\_id}
+\DoxyCodeLine{749 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aaab8afa84a0ee5706c1e176ee11e26c6}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aaab8afa84a0ee5706c1e176ee11e26c6}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!access\_mode@{access\_mode}}
+\index{access\_mode@{access\_mode}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{access\_mode}{access\_mode}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+access\+\_\+mode}
+
+
+
+Definition at line 745 of file core.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+\_\+execute\+\_\+task().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a5bcb793083fac3ca8d7f86e7a866bd60}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a5bcb793083fac3ca8d7f86e7a866bd60}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!assigned\_devices@{assigned\_devices}}
+\index{assigned\_devices@{assigned\_devices}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{assigned\_devices}{assigned\_devices}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+assigned\+\_\+devices}
+
+
+
+Definition at line 746 of file core.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+\_\+execute\+\_\+task().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aa0f23175f79fac1fdf227b11998d43c4}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aa0f23175f79fac1fdf227b11998d43c4}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!c\_attrs@{c\_attrs}}
+\index{c\_attrs@{c\_attrs}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{c\_attrs}{c\_attrs}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+c\+\_\+attrs}
+
+
+
+Definition at line 747 of file core.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aca10ef7bec227e2ac34c33552a932215}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_aca10ef7bec227e2ac34c33552a932215}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!dev\_id@{dev\_id}}
+\index{dev\_id@{dev\_id}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{dev\_id}{dev\_id}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+dev\+\_\+id}
+
+
+
+Definition at line 748 of file core.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a16d110bc96574ea6a1df7bf69b93d220}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a16d110bc96574ea6a1df7bf69b93d220}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!name@{name}}
+\index{name@{name}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+name}
+
+
+
+Definition at line 743 of file core.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task.\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task.\+get\+\_\+name(), parla.\+cython.\+tasks.\+Task.\+unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task.\+update\+\_\+name().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a3fde5ed6261abc654fe1e738ee517cee}\label{classparla_1_1cython_1_1core_1_1DataMovementTaskAttributes_a3fde5ed6261abc654fe1e738ee517cee}} 
+\index{parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}!parray@{parray}}
+\index{parray@{parray}!parla.cython.core.DataMovementTaskAttributes@{parla.cython.core.DataMovementTaskAttributes}}
+\doxysubsubsection{\texorpdfstring{parray}{parray}}
+{\footnotesize\ttfamily parla.\+cython.\+core.\+Data\+Movement\+Task\+Attributes.\+parray}
+
+
+
+Definition at line 744 of file core.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Data\+Movement\+Task.\+\_\+execute\+\_\+task().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{core_8pyx}{core.\+pyx}}\end{DoxyCompactItemize}

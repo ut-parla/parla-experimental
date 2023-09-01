@@ -1,0 +1,6 @@
+<map id="InnerTask::is_data_task" name="InnerTask::is_data_task">
+<area shape="rect" id="node1" title=" " alt="" coords="420,35,595,61"/>
+<area shape="rect" id="node2" href="$classInnerWorker.html#a75cd1f64d0abbc2d16bd8cc97664f2d0" title="Get the C++ task instance that this worker thread will execute." alt="" coords="208,5,372,32"/>
+<area shape="rect" id="node3" href="$classInnerScheduler.html#ae168936fb94b2602cb78867209b12cad" title=" " alt="" coords="213,57,367,98"/>
+<area shape="rect" id="node4" href="$classInnerScheduler.html#a379b814bdf9d16a3954036f2f63d3c1a" title=" " alt="" coords="5,57,160,98"/>
+</map>

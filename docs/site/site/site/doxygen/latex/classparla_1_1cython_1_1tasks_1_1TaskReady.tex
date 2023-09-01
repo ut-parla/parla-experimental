@@ -1,0 +1,114 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1TaskReady}{}\doxysection{parla.\+cython.\+tasks.\+Task\+Ready Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1TaskReady}\index{parla.cython.tasks.TaskReady@{parla.cython.tasks.TaskReady}}
+
+
+This state specifies that a task is \char`\"{}ready\char`\"{} to be launched.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Task\+Ready\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskReady__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Task\+Ready\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskReady__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskReady_ac260e5cbc57050af693604893f609526}{value}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskReady_a58fcacca87c0632be5e7b83e55c155c6}{is\+\_\+terminal}} (self)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This state specifies that a task is \char`\"{}ready\char`\"{} to be launched. 
+
+Its dependencies have been dispatched to hardware queues (or have completed) 
+
+Definition at line 121 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskReady_a58fcacca87c0632be5e7b83e55c155c6}\label{classparla_1_1cython_1_1tasks_1_1TaskReady_a58fcacca87c0632be5e7b83e55c155c6}} 
+\index{parla.cython.tasks.TaskReady@{parla.cython.tasks.TaskReady}!is\_terminal@{is\_terminal}}
+\index{is\_terminal@{is\_terminal}!parla.cython.tasks.TaskReady@{parla.cython.tasks.TaskReady}}
+\doxysubsubsection{\texorpdfstring{is\_terminal()}{is\_terminal()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Ready.\+is\+\_\+terminal (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_a85fd56c1e5c4b02b45fadb8b3f293fd1}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 130 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{130     \textcolor{keyword}{def }is\_terminal(self):}
+\DoxyCodeLine{131         \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{132 }
+\DoxyCodeLine{133 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+streams(), and parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskReady_a58fcacca87c0632be5e7b83e55c155c6_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskReady_ac260e5cbc57050af693604893f609526}\label{classparla_1_1cython_1_1tasks_1_1TaskReady_ac260e5cbc57050af693604893f609526}} 
+\index{parla.cython.tasks.TaskReady@{parla.cython.tasks.TaskReady}!value@{value}}
+\index{value@{value}!parla.cython.tasks.TaskReady@{parla.cython.tasks.TaskReady}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Ready.\+value (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_ad5b5f8bdd3cec8fd04da782d658dc3ca}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 126 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{126     \textcolor{keyword}{def }value(self):}
+\DoxyCodeLine{127         \textcolor{keywordflow}{return} 4}
+\DoxyCodeLine{128 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+threads.\+Propagate.\+run().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskReady_ac260e5cbc57050af693604893f609526_icgraph}
+\end{center}
+\end{figure}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

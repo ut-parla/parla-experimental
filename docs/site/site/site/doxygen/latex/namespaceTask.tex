@@ -1,0 +1,204 @@
+\hypertarget{namespaceTask}{}\doxysection{Task Namespace Reference}
+\label{namespaceTask}\index{Task@{Task}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classTask_1_1StatusFlags}{Status\+Flags}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{State}} \{ \newline
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}{CREATED}} = 0
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}{SPAWNED}} = 1
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{MAPPED}} = 2
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}{RESERVED}} = 3
+, \newline
+\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a98782df99b6bbcdd6605510983b45059}{READY}} = 4
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a2d49ccfc6f7686e0352e07714841de06}{RUNNING}} = 5
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}{RUNAHEAD}} = 6
+, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}{COMPLETED}} = 7
+ \}
+\item 
+enum \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965}{Synchronization\+Type}} \{ \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a1489a46f05a9ab3e7aa6f14871244839}{NONE}} = 0
+, \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a4c322932fc42ce9b9765b98483e9dc2a}{BLOCKING}} = 1
+, \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}{NON\+\_\+\+BLOCKING}} = 2
+, \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a83ab3c816c4bacf2dc8235231ad1f7e5}{USER}} = 3
+ \}
+\item 
+enum \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Status}} \{ \newline
+\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{INITIAL}} = 0
+, \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a8a195fe5faa32576d55fa985ce026e56}{SPAWNABLE}} = 1
+, \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ab0580381772c6ea171fdc0bfb68c580b}{MAPPABLE}} = 2
+, \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}{RESERVABLE}} = 3
+, \newline
+\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ae865302700082363878d1604c1500cf0}{COMPUTE\+\_\+\+RUNNABLE}} = 4
+, \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a04bbf98db0e5595240e01fa33ead9ffc}{RUNNABLE}} = 5
+ \}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}} 
+\index{Task@{Task}!State@{State}}
+\index{State@{State}!Task@{Task}}
+\doxysubsubsection{\texorpdfstring{State}{State}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8}{Task\+::\+State}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CREATED@{CREATED}!Task@{Task}}\index{Task@{Task}!CREATED@{CREATED}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}} 
+CREATED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SPAWNED@{SPAWNED}!Task@{Task}}\index{Task@{Task}!SPAWNED@{SPAWNED}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}} 
+SPAWNED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAPPED@{MAPPED}!Task@{Task}}\index{Task@{Task}!MAPPED@{MAPPED}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}} 
+MAPPED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESERVED@{RESERVED}!Task@{Task}}\index{Task@{Task}!RESERVED@{RESERVED}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}} 
+RESERVED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{READY@{READY}!Task@{Task}}\index{Task@{Task}!READY@{READY}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a98782df99b6bbcdd6605510983b45059}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a98782df99b6bbcdd6605510983b45059}} 
+READY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNNING@{RUNNING}!Task@{Task}}\index{Task@{Task}!RUNNING@{RUNNING}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a2d49ccfc6f7686e0352e07714841de06}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a2d49ccfc6f7686e0352e07714841de06}} 
+RUNNING&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNAHEAD@{RUNAHEAD}!Task@{Task}}\index{Task@{Task}!RUNAHEAD@{RUNAHEAD}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}} 
+RUNAHEAD&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPLETED@{COMPLETED}!Task@{Task}}\index{Task@{Task}!COMPLETED@{COMPLETED}}}\mbox{\Hypertarget{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}\label{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}} 
+COMPLETED&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 105 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{105            \{}
+\DoxyCodeLine{106   \textcolor{comment}{// Initial State. Task has been created but not spawned}}
+\DoxyCodeLine{107   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8aeea23261905c578dd9345d0810969d5a}{CREATED}} = 0,}
+\DoxyCodeLine{108   \textcolor{comment}{// Task has been spawned}}
+\DoxyCodeLine{109   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a356f16255b8c31d8c1209a2539201b93}{SPAWNED}} = 1,}
+\DoxyCodeLine{110   \textcolor{comment}{// Task has been mapped}}
+\DoxyCodeLine{111   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{MAPPED}} = 2,}
+\DoxyCodeLine{112   \textcolor{comment}{// Task has persistent resources reserved}}
+\DoxyCodeLine{113   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}{RESERVED}} = 3,}
+\DoxyCodeLine{114   \textcolor{comment}{// Task is ready to run}}
+\DoxyCodeLine{115   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a98782df99b6bbcdd6605510983b45059}{READY}} = 4,}
+\DoxyCodeLine{116   \textcolor{comment}{// Task is currently running and has runtime resources reserved}}
+\DoxyCodeLine{117   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a2d49ccfc6f7686e0352e07714841de06}{RUNNING}} = 5,}
+\DoxyCodeLine{118   \textcolor{comment}{// Task body has completed but GPU kernels may be asynchronously running}}
+\DoxyCodeLine{119   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac3486cf8e7f92b65ee84e0aa2a2abd74}{RUNAHEAD}} = 6,}
+\DoxyCodeLine{120   \textcolor{comment}{// Task has completed}}
+\DoxyCodeLine{121   \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8a7bc7e7cf51403e1c1bb16e470bad50cd}{COMPLETED}} = 7}
+\DoxyCodeLine{122 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}} 
+\index{Task@{Task}!Status@{Status}}
+\index{Status@{Status}!Task@{Task}}
+\doxysubsubsection{\texorpdfstring{Status}{Status}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5}{Task\+::\+Status}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INITIAL@{INITIAL}!Task@{Task}}\index{Task@{Task}!INITIAL@{INITIAL}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}} 
+INITIAL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SPAWNABLE@{SPAWNABLE}!Task@{Task}}\index{Task@{Task}!SPAWNABLE@{SPAWNABLE}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a8a195fe5faa32576d55fa985ce026e56}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a8a195fe5faa32576d55fa985ce026e56}} 
+SPAWNABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAPPABLE@{MAPPABLE}!Task@{Task}}\index{Task@{Task}!MAPPABLE@{MAPPABLE}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ab0580381772c6ea171fdc0bfb68c580b}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ab0580381772c6ea171fdc0bfb68c580b}} 
+MAPPABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESERVABLE@{RESERVABLE}!Task@{Task}}\index{Task@{Task}!RESERVABLE@{RESERVABLE}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}} 
+RESERVABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPUTE\_RUNNABLE@{COMPUTE\_RUNNABLE}!Task@{Task}}\index{Task@{Task}!COMPUTE\_RUNNABLE@{COMPUTE\_RUNNABLE}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ae865302700082363878d1604c1500cf0}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ae865302700082363878d1604c1500cf0}} 
+COMPUTE\+\_\+\+RUNNABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNNABLE@{RUNNABLE}!Task@{Task}}\index{Task@{Task}!RUNNABLE@{RUNNABLE}}}\mbox{\Hypertarget{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a04bbf98db0e5595240e01fa33ead9ffc}\label{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a04bbf98db0e5595240e01fa33ead9ffc}} 
+RUNNABLE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 156 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{156             \{}
+\DoxyCodeLine{157   \textcolor{comment}{// Initial State. Status of dependencies is unknown or not spawned}}
+\DoxyCodeLine{158   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a1d185bfdd6500f25ebc7077e491e5360}{INITIAL}} = 0,}
+\DoxyCodeLine{159   \textcolor{comment}{// All dependencies are spawned (this task can be safely spawned)}}
+\DoxyCodeLine{160   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a8a195fe5faa32576d55fa985ce026e56}{SPAWNABLE}} = 1,}
+\DoxyCodeLine{161   \textcolor{comment}{// All dependencies are mapped (this task can be safely mapped)}}
+\DoxyCodeLine{162   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ab0580381772c6ea171fdc0bfb68c580b}{MAPPABLE}} = 2,}
+\DoxyCodeLine{163   \textcolor{comment}{// All dependencies have persistent resources reserved (this task can be}}
+\DoxyCodeLine{164   \textcolor{comment}{// safely reserved)}}
+\DoxyCodeLine{165   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}{RESERVABLE}} = 3,}
+\DoxyCodeLine{166   \textcolor{comment}{// All compute dependencies have RUNAHEAD/COMPLETED status}}
+\DoxyCodeLine{167   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5ae865302700082363878d1604c1500cf0}{COMPUTE\_RUNNABLE}} = 4,}
+\DoxyCodeLine{168   \textcolor{comment}{// All (including data) dependencies have RUNAHEAD/COMPLETED status}}
+\DoxyCodeLine{169   \mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a04bbf98db0e5595240e01fa33ead9ffc}{RUNNABLE}} = 5}
+\DoxyCodeLine{170 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{namespaceTask_a2f270163a5990c8703a450dfc4c20965}\label{namespaceTask_a2f270163a5990c8703a450dfc4c20965}} 
+\index{Task@{Task}!SynchronizationType@{SynchronizationType}}
+\index{SynchronizationType@{SynchronizationType}!Task@{Task}}
+\doxysubsubsection{\texorpdfstring{SynchronizationType}{SynchronizationType}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965}{Task\+::\+Synchronization\+Type}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NONE@{NONE}!Task@{Task}}\index{Task@{Task}!NONE@{NONE}}}\mbox{\Hypertarget{namespaceTask_a2f270163a5990c8703a450dfc4c20965a1489a46f05a9ab3e7aa6f14871244839}\label{namespaceTask_a2f270163a5990c8703a450dfc4c20965a1489a46f05a9ab3e7aa6f14871244839}} 
+NONE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{BLOCKING@{BLOCKING}!Task@{Task}}\index{Task@{Task}!BLOCKING@{BLOCKING}}}\mbox{\Hypertarget{namespaceTask_a2f270163a5990c8703a450dfc4c20965a4c322932fc42ce9b9765b98483e9dc2a}\label{namespaceTask_a2f270163a5990c8703a450dfc4c20965a4c322932fc42ce9b9765b98483e9dc2a}} 
+BLOCKING&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NON\_BLOCKING@{NON\_BLOCKING}!Task@{Task}}\index{Task@{Task}!NON\_BLOCKING@{NON\_BLOCKING}}}\mbox{\Hypertarget{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}\label{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}} 
+NON\+\_\+\+BLOCKING&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{USER@{USER}!Task@{Task}}\index{Task@{Task}!USER@{USER}}}\mbox{\Hypertarget{namespaceTask_a2f270163a5990c8703a450dfc4c20965a83ab3c816c4bacf2dc8235231ad1f7e5}\label{namespaceTask_a2f270163a5990c8703a450dfc4c20965a83ab3c816c4bacf2dc8235231ad1f7e5}} 
+USER&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 124 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{124                          \{}
+\DoxyCodeLine{125   \textcolor{comment}{// No synchronization}}
+\DoxyCodeLine{126   \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a1489a46f05a9ab3e7aa6f14871244839}{NONE}} = 0,}
+\DoxyCodeLine{127   \textcolor{comment}{// BLocking synchronization}}
+\DoxyCodeLine{128   \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a4c322932fc42ce9b9765b98483e9dc2a}{BLOCKING}} = 1,}
+\DoxyCodeLine{129   \textcolor{comment}{// Non-\/blocking synchronization}}
+\DoxyCodeLine{130   \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a3bb3e586abfec5df304329083c7af523}{NON\_BLOCKING}} = 2,}
+\DoxyCodeLine{131   \textcolor{comment}{// User defined synchronization}}
+\DoxyCodeLine{132   \mbox{\hyperlink{namespaceTask_a2f270163a5990c8703a450dfc4c20965a83ab3c816c4bacf2dc8235231ad1f7e5}{USER}} = 3}
+\DoxyCodeLine{133 \};}
+
+\end{DoxyCode}

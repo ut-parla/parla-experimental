@@ -1,0 +1,259 @@
+\hypertarget{classPhaseStatus}{}\doxysection{Phase\+Status$<$ S $>$ Class Template Reference}
+\label{classPhaseStatus}\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+
+
+Records metrics that track phase execution (e.\+g. success, failure, etc.)  
+
+
+
+
+{\ttfamily \#include $<$phases.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPhaseStatus_a6ce4b7e2f1ce491fa545a420f8ae3b3a}{Phase\+Status}} ()=default
+\item 
+\mbox{\hyperlink{classPhaseStatus_aaacde61ca2f8ae7d865019fcbd41c219}{Phase\+Status}} (std\+::string \mbox{\hyperlink{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}{name}})
+\item 
+void \mbox{\hyperlink{classPhaseStatus_a7fa8b41145e33d7ee79bec70b812c6b6}{reset}} ()
+\item 
+void \mbox{\hyperlink{classPhaseStatus_a3f68969d5c3ac7f7f15c4852bb8e8b96}{set}} (S state, int value)
+\item 
+const int \mbox{\hyperlink{classPhaseStatus_ad21348a3135801f41f6d355a66d191fa}{get}} (S state) const
+\item 
+void \mbox{\hyperlink{classPhaseStatus_aa40cb2ab81ff12d592a8212e30ed245b}{increase}} (S state)
+\item 
+void \mbox{\hyperlink{classPhaseStatus_abac393b55816dd52af7ecfa08e9a6952}{decrease}} (S state)
+\item 
+void \mbox{\hyperlink{classPhaseStatus_aa9a8d493b93ec4bbd6e87f20096dfd5e}{print}} () const
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}} \mbox{[}static\+\_\+cast$<$ int $>$(S\+::\+MAX)\mbox{]}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const int \mbox{\hyperlink{classPhaseStatus_aa9d7f24ad63c4bbc3f9b29aa67e34a0d}{size}} \{static\+\_\+cast$<$int$>$(S\+::\+MAX)\}
+\item 
+std\+::string \mbox{\hyperlink{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}{name}} \{\char`\"{}Status\char`\"{}\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename S$>$\newline
+class Phase\+Status$<$ S $>$}
+
+Records metrics that track phase execution (e.\+g. success, failure, etc.) 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em S} & The enum class that defines the states to track.\\
+\hline
+\end{DoxyTemplParams}
+Used to record counts of phase execution for tracing and debugging. For example, the number of successful mappings per call. 
+
+Definition at line 58 of file phases.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPhaseStatus_a6ce4b7e2f1ce491fa545a420f8ae3b3a}\label{classPhaseStatus_a6ce4b7e2f1ce491fa545a420f8ae3b3a}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!PhaseStatus@{PhaseStatus}}
+\index{PhaseStatus@{PhaseStatus}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{PhaseStatus()}{PhaseStatus()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+\mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::\mbox{\hyperlink{classPhaseStatus}{Phase\+Status}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\mbox{\Hypertarget{classPhaseStatus_aaacde61ca2f8ae7d865019fcbd41c219}\label{classPhaseStatus_aaacde61ca2f8ae7d865019fcbd41c219}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!PhaseStatus@{PhaseStatus}}
+\index{PhaseStatus@{PhaseStatus}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{PhaseStatus()}{PhaseStatus()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+\mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::\mbox{\hyperlink{classPhaseStatus}{Phase\+Status}} (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 67 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{67 : \mbox{\hyperlink{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}{name}}(\mbox{\hyperlink{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}{name}}) \{\}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPhaseStatus_abac393b55816dd52af7ecfa08e9a6952}\label{classPhaseStatus_abac393b55816dd52af7ecfa08e9a6952}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!decrease@{decrease}}
+\index{decrease@{decrease}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{decrease()}{decrease()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+void \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::decrease (\begin{DoxyParamCaption}\item[{S}]{state }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 85 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{85 \{ this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(state)]-\/-\/; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classPhaseStatus_ad21348a3135801f41f6d355a66d191fa}\label{classPhaseStatus_ad21348a3135801f41f6d355a66d191fa}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!get@{get}}
+\index{get@{get}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+const int \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::get (\begin{DoxyParamCaption}\item[{S}]{state }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 81 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{81                                       \{}
+\DoxyCodeLine{82     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(state)];}
+\DoxyCodeLine{83   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classPhaseStatus_aa40cb2ab81ff12d592a8212e30ed245b}\label{classPhaseStatus_aa40cb2ab81ff12d592a8212e30ed245b}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!increase@{increase}}
+\index{increase@{increase}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{increase()}{increase()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+void \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::increase (\begin{DoxyParamCaption}\item[{S}]{state }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 84 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{84 \{ this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(state)]++; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classPhaseStatus_aa9a8d493b93ec4bbd6e87f20096dfd5e}\label{classPhaseStatus_aa9a8d493b93ec4bbd6e87f20096dfd5e}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!print@{print}}
+\index{print@{print}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{print()}{print()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+void \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::print (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 87 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{87                      \{}
+\DoxyCodeLine{88     std::cout << this-\/>\mbox{\hyperlink{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}{name}} + \textcolor{stringliteral}{"{}("{}};}
+\DoxyCodeLine{89     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{classPhaseStatus_aa9d7f24ad63c4bbc3f9b29aa67e34a0d}{size}}; ++\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}) \{}
+\DoxyCodeLine{90       std::cout << this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}];}
+\DoxyCodeLine{91     \}}
+\DoxyCodeLine{92     std::cout << \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{93   \}}
+
+\end{DoxyCode}
+
+
+References Phase\+Status$<$ S $>$\+::size.
+
+\mbox{\Hypertarget{classPhaseStatus_a7fa8b41145e33d7ee79bec70b812c6b6}\label{classPhaseStatus_a7fa8b41145e33d7ee79bec70b812c6b6}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!reset@{reset}}
+\index{reset@{reset}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{reset()}{reset()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+void \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::reset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Resets the status array to 0.
+
+Definition at line 69 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{69                \{}
+\DoxyCodeLine{73     \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{classPhaseStatus_aa9d7f24ad63c4bbc3f9b29aa67e34a0d}{size}}; ++\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}) \{}
+\DoxyCodeLine{74       this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}] = 0;}
+\DoxyCodeLine{75     \}}
+\DoxyCodeLine{76   \}}
+
+\end{DoxyCode}
+
+
+References Phase\+Status$<$ S $>$\+::size.
+
+\mbox{\Hypertarget{classPhaseStatus_a3f68969d5c3ac7f7f15c4852bb8e8b96}\label{classPhaseStatus_a3f68969d5c3ac7f7f15c4852bb8e8b96}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!set@{set}}
+\index{set@{set}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{set()}{set()}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+void \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::set (\begin{DoxyParamCaption}\item[{S}]{state,  }\item[{int}]{value }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 78 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{78                                       \{}
+\DoxyCodeLine{79     this-\/>\mbox{\hyperlink{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}{status}}[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(state)] = value;}
+\DoxyCodeLine{80   \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}\label{classPhaseStatus_a88002fd1726e111b0e42b494dc4c14ef}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!name@{name}}
+\index{name@{name}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+std\+::string \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::name \{\char`\"{}Status\char`\"{}\}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 61 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+::get\+\_\+name(), parla.\+cython.\+tasks.\+Task\+::unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task\+::update\+\_\+name().
+
+\mbox{\Hypertarget{classPhaseStatus_aa9d7f24ad63c4bbc3f9b29aa67e34a0d}\label{classPhaseStatus_aa9d7f24ad63c4bbc3f9b29aa67e34a0d}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!size@{size}}
+\index{size@{size}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{size}{size}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+const int \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::size \{static\+\_\+cast$<$int$>$(S\+::\+MAX)\}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 60 of file phases.\+hpp.
+
+
+
+Referenced by Phase\+Status$<$ S $>$\+::print(), and Phase\+Status$<$ S $>$\+::reset().
+
+\mbox{\Hypertarget{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}\label{classPhaseStatus_a4bfe80c173f5b2543e6bb51a34377a49}} 
+\index{PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}!status@{status}}
+\index{status@{status}!PhaseStatus$<$ S $>$@{PhaseStatus$<$ S $>$}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily template$<$typename S $>$ \\
+int \mbox{\hyperlink{classPhaseStatus}{Phase\+Status}}$<$ S $>$\+::status\mbox{[}static\+\_\+cast$<$ int $>$(S\+::\+MAX)\mbox{]}}
+
+
+
+Definition at line 64 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread\+::run().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{phases_8hpp}{phases.\+hpp}}\end{DoxyCompactItemize}

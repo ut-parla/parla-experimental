@@ -1,0 +1,754 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment}{}\doxysection{parla.\+cython.\+tasks.\+Terminal\+Environment Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment}\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+
+
+An endpoint \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} representing a single device.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Terminal\+Environment\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Terminal\+Environment\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=274pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a132b77f05f925dbe3262b8d91bc0b132}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890}{device}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a26796a37b6cac704e67c2e8fc3a5e856}{blocking}}=False)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a7ce7857bcd529a032f11912574577df2}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adfebc027f8b9d24d277043485c3d129e}{contexts}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a9796d3cd631ca307f07d74b1fc3d1f5e}{devices}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890}{device}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a0ad8031b058803eda42a5b3c5f6d7b61}{architecture}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a5457d50fe507ff542a1f57abe8a00445}{\+\_\+\+\_\+eq\+\_\+\+\_\+}} (self, other)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ae68000c879bd0cc5abfde5f2710a6a51}{\+\_\+\+\_\+hash\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a3ba507e069309966b15944c39239957f}{\+\_\+\+\_\+call\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ab76b1ebb9288714516db0877c6afa525}{\+\_\+\+\_\+len\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a2ebca212ebc1c04586f684557db142bf}{\+\_\+\+\_\+getitem\+\_\+\+\_\+}} (self, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a6051e1607a75f5e7f15dbd3d8e9f7e30}{index}})
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adc39560af643902d6cd462ce1255852f}{record\+\_\+event}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ada88b46975f7d98ad0f30de7a78f8a71}{stream}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, tag=\textquotesingle{}default\textquotesingle{})
+\begin{DoxyCompactList}\small\item\em Record a CUDA event on the current stream. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15540226e432a67cf358e924f43f44d3}{synchronize\+\_\+event}} (self, tag=\textquotesingle{}default\textquotesingle{})
+\begin{DoxyCompactList}\small\item\em Synchronize host thread to the tagged CUDA event (sleep or waiting). \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af4142e89843ea1178e1b8338318768bb}{wait\+\_\+event}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ada88b46975f7d98ad0f30de7a78f8a71}{stream}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, tag=\textquotesingle{}default\textquotesingle{})
+\begin{DoxyCompactList}\small\item\em Submit a cross-\/stream wait on the tagged CUDA event to the current stream. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15f0b58e8927810b5a554487043af52e}{create\+\_\+event}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ada88b46975f7d98ad0f30de7a78f8a71}{stream}}=\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}, tag=\textquotesingle{}default\textquotesingle{})
+\begin{DoxyCompactList}\small\item\em Create a CUDA event on the current stream. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af6e1687798e6dbc48fcbee2eaef24aec}{write\+\_\+to\+\_\+task}} (self, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a247d20379bfa88a65f4fb34fa69e28dd}{task}})
+\begin{DoxyCompactList}\small\item\em Store stream and event pointers in C++ task. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a72be654c8584e71bba2f872f5215b0a4}{write\+\_\+streams\+\_\+to\+\_\+task}} (self, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a247d20379bfa88a65f4fb34fa69e28dd}{task}})
+\begin{DoxyCompactList}\small\item\em Record stream pointers into C++ task. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ac5e7d2982e0fb9900f7d5f0c2d311e3f}{write\+\_\+events\+\_\+to\+\_\+task}} (self, \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a247d20379bfa88a65f4fb34fa69e28dd}{task}})
+\begin{DoxyCompactList}\small\item\em Record event pointers in C++ task. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a8cba686cbb7a85ad31a8c940970791b6}{is\+\_\+terminal}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_aba25480dd640de425a04401a502205c8}{\+\_\+device}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6e47dbe04f0f5529e0140ca9706b4cc1}{\+\_\+arch\+\_\+type}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6beac82492964b6d51b61c94a300735c}{\+\_\+global\+\_\+device\+\_\+ids}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+An endpoint \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} representing a single device. 
+
+These are where most actual computation will take place.
+
+A Terminal\+Enviornment is an edpoint \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} that is made of a single device (CPU or GPU). If they are a GPU they will set the current Cu\+Py context accordingly. 
+
+Definition at line 1133 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a132b77f05f925dbe3262b8d91bc0b132}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a132b77f05f925dbe3262b8d91bc0b132}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device,  }\item[{}]{blocking = {\ttfamily False} }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a03a4dbf7b4b7635fc493878447751394}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a8579f7693a3af76373d8c880bf03adab}{parla.\+cython.\+tasks.\+GPUEnvironment}}, and \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1CPUEnvironment_a0cf21126dfe7059dbe53d34b4617aa52}{parla.\+cython.\+tasks.\+CPUEnvironment}}.
+
+
+
+Definition at line 1141 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1141     \textcolor{keyword}{def  }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self,  device, blocking=False):}
+\DoxyCodeLine{1142         super(TerminalEnvironment, self).\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}([], blocking=blocking)}
+\DoxyCodeLine{1143         self.device\_dict[device.architecture].append(self)}
+\DoxyCodeLine{1144         self.device\_list.append(self)}
+\DoxyCodeLine{1145         self.\_device = device}
+\DoxyCodeLine{1146         self.\_arch\_type = device.architecture}
+\DoxyCodeLine{1147         self.is\_terminal = \textcolor{keyword}{True}}
+\DoxyCodeLine{1148 }
+\DoxyCodeLine{1149         self.\_global\_device\_ids = \{device.get\_global\_id()\}}
+\DoxyCodeLine{1150 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+device\+\_\+dict, and parla.\+cython.\+tasks.\+Task\+Environment.\+device\+\_\+list.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a3ba507e069309966b15944c39239957f}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a3ba507e069309966b15944c39239957f}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_call\_\_@{\_\_call\_\_}}
+\index{\_\_call\_\_@{\_\_call\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_call\_\_()}{\_\_call\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+call\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1181 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1181     \textcolor{keyword}{def }\_\_call\_\_(self):}
+\DoxyCodeLine{1182         \textcolor{keywordflow}{return} self.\_device}
+\DoxyCodeLine{1183 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device.\+Py\+Device.\+\_\+device, parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+device, parla.\+cython.\+device.\+Stream.\+\_\+device, parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+device, parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+device, and parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+device.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a5457d50fe507ff542a1f57abe8a00445}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a5457d50fe507ff542a1f57abe8a00445}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_eq\_\_@{\_\_eq\_\_}}
+\index{\_\_eq\_\_@{\_\_eq\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_eq\_\_()}{\_\_eq\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+eq\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{other }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1170 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1170     \textcolor{keyword}{def }\_\_eq\_\_(self, other):}
+\DoxyCodeLine{1171         \textcolor{keywordflow}{if} isinstance(other, int) \textcolor{keywordflow}{or} isinstance(other, PyDevice):}
+\DoxyCodeLine{1172             \textcolor{keywordflow}{return} self.\_device == other}
+\DoxyCodeLine{1173         \textcolor{keywordflow}{elif} isinstance(other, TerminalEnvironment):}
+\DoxyCodeLine{1174             \textcolor{keywordflow}{return} self.\_device == other.\_device}
+\DoxyCodeLine{1175         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{1176             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{1177 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device.\+Py\+Device.\+\_\+device, parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+device, parla.\+cython.\+device.\+Stream.\+\_\+device, parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+device, parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+device, and parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+device.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+ne\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a5457d50fe507ff542a1f57abe8a00445_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a2ebca212ebc1c04586f684557db142bf}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a2ebca212ebc1c04586f684557db142bf}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_getitem\_\_@{\_\_getitem\_\_}}
+\index{\_\_getitem\_\_@{\_\_getitem\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_getitem\_\_()}{\_\_getitem\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+getitem\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{index }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a1b7256799fe12436a14a77676ad14cf2}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1CPUEnvironment_aaf3c24b6b0975b5b23754383acecd9b8}{parla.\+cython.\+tasks.\+CPUEnvironment}}.
+
+
+
+Definition at line 1187 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1187     \textcolor{keyword}{def }\_\_getitem\_\_(self, index):}
+\DoxyCodeLine{1188         \textcolor{keywordflow}{if} index == 0:}
+\DoxyCodeLine{1189             \textcolor{keywordflow}{return} self}
+\DoxyCodeLine{1190         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{1191             \textcolor{keywordflow}{raise} IndexError(\textcolor{stringliteral}{"{}TerminalEnvironment only has one device."{}})}
+\DoxyCodeLine{1192 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ae68000c879bd0cc5abfde5f2710a6a51}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ae68000c879bd0cc5abfde5f2710a6a51}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_hash\_\_@{\_\_hash\_\_}}
+\index{\_\_hash\_\_@{\_\_hash\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_hash\_\_()}{\_\_hash\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+hash\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1178 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1178     \textcolor{keyword}{def }\_\_hash\_\_(self):}
+\DoxyCodeLine{1179         \textcolor{keywordflow}{return} hash(self.\_device)}
+\DoxyCodeLine{1180 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device.\+Py\+Device.\+\_\+device, parla.\+cython.\+device.\+Py\+CUDADevice.\+\_\+device, parla.\+cython.\+device.\+Stream.\+\_\+device, parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+device, parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+device, and parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+device.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ab76b1ebb9288714516db0877c6afa525}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ab76b1ebb9288714516db0877c6afa525}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_len\_\_@{\_\_len\_\_}}
+\index{\_\_len\_\_@{\_\_len\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_len\_\_()}{\_\_len\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+len\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a21ef5862953ae094659d22a7ace31870}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1CPUEnvironment_ad65aee2d5b51977014cea8489e7a4bfc}{parla.\+cython.\+tasks.\+CPUEnvironment}}.
+
+
+
+Definition at line 1184 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1184     \textcolor{keyword}{def }\_\_len\_\_(self):}
+\DoxyCodeLine{1185         \textcolor{keywordflow}{return} 1}
+\DoxyCodeLine{1186 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a7ce7857bcd529a032f11912574577df2}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a7ce7857bcd529a032f11912574577df2}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a4fb0bda41b43830542748a3059e46564}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a5e6974e1553fce780b7faf9572a0cab6}{parla.\+cython.\+tasks.\+GPUEnvironment}}, and \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1CPUEnvironment_acf5da15b9c0f73da03e9a7421a21d213}{parla.\+cython.\+tasks.\+CPUEnvironment}}.
+
+
+
+Definition at line 1151 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1151     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{1152         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}TerminalEnvironment(\{self.\_device\})"{}}}
+\DoxyCodeLine{1153 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a7ce7857bcd529a032f11912574577df2_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a0ad8031b058803eda42a5b3c5f6d7b61}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a0ad8031b058803eda42a5b3c5f6d7b61}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!architecture@{architecture}}
+\index{architecture@{architecture}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{architecture()}{architecture()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+architecture (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1167 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1167     \textcolor{keyword}{def }architecture(self):}
+\DoxyCodeLine{1168         \textcolor{keywordflow}{return} self.\_arch\_type}
+\DoxyCodeLine{1169 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+arch\+\_\+type.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adfebc027f8b9d24d277043485c3d129e}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adfebc027f8b9d24d277043485c3d129e}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!contexts@{contexts}}
+\index{contexts@{contexts}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{contexts()}{contexts()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+contexts (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_aea2649ad9cbe8c7be562158678848722}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1155 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1155     \textcolor{keyword}{def }contexts(self):}
+\DoxyCodeLine{1156         \textcolor{keywordflow}{return} [self]}
+\DoxyCodeLine{1157 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+loop(), and parla.\+cython.\+tasks.\+Task\+Environment.\+parfor().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adfebc027f8b9d24d277043485c3d129e_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15f0b58e8927810b5a554487043af52e}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15f0b58e8927810b5a554487043af52e}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!create\_event@{create\_event}}
+\index{create\_event@{create\_event}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{create\_event()}{create\_event()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+create\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{stream = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{tag = {\ttfamily \textquotesingle{}default\textquotesingle{}} }\end{DoxyParamCaption})}
+
+
+
+Create a CUDA event on the current stream. 
+
+It can be used for synchronization or cross-\/stream waiting. It is not recorded by default at creation. 
+
+Definition at line 1236 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1236     \textcolor{keyword}{def }create\_event(self, stream=None, tag='default'):}
+\DoxyCodeLine{1237         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1238 \textcolor{stringliteral}{        @brief Create a CUDA event on the current stream.  It can be used for synchronization or cross-\/stream waiting. It is not recorded by default at creation.}}
+\DoxyCodeLine{1239 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1240         \textcolor{keywordflow}{if} stream \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{1241             stream = Locals.stream}
+\DoxyCodeLine{1242         self.event\_dict[tag] = stream.create\_event()}
+\DoxyCodeLine{1243 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!device@{device}}
+\index{device@{device}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{device()}{device()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+device (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a60603221c6b73be3d3f187af6ddb4b92}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1163 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1163     \textcolor{keyword}{def }device(self):}
+\DoxyCodeLine{1164         \textcolor{keywordflow}{return} self}
+\DoxyCodeLine{1165 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device.\+Device\+Resource\+Requirement.\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a9796d3cd631ca307f07d74b1fc3d1f5e}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a9796d3cd631ca307f07d74b1fc3d1f5e}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!devices@{devices}}
+\index{devices@{devices}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{devices()}{devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+devices (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a8f5f31518aafcc6eb5a66102d5184182}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1159 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1159     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4cd77e2b819d63fe1c64f5f59c52360b}{devices}}(self):}
+\DoxyCodeLine{1160         \textcolor{keywordflow}{return} [self]}
+\DoxyCodeLine{1161 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+\+\_\+exit\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Environment.\+create\+\_\+events(), parla.\+cython.\+tasks.\+Task\+Environment.\+device(), parla.\+cython.\+tasks.\+Task\+Environment.\+record\+\_\+events(), parla.\+cython.\+tasks.\+Task\+Environment.\+write\+\_\+streams\+\_\+to\+\_\+task(), and parla.\+cython.\+tasks.\+Task\+Environment.\+write\+\_\+to\+\_\+task().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a9796d3cd631ca307f07d74b1fc3d1f5e_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adc39560af643902d6cd462ce1255852f}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_adc39560af643902d6cd462ce1255852f}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!record\_event@{record\_event}}
+\index{record\_event@{record\_event}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{record\_event()}{record\_event()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+record\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{stream = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{tag = {\ttfamily \textquotesingle{}default\textquotesingle{}} }\end{DoxyParamCaption})}
+
+
+
+Record a CUDA event on the current stream. 
+
+
+
+Definition at line 1193 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1193     \textcolor{keyword}{def }record\_event(self, stream=None, tag='default'):}
+\DoxyCodeLine{1194         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1195 \textcolor{stringliteral}{        @brief Record a CUDA event on the current stream. }}
+\DoxyCodeLine{1196 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1197 }
+\DoxyCodeLine{1198         \textcolor{keywordflow}{if} stream \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{1199             stream = Locals.stream }
+\DoxyCodeLine{1200         }
+\DoxyCodeLine{1201         \textcolor{keywordflow}{if} tag \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} self.event\_dict:}
+\DoxyCodeLine{1202             \textcolor{keywordflow}{raise} RuntimeError(\textcolor{stringliteral}{"{}Event must be created before recording."{}})}
+\DoxyCodeLine{1203 }
+\DoxyCodeLine{1204         event = self.event\_dict[tag]}
+\DoxyCodeLine{1205         \textcolor{keywordflow}{if} event \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{1206             \textcolor{comment}{\#print("{}TEST RECORD: "{}, event, stream.stream)}}
+\DoxyCodeLine{1207             event.record(stream.stream)}
+\DoxyCodeLine{1208 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15540226e432a67cf358e924f43f44d3}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15540226e432a67cf358e924f43f44d3}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!synchronize\_event@{synchronize\_event}}
+\index{synchronize\_event@{synchronize\_event}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{synchronize\_event()}{synchronize\_event()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+synchronize\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{tag = {\ttfamily \textquotesingle{}default\textquotesingle{}} }\end{DoxyParamCaption})}
+
+
+
+Synchronize host thread to the tagged CUDA event (sleep or waiting). 
+
+
+
+Definition at line 1209 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1209     \textcolor{keyword}{def }synchronize\_event(self, tag='default'):}
+\DoxyCodeLine{1210         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1211 \textcolor{stringliteral}{        @brief Synchronize host thread to the tagged CUDA event (sleep or waiting). }}
+\DoxyCodeLine{1212 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1213 }
+\DoxyCodeLine{1214         \textcolor{keywordflow}{if} tag \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} self.event\_dict:}
+\DoxyCodeLine{1215             \textcolor{keywordflow}{raise} RuntimeError(\textcolor{stringliteral}{"{}Event must be created before synchronizing."{}})}
+\DoxyCodeLine{1216 }
+\DoxyCodeLine{1217         event = self.event\_dict[tag]}
+\DoxyCodeLine{1218 }
+\DoxyCodeLine{1219         \textcolor{keywordflow}{if} event \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{1220             \textcolor{comment}{\#print("{}TEST EVENT SYNC: "{}, event, flush=True)}}
+\DoxyCodeLine{1221             event.synchronize()}
+\DoxyCodeLine{1222 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a15540226e432a67cf358e924f43f44d3_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af4142e89843ea1178e1b8338318768bb}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af4142e89843ea1178e1b8338318768bb}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!wait\_event@{wait\_event}}
+\index{wait\_event@{wait\_event}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{wait\_event()}{wait\_event()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+wait\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{stream = {\ttfamily \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{None}}},  }\item[{}]{tag = {\ttfamily \textquotesingle{}default\textquotesingle{}} }\end{DoxyParamCaption})}
+
+
+
+Submit a cross-\/stream wait on the tagged CUDA event to the current stream. 
+
+All further work submitted on the current stream will wait until the tagged event is recorded. 
+
+Definition at line 1223 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1223     \textcolor{keyword}{def }wait\_event(self, stream=None, tag='default'):}
+\DoxyCodeLine{1224         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1225 \textcolor{stringliteral}{        @brief Submit a cross-\/stream wait on the tagged CUDA event to the current stream. All further work submitted on the current stream will wait until the tagged event is recorded.}}
+\DoxyCodeLine{1226 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1227         \textcolor{keywordflow}{if} tag \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} self.event\_dict:}
+\DoxyCodeLine{1228             \textcolor{keywordflow}{raise} RuntimeError(\textcolor{stringliteral}{"{}Event must be created before waiting."{}})}
+\DoxyCodeLine{1229 }
+\DoxyCodeLine{1230         event = self.event\_dict[tag]}
+\DoxyCodeLine{1231 }
+\DoxyCodeLine{1232         \textcolor{keywordflow}{if} event \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{1233             \textcolor{comment}{\#print("{}TEST WAIT EVENT: "{}, stream, event)}}
+\DoxyCodeLine{1234             stream.wait\_event(event)}
+\DoxyCodeLine{1235 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ac5e7d2982e0fb9900f7d5f0c2d311e3f}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_ac5e7d2982e0fb9900f7d5f0c2d311e3f}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!write\_events\_to\_task@{write\_events\_to\_task}}
+\index{write\_events\_to\_task@{write\_events\_to\_task}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{write\_events\_to\_task()}{write\_events\_to\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+write\+\_\+events\+\_\+to\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+
+
+Record event pointers in C++ task. 
+
+
+
+Definition at line 1264 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1264     \textcolor{keyword}{def }write\_events\_to\_task(self, task):}
+\DoxyCodeLine{1265         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1266 \textcolor{stringliteral}{        @brief Record event pointers in C++ task}}
+\DoxyCodeLine{1267 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1268         \textcolor{comment}{\#for event in self.event\_dict.values():}}
+\DoxyCodeLine{1269                 \textcolor{comment}{\#    task.add\_event(event)}}
+\DoxyCodeLine{1270         task.add\_event(self.event\_dict[\textcolor{stringliteral}{'default'}])}
+\DoxyCodeLine{1271         }
+\DoxyCodeLine{1272 }
+\DoxyCodeLine{1273         }
+\DoxyCodeLine{1274 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a72be654c8584e71bba2f872f5215b0a4}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a72be654c8584e71bba2f872f5215b0a4}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!write\_streams\_to\_task@{write\_streams\_to\_task}}
+\index{write\_streams\_to\_task@{write\_streams\_to\_task}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{write\_streams\_to\_task()}{write\_streams\_to\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+write\+\_\+streams\+\_\+to\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+
+
+Record stream pointers into C++ task. 
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ad0d50525f61871f54e02e27e80c1075d}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1257 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1257     \textcolor{keyword}{def }write\_streams\_to\_task(self, task):}
+\DoxyCodeLine{1258         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1259 \textcolor{stringliteral}{        @brief Record stream pointers into C++ task}}
+\DoxyCodeLine{1260 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1261         \textcolor{keywordflow}{for} stream \textcolor{keywordflow}{in} self.streams:}
+\DoxyCodeLine{1262             task.add\_stream(stream.stream)}
+\DoxyCodeLine{1263 }
+
+\end{DoxyCode}
+
+
+References Inner\+Task.\+streams, and parla.\+cython.\+tasks.\+Task\+Environment.\+streams().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a72be654c8584e71bba2f872f5215b0a4_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af6e1687798e6dbc48fcbee2eaef24aec}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af6e1687798e6dbc48fcbee2eaef24aec}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!write\_to\_task@{write\_to\_task}}
+\index{write\_to\_task@{write\_to\_task}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{write\_to\_task()}{write\_to\_task()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Terminal\+Environment.\+write\+\_\+to\+\_\+task (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+
+
+Store stream and event pointers in C++ task. 
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a1c1c3be44824c62f4ad987bac09ae508}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1244 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1244     \textcolor{keyword}{def }write\_to\_task(self, task):}
+\DoxyCodeLine{1245         \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{1246 \textcolor{stringliteral}{        @brief Store stream and event pointers in C++ task}}
+\DoxyCodeLine{1247 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{1248         \textcolor{keywordflow}{for} stream \textcolor{keywordflow}{in} self.streams:}
+\DoxyCodeLine{1249             task.add\_stream(stream.stream)}
+\DoxyCodeLine{1250         }
+\DoxyCodeLine{1251         \textcolor{comment}{\#for event in self.event\_dict.values():}}
+\DoxyCodeLine{1252         \textcolor{comment}{\#    task.add\_event(event)}}
+\DoxyCodeLine{1253 }
+\DoxyCodeLine{1254         \textcolor{comment}{\#Note: only adding default event for now}}
+\DoxyCodeLine{1255         task.add\_event(self.event\_dict[\textcolor{stringliteral}{'default'}])}
+\DoxyCodeLine{1256 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict, Inner\+Task.\+streams, and parla.\+cython.\+tasks.\+Task\+Environment.\+streams().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_af6e1687798e6dbc48fcbee2eaef24aec_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6e47dbe04f0f5529e0140ca9706b4cc1}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6e47dbe04f0f5529e0140ca9706b4cc1}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_arch\_type@{\_arch\_type}}
+\index{\_arch\_type@{\_arch\_type}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_arch\_type}{\_arch\_type}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+arch\+\_\+type\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 1146 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Terminal\+Environment.\+architecture().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_aba25480dd640de425a04401a502205c8}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_aba25480dd640de425a04401a502205c8}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_device@{\_device}}
+\index{\_device@{\_device}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_device}{\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 1145 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+call\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+eq\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Device.\+device(), parla.\+cython.\+device.\+Stream.\+device(), parla.\+cython.\+device.\+Cupy\+Stream.\+device(), parla.\+cython.\+tasks.\+Task\+Environment.\+get\+\_\+library\+\_\+device(), and parla.\+cython.\+tasks.\+Task\+Environment.\+get\+\_\+parla\+\_\+device().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6beac82492964b6d51b61c94a300735c}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a6beac82492964b6d51b61c94a300735c}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!\_global\_device\_ids@{\_global\_device\_ids}}
+\index{\_global\_device\_ids@{\_global\_device\_ids}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_global\_device\_ids}{\_global\_device\_ids}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Terminal\+Environment.\+\_\+global\+\_\+device\+\_\+ids\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 1149 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+\_\+\+\_\+contains\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+Environment.\+global\+\_\+ids().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a8cba686cbb7a85ad31a8c940970791b6}\label{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a8cba686cbb7a85ad31a8c940970791b6}} 
+\index{parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}!is\_terminal@{is\_terminal}}
+\index{is\_terminal@{is\_terminal}!parla.cython.tasks.TerminalEnvironment@{parla.cython.tasks.TerminalEnvironment}}
+\doxysubsubsection{\texorpdfstring{is\_terminal}{is\_terminal}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Terminal\+Environment.\+is\+\_\+terminal}
+
+
+
+Definition at line 1147 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

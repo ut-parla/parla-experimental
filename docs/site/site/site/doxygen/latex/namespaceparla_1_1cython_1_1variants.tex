@@ -1,0 +1,80 @@
+\hypertarget{namespaceparla_1_1cython_1_1variants}{}\doxysection{parla.\+cython.\+variants Namespace Reference}
+\label{namespaceparla_1_1cython_1_1variants}\index{parla.cython.variants@{parla.cython.variants}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1variants_1_1VariantDefinitionError}{Variant\+Definition\+Error}}
+\begin{DoxyCompactList}\small\item\em Error for an invalid function variant definition. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1variants_1_1__VariantFunction}{\+\_\+\+Variant\+Function}}
+\begin{DoxyCompactList}\small\item\em Function wrapper that dispatches to different architecture targets. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1variants_abf9db9a144e1ab1d89503e8d319b1fce}{specialize}} (func)
+\begin{DoxyCompactList}\small\item\em Decorator to create a function with specialized variants for different architectures. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_1_1cython_1_1variants_abf9db9a144e1ab1d89503e8d319b1fce}\label{namespaceparla_1_1cython_1_1variants_abf9db9a144e1ab1d89503e8d319b1fce}} 
+\index{parla.cython.variants@{parla.cython.variants}!specialize@{specialize}}
+\index{specialize@{specialize}!parla.cython.variants@{parla.cython.variants}}
+\doxysubsubsection{\texorpdfstring{specialize()}{specialize()}}
+{\footnotesize\ttfamily def parla.\+cython.\+variants.\+specialize (\begin{DoxyParamCaption}\item[{}]{func }\end{DoxyParamCaption})}
+
+
+
+Decorator to create a function with specialized variants for different architectures. 
+
+The default implementation is the decorated function.
+
+A decorator to declare that this function has specialized variants for specific architectures. The decorated function is the default implemention, used when no specialized implementation is available. The default can just be {\ttfamily raise Not\+Implemented\+Error()} in cases where no default implementation is possible. To provide a specialized variant use the {\ttfamily variant} member of the main function\+: .. testsetup\+:\+: from parla.\+function\+\_\+decorators import $\ast$ \begin{quote}
+\begin{quote}
+\begin{quote}
+@specialized \end{quote}
+\end{quote}
+\end{quote}
+... def f()\+: ... raise Not\+Implemented\+Error() \begin{quote}
+\begin{quote}
+\begin{quote}
+@f.variant(architecture) \end{quote}
+\end{quote}
+\end{quote}
+... def f\+\_\+gpu()\+: ... ... {\ttfamily architecture} above will often by something like {\ttfamily cpu} or {\ttfamily gpu}, but is extensible. Multiple architectures can be specified as separate parameters to use the same implementation on multiple architectures\+: {\ttfamily @f.\+variant(\+CPU, FPGA)}. Each architecture can only be used once on a given function. Architecture specialized functions are called just like any other function, but the implementation which is called is selected based on where the code executes. The compiler will make the choice when it is compiling for a specific target. 
+
+Definition at line 85 of file variants.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{85 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1variants_abf9db9a144e1ab1d89503e8d319b1fce}{specialize}}(func):}
+\DoxyCodeLine{86     \textcolor{stringliteral}{"{}"{}"{}!}}
+\DoxyCodeLine{87 \textcolor{stringliteral}{    @brief Decorator to create a function with specialized variants for different architectures. The default implementation is the decorated function.}}
+\DoxyCodeLine{88 \textcolor{stringliteral}{}}
+\DoxyCodeLine{89 \textcolor{stringliteral}{    A decorator to declare that this function has specialized variants for specific architectures.}}
+\DoxyCodeLine{90 \textcolor{stringliteral}{    The decorated function is the default implemention, used when no specialized implementation is available.}}
+\DoxyCodeLine{91 \textcolor{stringliteral}{    The default can just be `raise NotImplementedError()` in cases where no default implementation is possible.}}
+\DoxyCodeLine{92 \textcolor{stringliteral}{    To provide a specialized variant use the `variant` member of the main function:}}
+\DoxyCodeLine{93 \textcolor{stringliteral}{    .. testsetup::}}
+\DoxyCodeLine{94 \textcolor{stringliteral}{        from parla.function\_decorators import *}}
+\DoxyCodeLine{95 \textcolor{stringliteral}{    >>> @specialized}}
+\DoxyCodeLine{96 \textcolor{stringliteral}{    ... def f():}}
+\DoxyCodeLine{97 \textcolor{stringliteral}{    ...     raise NotImplementedError()}}
+\DoxyCodeLine{98 \textcolor{stringliteral}{    >>> @f.variant(architecture)}}
+\DoxyCodeLine{99 \textcolor{stringliteral}{    ... def f\_gpu():}}
+\DoxyCodeLine{100 \textcolor{stringliteral}{    ...     ...}}
+\DoxyCodeLine{101 \textcolor{stringliteral}{    `architecture` above will often by something like `cpu` or `gpu`, but is extensible.}}
+\DoxyCodeLine{102 \textcolor{stringliteral}{    Multiple architectures can be specified as separate parameters to use the same implementation on multiple architectures: `@f.variant(CPU, FPGA)`.}}
+\DoxyCodeLine{103 \textcolor{stringliteral}{    Each architecture can only be used once on a given function.}}
+\DoxyCodeLine{104 \textcolor{stringliteral}{    Architecture specialized functions are called just like any other function, but the implementation which is called is selected based on where the code executes.}}
+\DoxyCodeLine{105 \textcolor{stringliteral}{    The compiler will make the choice when it is compiling for a specific target.}}
+\DoxyCodeLine{106 \textcolor{stringliteral}{    "{}"{}"{}}}
+\DoxyCodeLine{107     \textcolor{keywordflow}{return} \_VariantFunction(func)}
+\DoxyCodeLine{108 }
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110         }
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112         }
+\DoxyCodeLine{113 }
+\DoxyCodeLine{114 }
+\DoxyCodeLine{115 }
+
+\end{DoxyCode}

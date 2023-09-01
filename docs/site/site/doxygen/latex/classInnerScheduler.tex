@@ -1,0 +1,1297 @@
+\hypertarget{classInnerScheduler}{}\doxysection{Inner\+Scheduler Class Reference}
+\label{classInnerScheduler}\index{InnerScheduler@{InnerScheduler}}
+
+
+The C++ \char`\"{}\+Mirror\char`\"{} of Parla\textquotesingle{}s Python \mbox{\hyperlink{namespaceScheduler}{Scheduler}} This class is used to create a C++ representation of a Parla \mbox{\hyperlink{namespaceScheduler}{Scheduler}} All scheduling logic should be handled by these after creation until launched by the Python callback.  
+
+
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+
+
+Collaboration diagram for Inner\+Scheduler\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classInnerScheduler_aaed710c208e5a28162c3b181f8a33d23}{Inner\+Scheduler}} (\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$device\+\_\+manager)
+\item 
+\mbox{\hyperlink{classInnerScheduler_a765ce76f1baf1c94da77efc17be30457}{$\sim$\+Inner\+Scheduler}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a6cec502394122abe55658243c02ff3dc}{set\+\_\+num\+\_\+workers}} (int nworkers)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_ac5b7ad179cc600d36065f07db3873ecc}{set\+\_\+py\+\_\+scheduler}} (void $\ast$\mbox{\hyperlink{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}{py\+\_\+scheduler}})
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a1bdbcf712028d0b3e7f9cb92c7635764}{set\+\_\+stop\+\_\+callback}} (\mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}} \mbox{\hyperlink{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}{stop\+\_\+callback}})
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a19f4d7b87785bdfcd5158e1ffd7c2e0a}{run}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca}{stop}} ()
+\item 
+\mbox{\hyperlink{classScheduler_1_1Status}{Scheduler\+::\+Status}} \mbox{\hyperlink{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e}{activate}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_ae07fab8fc43aebfc5bbf73b7474d3e0b}{activate\+\_\+wrapper}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a52bc4a779f9471411c6b0e2f8d720d61}{spawn\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}{enqueue\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task, \mbox{\hyperlink{classTaskStatusFlags}{Task\+Status\+Flags}} flags)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_aac1035ac8fd1f43b241db61637fce76a}{enqueue\+\_\+tasks}} (\mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} \&tasks)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a4821aa6fb79d311aedac0f0ca92a1697}{add\+\_\+worker}} (\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$worker)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a8b2df21cffbb84f5a19831563c81ac19}{enqueue\+\_\+worker}} (\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$worker)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a379b814bdf9d16a3954036f2f63d3c1a}{task\+\_\+cleanup}} (\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$worker, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task, int state)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a92eba7911e5c3491f79d07f16c152030}{task\+\_\+cleanup\+\_\+presync}} (\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$worker, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task, int state)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_ae168936fb94b2602cb78867209b12cad}{task\+\_\+cleanup\+\_\+postsync}} (\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$worker, \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task, int state)
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a8385987e55a1ba90f988f4781ee91ccc}{get\+\_\+num\+\_\+active\+\_\+tasks}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a7dc689561b6acadbb9393ae92a3f3d0f}{increase\+\_\+num\+\_\+active\+\_\+tasks}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79}{decrease\+\_\+num\+\_\+active\+\_\+tasks}} ()
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a50bff0e55ab7dc8beb2a4851be3f2895}{increase\+\_\+num\+\_\+notified\+\_\+workers}} ()
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a5d5353340c8b72bf630d2cecaeca1638}{decrease\+\_\+num\+\_\+notified\+\_\+workers}} ()
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a84bbaab0860c65871516a5da1bd69304}{get\+\_\+num\+\_\+running\+\_\+tasks}} ()
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a9e609c2ae554c0a849d65378706c2c63}{get\+\_\+num\+\_\+ready\+\_\+tasks}} ()
+\item 
+int \mbox{\hyperlink{classInnerScheduler_a9c9622a83be436dc187d3c1ba8486816}{get\+\_\+num\+\_\+notified\+\_\+workers}} ()
+\item 
+\mbox{\hyperlink{classPArrayTracker}{PArray\+Tracker}} $\ast$ \mbox{\hyperlink{classInnerScheduler_aacaabfd3ed87c7f92225e9561046d437}{get\+\_\+parray\+\_\+tracker}} ()
+\item 
+void \mbox{\hyperlink{classInnerScheduler_ad46b9406a41038712d053030b1c31c58}{reserve\+\_\+parray}} (\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$parray, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+id)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a41dcc9c04487a8c9f3d52a0f1e72b513}{release\+\_\+parray}} (\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$parray, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+id)
+\item 
+bool \mbox{\hyperlink{classInnerScheduler_a24ba2b6e8ab88ab86cfd0bcb42e0de5a}{get\+\_\+parray\+\_\+state}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+dev\+\_\+idx, uint64\+\_\+t parray\+\_\+parent\+\_\+id)
+\item 
+void \mbox{\hyperlink{classInnerScheduler_a39dc45323a26436554dd2c2854f658f7}{spawn\+\_\+wait}} ()
+\item 
+\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$ \mbox{\hyperlink{classInnerScheduler_ad2fa4cc6ee8b95e4b25e67d0ca6991bb}{get\+\_\+device\+\_\+manager}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{classInnerScheduler_ad2a2a9db8e368e5295285615c1f41a8e}{sleep\+\_\+flag}} = false
+\item 
+int \mbox{\hyperlink{classInnerScheduler_af4243a64176366bda8a6f71f94af6412}{sleep\+\_\+time}} = 20
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \mbox{\hyperlink{classInnerScheduler_a07846c2bc48bd3aa6cc2faf807257444}{task\+\_\+buffer}} = std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$(10)
+\item 
+\mbox{\hyperlink{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}{Worker\+Pool\+\_\+t}} \mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}
+\item 
+std\+::atomic$<$ int $>$ \mbox{\hyperlink{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}{num\+\_\+active\+\_\+tasks}} \{1\}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{classInnerScheduler_a41d128151484454a8bce5473997ac423}{should\+\_\+run}} = true
+\item 
+\mbox{\hyperlink{classMapper}{Mapper}} $\ast$ \mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}}
+\item 
+\mbox{\hyperlink{classMemoryReserver}{Memory\+Reserver}} $\ast$ \mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\+\_\+reserver}}
+\item 
+\mbox{\hyperlink{classRuntimeReserver}{Runtime\+Reserver}} $\ast$ \mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\+\_\+reserver}}
+\item 
+\mbox{\hyperlink{classLauncher}{Launcher}} $\ast$ \mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}}
+\item 
+\mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}} \mbox{\hyperlink{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}{stop\+\_\+callback}}
+\item 
+void $\ast$ \mbox{\hyperlink{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}{py\+\_\+scheduler}}
+\item 
+\mbox{\hyperlink{classScheduler_1_1Status}{Scheduler\+::\+Status}} \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$ \mbox{\hyperlink{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}{device\+\_\+manager\+\_\+}}
+\begin{DoxyCompactList}\small\item\em It manages all device instances in C++. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classPArrayTracker}{PArray\+Tracker}} \mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\+\_\+tracker\+\_\+}}
+\begin{DoxyCompactList}\small\item\em It manages the current/planned distribution of PArrays across devices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The C++ \char`\"{}\+Mirror\char`\"{} of Parla\textquotesingle{}s Python \mbox{\hyperlink{namespaceScheduler}{Scheduler}} This class is used to create a C++ representation of a Parla \mbox{\hyperlink{namespaceScheduler}{Scheduler}} All scheduling logic should be handled by these after creation until launched by the Python callback. 
+
+Definition at line 968 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classInnerScheduler_aaed710c208e5a28162c3b181f8a33d23}\label{classInnerScheduler_aaed710c208e5a28162c3b181f8a33d23}} 
+\index{InnerScheduler@{InnerScheduler}!InnerScheduler@{InnerScheduler}}
+\index{InnerScheduler@{InnerScheduler}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{InnerScheduler()}{InnerScheduler()}}
+{\footnotesize\ttfamily Inner\+Scheduler\+::\+Inner\+Scheduler (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$}]{device\+\_\+manager }\end{DoxyParamCaption})}
+
+
+
+Definition at line 126 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{127     : \mbox{\hyperlink{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}{device\_manager\_}}(device\_manager), \mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}}(device\_manager) \{}
+\DoxyCodeLine{128 }
+\DoxyCodeLine{129   \textcolor{comment}{// A dummy task count is used to keep the scheduler alive.}}
+\DoxyCodeLine{130   \textcolor{comment}{// NOTE: At least one task must be added to the scheduler by the main thread,}}
+\DoxyCodeLine{131   \textcolor{comment}{// otherwise the runtime will finish immediately}}
+\DoxyCodeLine{132   \textcolor{comment}{// this-\/>increase\_num\_active\_tasks();}}
+\DoxyCodeLine{133 }
+\DoxyCodeLine{134   this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_aac07a5bca0f916792c20f58e2b121a7e}{set\_num\_workers}}(1);}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136   \textcolor{comment}{// Mapping policy}}
+\DoxyCodeLine{137   std::shared\_ptr<LocalityLoadBalancingMappingPolicy> mapping\_policy =}
+\DoxyCodeLine{138       std::make\_shared<LocalityLoadBalancingMappingPolicy>(}
+\DoxyCodeLine{139           device\_manager, \&this-\/>\mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}});}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141   \textcolor{comment}{// Initialize the phases}}
+\DoxyCodeLine{142   this-\/>\mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}} = \textcolor{keyword}{new} \mbox{\hyperlink{classMapper}{Mapper}}(\textcolor{keyword}{this}, device\_manager, std::move(mapping\_policy));}
+\DoxyCodeLine{143   this-\/>\mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\_reserver}} = \textcolor{keyword}{new} \mbox{\hyperlink{classMemoryReserver}{MemoryReserver}}(\textcolor{keyword}{this}, device\_manager);}
+\DoxyCodeLine{144   this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}} = \textcolor{keyword}{new} \mbox{\hyperlink{classRuntimeReserver}{RuntimeReserver}}(\textcolor{keyword}{this}, device\_manager);}
+\DoxyCodeLine{145   this-\/>\mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}} = \textcolor{keyword}{new} \mbox{\hyperlink{classLauncher}{Launcher}}(\textcolor{keyword}{this}, device\_manager);}
+\DoxyCodeLine{146   \textcolor{comment}{// this-\/>resources = std::make\_shared < ResourcePool<std::atomic<int64\_t>>();}}
+\DoxyCodeLine{147 \}}
+
+\end{DoxyCode}
+
+
+References device\+\_\+manager\+\_\+, Inner\+Scheduler(), Launcher\+::\+Launcher(), launcher, memory\+\_\+reserver, Memory\+Reserver\+::\+Memory\+Reserver(), runtime\+\_\+reserver, and Runtime\+Reserver\+::\+Runtime\+Reserver().
+
+
+
+Referenced by Inner\+Scheduler().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_aaed710c208e5a28162c3b181f8a33d23_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=248pt]{classInnerScheduler_aaed710c208e5a28162c3b181f8a33d23_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a765ce76f1baf1c94da77efc17be30457}\label{classInnerScheduler_a765ce76f1baf1c94da77efc17be30457}} 
+\index{InnerScheduler@{InnerScheduler}!````~InnerScheduler@{$\sim$InnerScheduler}}
+\index{````~InnerScheduler@{$\sim$InnerScheduler}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{$\sim$InnerScheduler()}{~InnerScheduler()}}
+{\footnotesize\ttfamily Inner\+Scheduler\+::$\sim$\+Inner\+Scheduler (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 149 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{149                                 \{}
+\DoxyCodeLine{150   \textcolor{keyword}{delete} this-\/>\mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}};}
+\DoxyCodeLine{151   \textcolor{keyword}{delete} this-\/>\mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\_reserver}};}
+\DoxyCodeLine{152   \textcolor{keyword}{delete} this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}};}
+\DoxyCodeLine{153   \textcolor{keyword}{delete} this-\/>\mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}};}
+\DoxyCodeLine{154 \}}
+
+\end{DoxyCode}
+
+
+References launcher, mapper, memory\+\_\+reserver, and runtime\+\_\+reserver.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e}\label{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e}} 
+\index{InnerScheduler@{InnerScheduler}!activate@{activate}}
+\index{activate@{activate}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{activate()}{activate()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classScheduler_1_1Status}{Scheduler\+::\+Status}} Inner\+Scheduler\+::activate (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 186 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{186                                          \{}
+\DoxyCodeLine{187   \textcolor{comment}{// std::cout<< "{}Scheduler Activated"{} << std::endl;}}
+\DoxyCodeLine{188 }
+\DoxyCodeLine{189   this-\/>\mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}}-\/>\mbox{\hyperlink{classMapper_aac615e8b8eca887e3d788db09d2d989d}{run}}(this-\/>\mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\_reserver}});}
+\DoxyCodeLine{190   this-\/>\mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\_reserver}}-\/>\mbox{\hyperlink{classMemoryReserver_a03b6be802b5d6d19761773fa7a1df866}{run}}(this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}});}
+\DoxyCodeLine{191   this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}}-\/>\mbox{\hyperlink{classRuntimeReserver_aaa9106861bccbc209f7f1fa81defdfd9}{run}}(this-\/>\mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}});}
+\DoxyCodeLine{192 }
+\DoxyCodeLine{193   \textcolor{comment}{// LOG\_TRACE(SCHEDULER, "{}ReadyPhase Status: \{\}"{}, this-\/>runtime\_reserver);}}
+\DoxyCodeLine{194   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}};}
+\DoxyCodeLine{195 \}}
+
+\end{DoxyCode}
+
+
+References launcher, mapper, memory\+\_\+reserver, Mapper\+::run(), Memory\+Reserver\+::run(), Runtime\+Reserver\+::run(), runtime\+\_\+reserver, and status.
+
+
+
+Referenced by activate\+\_\+wrapper(), and run().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_ae07fab8fc43aebfc5bbf73b7474d3e0b}\label{classInnerScheduler_ae07fab8fc43aebfc5bbf73b7474d3e0b}} 
+\index{InnerScheduler@{InnerScheduler}!activate\_wrapper@{activate\_wrapper}}
+\index{activate\_wrapper@{activate\_wrapper}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{activate\_wrapper()}{activate\_wrapper()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::activate\+\_\+wrapper (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 197 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{197 \{ this-\/>\mbox{\hyperlink{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e}{activate}}(); \}}
+
+\end{DoxyCode}
+
+
+References activate().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_ae07fab8fc43aebfc5bbf73b7474d3e0b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a4821aa6fb79d311aedac0f0ca92a1697}\label{classInnerScheduler_a4821aa6fb79d311aedac0f0ca92a1697}} 
+\index{InnerScheduler@{InnerScheduler}!add\_worker@{add\_worker}}
+\index{add\_worker@{add\_worker}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{add\_worker()}{add\_worker()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::add\+\_\+worker (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$}]{worker }\end{DoxyParamCaption})}
+
+
+
+Definition at line 235 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{235                                                    \{}
+\DoxyCodeLine{236   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Adding worker \{\} to pool"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}});}
+\DoxyCodeLine{237   this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_a5680e0643399be1414c6e1158207d840}{add\_worker}}(worker);}
+\DoxyCodeLine{238 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79}\label{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79}} 
+\index{InnerScheduler@{InnerScheduler}!decrease\_num\_active\_tasks@{decrease\_num\_active\_tasks}}
+\index{decrease\_num\_active\_tasks@{decrease\_num\_active\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{decrease\_num\_active\_tasks()}{decrease\_num\_active\_tasks()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::decrease\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 338 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{338                                                \{}
+\DoxyCodeLine{339 }
+\DoxyCodeLine{340   \textcolor{keywordtype}{int} count = this-\/>\mbox{\hyperlink{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}{num\_active\_tasks}}.fetch\_sub(1) -\/ 1;}
+\DoxyCodeLine{341 }
+\DoxyCodeLine{342   \textcolor{comment}{// std::cout << "{}Decreasing num active tasks: "{} << count << std::endl;}}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344   \textcolor{keywordflow}{if} (count == 0) \{}
+\DoxyCodeLine{345     this-\/>\mbox{\hyperlink{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca}{stop}}();}
+\DoxyCodeLine{346   \}}
+\DoxyCodeLine{347 \}}
+
+\end{DoxyCode}
+
+
+References stop().
+
+
+
+Referenced by task\+\_\+cleanup\+\_\+postsync().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a5d5353340c8b72bf630d2cecaeca1638}\label{classInnerScheduler_a5d5353340c8b72bf630d2cecaeca1638}} 
+\index{InnerScheduler@{InnerScheduler}!decrease\_num\_notified\_workers@{decrease\_num\_notified\_workers}}
+\index{decrease\_num\_notified\_workers@{decrease\_num\_notified\_workers}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{decrease\_num\_notified\_workers()}{decrease\_num\_notified\_workers()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::decrease\+\_\+num\+\_\+notified\+\_\+workers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 353 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{353                                                   \{}
+\DoxyCodeLine{354   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_ab9ca4e7daa41217828be53d64e8d3b11}{decrease\_num\_notified\_workers}}();}
+\DoxyCodeLine{355 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Worker\+::get\+\_\+task().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a5d5353340c8b72bf630d2cecaeca1638_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}\label{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}} 
+\index{InnerScheduler@{InnerScheduler}!enqueue\_task@{enqueue\_task}}
+\index{enqueue\_task@{enqueue\_task}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{enqueue\_task()}{enqueue\_task()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::enqueue\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task,  }\item[{\mbox{\hyperlink{classTaskStatusFlags}{Task\+Status\+Flags}}}]{flags }\end{DoxyParamCaption})}
+
+
+
+Definition at line 209 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{209                                                                          \{}
+\DoxyCodeLine{210   \textcolor{comment}{// TODO: Change this to appropriate phase as it becomes implemented}}
+\DoxyCodeLine{211   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Enqueing task: \{\}, Status: \{\}"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}});}
+\DoxyCodeLine{212   \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}}.mappable \&\& (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>get\_state() < \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}{TaskState::MAPPED}})) \{}
+\DoxyCodeLine{213     \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Enqueing task: \{\} to mapper"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}});}
+\DoxyCodeLine{214     \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>set\_status(\mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8af8239cbda0e24a46c75b84ea7c05f275}{TaskStatus::MAPPABLE}});}
+\DoxyCodeLine{215     this-\/>\mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}}-\/>\mbox{\hyperlink{classMapper_a5899d440fb93667e0cdda5683d98e791}{enqueue}}(task);}
+\DoxyCodeLine{216   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}}.reservable \&\& (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>get\_state() == \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}{TaskState::MAPPED}})) \{}
+\DoxyCodeLine{217     \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>set\_status(\mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8afb7f1fb61e055277657c00c178844081}{TaskStatus::RESERVABLE}});}
+\DoxyCodeLine{218     \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Enqueing task: \{\} to memory reserver"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}});}
+\DoxyCodeLine{219     this-\/>\mbox{\hyperlink{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}{memory\_reserver}}-\/>\mbox{\hyperlink{classMemoryReserver_a2127dac8a80858f60a723345a7b7e8bc}{enqueue}}(task);}
+\DoxyCodeLine{220   \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (\mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}}.runnable \&\& (\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>get\_state() == \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea83c7f2aa8c3ac10ed8beb75cad162827}{TaskState::RESERVED}})) \{}
+\DoxyCodeLine{221     \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>set\_status(\mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8ab887eaf73362255df616aba88fea4c94}{TaskStatus::RUNNABLE}});}
+\DoxyCodeLine{222     \textcolor{comment}{// std::cout << "{}ENQUEUE FROM CALLBACK"{} << std::endl;}}
+\DoxyCodeLine{223     \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Enqueing task: \{\} to runtime reserver"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}});}
+\DoxyCodeLine{224     this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}}-\/>\mbox{\hyperlink{classRuntimeReserver_aeab29f38dfdcc8f13fd839bf2629d1f5}{enqueue}}(task);}
+\DoxyCodeLine{225   \}}
+\DoxyCodeLine{226 \}}
+
+\end{DoxyCode}
+
+
+References Mapper\+::enqueue(), Memory\+Reserver\+::enqueue(), Runtime\+Reserver\+::enqueue(), Inner\+Task\+::get\+\_\+state(), Task\+Status\+Flags\+::mappable, MAPPABLE, MAPPED, mapper, memory\+\_\+reserver, Task\+Status\+Flags\+::reservable, RESERVABLE, RESERVED, Task\+Status\+Flags\+::runnable, RUNNABLE, runtime\+\_\+reserver, and Inner\+Task\+::set\+\_\+status().
+
+
+
+Referenced by spawn\+\_\+task(), and task\+\_\+cleanup\+\_\+postsync().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_aac1035ac8fd1f43b241db61637fce76a}\label{classInnerScheduler_aac1035ac8fd1f43b241db61637fce76a}} 
+\index{InnerScheduler@{InnerScheduler}!enqueue\_tasks@{enqueue\_tasks}}
+\index{enqueue\_tasks@{enqueue\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{enqueue\_tasks()}{enqueue\_tasks()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::enqueue\+\_\+tasks (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} \&}]{tasks }\end{DoxyParamCaption})}
+
+
+
+Definition at line 228 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{228                                                         \{}
+\DoxyCodeLine{229   \textcolor{comment}{// LOG\_INFO(SCHEDULER, "{}Enqueing tasks: \{\}"{}, tasks);}}
+\DoxyCodeLine{230   \textcolor{keywordflow}{for} (\mbox{\hyperlink{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}{TaskStatusPair}} task\_status : \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}}) \{}
+\DoxyCodeLine{231     this-\/>\mbox{\hyperlink{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}{enqueue\_task}}(task\_status.first, task\_status.second);}
+\DoxyCodeLine{232   \}}
+\DoxyCodeLine{233 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a8b2df21cffbb84f5a19831563c81ac19}\label{classInnerScheduler_a8b2df21cffbb84f5a19831563c81ac19}} 
+\index{InnerScheduler@{InnerScheduler}!enqueue\_worker@{enqueue\_worker}}
+\index{enqueue\_worker@{enqueue\_worker}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{enqueue\_worker()}{enqueue\_worker()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::enqueue\+\_\+worker (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$}]{worker }\end{DoxyParamCaption})}
+
+
+
+Definition at line 240 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{240                                                        \{}
+\DoxyCodeLine{241   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Enqueuing worker: \{\} is ready."{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}});}
+\DoxyCodeLine{242   this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_accbd67d477b7b878ae07ef057f306f3a}{enqueue\_worker}}(worker);}
+\DoxyCodeLine{243 \}}
+
+\end{DoxyCode}
+
+
+Referenced by task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a8b2df21cffbb84f5a19831563c81ac19_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_ad2fa4cc6ee8b95e4b25e67d0ca6991bb}\label{classInnerScheduler_ad2fa4cc6ee8b95e4b25e67d0ca6991bb}} 
+\index{InnerScheduler@{InnerScheduler}!get\_device\_manager@{get\_device\_manager}}
+\index{get\_device\_manager@{get\_device\_manager}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_device\_manager()}{get\_device\_manager()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDeviceManager}{Device\+Manager}}$\ast$ Inner\+Scheduler\+::get\+\_\+device\+\_\+manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1111 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1111 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}{device\_manager\_}}; \}}
+
+\end{DoxyCode}
+
+
+References device\+\_\+manager\+\_\+.
+
+
+
+Referenced by Inner\+Task\+::set\+\_\+scheduler().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_ad2fa4cc6ee8b95e4b25e67d0ca6991bb_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a8385987e55a1ba90f988f4781ee91ccc}\label{classInnerScheduler_a8385987e55a1ba90f988f4781ee91ccc}} 
+\index{InnerScheduler@{InnerScheduler}!get\_num\_active\_tasks@{get\_num\_active\_tasks}}
+\index{get\_num\_active\_tasks@{get\_num\_active\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_num\_active\_tasks()}{get\_num\_active\_tasks()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::get\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 331 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{331 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}{num\_active\_tasks}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a9c9622a83be436dc187d3c1ba8486816}\label{classInnerScheduler_a9c9622a83be436dc187d3c1ba8486816}} 
+\index{InnerScheduler@{InnerScheduler}!get\_num\_notified\_workers@{get\_num\_notified\_workers}}
+\index{get\_num\_notified\_workers@{get\_num\_notified\_workers}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_num\_notified\_workers()}{get\_num\_notified\_workers()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::get\+\_\+num\+\_\+notified\+\_\+workers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1081 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1081                                  \{}
+\DoxyCodeLine{1082     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_a01d861ad2e3a0592c92962f063bde224}{get\_num\_notified\_workers}}();}
+\DoxyCodeLine{1083   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a9e609c2ae554c0a849d65378706c2c63}\label{classInnerScheduler_a9e609c2ae554c0a849d65378706c2c63}} 
+\index{InnerScheduler@{InnerScheduler}!get\_num\_ready\_tasks@{get\_num\_ready\_tasks}}
+\index{get\_num\_ready\_tasks@{get\_num\_ready\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_num\_ready\_tasks()}{get\_num\_ready\_tasks()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::get\+\_\+num\+\_\+ready\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 361 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{361                                         \{}
+\DoxyCodeLine{362   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}{runtime\_reserver}}-\/>\mbox{\hyperlink{classRuntimeReserver_a23475509344951f743f48f6239eda1bf}{get\_count}}();}
+\DoxyCodeLine{363 \}}
+
+\end{DoxyCode}
+
+
+References Runtime\+Reserver\+::get\+\_\+count(), and runtime\+\_\+reserver.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a9e609c2ae554c0a849d65378706c2c63_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a84bbaab0860c65871516a5da1bd69304}\label{classInnerScheduler_a84bbaab0860c65871516a5da1bd69304}} 
+\index{InnerScheduler@{InnerScheduler}!get\_num\_running\_tasks@{get\_num\_running\_tasks}}
+\index{get\_num\_running\_tasks@{get\_num\_running\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_num\_running\_tasks()}{get\_num\_running\_tasks()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::get\+\_\+num\+\_\+running\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 357 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{357                                           \{}
+\DoxyCodeLine{358   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}}-\/>\mbox{\hyperlink{classLauncher_a4735556d50f5c29ca5a503f1318b438c}{get\_count}}();}
+\DoxyCodeLine{359 \}}
+
+\end{DoxyCode}
+
+
+References Launcher\+::get\+\_\+count(), and launcher.
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=348pt]{classInnerScheduler_a84bbaab0860c65871516a5da1bd69304_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a24ba2b6e8ab88ab86cfd0bcb42e0de5a}\label{classInnerScheduler_a24ba2b6e8ab88ab86cfd0bcb42e0de5a}} 
+\index{InnerScheduler@{InnerScheduler}!get\_parray\_state@{get\_parray\_state}}
+\index{get\_parray\_state@{get\_parray\_state}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_parray\_state()}{get\_parray\_state()}}
+{\footnotesize\ttfamily bool Inner\+Scheduler\+::get\+\_\+parray\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+idx,  }\item[{uint64\+\_\+t}]{parray\+\_\+parent\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1102 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1102                                                                            \{}
+\DoxyCodeLine{1103     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}}.\mbox{\hyperlink{classPArrayTracker_af30dd11bb2cd542a82916aab560e1840}{get\_parray\_state}}(global\_dev\_idx,}
+\DoxyCodeLine{1104                                                   parray\_parent\_id);}
+\DoxyCodeLine{1105   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_aacaabfd3ed87c7f92225e9561046d437}\label{classInnerScheduler_aacaabfd3ed87c7f92225e9561046d437}} 
+\index{InnerScheduler@{InnerScheduler}!get\_parray\_tracker@{get\_parray\_tracker}}
+\index{get\_parray\_tracker@{get\_parray\_tracker}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{get\_parray\_tracker()}{get\_parray\_tracker()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classPArrayTracker}{PArray\+Tracker}}$\ast$ Inner\+Scheduler\+::get\+\_\+parray\+\_\+tracker (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1086 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1086 \{ \textcolor{keywordflow}{return} \&(this-\/>\mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}}); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a7dc689561b6acadbb9393ae92a3f3d0f}\label{classInnerScheduler_a7dc689561b6acadbb9393ae92a3f3d0f}} 
+\index{InnerScheduler@{InnerScheduler}!increase\_num\_active\_tasks@{increase\_num\_active\_tasks}}
+\index{increase\_num\_active\_tasks@{increase\_num\_active\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{increase\_num\_active\_tasks()}{increase\_num\_active\_tasks()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::increase\+\_\+num\+\_\+active\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 333 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{333                                                \{}
+\DoxyCodeLine{334   \textcolor{keywordtype}{int} count = this-\/>\mbox{\hyperlink{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}{num\_active\_tasks}}.fetch\_add(1);}
+\DoxyCodeLine{335   \textcolor{comment}{// std::cout << "{}Increasing num active tasks: "{} << count + 1 << std::endl;}}
+\DoxyCodeLine{336 \}}
+
+\end{DoxyCode}
+
+
+Referenced by spawn\+\_\+task().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a7dc689561b6acadbb9393ae92a3f3d0f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a50bff0e55ab7dc8beb2a4851be3f2895}\label{classInnerScheduler_a50bff0e55ab7dc8beb2a4851be3f2895}} 
+\index{InnerScheduler@{InnerScheduler}!increase\_num\_notified\_workers@{increase\_num\_notified\_workers}}
+\index{increase\_num\_notified\_workers@{increase\_num\_notified\_workers}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{increase\_num\_notified\_workers()}{increase\_num\_notified\_workers()}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::increase\+\_\+num\+\_\+notified\+\_\+workers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 349 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{349                                                   \{}
+\DoxyCodeLine{350   \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_afd0d338bf8b8d221ca08c769098095c8}{increase\_num\_notified\_workers}}();}
+\DoxyCodeLine{351 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Worker\+::wait().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a50bff0e55ab7dc8beb2a4851be3f2895_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a41dcc9c04487a8c9f3d52a0f1e72b513}\label{classInnerScheduler_a41dcc9c04487a8c9f3d52a0f1e72b513}} 
+\index{InnerScheduler@{InnerScheduler}!release\_parray@{release\_parray}}
+\index{release\_parray@{release\_parray}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{release\_parray()}{release\_parray()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::release\+\_\+parray (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$}]{parray,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1096 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1096                                                                         \{}
+\DoxyCodeLine{1097     \mbox{\hyperlink{classDevice}{Device}} *device =}
+\DoxyCodeLine{1098         this-\/>\mbox{\hyperlink{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}{device\_manager\_}}-\/>\mbox{\hyperlink{classDeviceManager_a9dc0e5210cf1ff42a94c132d9e155f95}{get\_device\_by\_global\_id}}(global\_dev\_id);}
+\DoxyCodeLine{1099     this-\/>\mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}}.\mbox{\hyperlink{classPArrayTracker_a2b40aadf78c88fac068b5fe500665539}{release\_parray}}(*parray, device);}
+\DoxyCodeLine{1100   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_ad46b9406a41038712d053030b1c31c58}\label{classInnerScheduler_ad46b9406a41038712d053030b1c31c58}} 
+\index{InnerScheduler@{InnerScheduler}!reserve\_parray@{reserve\_parray}}
+\index{reserve\_parray@{reserve\_parray}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{reserve\_parray()}{reserve\_parray()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::reserve\+\_\+parray (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$}]{parray,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 1089 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1089                                                                         \{}
+\DoxyCodeLine{1090     \mbox{\hyperlink{classDevice}{Device}} *device =}
+\DoxyCodeLine{1091         this-\/>\mbox{\hyperlink{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}{device\_manager\_}}-\/>\mbox{\hyperlink{classDeviceManager_a9dc0e5210cf1ff42a94c132d9e155f95}{get\_device\_by\_global\_id}}(global\_dev\_id);}
+\DoxyCodeLine{1092     this-\/>\mbox{\hyperlink{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}{parray\_tracker\_}}.\mbox{\hyperlink{classPArrayTracker_a59b544edce17171c9731c950c603af85}{reserve\_parray}}(*parray, device);}
+\DoxyCodeLine{1093   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a19f4d7b87785bdfcd5158e1ffd7c2e0a}\label{classInnerScheduler_a19f4d7b87785bdfcd5158e1ffd7c2e0a}} 
+\index{InnerScheduler@{InnerScheduler}!run@{run}}
+\index{run@{run}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::run (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 168 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{168                          \{}
+\DoxyCodeLine{169   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Scheduler::run"{}}, \mbox{\hyperlink{profiling_8hpp_af6e319f2ed137e1d61b66eacc5518035}{NVTX\_COLOR\_RED}})}
+\DoxyCodeLine{170   \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{long} iteration\_count = 0;}
+\DoxyCodeLine{171   \textcolor{keywordflow}{while} (this-\/>\mbox{\hyperlink{classInnerScheduler_a41d128151484454a8bce5473997ac423}{should\_run}}.load()) \{}
+\DoxyCodeLine{172     \textcolor{keyword}{auto} \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}} = this-\/>\mbox{\hyperlink{classInnerScheduler_a17f38e7632a5733f36da2834ef20c99e}{activate}}();}
+\DoxyCodeLine{173     \textcolor{keywordflow}{if} (this-\/>\mbox{\hyperlink{classInnerScheduler_ad2a2a9db8e368e5295285615c1f41a8e}{sleep\_flag}}) \{}
+\DoxyCodeLine{174       std::this\_thread::sleep\_for(std::chrono::milliseconds(this-\/>\mbox{\hyperlink{classInnerScheduler_af4243a64176366bda8a6f71f94af6412}{sleep\_time}}));}
+\DoxyCodeLine{175     \}}
+\DoxyCodeLine{176   \}}
+\DoxyCodeLine{177 \}}
+
+\end{DoxyCode}
+
+
+References activate(), and sleep\+\_\+flag.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a19f4d7b87785bdfcd5158e1ffd7c2e0a_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a6cec502394122abe55658243c02ff3dc}\label{classInnerScheduler_a6cec502394122abe55658243c02ff3dc}} 
+\index{InnerScheduler@{InnerScheduler}!set\_num\_workers@{set\_num\_workers}}
+\index{set\_num\_workers@{set\_num\_workers}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{set\_num\_workers()}{set\_num\_workers()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::set\+\_\+num\+\_\+workers (\begin{DoxyParamCaption}\item[{int}]{nworkers }\end{DoxyParamCaption})}
+
+
+
+Definition at line 156 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{156                                                  \{}
+\DoxyCodeLine{157   this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_aac07a5bca0f916792c20f58e2b121a7e}{set\_num\_workers}}(nworkers);}
+\DoxyCodeLine{158 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_ac5b7ad179cc600d36065f07db3873ecc}\label{classInnerScheduler_ac5b7ad179cc600d36065f07db3873ecc}} 
+\index{InnerScheduler@{InnerScheduler}!set\_py\_scheduler@{set\_py\_scheduler}}
+\index{set\_py\_scheduler@{set\_py\_scheduler}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{set\_py\_scheduler()}{set\_py\_scheduler()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::set\+\_\+py\+\_\+scheduler (\begin{DoxyParamCaption}\item[{void $\ast$}]{py\+\_\+scheduler }\end{DoxyParamCaption})}
+
+
+
+Definition at line 160 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{160                                                         \{}
+\DoxyCodeLine{161   this-\/>\mbox{\hyperlink{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}{py\_scheduler}} = \mbox{\hyperlink{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}{py\_scheduler}};}
+\DoxyCodeLine{162 \}}
+
+\end{DoxyCode}
+
+
+References py\+\_\+scheduler.
+
+\mbox{\Hypertarget{classInnerScheduler_a1bdbcf712028d0b3e7f9cb92c7635764}\label{classInnerScheduler_a1bdbcf712028d0b3e7f9cb92c7635764}} 
+\index{InnerScheduler@{InnerScheduler}!set\_stop\_callback@{set\_stop\_callback}}
+\index{set\_stop\_callback@{set\_stop\_callback}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{set\_stop\_callback()}{set\_stop\_callback()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::set\+\_\+stop\+\_\+callback (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}}}]{stop\+\_\+callback }\end{DoxyParamCaption})}
+
+
+
+Definition at line 164 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{164                                                                \{}
+\DoxyCodeLine{165   this-\/>\mbox{\hyperlink{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}{stop\_callback}} = \mbox{\hyperlink{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}{stop\_callback}};}
+\DoxyCodeLine{166 \}}
+
+\end{DoxyCode}
+
+
+References stop\+\_\+callback.
+
+\mbox{\Hypertarget{classInnerScheduler_a52bc4a779f9471411c6b0e2f8d720d61}\label{classInnerScheduler_a52bc4a779f9471411c6b0e2f8d720d61}} 
+\index{InnerScheduler@{InnerScheduler}!spawn\_task@{spawn\_task}}
+\index{spawn\_task@{spawn\_task}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{spawn\_task()}{spawn\_task()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::spawn\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+Definition at line 199 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{199                                                \{}
+\DoxyCodeLine{200   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Spawning task: \{\}"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}});}
+\DoxyCodeLine{201   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Scheduler::spawn\_task"{}}, \mbox{\hyperlink{profiling_8hpp_af6e319f2ed137e1d61b66eacc5518035}{NVTX\_COLOR\_RED}})}
+\DoxyCodeLine{202 }
+\DoxyCodeLine{203   \textcolor{keyword}{auto} \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}} = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>process\_dependencies();}
+\DoxyCodeLine{204   this-\/>\mbox{\hyperlink{classInnerScheduler_a7dc689561b6acadbb9393ae92a3f3d0f}{increase\_num\_active\_tasks}}();}
+\DoxyCodeLine{205   task-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(\mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab209a200f960648aa69d26a909752826}{TaskState::SPAWNED}});}
+\DoxyCodeLine{206   this-\/>\mbox{\hyperlink{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}{enqueue\_task}}(task, \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}});}
+\DoxyCodeLine{207 \}}
+
+\end{DoxyCode}
+
+
+References enqueue\+\_\+task(), increase\+\_\+num\+\_\+active\+\_\+tasks(), Inner\+Task\+::process\+\_\+dependencies(), Inner\+Task\+::set\+\_\+state(), and SPAWNED.
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a52bc4a779f9471411c6b0e2f8d720d61_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a39dc45323a26436554dd2c2854f658f7}\label{classInnerScheduler_a39dc45323a26436554dd2c2854f658f7}} 
+\index{InnerScheduler@{InnerScheduler}!spawn\_wait@{spawn\_wait}}
+\index{spawn\_wait@{spawn\_wait}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{spawn\_wait()}{spawn\_wait()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::spawn\+\_\+wait (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 365 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{365 \{ this-\/>\mbox{\hyperlink{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}{workers}}.\mbox{\hyperlink{classWorkerPool_a997968d016085dfa9b011409c01be22a}{spawn\_wait}}(); \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca}\label{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca}} 
+\index{InnerScheduler@{InnerScheduler}!stop@{stop}}
+\index{stop@{stop}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::stop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 179 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{179                           \{}
+\DoxyCodeLine{180   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Stopping scheduler"{}});}
+\DoxyCodeLine{181   this-\/>\mbox{\hyperlink{classInnerScheduler_a41d128151484454a8bce5473997ac423}{should\_run}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{182   \mbox{\hyperlink{runtime_8hpp_a8beb32839b6aa57c6e1e6de62b6056a6}{launch\_stop\_callback}}(this-\/>\mbox{\hyperlink{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}{stop\_callback}}, this-\/>\mbox{\hyperlink{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}{py\_scheduler}});}
+\DoxyCodeLine{183   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a1b3f65587b48bff0583fb85181991b01}{SCHEDULER}}, \textcolor{stringliteral}{"{}Stopped scheduler"{}});}
+\DoxyCodeLine{184 \}}
+
+\end{DoxyCode}
+
+
+References launch\+\_\+stop\+\_\+callback(), py\+\_\+scheduler, and stop\+\_\+callback.
+
+
+
+Referenced by decrease\+\_\+num\+\_\+active\+\_\+tasks().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a3af3b46d1f72a9789f2f085f878e0cca_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a379b814bdf9d16a3954036f2f63d3c1a}\label{classInnerScheduler_a379b814bdf9d16a3954036f2f63d3c1a}} 
+\index{InnerScheduler@{InnerScheduler}!task\_cleanup@{task\_cleanup}}
+\index{task\_cleanup@{task\_cleanup}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{task\_cleanup()}{task\_cleanup()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::task\+\_\+cleanup (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$}]{worker,  }\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task,  }\item[{int}]{state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 321 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{322                                              \{}
+\DoxyCodeLine{323   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Scheduler::task\_cleanup"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{324 }
+\DoxyCodeLine{325   \mbox{\hyperlink{classInnerScheduler_a92eba7911e5c3491f79d07f16c152030}{task\_cleanup\_presync}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, state);}
+\DoxyCodeLine{326   \textcolor{comment}{// synchronize task enviornment}}
+\DoxyCodeLine{327   \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>synchronize\_events();}
+\DoxyCodeLine{328   \mbox{\hyperlink{classInnerScheduler_ae168936fb94b2602cb78867209b12cad}{task\_cleanup\_postsync}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, state);}
+\DoxyCodeLine{329 \}}
+
+\end{DoxyCode}
+
+
+References Inner\+Task\+::synchronize\+\_\+events(), task\+\_\+cleanup\+\_\+postsync(), and task\+\_\+cleanup\+\_\+presync().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_a379b814bdf9d16a3954036f2f63d3c1a_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_ae168936fb94b2602cb78867209b12cad}\label{classInnerScheduler_ae168936fb94b2602cb78867209b12cad}} 
+\index{InnerScheduler@{InnerScheduler}!task\_cleanup\_postsync@{task\_cleanup\_postsync}}
+\index{task\_cleanup\_postsync@{task\_cleanup\_postsync}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{task\_cleanup\_postsync()}{task\_cleanup\_postsync()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$}]{worker,  }\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task,  }\item[{int}]{state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 268 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{269                                                           \{}
+\DoxyCodeLine{270   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Scheduler::task\_cleanup\_postsync"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{271 }
+\DoxyCodeLine{272   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{TaskState}} state = \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{TaskState}}\textcolor{keyword}{>}(state\_int);}
+\DoxyCodeLine{273 }
+\DoxyCodeLine{274   \textcolor{comment}{// std::cout << "{}Task Cleanup Post Sync"{} << std::endl;}}
+\DoxyCodeLine{275 }
+\DoxyCodeLine{276   \textcolor{keywordflow}{if} (state == \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}{TaskState::RUNAHEAD}}) \{}
+\DoxyCodeLine{277     this-\/>\mbox{\hyperlink{classInnerScheduler_a62ae8d4c3766ddc6746daae230179e79}{decrease\_num\_active\_tasks}}();}
+\DoxyCodeLine{278     task-\/>\mbox{\hyperlink{classInnerTask_ad61553584936bbeec62d1dd39c371863}{notify\_dependents\_completed}}();}
+\DoxyCodeLine{279   \}}
+\DoxyCodeLine{280 }
+\DoxyCodeLine{281   \textcolor{comment}{// Release all resources for this task on all devices}}
+\DoxyCodeLine{282   \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>assigned\_devices.size(); ++\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}) \{}
+\DoxyCodeLine{283     \mbox{\hyperlink{classDevice}{Device}} *device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>assigned\_devices[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}];}
+\DoxyCodeLine{284     \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{DevID\_t}} dev\_id = device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}();}
+\DoxyCodeLine{285     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} \&device\_pool = device-\/>\mbox{\hyperlink{classDevice_a23e7c65c6d833d56755aead8128763b7}{get\_reserved\_pool}}();}
+\DoxyCodeLine{286     \mbox{\hyperlink{classResourcePool}{ResourcePool\_t}} \&task\_pool =}
+\DoxyCodeLine{287         \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>device\_constraints[device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}()];}
+\DoxyCodeLine{288 }
+\DoxyCodeLine{289     \textcolor{comment}{// TODO(wlr): This needs to be changed to not release PARRAY resources}}
+\DoxyCodeLine{290     device\_pool.\mbox{\hyperlink{classResourcePool_aceb8001c1425679b17519c75dd3a7aa0}{increase}}<\mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436ab1c94ca2fbc3e78fc30069c8d0f01680}{ResourceCategory::All}}>(task\_pool);}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292     \textcolor{comment}{// PArrays could be evicted even during task barrier continuation.}}
+\DoxyCodeLine{293     \textcolor{comment}{// However, these PArrays will be allocated and tracked}}
+\DoxyCodeLine{294     \textcolor{comment}{// again after the task restarts.}}
+\DoxyCodeLine{295     \textcolor{keywordflow}{if} (!\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>is\_data\_task()) \{}
+\DoxyCodeLine{296       \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} j = 0; j < \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>parray\_list[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}].size(); ++j) \{}
+\DoxyCodeLine{297         \mbox{\hyperlink{classparray_1_1InnerPArray}{parray::InnerPArray}} *\mbox{\hyperlink{namespaceparray}{parray}} = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>parray\_list[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}][j].first;}
+\DoxyCodeLine{298         \mbox{\hyperlink{namespaceparray}{parray}}-\/>decr\_num\_active\_tasks(dev\_id);}
+\DoxyCodeLine{299         \textcolor{comment}{// This PArray is not released from the PArray tracker here,}}
+\DoxyCodeLine{300         \textcolor{comment}{// but when it is EVICTED, it will check the number of referneces}}
+\DoxyCodeLine{301         \textcolor{comment}{// and will be released if that is 0.}}
+\DoxyCodeLine{302       \}}
+\DoxyCodeLine{303     \}}
+\DoxyCodeLine{304     this-\/>\mbox{\hyperlink{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}{mapper}}-\/>\mbox{\hyperlink{classMapper_a81aef3f5dc2f624290e32a9ecdb068e4}{atomic\_decr\_num\_mapped\_tasks\_device}}(dev\_id);}
+\DoxyCodeLine{305   \}}
+\DoxyCodeLine{306 }
+\DoxyCodeLine{307   \textcolor{comment}{// Clear all assigned streams from the task}}
+\DoxyCodeLine{308   \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>streams.clear();}
+\DoxyCodeLine{309   this-\/>\mbox{\hyperlink{classInnerScheduler_a2226b978da426cacf0175c288244dee1}{launcher}}-\/>\mbox{\hyperlink{classLauncher_a9990332300e6106da0749a4d988a14ed}{num\_running\_tasks}}-\/-\/;}
+\DoxyCodeLine{310   worker-\/>\mbox{\hyperlink{classInnerWorker_a6747e52a01465719f623a1dc1618f21c}{remove\_task}}();}
+\DoxyCodeLine{311 }
+\DoxyCodeLine{312   \textcolor{keywordflow}{if} (state == \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea43491564ebcfd38568918efbd6e840fd}{TaskState::RUNNING}}) \{}
+\DoxyCodeLine{313     \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>reset();}
+\DoxyCodeLine{314     \textcolor{keyword}{auto} \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}} = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>process\_dependencies();}
+\DoxyCodeLine{315     this-\/>\mbox{\hyperlink{classInnerScheduler_a2104255a5058ab7b336d816c003d4d24}{enqueue\_task}}(task, \mbox{\hyperlink{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}{status}});}
+\DoxyCodeLine{316   \}}
+\DoxyCodeLine{317 }
+\DoxyCodeLine{318   this-\/>\mbox{\hyperlink{classInnerScheduler_a8b2df21cffbb84f5a19831563c81ac19}{enqueue\_worker}}(worker);}
+\DoxyCodeLine{319 \}}
+
+\end{DoxyCode}
+
+
+References All, decrease\+\_\+num\+\_\+active\+\_\+tasks(), enqueue\+\_\+task(), enqueue\+\_\+worker(), Device\+::get\+\_\+reserved\+\_\+pool(), Inner\+Task\+::is\+\_\+data\+\_\+task(), launcher, Inner\+Task\+::notify\+\_\+dependents\+\_\+completed(), Inner\+Task\+::process\+\_\+dependencies(), Inner\+Worker\+::remove\+\_\+task(), Inner\+Task\+::reset(), RUNAHEAD, and RUNNING.
+
+
+
+Referenced by task\+\_\+cleanup().
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerScheduler_ae168936fb94b2602cb78867209b12cad_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=348pt]{classInnerScheduler_ae168936fb94b2602cb78867209b12cad_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerScheduler_a92eba7911e5c3491f79d07f16c152030}\label{classInnerScheduler_a92eba7911e5c3491f79d07f16c152030}} 
+\index{InnerScheduler@{InnerScheduler}!task\_cleanup\_presync@{task\_cleanup\_presync}}
+\index{task\_cleanup\_presync@{task\_cleanup\_presync}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{task\_cleanup\_presync()}{task\_cleanup\_presync()}}
+{\footnotesize\ttfamily void Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+presync (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$}]{worker,  }\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task,  }\item[{int}]{state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 245 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{246                                                          \{}
+\DoxyCodeLine{247   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Scheduler::task\_cleanup\_presync"{}}, \mbox{\hyperlink{profiling_8hpp_ae025f787f210666030e6908e8fc46ef9}{NVTX\_COLOR\_MAGENTA}})}
+\DoxyCodeLine{248   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a61fc173cd03db618eb2f64b60f42b55b}{WORKER}}, \textcolor{stringliteral}{"{}Cleaning up: \{\} on  \{\}"{}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}});}
+\DoxyCodeLine{249 }
+\DoxyCodeLine{250   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{TaskState}} state = \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{TaskState}}\textcolor{keyword}{>}(state\_int);}
+\DoxyCodeLine{251 }
+\DoxyCodeLine{252   \textcolor{comment}{// std::cout << "{}CLEANUP PRE SYNC: "{} << state << "{} "{} << Task::RUNAHEAD}}
+\DoxyCodeLine{253   \textcolor{comment}{//           << std::endl;}}
+\DoxyCodeLine{254 }
+\DoxyCodeLine{255   \textcolor{comment}{// std::cout << "{}Task state: "{} << state << std::endl;}}
+\DoxyCodeLine{256   \textcolor{keywordflow}{if} (state == \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}{TaskState::RUNAHEAD}}) \{}
+\DoxyCodeLine{257 }
+\DoxyCodeLine{258     \textcolor{comment}{// Notify dependents that they can be scheduled}}
+\DoxyCodeLine{259     \textcolor{keyword}{auto} \&enqueue\_buffer = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}}-\/>enqueue\_buffer;}
+\DoxyCodeLine{260     \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>notify\_dependents(enqueue\_buffer, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}{TaskState::RUNAHEAD}});}
+\DoxyCodeLine{261     \textcolor{keywordflow}{if} (enqueue\_buffer.size() > 0) \{}
+\DoxyCodeLine{262       this-\/>\mbox{\hyperlink{classInnerScheduler_aac1035ac8fd1f43b241db61637fce76a}{enqueue\_tasks}}(enqueue\_buffer);}
+\DoxyCodeLine{263       enqueue\_buffer.clear();}
+\DoxyCodeLine{264     \}}
+\DoxyCodeLine{265   \}}
+\DoxyCodeLine{266 \}}
+
+\end{DoxyCode}
+
+
+References RUNAHEAD.
+
+
+
+Referenced by task\+\_\+cleanup().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=348pt]{classInnerScheduler_a92eba7911e5c3491f79d07f16c152030_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}\label{classInnerScheduler_abf4ca3eda40c00a551af743d170a705a}} 
+\index{InnerScheduler@{InnerScheduler}!device\_manager\_@{device\_manager\_}}
+\index{device\_manager\_@{device\_manager\_}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{device\_manager\_}{device\_manager\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDeviceManager}{Device\+Manager}}$\ast$ Inner\+Scheduler\+::device\+\_\+manager\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+It manages all device instances in C++. 
+
+This is destructed by the Cython scheduler. 
+
+Definition at line 1116 of file runtime.\+hpp.
+
+
+
+Referenced by get\+\_\+device\+\_\+manager(), and Inner\+Scheduler().
+
+\mbox{\Hypertarget{classInnerScheduler_a2226b978da426cacf0175c288244dee1}\label{classInnerScheduler_a2226b978da426cacf0175c288244dee1}} 
+\index{InnerScheduler@{InnerScheduler}!launcher@{launcher}}
+\index{launcher@{launcher}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{launcher}{launcher}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classLauncher}{Launcher}}$\ast$ Inner\+Scheduler\+::launcher}
+
+
+
+Definition at line 997 of file runtime.\+hpp.
+
+
+
+Referenced by activate(), get\+\_\+num\+\_\+running\+\_\+tasks(), Inner\+Scheduler(), task\+\_\+cleanup\+\_\+postsync(), and $\sim$\+Inner\+Scheduler().
+
+\mbox{\Hypertarget{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}\label{classInnerScheduler_ae4979faf961d3bed8f0afd2e98e87d99}} 
+\index{InnerScheduler@{InnerScheduler}!mapper@{mapper}}
+\index{mapper@{mapper}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{mapper}{mapper}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classMapper}{Mapper}}$\ast$ Inner\+Scheduler\+::mapper}
+
+
+
+Definition at line 990 of file runtime.\+hpp.
+
+
+
+Referenced by activate(), enqueue\+\_\+task(), and $\sim$\+Inner\+Scheduler().
+
+\mbox{\Hypertarget{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}\label{classInnerScheduler_ae5dc0d58cd89946f73416c3635d35d45}} 
+\index{InnerScheduler@{InnerScheduler}!memory\_reserver@{memory\_reserver}}
+\index{memory\_reserver@{memory\_reserver}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{memory\_reserver}{memory\_reserver}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classMemoryReserver}{Memory\+Reserver}}$\ast$ Inner\+Scheduler\+::memory\+\_\+reserver}
+
+
+
+Definition at line 993 of file runtime.\+hpp.
+
+
+
+Referenced by activate(), enqueue\+\_\+task(), Inner\+Scheduler(), and $\sim$\+Inner\+Scheduler().
+
+\mbox{\Hypertarget{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}\label{classInnerScheduler_a5a7e270f0eafee1407caf9418f8dc8fa}} 
+\index{InnerScheduler@{InnerScheduler}!num\_active\_tasks@{num\_active\_tasks}}
+\index{num\_active\_tasks@{num\_active\_tasks}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{num\_active\_tasks}{num\_active\_tasks}}
+{\footnotesize\ttfamily std\+::atomic$<$int$>$ Inner\+Scheduler\+::num\+\_\+active\+\_\+tasks \{1\}}
+
+
+
+Definition at line 984 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}\label{classInnerScheduler_ae42bb74656d12dbc2a773bda4e53b9f0}} 
+\index{InnerScheduler@{InnerScheduler}!parray\_tracker\_@{parray\_tracker\_}}
+\index{parray\_tracker\_@{parray\_tracker\_}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{parray\_tracker\_}{parray\_tracker\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classPArrayTracker}{PArray\+Tracker}} Inner\+Scheduler\+::parray\+\_\+tracker\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+It manages the current/planned distribution of PArrays across devices. 
+
+Parla task mapping policy considers locality of PArrays through this. 
+
+Definition at line 1120 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}\label{classInnerScheduler_aacefdd230a7424b23bb4177fff5ec8fa}} 
+\index{InnerScheduler@{InnerScheduler}!py\_scheduler@{py\_scheduler}}
+\index{py\_scheduler@{py\_scheduler}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{py\_scheduler}{py\_scheduler}}
+{\footnotesize\ttfamily void$\ast$ Inner\+Scheduler\+::py\+\_\+scheduler}
+
+
+
+Definition at line 1007 of file runtime.\+hpp.
+
+
+
+Referenced by set\+\_\+py\+\_\+scheduler(), and stop().
+
+\mbox{\Hypertarget{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}\label{classInnerScheduler_a84607342ed8e50f0c12322711821c9e4}} 
+\index{InnerScheduler@{InnerScheduler}!runtime\_reserver@{runtime\_reserver}}
+\index{runtime\_reserver@{runtime\_reserver}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{runtime\_reserver}{runtime\_reserver}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classRuntimeReserver}{Runtime\+Reserver}}$\ast$ Inner\+Scheduler\+::runtime\+\_\+reserver}
+
+
+
+Definition at line 994 of file runtime.\+hpp.
+
+
+
+Referenced by activate(), enqueue\+\_\+task(), get\+\_\+num\+\_\+ready\+\_\+tasks(), Inner\+Scheduler(), and $\sim$\+Inner\+Scheduler().
+
+\mbox{\Hypertarget{classInnerScheduler_a41d128151484454a8bce5473997ac423}\label{classInnerScheduler_a41d128151484454a8bce5473997ac423}} 
+\index{InnerScheduler@{InnerScheduler}!should\_run@{should\_run}}
+\index{should\_run@{should\_run}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{should\_run}{should\_run}}
+{\footnotesize\ttfamily std\+::atomic$<$bool$>$ Inner\+Scheduler\+::should\+\_\+run = true}
+
+
+
+Definition at line 987 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerScheduler_ad2a2a9db8e368e5295285615c1f41a8e}\label{classInnerScheduler_ad2a2a9db8e368e5295285615c1f41a8e}} 
+\index{InnerScheduler@{InnerScheduler}!sleep\_flag@{sleep\_flag}}
+\index{sleep\_flag@{sleep\_flag}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{sleep\_flag}{sleep\_flag}}
+{\footnotesize\ttfamily bool Inner\+Scheduler\+::sleep\+\_\+flag = false}
+
+
+
+Definition at line 972 of file runtime.\+hpp.
+
+
+
+Referenced by run().
+
+\mbox{\Hypertarget{classInnerScheduler_af4243a64176366bda8a6f71f94af6412}\label{classInnerScheduler_af4243a64176366bda8a6f71f94af6412}} 
+\index{InnerScheduler@{InnerScheduler}!sleep\_time@{sleep\_time}}
+\index{sleep\_time@{sleep\_time}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{sleep\_time}{sleep\_time}}
+{\footnotesize\ttfamily int Inner\+Scheduler\+::sleep\+\_\+time = 20}
+
+
+
+Definition at line 975 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}\label{classInnerScheduler_aacca6b94f018b099863a29d39273bd59}} 
+\index{InnerScheduler@{InnerScheduler}!status@{status}}
+\index{status@{status}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classScheduler_1_1Status}{Scheduler\+::\+Status}} Inner\+Scheduler\+::status}
+
+
+
+Definition at line 1010 of file runtime.\+hpp.
+
+
+
+Referenced by activate(), and parla.\+cython.\+scheduler.\+Worker\+Thread\+::run().
+
+\mbox{\Hypertarget{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}\label{classInnerScheduler_a7cb352ac732c46546bd203798dcaf822}} 
+\index{InnerScheduler@{InnerScheduler}!stop\_callback@{stop\_callback}}
+\index{stop\_callback@{stop\_callback}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{stop\_callback}{stop\_callback}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}} Inner\+Scheduler\+::stop\+\_\+callback}
+
+
+
+Definition at line 1004 of file runtime.\+hpp.
+
+
+
+Referenced by set\+\_\+stop\+\_\+callback(), and stop().
+
+\mbox{\Hypertarget{classInnerScheduler_a07846c2bc48bd3aa6cc2faf807257444}\label{classInnerScheduler_a07846c2bc48bd3aa6cc2faf807257444}} 
+\index{InnerScheduler@{InnerScheduler}!task\_buffer@{task\_buffer}}
+\index{task\_buffer@{task\_buffer}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{task\_buffer}{task\_buffer}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$ Inner\+Scheduler\+::task\+\_\+buffer = std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$(10)}
+
+
+
+Definition at line 978 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}\label{classInnerScheduler_acdcdea945f320f24fad6ad5215639383}} 
+\index{InnerScheduler@{InnerScheduler}!workers@{workers}}
+\index{workers@{workers}!InnerScheduler@{InnerScheduler}}
+\doxysubsubsection{\texorpdfstring{workers}{workers}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}{Worker\+Pool\+\_\+t}} Inner\+Scheduler\+::workers}
+
+
+
+Definition at line 981 of file runtime.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{scheduler_8cpp}{scheduler.\+cpp}}\end{DoxyCompactItemize}

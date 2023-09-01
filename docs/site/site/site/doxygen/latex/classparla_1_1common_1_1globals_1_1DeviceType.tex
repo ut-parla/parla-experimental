@@ -1,0 +1,103 @@
+\hypertarget{classparla_1_1common_1_1globals_1_1DeviceType}{}\doxysection{parla.\+common.\+globals.\+Device\+Type Class Reference}
+\label{classparla_1_1common_1_1globals_1_1DeviceType}\index{parla.common.globals.DeviceType@{parla.common.globals.DeviceType}}
+
+
+Inheritance diagram for parla.\+common.\+globals.\+Device\+Type\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=265pt]{classparla_1_1common_1_1globals_1_1DeviceType__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+common.\+globals.\+Device\+Type\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=265pt]{classparla_1_1common_1_1globals_1_1DeviceType__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1DeviceType_ae0020ac14172f36df5b1386380307f65}{INVALID}} = -\/2
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1DeviceType_a2427c62d6c72ddf7d546faf90b3354b0}{ANY}} = -\/1
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1DeviceType_a6237d6f73f6db590282a247301836ea9}{CPU}} = 0
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1globals_1_1DeviceType_aff54f9bc1290f67d8379ba726cb7764e}{CUDA}} = 1
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}This class declares device types.
+These types are declared for the general purpose
+and can be used by multiple places.
+For example,
+ 1) Task mapping phase can check compatibility
+    between tasks and devices.
+ 2) Tasks hold resource requirements from mapped
+    devices through a device set data class.
+    Device set data class instances hold resource 
+    requirement for each device. This device class
+    can be distinguished through these types.
+ 3) Device registration phase can utilize these types.
+\end{DoxyVerb}
+ 
+
+Definition at line 47 of file globals.\+py.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1DeviceType_a2427c62d6c72ddf7d546faf90b3354b0}\label{classparla_1_1common_1_1globals_1_1DeviceType_a2427c62d6c72ddf7d546faf90b3354b0}} 
+\index{parla.common.globals.DeviceType@{parla.common.globals.DeviceType}!ANY@{ANY}}
+\index{ANY@{ANY}!parla.common.globals.DeviceType@{parla.common.globals.DeviceType}}
+\doxysubsubsection{\texorpdfstring{ANY}{ANY}}
+{\footnotesize\ttfamily int parla.\+common.\+globals.\+Device\+Type.\+ANY = -\/1\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 63 of file globals.\+py.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1DeviceType_a6237d6f73f6db590282a247301836ea9}\label{classparla_1_1common_1_1globals_1_1DeviceType_a6237d6f73f6db590282a247301836ea9}} 
+\index{parla.common.globals.DeviceType@{parla.common.globals.DeviceType}!CPU@{CPU}}
+\index{CPU@{CPU}!parla.common.globals.DeviceType@{parla.common.globals.DeviceType}}
+\doxysubsubsection{\texorpdfstring{CPU}{CPU}}
+{\footnotesize\ttfamily int parla.\+common.\+globals.\+Device\+Type.\+CPU = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 64 of file globals.\+py.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1DeviceType_aff54f9bc1290f67d8379ba726cb7764e}\label{classparla_1_1common_1_1globals_1_1DeviceType_aff54f9bc1290f67d8379ba726cb7764e}} 
+\index{parla.common.globals.DeviceType@{parla.common.globals.DeviceType}!CUDA@{CUDA}}
+\index{CUDA@{CUDA}!parla.common.globals.DeviceType@{parla.common.globals.DeviceType}}
+\doxysubsubsection{\texorpdfstring{CUDA}{CUDA}}
+{\footnotesize\ttfamily int parla.\+common.\+globals.\+Device\+Type.\+CUDA = 1\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 65 of file globals.\+py.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1globals_1_1DeviceType_ae0020ac14172f36df5b1386380307f65}\label{classparla_1_1common_1_1globals_1_1DeviceType_ae0020ac14172f36df5b1386380307f65}} 
+\index{parla.common.globals.DeviceType@{parla.common.globals.DeviceType}!INVALID@{INVALID}}
+\index{INVALID@{INVALID}!parla.common.globals.DeviceType@{parla.common.globals.DeviceType}}
+\doxysubsubsection{\texorpdfstring{INVALID}{INVALID}}
+{\footnotesize\ttfamily int parla.\+common.\+globals.\+Device\+Type.\+INVALID = -\/2\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 62 of file globals.\+py.
+
+
+
+Referenced by parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+write\+\_\+back\+\_\+to(), parla.\+common.\+parray.\+coherence.\+Coherence.\+evict(), parla.\+common.\+parray.\+coherence.\+Coherence.\+read(), parla.\+common.\+parray.\+coherence.\+Coherence.\+reset(), and parla.\+common.\+parray.\+coherence.\+Coherence.\+write().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/\mbox{\hyperlink{globals_8py}{globals.\+py}}\end{DoxyCompactItemize}

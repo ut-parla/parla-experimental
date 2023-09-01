@@ -1,0 +1,8 @@
+<map id="parla.cython.device.ImportableArchitecture" name="parla.cython.device.ImportableArchitecture">
+<area shape="rect" id="node1" title=" " alt="" coords="440,39,665,80"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1device_1_1ImportableCPUArchitecture.html" title=" " alt="" coords="713,5,939,47"/>
+<area shape="rect" id="node6" href="$classparla_1_1cython_1_1device_1_1ImportableCUDAArchitecture.html" title=" " alt="" coords="713,71,939,112"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1device_1_1PyArchitecture.html" title=" " alt="" coords="143,46,392,73"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,21,95,47"/>
+<area shape="rect" id="node4" title=" " alt="" coords="9,71,91,98"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="SchedulerPhase" name="SchedulerPhase">
+<area shape="rect" id="node1" title="Abstract Interface for general scheduler runtime phase." alt="" coords="463,327,589,353"/>
+<area shape="rect" id="node4" href="$classLauncher.html" title="The Launcher phase of the scheduler. Dispatches tasks to workers." alt="" coords="876,232,957,259"/>
+<area shape="rect" id="node9" href="$classRuntimeReserver.html" title="RuntimeReserver phase of the scheduler." alt="" coords="849,345,984,372"/>
+<area shape="rect" id="node16" href="$classMemoryReserver.html" title="MemoryReserver phase of the scheduler." alt="" coords="849,564,984,591"/>
+<area shape="rect" id="node19" href="$classMapper.html" title="Mapper phase of the scheduler." alt="" coords="881,615,952,641"/>
+<area shape="rect" id="node2" href="$classDeviceManager.html" title="DeviceManager registers/provides devices and their information on the current system to the Parla run..." alt="" coords="59,92,183,119"/>
+<area shape="rect" id="node3" href="$classInnerScheduler.html" title="The C++ &quot;Mirror&quot; of Parla&#39;s Python Scheduler This class is used to create a C++ representation of a P..." alt="" coords="1187,371,1305,397"/>
+<area shape="rect" id="node12" href="$classPArrayTracker.html" title=" " alt="" coords="677,33,787,60"/>
+<area shape="rect" id="node5" href="$classProtectedVector.html" title=" " alt="" coords="404,143,648,169"/>
+<area shape="rect" id="node6" href="$classLauncherStatus.html" title=" " alt="" coords="465,244,587,271"/>
+<area shape="rect" id="node7" href="$classPhaseStatus.html" title=" " alt="" coords="8,244,233,271"/>
+<area shape="rect" id="node8" href="$classProtectedVector.html" title=" " alt="" coords="412,193,640,220"/>
+<area shape="rect" id="node10" href="$classRuntimeReserverStatus.html" title=" " alt="" coords="438,412,614,439"/>
+<area shape="rect" id="node11" href="$classPhaseStatus.html" title=" " alt="" coords="5,405,236,446"/>
+<area shape="rect" id="node13" href="$classScheduler_1_1Status.html" title=" " alt="" coords="849,396,984,423"/>
+<area shape="rect" id="node14" title=" " alt="" coords="874,447,959,473"/>
+<area shape="rect" id="node15" href="$classWorkerPool.html" title=" " alt="" coords="816,498,1017,539"/>
+<area shape="rect" id="node17" href="$classMemoryReserverStatus.html" title=" " alt="" coords="439,559,613,585"/>
+<area shape="rect" id="node18" href="$classPhaseStatus.html" title=" " alt="" coords="6,550,235,591"/>
+<area shape="rect" id="node20" href="$classProtectedQueue.html" title=" " alt="" coords="411,665,641,692"/>
+<area shape="rect" id="node21" href="$classMapperStatus.html" title=" " alt="" coords="470,615,582,641"/>
+<area shape="rect" id="node22" href="$classPhaseStatus.html" title=" " alt="" coords="13,616,228,643"/>
+</map>

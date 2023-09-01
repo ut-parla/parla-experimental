@@ -1,0 +1,10 @@
+var searchData=
+[
+  ['name_1872',['name',['../classparla_1_1common_1_1parray_1_1core_1_1PArray.html#a986892fcfca02c3198712eae6135ef41',1,'parla.common.parray.core.PArray.name()'],['../classparla_1_1cython_1_1device_1_1PyArchitecture.html#a5842820159b647eaa1d22f09323397a2',1,'parla.cython.device.PyArchitecture.name()'],['../classparla_1_1cython_1_1device_1_1ImportableArchitecture.html#a84289b50b4b575d7fb7ae5be09d7354c',1,'parla.cython.device.ImportableArchitecture.name()'],['../classparla_1_1cython_1_1tasks_1_1TaskSpace.html#aae88453c3c0c8a15d3ac0497a34f7ca8',1,'parla.cython.tasks.TaskSpace.name()']]],
+  ['nbytes_5fat_1873',['nbytes_at',['../classparla_1_1common_1_1parray_1_1core_1_1PArray.html#a3b05e1aa37b311601009d3926db2a7f3',1,'parla.common.parray.core.PArray.nbytes_at()'],['../classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer.html#a664d51b36aceb5da8e9ca331a2eb2ec4',1,'parla.common.parray.memory.MultiDeviceBuffer.nbytes_at()']]],
+  ['noop_1874',['noop',['../classparla_1_1common_1_1parray_1_1coherence_1_1MemoryOperation.html#adc226dc4a4f0a9c5e0c0ec98099efdfd',1,'parla::common::parray::coherence::MemoryOperation']]],
+  ['notify_1875',['notify',['../classInnerTask.html#af39ff53dd7547133477070811470bd35',1,'InnerTask::notify()'],['../classTaskBarrier.html#aa1bd621360c4b81af231890dc886f3f2',1,'TaskBarrier::notify()'],['../classInnerTaskSpace.html#a7cd1cb6a2043e11a188b1ba3790cddc5',1,'InnerTaskSpace::notify()']]],
+  ['notify_5fdependents_1876',['notify_dependents',['../classInnerTask.html#a9d22d22b8599c3eccf921214ba553019',1,'InnerTask']]],
+  ['notify_5fdependents_5fcompleted_1877',['notify_dependents_completed',['../classInnerTask.html#ad61553584936bbeec62d1dd39c371863',1,'InnerTask']]],
+  ['notify_5fdependents_5fwrapper_1878',['notify_dependents_wrapper',['../classInnerTask.html#a1ec3cb4d1d2f669f12f7673a2062e323',1,'InnerTask::notify_dependents_wrapper()'],['../classparla_1_1cython_1_1tasks_1_1Task.html#a00c6b77470fcf6e2b601b208a5173308',1,'parla.cython.tasks.Task.notify_dependents_wrapper()']]]
+];

@@ -1,0 +1,5 @@
+<map id="InnerWorker::get_task" name="InnerWorker::get_task">
+<area shape="rect" id="node1" title="Get the C++ task instance that this worker thread will execute." alt="" coords="5,42,169,69"/>
+<area shape="rect" id="node2" href="$classInnerScheduler.html#a5d5353340c8b72bf630d2cecaeca1638" title=" " alt="" coords="217,5,404,47"/>
+<area shape="rect" id="node3" href="$classInnerTask.html#a4ca098a528447af8182270837cf03ece" title=" " alt="" coords="223,71,398,98"/>
+</map>

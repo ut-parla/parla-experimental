@@ -1,0 +1,4 @@
+<map id="LocalityLoadBalancingMappingPolicy::calc_score_devplacement" name="LocalityLoadBalancingMappingPolicy::calc_score_devplacement">
+<area shape="rect" id="node1" title="Calculate a score of the device placement requirement." alt="" coords="5,5,241,47"/>
+<area shape="rect" id="node2" href="$classMapper.html#a3e63ef68173ab3c9ce42e0e077e681cf" title="Return the number of total mapped tasks to the whole devices." alt="" coords="289,5,487,47"/>
+</map>

@@ -1,0 +1,84 @@
+\hypertarget{classparla_1_1cython_1_1device_1_1PyCPUDevice}{}\doxysection{parla.\+cython.\+device.\+Py\+CPUDevice Class Reference}
+\label{classparla_1_1cython_1_1device_1_1PyCPUDevice}\index{parla.cython.device.PyCPUDevice@{parla.cython.device.PyCPUDevice}}
+
+
+Inheritance diagram for parla.\+cython.\+device.\+Py\+CPUDevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classparla_1_1cython_1_1device_1_1PyCPUDevice__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+device.\+Py\+CPUDevice\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classparla_1_1cython_1_1device_1_1PyCPUDevice__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2d6d617a881a151a081ffed24d1a7820}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, int dev\+\_\+id=0, long mem\+\_\+sz=0, long num\+\_\+vcus=1)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2c11a98ecc7684b5c5460d92f11d95c9}{\+\_\+cy\+\_\+device}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}An inherited class from `PyDevice` for a device object specialized to CPU.
+\end{DoxyVerb}
+ 
+
+Definition at line 247 of file device.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2d6d617a881a151a081ffed24d1a7820}\label{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2d6d617a881a151a081ffed24d1a7820}} 
+\index{parla.cython.device.PyCPUDevice@{parla.cython.device.PyCPUDevice}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device.PyCPUDevice@{parla.cython.device.PyCPUDevice}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Py\+CPUDevice.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int }]{dev\+\_\+id = {\ttfamily 0},  }\item[{long }]{mem\+\_\+sz = {\ttfamily 0},  }\item[{long }]{num\+\_\+vcus = {\ttfamily 1} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 252 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{252     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, dev\_id: int = 0, mem\_sz: long = 0, num\_vcus: long = 1):}
+\DoxyCodeLine{253         super().\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(DeviceType.CPU, \textcolor{stringliteral}{"{}CPU"{}}, dev\_id)}
+\DoxyCodeLine{254         self.\_cy\_device = CyCPUDevice(dev\_id, mem\_sz, num\_vcus, self)}
+\DoxyCodeLine{255 }
+\DoxyCodeLine{256 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2c11a98ecc7684b5c5460d92f11d95c9}\label{classparla_1_1cython_1_1device_1_1PyCPUDevice_a2c11a98ecc7684b5c5460d92f11d95c9}} 
+\index{parla.cython.device.PyCPUDevice@{parla.cython.device.PyCPUDevice}!\_cy\_device@{\_cy\_device}}
+\index{\_cy\_device@{\_cy\_device}!parla.cython.device.PyCPUDevice@{parla.cython.device.PyCPUDevice}}
+\doxysubsubsection{\texorpdfstring{\_cy\_device}{\_cy\_device}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Py\+CPUDevice.\+\_\+cy\+\_\+device\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 254 of file device.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device.\+Py\+Device.\+\_\+\+\_\+dealloc\+\_\+\+\_\+(), parla.\+cython.\+device.\+Py\+Device.\+get\+\_\+cy\+\_\+device(), parla.\+cython.\+device.\+Py\+Device.\+get\+\_\+global\+\_\+id(), parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+mapped\+\_\+resource(), parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+reserved\+\_\+resource(), and parla.\+cython.\+device.\+Py\+Device.\+query\+\_\+resource().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device_8pyx}{device.\+pyx}}\end{DoxyCompactItemize}

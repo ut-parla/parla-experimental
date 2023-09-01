@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classTaskBarrier.html" title="A task barrier is a synchronization primitive that notifies when a set of tasks are completed." alt="" coords="5,5,100,32"/>
+<area shape="rect" id="node2" href="$classInnerTaskSpace.html" title="The C++ backend for the Parla TaskSpace." alt="" coords="148,5,271,32"/>
+</map>
