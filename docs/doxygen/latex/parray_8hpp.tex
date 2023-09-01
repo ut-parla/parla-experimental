@@ -1,0 +1,61 @@
+\hypertarget{parray_8hpp}{}\doxysection{src/c/backend/include/parray.hpp File Reference}
+\label{parray_8hpp}\index{src/c/backend/include/parray.hpp@{src/c/backend/include/parray.hpp}}
+
+
+Provides C++ interface to PArray State and ID.  
+
+
+{\ttfamily \#include \char`\"{}containers.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}include/atomic\+\_\+wrapper.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}include/device.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}parray\+\_\+state.\+hpp\char`\"{}}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+Include dependency graph for parray.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{parray_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{parray_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparray}{parray}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} = \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides C++ interface to PArray State and ID. 
+
+This file contains the inner C++ parray interface. Allows access to coherency and parent/child relations without accessing the Python interpreter. 
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}\label{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}} 
+\index{parray.hpp@{parray.hpp}!TaskList@{TaskList}}
+\index{TaskList@{TaskList}!parray.hpp@{parray.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskList}{TaskList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} =  \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$}
+
+
+
+Definition at line 20 of file parray.\+hpp.
+

@@ -1,0 +1,2420 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A heterogenous parallel programming framework for Python.">
+      
+      
+        <meta name="author" content="UT Parla Team">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.13">
+    
+    
+      
+        <title>Class InnerTask - Parla MkDoxy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a6bdf11c.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+        html.glightbox-open { overflow: initial; height: 100%; }
+        .gslide-title { margin-top: 0px; user-select: text; }
+        .gslide-desc { color: #666; user-select: text; }
+        .gslide-image img { background: white; }
+        
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}
+            </style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="orange" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#class-innertask" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parla MkDoxy" class="md-header__button md-logo" aria-label="Parla MkDoxy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parla MkDoxy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Class InnerTask
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="orange" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+            
+              <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+            
+              <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+        </form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ut-parla/parla-experimental" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ut-parla/parla-experimental
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../tutorial/0_hello_world/" class="md-tabs__link">
+      Tutorials
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        Runtime
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parla MkDoxy" class="md-nav__button md-logo" aria-label="Parla MkDoxy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Parla MkDoxy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ut-parla/parla-experimental" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ut-parla/parla-experimental
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/0_hello_world/" class="md-nav__link">
+        Tutorials
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Runtime</a>
+          
+            <label for="__nav_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Runtime
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../links/" class="md-nav__link">
+        Links
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          Classes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Classes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotated/" class="md-nav__link">
+        Class List
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classes/" class="md-nav__link">
+        Class Index
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hierarchy/" class="md-nav__link">
+        Class Hierarchy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_members/" class="md-nav__link">
+        Class Members
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_functions/" class="md-nav__link">
+        Class Member Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_variables/" class="md-nav__link">
+        Class Member Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_typedefs/" class="md-nav__link">
+        Class Member Typedefs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_enums/" class="md-nav__link">
+        Class Member Enumerations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          Namespaces
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Namespaces
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaces/" class="md-nav__link">
+        Namespace List
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_members/" class="md-nav__link">
+        Namespace Members
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_functions/" class="md-nav__link">
+        Namespace Member Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_variables/" class="md-nav__link">
+        Namespace Member Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_typedefs/" class="md-nav__link">
+        Namespace Member Typedefs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_enums/" class="md-nav__link">
+        Namespace Member Enumerations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions/" class="md-nav__link">
+        Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../macros/" class="md-nav__link">
+        Macros
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../files/" class="md-nav__link">
+        Files
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes" class="md-nav__link">
+    Public Attributes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    Public Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protected-types" class="md-nav__link">
+    Protected Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protected-attributes" class="md-nav__link">
+    Protected Attributes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes-documentation" class="md-nav__link">
+    Public Attributes Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-assigned_devices" class="md-nav__link">
+    variable assigned_devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-dependencies" class="md-nav__link">
+    variable dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-dependency_buffer" class="md-nav__link">
+    variable dependency_buffer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-dependents" class="md-nav__link">
+    variable dependents
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-device_constraints" class="md-nav__link">
+    variable device_constraints
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-events" class="md-nav__link">
+    variable events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-id" class="md-nav__link">
+    variable id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-instance" class="md-nav__link">
+    variable instance
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-is_data" class="md-nav__link">
+    variable is_data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-mtx" class="md-nav__link">
+    variable mtx
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-name" class="md-nav__link">
+    variable name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_blocking_compute_dependencies" class="md-nav__link">
+    variable num_blocking_compute_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_blocking_dependencies" class="md-nav__link">
+    variable num_blocking_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_persistant_instances" class="md-nav__link">
+    variable num_persistant_instances
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_runtime_instances" class="md-nav__link">
+    variable num_runtime_instances
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_unmapped_dependencies" class="md-nav__link">
+    variable num_unmapped_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_unreserved_dependencies" class="md-nav__link">
+    variable num_unreserved_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-num_unspawned_dependencies" class="md-nav__link">
+    variable num_unspawned_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-parray_list" class="md-nav__link">
+    variable parray_list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-priority" class="md-nav__link">
+    variable priority
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-processed_data" class="md-nav__link">
+    variable processed_data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-py_task" class="md-nav__link">
+    variable py_task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-removed_reserved" class="md-nav__link">
+    variable removed_reserved
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-removed_runtime" class="md-nav__link">
+    variable removed_runtime
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-scheduler" class="md-nav__link">
+    variable scheduler
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-spaces" class="md-nav__link">
+    variable spaces
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-state" class="md-nav__link">
+    variable state
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-status" class="md-nav__link">
+    variable status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-streams" class="md-nav__link">
+    variable streams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-sync_type" class="md-nav__link">
+    variable sync_type
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    Public Functions Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-innertask-13" class="md-nav__link">
+    function InnerTask [1/3]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-innertask-23" class="md-nav__link">
+    function InnerTask [2/3]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-innertask-33" class="md-nav__link">
+    function InnerTask [3/3]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_assigned_device" class="md-nav__link">
+    function add_assigned_device
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_dependencies" class="md-nav__link">
+    function add_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_dependency" class="md-nav__link">
+    function add_dependency
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_dependent_space" class="md-nav__link">
+    function add_dependent_space
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_dependent_task" class="md-nav__link">
+    function add_dependent_task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_device_req" class="md-nav__link">
+    function add_device_req
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_event" class="md-nav__link">
+    function add_event
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_parray" class="md-nav__link">
+    function add_parray
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-add_stream" class="md-nav__link">
+    function add_stream
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-begin_arch_req_addition" class="md-nav__link">
+    function begin_arch_req_addition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-begin_multidev_req_addition" class="md-nav__link">
+    function begin_multidev_req_addition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-blocked" class="md-nav__link">
+    function blocked
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-clear_dependencies" class="md-nav__link">
+    function clear_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-copy_assigned_devices" class="md-nav__link">
+    function copy_assigned_devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-decrement_num_instances" class="md-nav__link">
+    function decrement_num_instances
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-determine_status" class="md-nav__link">
+    function determine_status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-end_arch_req_addition" class="md-nav__link">
+    function end_arch_req_addition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-end_multidev_req_addition" class="md-nav__link">
+    function end_multidev_req_addition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_assigned_devices" class="md-nav__link">
+    function get_assigned_devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_complete" class="md-nav__link">
+    function get_complete
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_dependencies" class="md-nav__link">
+    function get_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_dependents" class="md-nav__link">
+    function get_dependents
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_name-12" class="md-nav__link">
+    function get_name [1/2]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_name-22" class="md-nav__link">
+    function get_name [2/2]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_num_blocking_dependencies" class="md-nav__link">
+    function get_num_blocking_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_num_dependencies" class="md-nav__link">
+    function get_num_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_num_dependents" class="md-nav__link">
+    function get_num_dependents
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_num_instances" class="md-nav__link">
+    function get_num_instances
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_num_unmapped_dependencies" class="md-nav__link">
+    function get_num_unmapped_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_placement_req_options" class="md-nav__link">
+    function get_placement_req_options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_py_task" class="md-nav__link">
+    function get_py_task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_removed" class="md-nav__link">
+    function get_removed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_state" class="md-nav__link">
+    function get_state
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_status" class="md-nav__link">
+    function get_status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-handle_runahead_dependencies" class="md-nav__link">
+    function handle_runahead_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-is_data_task" class="md-nav__link">
+    function is_data_task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-notify" class="md-nav__link">
+    function notify
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-notify_dependents" class="md-nav__link">
+    function notify_dependents
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-notify_dependents_completed" class="md-nav__link">
+    function notify_dependents_completed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-notify_dependents_wrapper" class="md-nav__link">
+    function notify_dependents_wrapper
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-process_dependencies" class="md-nav__link">
+    function process_dependencies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-queue_dependency" class="md-nav__link">
+    function queue_dependency
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-reset" class="md-nav__link">
+    function reset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-reset_events_streams" class="md-nav__link">
+    function reset_events_streams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_complete" class="md-nav__link">
+    function set_complete
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_id" class="md-nav__link">
+    function set_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_name" class="md-nav__link">
+    function set_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_num_instances" class="md-nav__link">
+    function set_num_instances
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_priority" class="md-nav__link">
+    function set_priority
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_py_task" class="md-nav__link">
+    function set_py_task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_removed" class="md-nav__link">
+    function set_removed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_scheduler" class="md-nav__link">
+    function set_scheduler
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_state-12" class="md-nav__link">
+    function set_state [1/2]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_state-22" class="md-nav__link">
+    function set_state [2/2]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_status" class="md-nav__link">
+    function set_status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-synchronize_dependency_events" class="md-nav__link">
+    function synchronize_dependency_events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-synchronize_events" class="md-nav__link">
+    function synchronize_events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-wait_dependency_events" class="md-nav__link">
+    function wait_dependency_events
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protected-types-documentation" class="md-nav__link">
+    Protected Types Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Protected Types Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-reqadditionstate" class="md-nav__link">
+    enum ReqAdditionState
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protected-attributes-documentation" class="md-nav__link">
+    Protected Attributes Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Protected Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-placement_req_options_" class="md-nav__link">
+    variable placement_req_options_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-req_addition_mode_" class="md-nav__link">
+    variable req_addition_mode_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-tmp_arch_req_" class="md-nav__link">
+    variable tmp_arch_req_
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-tmp_multdev_reqs_" class="md-nav__link">
+    variable tmp_multdev_reqs_
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="class-innertask">Class InnerTask</h1>
+<p><a href="../annotated/"><strong>ClassList</strong></a> <strong>&gt;</strong> <a href="./"><strong>InnerTask</strong></a></p>
+<p><em>The C++ "Mirror" of Parla's Python Tasks This class is used to create a C++ representation of a Parla Task All scheduling logic should be handled by these after creation until launched by the Python callback.</em> </p>
+<ul>
+<li><code>#include &lt;runtime.hpp&gt;</code></li>
+</ul>
+<p>Inherited by the following classes: <a href="../classInnerDataTask/">InnerDataTask</a></p>
+<h2 id="public-attributes">Public Attributes</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">std::vector&lt; <a href="../classDevice/"><strong>Device</strong></a> * &gt;</td>
+<td align="left"><a href="#variable-assigned_devices"><strong>assigned_devices</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classProtectedVector/"><strong>TaskList</strong></a></td>
+<td align="left"><a href="#variable-dependencies"><strong>dependencies</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::vector&lt; <a href="./"><strong>InnerTask</strong></a> * &gt;</td>
+<td align="left"><a href="#variable-dependency_buffer"><strong>dependency_buffer</strong></a>   = = std::vector&lt;<a href="./"><strong>InnerTask</strong></a> *&gt;()<br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classProtectedVector/"><strong>TaskList</strong></a></td>
+<td align="left"><a href="#variable-dependents"><strong>dependents</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::unordered_map&lt; int, <a href="../classResourcePool/"><strong>ResourcePool_t</strong></a> &gt;</td>
+<td align="left"><a href="#variable-device_constraints"><strong>device_constraints</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classProtectedVector/"><strong>PointerList</strong></a></td>
+<td align="left"><a href="#variable-events"><strong>events</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">long long int</td>
+<td align="left"><a href="#variable-id"><strong>id</strong></a>   = = 0<br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#variable-instance"><strong>instance</strong></a>   = = 0<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; bool &gt;</td>
+<td align="left"><a href="#variable-is_data"><strong>is_data</strong></a>   = {false}<br></td>
+</tr>
+<tr>
+<td align="right">std::mutex</td>
+<td align="left"><a href="#variable-mtx"><strong>mtx</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::string</td>
+<td align="left"><a href="#variable-name"><strong>name</strong></a>   = = ""<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_blocking_compute_dependencies"><strong>num_blocking_compute_dependencies</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_blocking_dependencies"><strong>num_blocking_dependencies</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_persistant_instances"><strong>num_persistant_instances</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_runtime_instances"><strong>num_runtime_instances</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_unmapped_dependencies"><strong>num_unmapped_dependencies</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_unreserved_dependencies"><strong>num_unreserved_dependencies</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-num_unspawned_dependencies"><strong>num_unspawned_dependencies</strong></a>   = {1}<br></td>
+</tr>
+<tr>
+<td align="right">std::vector&lt; std::vector&lt; std::pair&lt; <a href="../classparray_1_1InnerPArray/"><strong>parray::InnerPArray</strong></a> *, AccessMode &gt; &gt; &gt;</td>
+<td align="left"><a href="#variable-parray_list"><strong>parray_list</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; int &gt;</td>
+<td align="left"><a href="#variable-priority"><strong>priority</strong></a>   = {0}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; bool &gt;</td>
+<td align="left"><a href="#variable-processed_data"><strong>processed_data</strong></a>   = {true}<br></td>
+</tr>
+<tr>
+<td align="right">void *</td>
+<td align="left"><a href="#variable-py_task"><strong>py_task</strong></a>   = = nullptr<br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#variable-removed_reserved"><strong>removed_reserved</strong></a>   = {false}<br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#variable-removed_runtime"><strong>removed_runtime</strong></a>   = {false}<br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classInnerScheduler/"><strong>InnerScheduler</strong></a> *</td>
+<td align="left"><a href="#variable-scheduler"><strong>scheduler</strong></a>   = = nullptr<br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classProtectedVector/"><strong>SpaceList</strong></a></td>
+<td align="left"><a href="#variable-spaces"><strong>spaces</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; Task::State &gt;</td>
+<td align="left"><a href="#variable-state"><strong>state</strong></a>   = {Task::CREATED}<br></td>
+</tr>
+<tr>
+<td align="right">std::atomic&lt; Task::Status &gt;</td>
+<td align="left"><a href="#variable-status"><strong>status</strong></a>   = {Task::INITIAL}<br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classProtectedVector/"><strong>PointerList</strong></a></td>
+<td align="left"><a href="#variable-streams"><strong>streams</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">Task::SynchronizationType</td>
+<td align="left"><a href="#variable-sync_type"><strong>sync_type</strong></a>   = = Task::NON_BLOCKING<br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions">Public Functions</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#function-innertask-13"><strong>InnerTask</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#function-innertask-23"><strong>InnerTask</strong></a> (long long int id, void * py_task) <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#function-innertask-33"><strong>InnerTask</strong></a> (std::string name, long long int id, void * py_task) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-add_assigned_device"><strong>add_assigned_device</strong></a> (<a href="../classDevice/"><strong>Device</strong></a> * device) <br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classTask_1_1StatusFlags/"><strong>Task::StatusFlags</strong></a></td>
+<td align="left"><a href="#function-add_dependencies"><strong>add_dependencies</strong></a> (std::vector&lt; <a href="./"><strong>InnerTask</strong></a> * &gt; &amp; tasks, bool data_tasks=false) <br></td>
+</tr>
+<tr>
+<td align="right">Task::State</td>
+<td align="left"><a href="#function-add_dependency"><strong>add_dependency</strong></a> (<a href="./"><strong>InnerTask</strong></a> * task) <br></td>
+</tr>
+<tr>
+<td align="right">Task::State</td>
+<td align="left"><a href="#function-add_dependent_space"><strong>add_dependent_space</strong></a> (<a href="../classTaskBarrier/"><strong>TaskBarrier</strong></a> * barrier) <br></td>
+</tr>
+<tr>
+<td align="right">Task::State</td>
+<td align="left"><a href="#function-add_dependent_task"><strong>add_dependent_task</strong></a> (<a href="./"><strong>InnerTask</strong></a> * task) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-add_device_req"><strong>add_device_req</strong></a> (<a href="../classDevice/"><strong>Device</strong></a> * dev_ptr, MemorySz_t mem_sz, VCU_t num_vcus) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-add_event"><strong>add_event</strong></a> (uintptr_t event) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-add_parray"><strong>add_parray</strong></a> (<a href="../classparray_1_1InnerPArray/"><strong>parray::InnerPArray</strong></a> * parray, int access_mode, int dev_id) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-add_stream"><strong>add_stream</strong></a> (uintptr_t stream) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-begin_arch_req_addition"><strong>begin_arch_req_addition</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-begin_multidev_req_addition"><strong>begin_multidev_req_addition</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#function-blocked"><strong>blocked</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-clear_dependencies"><strong>clear_dependencies</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-copy_assigned_devices"><strong>copy_assigned_devices</strong></a> (const std::vector&lt; <a href="../classDevice/"><strong>Device</strong></a> * &gt; &amp; others) <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-decrement_num_instances"><strong>decrement_num_instances</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">Task::Status</td>
+<td align="left"><a href="#function-determine_status"><strong>determine_status</strong></a> (bool spawnable, bool mappable, bool reservable, bool ready) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-end_arch_req_addition"><strong>end_arch_req_addition</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-end_multidev_req_addition"><strong>end_multidev_req_addition</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">std::vector&lt; <a href="../classDevice/"><strong>Device</strong></a> * &gt; &amp;</td>
+<td align="left"><a href="#function-get_assigned_devices"><strong>get_assigned_devices</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#function-get_complete"><strong>get_complete</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">std::vector&lt; void * &gt;</td>
+<td align="left"><a href="#function-get_dependencies"><strong>get_dependencies</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">std::vector&lt; void * &gt;</td>
+<td align="left"><a href="#function-get_dependents"><strong>get_dependents</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">const std::string &amp;</td>
+<td align="left"><a href="#function-get_name-12"><strong>get_name</strong></a> () const<br></td>
+</tr>
+<tr>
+<td align="right">std::string</td>
+<td align="left"><a href="#function-get_name-22"><strong>get_name</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-get_num_blocking_dependencies"><strong>get_num_blocking_dependencies</strong></a> () const<br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-get_num_dependencies"><strong>get_num_dependencies</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-get_num_dependents"><strong>get_num_dependents</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-get_num_instances"><strong>get_num_instances</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-get_num_unmapped_dependencies"><strong>get_num_unmapped_dependencies</strong></a> () const<br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classPlacementRequirementCollections/"><strong>PlacementRequirementCollections</strong></a> &amp;</td>
+<td align="left"><a href="#function-get_placement_req_options"><strong>get_placement_req_options</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void *</td>
+<td align="left"><a href="#function-get_py_task"><strong>get_py_task</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#function-get_removed"><strong>get_removed</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">Task::State</td>
+<td align="left"><a href="#function-get_state"><strong>get_state</strong></a> () const<br></td>
+</tr>
+<tr>
+<td align="right">Task::Status</td>
+<td align="left"><a href="#function-get_status"><strong>get_status</strong></a> () const<br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-handle_runahead_dependencies"><strong>handle_runahead_dependencies</strong></a> (int sync_type) <br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#function-is_data_task"><strong>is_data_task</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classTask_1_1StatusFlags/"><strong>Task::StatusFlags</strong></a></td>
+<td align="left"><a href="#function-notify"><strong>notify</strong></a> (Task::State dependency_state, bool is_data=false) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-notify_dependents"><strong>notify_dependents</strong></a> (TaskStateList &amp; tasks, Task::State new_state) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-notify_dependents_completed"><strong>notify_dependents_completed</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">bool</td>
+<td align="left"><a href="#function-notify_dependents_wrapper"><strong>notify_dependents_wrapper</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right"><a href="../classTask_1_1StatusFlags/"><strong>Task::StatusFlags</strong></a></td>
+<td align="left"><a href="#function-process_dependencies"><strong>process_dependencies</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-queue_dependency"><strong>queue_dependency</strong></a> (<a href="./"><strong>InnerTask</strong></a> * task) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-reset"><strong>reset</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-reset_events_streams"><strong>reset_events_streams</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_complete"><strong>set_complete</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_id"><strong>set_id</strong></a> (long long int name) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_name"><strong>set_name</strong></a> (std::string name) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_num_instances"><strong>set_num_instances</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_priority"><strong>set_priority</strong></a> (int priority) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_py_task"><strong>set_py_task</strong></a> (void * py_task) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_removed"><strong>set_removed</strong></a> (bool waiting) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-set_scheduler"><strong>set_scheduler</strong></a> (<a href="../classInnerScheduler/"><strong>InnerScheduler</strong></a> * scheduler) <br></td>
+</tr>
+<tr>
+<td align="right">int</td>
+<td align="left"><a href="#function-set_state-12"><strong>set_state</strong></a> (int state) <br></td>
+</tr>
+<tr>
+<td align="right">Task::State</td>
+<td align="left"><a href="#function-set_state-22"><strong>set_state</strong></a> (Task::State state) <br></td>
+</tr>
+<tr>
+<td align="right">Task::Status</td>
+<td align="left"><a href="#function-set_status"><strong>set_status</strong></a> (Task::Status status) <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-synchronize_dependency_events"><strong>synchronize_dependency_events</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-synchronize_events"><strong>synchronize_events</strong></a> () <br></td>
+</tr>
+<tr>
+<td align="right">void</td>
+<td align="left"><a href="#function-wait_dependency_events"><strong>wait_dependency_events</strong></a> () <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="protected-types">Protected Types</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">enum</td>
+<td align="left"><a href="#enum-reqadditionstate"><strong>ReqAdditionState</strong></a>  <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="protected-attributes">Protected Attributes</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><a href="../classPlacementRequirementCollections/"><strong>PlacementRequirementCollections</strong></a></td>
+<td align="left"><a href="#variable-placement_req_options_"><strong>placement_req_options_</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">uint32_t</td>
+<td align="left"><a href="#variable-req_addition_mode_"><strong>req_addition_mode_</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::shared_ptr&lt; <a href="../classArchitectureRequirement/"><strong>ArchitectureRequirement</strong></a> &gt;</td>
+<td align="left"><a href="#variable-tmp_arch_req_"><strong>tmp_arch_req_</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">std::shared_ptr&lt; <a href="../classMultiDeviceRequirements/"><strong>MultiDeviceRequirements</strong></a> &gt;</td>
+<td align="left"><a href="#variable-tmp_multdev_reqs_"><strong>tmp_multdev_reqs_</strong></a>  <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-attributes-documentation">Public Attributes Documentation</h2>
+<h3 id="variable-assigned_devices">variable assigned_devices</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Device</span><span class="w"> </span><span class="o">*&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">assigned_devices</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-dependencies">variable dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">TaskList</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-dependency_buffer">variable dependency_buffer</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">InnerTask</span><span class="w"> </span><span class="o">*&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">dependency_buffer</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-dependents">variable dependents</h3>
+<div class="highlight"><pre><span></span><code><span class="n">TaskList</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">dependents</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-device_constraints">variable device_constraints</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">ResourcePool_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">device_constraints</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-events">variable events</h3>
+<div class="highlight"><pre><span></span><code><span class="n">PointerList</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">events</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-id">variable id</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">id</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-instance">variable instance</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">instance</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-is_data">variable is_data</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">is_data</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-mtx">variable mtx</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">mtx</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-name">variable name</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">name</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_blocking_compute_dependencies">variable num_blocking_compute_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_blocking_compute_dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_blocking_dependencies">variable num_blocking_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_blocking_dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_persistant_instances">variable num_persistant_instances</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_persistant_instances</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_runtime_instances">variable num_runtime_instances</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_runtime_instances</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_unmapped_dependencies">variable num_unmapped_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_unmapped_dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_unreserved_dependencies">variable num_unreserved_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_unreserved_dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-num_unspawned_dependencies">variable num_unspawned_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">num_unspawned_dependencies</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-parray_list">variable parray_list</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">parray</span><span class="o">::</span><span class="n">InnerPArray</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">AccessMode</span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">parray_list</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-priority">variable priority</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">priority</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-processed_data">variable processed_data</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">processed_data</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-py_task">variable py_task</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">py_task</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-removed_reserved">variable removed_reserved</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">removed_reserved</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-removed_runtime">variable removed_runtime</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">removed_runtime</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-scheduler">variable scheduler</h3>
+<div class="highlight"><pre><span></span><code><span class="n">InnerScheduler</span><span class="o">*</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">scheduler</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-spaces">variable spaces</h3>
+<div class="highlight"><pre><span></span><code><span class="n">SpaceList</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">spaces</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-state">variable state</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">state</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-status">variable status</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">::</span><span class="n">Status</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">status</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-streams">variable streams</h3>
+<div class="highlight"><pre><span></span><code><span class="n">PointerList</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">streams</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-sync_type">variable sync_type</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">SynchronizationType</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">sync_type</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="public-functions-documentation">Public Functions Documentation</h2>
+<h3 id="function-innertask-13">function InnerTask [1/3]</h3>
+<div class="highlight"><pre><span></span><code><span class="n">InnerTask</span><span class="o">::</span><span class="n">InnerTask</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-innertask-23">function InnerTask [2/3]</h3>
+<div class="highlight"><pre><span></span><code><span class="n">InnerTask</span><span class="o">::</span><span class="n">InnerTask</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">py_task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-innertask-33">function InnerTask [3/3]</h3>
+<div class="highlight"><pre><span></span><code><span class="n">InnerTask</span><span class="o">::</span><span class="n">InnerTask</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">py_task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_assigned_device">function add_assigned_device</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_assigned_device</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Device</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">device</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_dependencies">function add_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">StatusFlags</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_dependencies</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">data_tasks</span><span class="o">=</span><span class="nb">false</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_dependency">function add_dependency</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_dependency</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">InnerTask</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_dependent_space">function add_dependent_space</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_dependent_space</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">TaskBarrier</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">barrier</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_dependent_task">function add_dependent_task</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_dependent_task</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">InnerTask</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_device_req">function add_device_req</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_device_req</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Device</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dev_ptr</span><span class="p">,</span>
+<span class="w">    </span><span class="n">MemorySz_t</span><span class="w"> </span><span class="n">mem_sz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">VCU_t</span><span class="w"> </span><span class="n">num_vcus</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_event">function add_event</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_event</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">event</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_parray">function add_parray</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_parray</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">parray</span><span class="o">::</span><span class="n">InnerPArray</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">parray</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">access_mode</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dev_id</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-add_stream">function add_stream</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">add_stream</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">stream</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-begin_arch_req_addition">function begin_arch_req_addition</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">begin_arch_req_addition</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-begin_multidev_req_addition">function begin_multidev_req_addition</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">begin_multidev_req_addition</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-blocked">function blocked</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">blocked</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-clear_dependencies">function clear_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">clear_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-copy_assigned_devices">function copy_assigned_devices</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">copy_assigned_devices</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">Device</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">others</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-decrement_num_instances">function decrement_num_instances</h3>
+<div class="highlight"><pre><span></span><code><span class="k">template</span><span class="o">&lt;</span><span class="n">ResourceCategory</span><span class="w"> </span><span class="n">category</span><span class="o">&gt;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">decrement_num_instances</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-determine_status">function determine_status</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">Status</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">determine_status</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">spawnable</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">mappable</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">reservable</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">ready</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-end_arch_req_addition">function end_arch_req_addition</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">end_arch_req_addition</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-end_multidev_req_addition">function end_multidev_req_addition</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">end_multidev_req_addition</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_assigned_devices">function get_assigned_devices</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">Device</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_assigned_devices</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_complete">function get_complete</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_complete</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_dependencies">function get_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_dependents">function get_dependents</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_dependents</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_name-12">function get_name [1/2]</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_name</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+</code></pre></div>
+<h3 id="function-get_name-22">function get_name [2/2]</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_name</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_num_blocking_dependencies">function get_num_blocking_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_num_blocking_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+</code></pre></div>
+<h3 id="function-get_num_dependencies">function get_num_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_num_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_num_dependents">function get_num_dependents</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_num_dependents</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_num_instances">function get_num_instances</h3>
+<div class="highlight"><pre><span></span><code><span class="k">template</span><span class="o">&lt;</span><span class="n">ResourceCategory</span><span class="w"> </span><span class="n">category</span><span class="o">&gt;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_num_instances</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_num_unmapped_dependencies">function get_num_unmapped_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_num_unmapped_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+</code></pre></div>
+<h3 id="function-get_placement_req_options">function get_placement_req_options</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="n">PlacementRequirementCollections</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_placement_req_options</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_py_task">function get_py_task</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_py_task</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_removed">function get_removed</h3>
+<div class="highlight"><pre><span></span><code><span class="k">template</span><span class="o">&lt;</span><span class="n">ResourceCategory</span><span class="w"> </span><span class="n">category</span><span class="o">&gt;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_removed</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-get_state">function get_state</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_state</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+</code></pre></div>
+<h3 id="function-get_status">function get_status</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="n">Task</span><span class="o">::</span><span class="n">Status</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">get_status</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+</code></pre></div>
+<h3 id="function-handle_runahead_dependencies">function handle_runahead_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">handle_runahead_dependencies</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sync_type</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-is_data_task">function is_data_task</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">is_data_task</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-notify">function notify</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">StatusFlags</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">notify</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">dependency_state</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">is_data</span><span class="o">=</span><span class="nb">false</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-notify_dependents">function notify_dependents</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">notify_dependents</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">TaskStateList</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">new_state</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-notify_dependents_completed">function notify_dependents_completed</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">notify_dependents_completed</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-notify_dependents_wrapper">function notify_dependents_wrapper</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">notify_dependents_wrapper</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-process_dependencies">function process_dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">StatusFlags</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">process_dependencies</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-queue_dependency">function queue_dependency</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">queue_dependency</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">InnerTask</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-reset">function reset</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">reset</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-reset_events_streams">function reset_events_streams</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">reset_events_streams</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_complete">function set_complete</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_complete</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_id">function set_id</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_id</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">name</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_name">function set_name</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_name</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_num_instances">function set_num_instances</h3>
+<div class="highlight"><pre><span></span><code><span class="k">template</span><span class="o">&lt;</span><span class="n">ResourceCategory</span><span class="w"> </span><span class="n">category</span><span class="o">&gt;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_num_instances</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_priority">function set_priority</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_priority</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">priority</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_py_task">function set_py_task</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_py_task</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">py_task</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_removed">function set_removed</h3>
+<div class="highlight"><pre><span></span><code><span class="k">template</span><span class="o">&lt;</span><span class="n">ResourceCategory</span><span class="w"> </span><span class="n">category</span><span class="o">&gt;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_removed</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">waiting</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_scheduler">function set_scheduler</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_scheduler</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">InnerScheduler</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">scheduler</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_state-12">function set_state [1/2]</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_state</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">state</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_state-22">function set_state [2/2]</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_state</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Task</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="n">state</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-set_status">function set_status</h3>
+<div class="highlight"><pre><span></span><code><span class="n">Task</span><span class="o">::</span><span class="n">Status</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">set_status</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Task</span><span class="o">::</span><span class="n">Status</span><span class="w"> </span><span class="n">status</span>
+<span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-synchronize_dependency_events">function synchronize_dependency_events</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">synchronize_dependency_events</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-synchronize_events">function synchronize_events</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">synchronize_events</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h3 id="function-wait_dependency_events">function wait_dependency_events</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">wait_dependency_events</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<h2 id="protected-types-documentation">Protected Types Documentation</h2>
+<h3 id="enum-reqadditionstate">enum ReqAdditionState</h3>
+<div class="highlight"><pre><span></span><code><span class="k">enum</span><span class="w"> </span><span class="nc">InnerTask</span><span class="o">::</span><span class="n">ReqAdditionState</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">SingleDevAdd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">MultiDevAdd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span>
+<span class="p">};</span>
+</code></pre></div>
+<h2 id="protected-attributes-documentation">Protected Attributes Documentation</h2>
+<h3 id="variable-placement_req_options_">variable placement_req_options_</h3>
+<div class="highlight"><pre><span></span><code><span class="n">PlacementRequirementCollections</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">placement_req_options_</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-req_addition_mode_">variable req_addition_mode_</h3>
+<div class="highlight"><pre><span></span><code><span class="kt">uint32_t</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">req_addition_mode_</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-tmp_arch_req_">variable tmp_arch_req_</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">ArchitectureRequirement</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">tmp_arch_req_</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-tmp_multdev_reqs_">variable tmp_multdev_reqs_</h3>
+<div class="highlight"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">MultiDeviceRequirements</span><span class="o">&gt;</span><span class="w"> </span><span class="n">InnerTask</span><span class="o">::</span><span class="n">tmp_multdev_reqs_</span><span class="p">;</span>
+</code></pre></div>
+<hr />
+<p>The documentation for this class was generated from the following file <code>src/c/backend/include/runtime.hpp</code></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ut-parla/parla-experimental" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "navigation.instant", "navigation.tracking"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
+</html>

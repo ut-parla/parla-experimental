@@ -1,0 +1,949 @@
+\hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager}{}\doxysection{parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager Class Reference}
+\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager}\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a80f95f45b77d708973caaf040608fe97}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, dev\+\_\+config=None)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2943bff472b3f39a3f0aa36fed9b381b}{\+\_\+\+\_\+dealloc\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a3ad0837b18f1769ae1b341be212b7cdc}{register\+\_\+cupy\+\_\+gpu\+\_\+devices}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ae13895e31449d603d4eab63eb868db8a}{register\+\_\+cpu\+\_\+devices}} (self, bool register\+\_\+to\+\_\+cuda=False)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a5da2625eaecd5ea97818cd5494789b41}{register\+\_\+devices\+\_\+to\+\_\+cpp}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a709120b545dc362ed08402eab933ff9d}{print\+\_\+registered\+\_\+devices}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a8e9ac4bc35ff63e39e6bb15d0cac9563}{get\+\_\+cy\+\_\+device\+\_\+manager}} (self)
+\item 
+int \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2e3c982d9460ee7ded9d211e806e1c05}{get\+\_\+num\+\_\+gpus}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_abd0ed17f494adf424352ce884af6e988}{get\+\_\+devices}} (self, architecture\+\_\+type)
+\item 
+int \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a88f1dba2539e3c88f2c55c20622cc45d}{get\+\_\+num\+\_\+cpus}} (self)
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_adab35e05b12a87e80b92634c98530a2b}{Py\+Architecture}} \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a117f610e4f6bc13ff9700227c6449c37}{get\+\_\+architecture}} (self, arch\+\_\+type)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4e34ef5f1d6d302fbd62196fbb5a7eb7}{parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices}} (self, yaml\+\_\+config)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a882fb13395427b6a9e75c6447de29bb0}{get\+\_\+all\+\_\+devices}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aefdd337238994ffb1ee38182c58e851d}{get\+\_\+all\+\_\+architectures}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ab0e43bbe5639b2078afc1ee4648c9523}{is\+\_\+multidevice\+\_\+placement}} (self, placement\+\_\+tuple)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_afd2a7d961cba790e49eb0c36c5100fd2}{construct\+\_\+single\+\_\+device\+\_\+requirements}} (self, dev, res\+\_\+req)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a37f7068cb4661c7fe8485d2acfc0a845}{construct\+\_\+single\+\_\+architecture\+\_\+requirements}} (self, arch, res\+\_\+req)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a50c85eafc489d3db78277d0a0c908b1c}{construct\+\_\+resource\+\_\+requirements}} (self, placement\+\_\+component, vcus, memory)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_acd5858cca7b7ae935935bd9a687965be}{unpack\+\_\+placements}} (self, placement\+\_\+components, vcus, memory)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aba412dfc4342f0606418b564d52254fc}{get\+\_\+device\+\_\+reqs\+\_\+from\+\_\+placement}} (self, placement, vcus, memory)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a77fefbb245b56269519dbed4dce81343}{globalid\+\_\+to\+\_\+parrayid}} (self, global\+\_\+dev\+\_\+id)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4268c4894710ef0c96c1b14174964927}{parrayid\+\_\+to\+\_\+globalid}} (self, parray\+\_\+dev\+\_\+id)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ac65a972d47cf3467a68374ad79340f48}{cy\+\_\+device\+\_\+manager}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a594901118827094fe326a7e39a5b09a6}{py\+\_\+registered\+\_\+archs}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a796da49b3d52e712fddc8c7431e86aae}{registered\+\_\+devices}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aff592f78ff089e96a4e7d536c54b5303}{num\+\_\+real\+\_\+gpus}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ad1a470f5d7897256c300b721149bd487}{stream\+\_\+pool}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}A device manager manages device objects and provides their information.
+The Parla runtime should access device information through a device manager.
+A single device manager for each Python and C++ is created and held
+by each schedulers.
+\end{DoxyVerb}
+ 
+
+Definition at line 125 of file device\+\_\+manager.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a80f95f45b77d708973caaf040608fe97}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a80f95f45b77d708973caaf040608fe97}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{dev\+\_\+config = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 133 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{133     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, dev\_config = None):}
+\DoxyCodeLine{134         self.cy\_device\_manager = CyDeviceManager()}
+\DoxyCodeLine{135 }
+\DoxyCodeLine{136         self.py\_registered\_archs = \{\}}
+\DoxyCodeLine{137         self.registered\_devices = []}
+\DoxyCodeLine{138 }
+\DoxyCodeLine{139         \textcolor{keywordflow}{if} CUPY\_ENABLED:}
+\DoxyCodeLine{140             \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{141                 self.num\_real\_gpus = cupy.cuda.runtime.getDeviceCount()}
+\DoxyCodeLine{142             \textcolor{keywordflow}{except} cupy.cuda.runtime.CUDARuntimeError:}
+\DoxyCodeLine{143                 self.num\_real\_gpus = 0}
+\DoxyCodeLine{144         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{145             self.num\_real\_gpus = 0}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{147         \textcolor{comment}{\# Initialize Devices}}
+\DoxyCodeLine{148         \textcolor{keywordflow}{if} dev\_config == \textcolor{keywordtype}{None} \textcolor{keywordflow}{or} dev\_config == \textcolor{stringliteral}{"{}"{}}:}
+\DoxyCodeLine{149             self.register\_cpu\_devices()}
+\DoxyCodeLine{150             self.register\_cupy\_gpu\_devices()}
+\DoxyCodeLine{151         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{152             self.parse\_config\_and\_register\_devices(dev\_config)}
+\DoxyCodeLine{153         \textcolor{comment}{\#self.register\_devices\_to\_cpp()}}
+\DoxyCodeLine{154 }
+\DoxyCodeLine{155         \textcolor{comment}{\# Initialize Device Hardware Queues}}
+\DoxyCodeLine{156         self.stream\_pool = StreamPool(self.get\_devices(DeviceType.CUDA))}
+\DoxyCodeLine{157 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2943bff472b3f39a3f0aa36fed9b381b}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2943bff472b3f39a3f0aa36fed9b381b}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!\_\_dealloc\_\_@{\_\_dealloc\_\_}}
+\index{\_\_dealloc\_\_@{\_\_dealloc\_\_}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{\_\_dealloc\_\_()}{\_\_dealloc\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+\_\+\+\_\+dealloc\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 158 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{158     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a669240eab57eb830c4cfab9d9b2ac9ad}{\_\_dealloc\_\_}}(self):}
+\DoxyCodeLine{159         \textcolor{keywordflow}{for} arch \textcolor{keywordflow}{in} self.py\_registered\_archs:}
+\DoxyCodeLine{160             \textcolor{keywordflow}{for} dev \textcolor{keywordflow}{in} arch.devices:}
+\DoxyCodeLine{161                 del dev}
+\DoxyCodeLine{162 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a50c85eafc489d3db78277d0a0c908b1c}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a50c85eafc489d3db78277d0a0c908b1c}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!construct\_resource\_requirements@{construct\_resource\_requirements}}
+\index{construct\_resource\_requirements@{construct\_resource\_requirements}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{construct\_resource\_requirements()}{construct\_resource\_requirements()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+resource\+\_\+requirements (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{placement\+\_\+component,  }\item[{}]{vcus,  }\item[{}]{memory }\end{DoxyParamCaption})}
+
+
+
+Definition at line 328 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{328     \textcolor{keyword}{def }construct\_resource\_requirements(self, placement\_component, vcus, memory):}
+\DoxyCodeLine{329         \textcolor{keywordflow}{if} isinstance(placement\_component, Tuple) \textcolor{keywordflow}{and} \(\backslash\)}
+\DoxyCodeLine{330               \textcolor{keywordflow}{not} self.is\_multidevice\_placement(placement\_component):}
+\DoxyCodeLine{331                 \textcolor{comment}{\# In this case, the placement component consists of}}
+\DoxyCodeLine{332                 \textcolor{comment}{\# Device or Architecture, with its resource requirement.}}
+\DoxyCodeLine{333                 placement, req = placement\_component}
+\DoxyCodeLine{334                 req.memory = req.memory \textcolor{keywordflow}{if} req.memory \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else}  \(\backslash\)}
+\DoxyCodeLine{335                     (0 \textcolor{keywordflow}{if} memory \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} memory)}
+\DoxyCodeLine{336                 req.vcus = req.vcus \textcolor{keywordflow}{if} req.vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else}  \(\backslash\)}
+\DoxyCodeLine{337                     (0 \textcolor{keywordflow}{if} vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} vcus)}
+\DoxyCodeLine{338                 \textcolor{comment}{\# If a device specified by users does not exit }}
+\DoxyCodeLine{339                 \textcolor{comment}{\# and was not registered to the Parla runtime,}}
+\DoxyCodeLine{340                 \textcolor{comment}{\# use CPU instead.}}
+\DoxyCodeLine{341                 \textcolor{keywordflow}{if} isinstance(placement, PyArchitecture):}
+\DoxyCodeLine{342                     \textcolor{comment}{\# Architecture placement means that the task mapper}}
+\DoxyCodeLine{343                     \textcolor{comment}{\# could choose one of the devices in the specified}}
+\DoxyCodeLine{344                     \textcolor{comment}{\# architecture.}}
+\DoxyCodeLine{345                     \textcolor{comment}{\# For example, if `gpu` is specified, all gpu devices}}
+\DoxyCodeLine{346                     \textcolor{comment}{\# become target candidate devices and one of them}}
+\DoxyCodeLine{347                     \textcolor{comment}{\# might be chosen as the final placement for a task.}}
+\DoxyCodeLine{348                     \textcolor{comment}{\# To distinguish architecture placement from others,}}
+\DoxyCodeLine{349                     \textcolor{comment}{\# it is converted to a frozen set of the entire devices.}}
+\DoxyCodeLine{350                     \textcolor{keywordflow}{return} self.construct\_single\_architecture\_requirements(}
+\DoxyCodeLine{351                         placement, req)}
+\DoxyCodeLine{352                 \textcolor{keywordflow}{elif} isinstance(placement, PyDevice):}
+\DoxyCodeLine{353                     \textcolor{keywordflow}{return} self.construct\_single\_device\_requirements(}
+\DoxyCodeLine{354                         placement, req)}
+\DoxyCodeLine{355         \textcolor{keywordflow}{elif} isinstance(placement\_component, PyArchitecture):}
+\DoxyCodeLine{356             vcus = vcus \textcolor{keywordflow}{if} vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{357             memory = memory \textcolor{keywordflow}{if} memory \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{358             res\_req = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a6e1fec39b3c8298c2ee96b4ccf0c630a}{DeviceResource}}(memory, vcus)}
+\DoxyCodeLine{359             \textcolor{keywordflow}{return} self.construct\_single\_architecture\_requirements(}
+\DoxyCodeLine{360                 placement\_component, res\_req)}
+\DoxyCodeLine{361         \textcolor{keywordflow}{elif} isinstance(placement\_component, PyDevice):}
+\DoxyCodeLine{362             vcus = vcus \textcolor{keywordflow}{if} vcus \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{363             memory = memory \textcolor{keywordflow}{if} memory \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} 0}
+\DoxyCodeLine{364             res\_req = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a6e1fec39b3c8298c2ee96b4ccf0c630a}{DeviceResource}}(memory, vcus)}
+\DoxyCodeLine{365             \textcolor{keywordflow}{return} self.construct\_single\_device\_requirements(}
+\DoxyCodeLine{366                 placement\_component, res\_req)}
+\DoxyCodeLine{367         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{368             \textcolor{keywordflow}{raise} TypeError(\textcolor{stringliteral}{"{}Incorrect placement"{}})}
+\DoxyCodeLine{369 }
+\DoxyCodeLine{370 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+architecture\+\_\+requirements(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+device\+\_\+requirements(), parla.\+cython.\+device\+\_\+manager.\+Device\+Resource, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+is\+\_\+multidevice\+\_\+placement().
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a50c85eafc489d3db78277d0a0c908b1c_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a50c85eafc489d3db78277d0a0c908b1c_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a37f7068cb4661c7fe8485d2acfc0a845}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a37f7068cb4661c7fe8485d2acfc0a845}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!construct\_single\_architecture\_requirements@{construct\_single\_architecture\_requirements}}
+\index{construct\_single\_architecture\_requirements@{construct\_single\_architecture\_requirements}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{construct\_single\_architecture\_requirements()}{construct\_single\_architecture\_requirements()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+architecture\+\_\+requirements (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{arch,  }\item[{}]{res\+\_\+req }\end{DoxyParamCaption})}
+
+
+
+Definition at line 321 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{321     \textcolor{keyword}{def }construct\_single\_architecture\_requirements(self, arch, res\_req):}
+\DoxyCodeLine{322         arch\_reqs = []}
+\DoxyCodeLine{323         \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} arch.devices:}
+\DoxyCodeLine{324             arch\_reqs.append(self.construct\_single\_device\_requirements(}
+\DoxyCodeLine{325                   d, res\_req))}
+\DoxyCodeLine{326         \textcolor{keywordflow}{return} PrintableFrozenSet(arch\_reqs)}
+\DoxyCodeLine{327 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+device\+\_\+requirements().
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+resource\+\_\+requirements().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a37f7068cb4661c7fe8485d2acfc0a845_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a37f7068cb4661c7fe8485d2acfc0a845_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_afd2a7d961cba790e49eb0c36c5100fd2}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_afd2a7d961cba790e49eb0c36c5100fd2}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!construct\_single\_device\_requirements@{construct\_single\_device\_requirements}}
+\index{construct\_single\_device\_requirements@{construct\_single\_device\_requirements}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{construct\_single\_device\_requirements()}{construct\_single\_device\_requirements()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+device\+\_\+requirements (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{dev,  }\item[{}]{res\+\_\+req }\end{DoxyParamCaption})}
+
+
+
+Definition at line 318 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{318     \textcolor{keyword}{def }construct\_single\_device\_requirements(self, dev, res\_req):}
+\DoxyCodeLine{319         \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a79f4bf73c3755af30f25f7e4d8aeb0c4}{DeviceResourceRequirement}}(dev, res\_req)}
+\DoxyCodeLine{320 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Device\+Resource\+Requirement.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+resource\+\_\+requirements(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+single\+\_\+architecture\+\_\+requirements().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_afd2a7d961cba790e49eb0c36c5100fd2_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aefdd337238994ffb1ee38182c58e851d}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aefdd337238994ffb1ee38182c58e851d}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_all\_architectures@{get\_all\_architectures}}
+\index{get\_all\_architectures@{get\_all\_architectures}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_all\_architectures()}{get\_all\_architectures()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+all\+\_\+architectures (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 309 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{309     \textcolor{keyword}{def }get\_all\_architectures(self):}
+\DoxyCodeLine{310         \textcolor{keywordflow}{return} self.py\_registered\_archs.values()}
+\DoxyCodeLine{311 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a882fb13395427b6a9e75c6447de29bb0}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a882fb13395427b6a9e75c6447de29bb0}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_all\_devices@{get\_all\_devices}}
+\index{get\_all\_devices@{get\_all\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_all\_devices()}{get\_all\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+all\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 306 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{306     \textcolor{keyword}{def }get\_all\_devices(self):}
+\DoxyCodeLine{307         \textcolor{keywordflow}{return} self.registered\_devices}
+\DoxyCodeLine{308 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+registered\+\_\+devices.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+devices().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a882fb13395427b6a9e75c6447de29bb0_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a117f610e4f6bc13ff9700227c6449c37}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a117f610e4f6bc13ff9700227c6449c37}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_architecture@{get\_architecture}}
+\index{get\_architecture@{get\_architecture}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_architecture()}{get\_architecture()}}
+{\footnotesize\ttfamily  \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_adab35e05b12a87e80b92634c98530a2b}{Py\+Architecture}} parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+architecture (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{arch\+\_\+type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 266 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{266     \textcolor{keyword}{def }get\_architecture(self, arch\_type) -\/> PyArchitecture:}
+\DoxyCodeLine{267         \textcolor{keywordflow}{return} self.py\_registered\_archs[arch\_type]}
+\DoxyCodeLine{268 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a8e9ac4bc35ff63e39e6bb15d0cac9563}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a8e9ac4bc35ff63e39e6bb15d0cac9563}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_cy\_device\_manager@{get\_cy\_device\_manager}}
+\index{get\_cy\_device\_manager@{get\_cy\_device\_manager}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_cy\_device\_manager()}{get\_cy\_device\_manager()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+cy\+\_\+device\+\_\+manager (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 252 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{252     \textcolor{keyword}{def }get\_cy\_device\_manager(self):}
+\DoxyCodeLine{253         \textcolor{keywordflow}{return} self.cy\_device\_manager}
+\DoxyCodeLine{254 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aba412dfc4342f0606418b564d52254fc}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aba412dfc4342f0606418b564d52254fc}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_device\_reqs\_from\_placement@{get\_device\_reqs\_from\_placement}}
+\index{get\_device\_reqs\_from\_placement@{get\_device\_reqs\_from\_placement}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_device\_reqs\_from\_placement()}{get\_device\_reqs\_from\_placement()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+device\+\_\+reqs\+\_\+from\+\_\+placement (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{placement,  }\item[{}]{vcus,  }\item[{}]{memory }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb} Unpack placement and return device objects that are specified
+    (or implied) through the placement argument of @spawn.
+    If None is passed to the placement, all devices exiting
+    in the current system become candidates of the placement. \end{DoxyVerb}
+ 
+
+Definition at line 403 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{403     \textcolor{keyword}{def }get\_device\_reqs\_from\_placement(self, placement, vcus, memory):}
+\DoxyCodeLine{404         \textcolor{stringliteral}{"{}"{}"{} Unpack placement and return device objects that are specified}}
+\DoxyCodeLine{405 \textcolor{stringliteral}{            (or implied) through the placement argument of @spawn.}}
+\DoxyCodeLine{406 \textcolor{stringliteral}{            If None is passed to the placement, all devices exiting}}
+\DoxyCodeLine{407 \textcolor{stringliteral}{            in the current system become candidates of the placement. "{}"{}"{}}}
+\DoxyCodeLine{408         \textcolor{comment}{\# Placement cannot be None since it is set to a list of the whole }}
+\DoxyCodeLine{409         \textcolor{comment}{\# devices.}}
+\DoxyCodeLine{410         \textcolor{keyword}{assert} placement \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{411         ps = placement \textcolor{keywordflow}{if} isinstance(placement, Iterable) \textcolor{keywordflow}{else} [placement]}
+\DoxyCodeLine{412         \textcolor{keywordflow}{return} self.unpack\_placements(ps, vcus, memory)}
+\DoxyCodeLine{413 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aba412dfc4342f0606418b564d52254fc_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_abd0ed17f494adf424352ce884af6e988}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_abd0ed17f494adf424352ce884af6e988}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_devices@{get\_devices}}
+\index{get\_devices@{get\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_devices()}{get\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{architecture\+\_\+type }\end{DoxyParamCaption})}
+
+
+
+Definition at line 258 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{258     \textcolor{keyword}{def }get\_devices(self, architecture\_type):}
+\DoxyCodeLine{259         \textcolor{keywordflow}{if} architecture\_type \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} self.py\_registered\_archs:}
+\DoxyCodeLine{260             \textcolor{keywordflow}{return} []}
+\DoxyCodeLine{261         \textcolor{keywordflow}{return} self.py\_registered\_archs[architecture\_type].devices}
+\DoxyCodeLine{262 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+get\+\_\+cupy\+\_\+devices().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_abd0ed17f494adf424352ce884af6e988_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a88f1dba2539e3c88f2c55c20622cc45d}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a88f1dba2539e3c88f2c55c20622cc45d}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_num\_cpus@{get\_num\_cpus}}
+\index{get\_num\_cpus@{get\_num\_cpus}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_num\_cpus()}{get\_num\_cpus()}}
+{\footnotesize\ttfamily  int parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+num\+\_\+cpus (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 263 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{263     \textcolor{keyword}{def }get\_num\_cpus(self) -\/> int:}
+\DoxyCodeLine{264         \textcolor{keywordflow}{return} len(self.py\_registered\_archs[cpu].devices)}
+\DoxyCodeLine{265 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2e3c982d9460ee7ded9d211e806e1c05}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a2e3c982d9460ee7ded9d211e806e1c05}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!get\_num\_gpus@{get\_num\_gpus}}
+\index{get\_num\_gpus@{get\_num\_gpus}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{get\_num\_gpus()}{get\_num\_gpus()}}
+{\footnotesize\ttfamily  int parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+num\+\_\+gpus (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 255 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{255     \textcolor{keyword}{def }get\_num\_gpus(self) -\/> int:}
+\DoxyCodeLine{256         \textcolor{keywordflow}{return} len(self.py\_registered\_archs[gpu].devices)}
+\DoxyCodeLine{257 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a77fefbb245b56269519dbed4dce81343}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a77fefbb245b56269519dbed4dce81343}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!globalid\_to\_parrayid@{globalid\_to\_parrayid}}
+\index{globalid\_to\_parrayid@{globalid\_to\_parrayid}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{globalid\_to\_parrayid()}{globalid\_to\_parrayid()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+globalid\+\_\+to\+\_\+parrayid (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{global\+\_\+dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Definition at line 414 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{414     \textcolor{keyword}{def }globalid\_to\_parrayid(self, global\_dev\_id):}
+\DoxyCodeLine{415         \textcolor{keywordflow}{return} self.cy\_device\_manager.globalid\_to\_parrayid(global\_dev\_id)}
+\DoxyCodeLine{416 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ab0e43bbe5639b2078afc1ee4648c9523}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ab0e43bbe5639b2078afc1ee4648c9523}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!is\_multidevice\_placement@{is\_multidevice\_placement}}
+\index{is\_multidevice\_placement@{is\_multidevice\_placement}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{is\_multidevice\_placement()}{is\_multidevice\_placement()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+is\+\_\+multidevice\+\_\+placement (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{placement\+\_\+tuple }\end{DoxyParamCaption})}
+
+
+
+Definition at line 312 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{312     \textcolor{keyword}{def }is\_multidevice\_placement(self, placement\_tuple):}
+\DoxyCodeLine{313         \textcolor{keywordflow}{if} len(placement\_tuple) == 2 \textcolor{keywordflow}{and} \(\backslash\)}
+\DoxyCodeLine{314                 isinstance(placement\_tuple[1], DeviceResource):}
+\DoxyCodeLine{315             \textcolor{keywordflow}{return} \textcolor{keyword}{False}}
+\DoxyCodeLine{316         \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{317 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+resource\+\_\+requirements(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ab0e43bbe5639b2078afc1ee4648c9523_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4268c4894710ef0c96c1b14174964927}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4268c4894710ef0c96c1b14174964927}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!parrayid\_to\_globalid@{parrayid\_to\_globalid}}
+\index{parrayid\_to\_globalid@{parrayid\_to\_globalid}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{parrayid\_to\_globalid()}{parrayid\_to\_globalid()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parrayid\+\_\+to\+\_\+globalid (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{parray\+\_\+dev\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Definition at line 417 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{417     \textcolor{keyword}{def }parrayid\_to\_globalid(self, parray\_dev\_id):}
+\DoxyCodeLine{418         \textcolor{keywordflow}{return} self.cy\_device\_manager.parrayid\_to\_globalid(parray\_dev\_id)}
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4e34ef5f1d6d302fbd62196fbb5a7eb7}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a4e34ef5f1d6d302fbd62196fbb5a7eb7}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!parse\_config\_and\_register\_devices@{parse\_config\_and\_register\_devices}}
+\index{parse\_config\_and\_register\_devices@{parse\_config\_and\_register\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{parse\_config\_and\_register\_devices()}{parse\_config\_and\_register\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{yaml\+\_\+config }\end{DoxyParamCaption})}
+
+
+
+Definition at line 269 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{269     \textcolor{keyword}{def }parse\_config\_and\_register\_devices(self, yaml\_config):}
+\DoxyCodeLine{270         \textcolor{keyword}{with} open(yaml\_config, \textcolor{stringliteral}{"{}r"{}}) \textcolor{keyword}{as} f:}
+\DoxyCodeLine{271             parsed\_configs = yaml.safe\_load(f)}
+\DoxyCodeLine{272             \textcolor{comment}{\# Parse CPU device information.}}
+\DoxyCodeLine{273             cpu\_num\_cores = parsed\_configs[\textcolor{stringliteral}{"{}CPU"{}}][\textcolor{stringliteral}{"{}num\_cores"{}}]}
+\DoxyCodeLine{274             \textcolor{keywordflow}{if} cpu\_num\_cores > 0:}
+\DoxyCodeLine{275                 cpu\_arch = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a3316f9e18b014b50515e83994b20425a}{PyCPUArchitecture}}()}
+\DoxyCodeLine{276                 self.py\_registered\_archs[cpu] = cpu\_arch}
+\DoxyCodeLine{277                 cpu\_mem\_sz = parsed\_configs[\textcolor{stringliteral}{"{}CPU"{}}][\textcolor{stringliteral}{"{}mem\_sz"{}}]}
+\DoxyCodeLine{278                 py\_cpu\_device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_ac20dfd46fdb2b09da5cd20e1e4fbcc35}{PyCPUDevice}}(0, cpu\_mem\_sz, VCU\_BASELINE) }
+\DoxyCodeLine{279                 cpu\_arch.add\_device(py\_cpu\_device)}
+\DoxyCodeLine{280                 self.registered\_devices.append(py\_cpu\_device)}
+\DoxyCodeLine{281                 cy\_device = py\_cpu\_device.get\_cy\_device()}
+\DoxyCodeLine{282                 self.cy\_device\_manager.register\_device(cy\_device)}
+\DoxyCodeLine{283 }
+\DoxyCodeLine{284             num\_of\_gpus = parsed\_configs[\textcolor{stringliteral}{"{}GPU"{}}][\textcolor{stringliteral}{"{}num\_devices"{}}]}
+\DoxyCodeLine{285             \textcolor{keywordflow}{if} num\_of\_gpus > 0:}
+\DoxyCodeLine{286                 gpu\_arch = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_ae5ab045ce3179518e36a01c1a08059d5}{PyCUDAArchitecture}}()}
+\DoxyCodeLine{287                 self.py\_registered\_archs[gpu] = gpu\_arch}
+\DoxyCodeLine{288                 gpu\_mem\_sizes = parsed\_configs[\textcolor{stringliteral}{"{}GPU"{}}][\textcolor{stringliteral}{"{}mem\_sz"{}}]}
+\DoxyCodeLine{289                 assert(num\_of\_gpus == len(gpu\_mem\_sizes)) }
+\DoxyCodeLine{290                 }
+\DoxyCodeLine{291                 \textcolor{keywordflow}{for} dev\_id \textcolor{keywordflow}{in} range(num\_of\_gpus):}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293                     \textcolor{keywordflow}{if} self.num\_real\_gpus > 0:}
+\DoxyCodeLine{294                         py\_cuda\_device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a016fd145d9f51c2a51954ab374587c5b}{PyCUDADevice}}(dev\_id \% self.num\_real\_gpus, \(\backslash\)}
+\DoxyCodeLine{295                                                     gpu\_mem\_sizes[dev\_id], \(\backslash\)}
+\DoxyCodeLine{296                                                     VCU\_BASELINE)}
+\DoxyCodeLine{297                     }
+\DoxyCodeLine{298                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{299                         py\_cuda\_device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_ac20dfd46fdb2b09da5cd20e1e4fbcc35}{PyCPUDevice}}(dev\_id, gpu\_mem\_sizes[dev\_id], VCU\_BASELINE)}
+\DoxyCodeLine{300 }
+\DoxyCodeLine{301                     gpu\_arch.add\_device(py\_cuda\_device)}
+\DoxyCodeLine{302                     self.registered\_devices.append(py\_cuda\_device)}
+\DoxyCodeLine{303                     cy\_device = py\_cuda\_device.get\_cy\_device()}
+\DoxyCodeLine{304                     self.cy\_device\_manager.register\_device(cy\_device)}
+\DoxyCodeLine{305 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager, parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+num\+\_\+real\+\_\+gpus, parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs, parla.\+cython.\+device\+\_\+manager.\+Py\+CPUArchitecture, parla.\+cython.\+device\+\_\+manager.\+Py\+CPUDevice, parla.\+cython.\+device\+\_\+manager.\+Py\+CUDAArchitecture, parla.\+cython.\+device\+\_\+manager.\+Py\+CUDADevice, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+registered\+\_\+devices.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a709120b545dc362ed08402eab933ff9d}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a709120b545dc362ed08402eab933ff9d}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!print\_registered\_devices@{print\_registered\_devices}}
+\index{print\_registered\_devices@{print\_registered\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{print\_registered\_devices()}{print\_registered\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+print\+\_\+registered\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 246 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{246     \textcolor{keyword}{def }print\_registered\_devices(self):}
+\DoxyCodeLine{247         print(\textcolor{stringliteral}{"{}Python devices:"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{248         \textcolor{keywordflow}{for} dev \textcolor{keywordflow}{in} self.py\_registered\_archs:}
+\DoxyCodeLine{249             print(f\textcolor{stringliteral}{"{}\(\backslash\)t Registered device: \{dev\}"{}}, flush=\textcolor{keyword}{True})}
+\DoxyCodeLine{250         self.cy\_device\_manager.print\_registered\_devices()}
+\DoxyCodeLine{251 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ae13895e31449d603d4eab63eb868db8a}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ae13895e31449d603d4eab63eb868db8a}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!register\_cpu\_devices@{register\_cpu\_devices}}
+\index{register\_cpu\_devices@{register\_cpu\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{register\_cpu\_devices()}{register\_cpu\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cpu\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{bool }]{register\+\_\+to\+\_\+cuda = {\ttfamily False} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 198 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{198     \textcolor{keyword}{def }register\_cpu\_devices(self, register\_to\_cuda: bool = \textcolor{keyword}{False}):}
+\DoxyCodeLine{199         \textcolor{comment}{\#if register\_to\_cuda:}}
+\DoxyCodeLine{200         \textcolor{comment}{\#    gpu.add\_device(cpu(0))}}
+\DoxyCodeLine{201         \textcolor{comment}{\#    self.registered\_devices.append(cpu(0))}}
+\DoxyCodeLine{202         \textcolor{comment}{\#    cy\_device = cpu(0).get\_cy\_device()}}
+\DoxyCodeLine{203         \textcolor{comment}{\#    self.cy\_device\_manager.register\_device(cy\_device)}}
+\DoxyCodeLine{204         \textcolor{comment}{\#else:}}
+\DoxyCodeLine{205         \textcolor{comment}{\# Get the number of usable CPUs from this process.}}
+\DoxyCodeLine{206         \textcolor{comment}{\# This might not be equal to the number of CPUs in the system.}}
+\DoxyCodeLine{207 }
+\DoxyCodeLine{208         num\_cores = os.getenv(\textcolor{stringliteral}{"{}PARLA\_NUM\_CORES"{}})}
+\DoxyCodeLine{209         \textcolor{keywordflow}{if} num\_cores:}
+\DoxyCodeLine{210             num\_cores = int(num\_cores)}
+\DoxyCodeLine{211         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{212             num\_cores = len(os.sched\_getaffinity(0))}
+\DoxyCodeLine{213         \textcolor{keywordflow}{if} num\_cores == 0:}
+\DoxyCodeLine{214             \textcolor{keywordflow}{raise} RuntimeError(\textcolor{stringliteral}{"{}No CPU cores available for Parla."{}})}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{216 }
+\DoxyCodeLine{217         mem\_sz = os.getenv(\textcolor{stringliteral}{"{}PARLA\_CPU\_MEM"{}})}
+\DoxyCodeLine{218         \textcolor{keywordflow}{if} mem\_sz:}
+\DoxyCodeLine{219             mem\_sz = int(mem\_sz)}
+\DoxyCodeLine{220         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{221             mem\_sz = long(psutil.virtual\_memory().total)}
+\DoxyCodeLine{222         }
+\DoxyCodeLine{223         py\_cpu\_device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_ac20dfd46fdb2b09da5cd20e1e4fbcc35}{PyCPUDevice}}(0, mem\_sz, VCU\_BASELINE)}
+\DoxyCodeLine{224 }
+\DoxyCodeLine{225         cpu\_arch = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a3316f9e18b014b50515e83994b20425a}{PyCPUArchitecture}}()}
+\DoxyCodeLine{226         self.py\_registered\_archs[cpu] = cpu\_arch}
+\DoxyCodeLine{227         cpu\_arch.add\_device(py\_cpu\_device)}
+\DoxyCodeLine{228 }
+\DoxyCodeLine{229         self.registered\_devices.append(py\_cpu\_device)}
+\DoxyCodeLine{230         cy\_device = py\_cpu\_device.get\_cy\_device()}
+\DoxyCodeLine{231         self.cy\_device\_manager.register\_device(cy\_device)}
+\DoxyCodeLine{232         }
+\DoxyCodeLine{233 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager, parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs, parla.\+cython.\+device\+\_\+manager.\+Py\+CPUArchitecture, parla.\+cython.\+device\+\_\+manager.\+Py\+CPUDevice, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+registered\+\_\+devices.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a3ad0837b18f1769ae1b341be212b7cdc}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a3ad0837b18f1769ae1b341be212b7cdc}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!register\_cupy\_gpu\_devices@{register\_cupy\_gpu\_devices}}
+\index{register\_cupy\_gpu\_devices@{register\_cupy\_gpu\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{register\_cupy\_gpu\_devices()}{register\_cupy\_gpu\_devices()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cupy\+\_\+gpu\+\_\+devices (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}This function adds cupy GPU devices.
+\end{DoxyVerb}
+ 
+
+Definition at line 163 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{163     \textcolor{keyword}{def }register\_cupy\_gpu\_devices(self):}
+\DoxyCodeLine{164         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{165 \textcolor{stringliteral}{        This function adds cupy GPU devices.}}
+\DoxyCodeLine{166 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{167         \textcolor{comment}{\# TODO(hc): Later, it will extend a GPU architecture type, like ones}}
+\DoxyCodeLine{168         \textcolor{comment}{\#           from AMD.}}
+\DoxyCodeLine{169         \textcolor{keywordflow}{if} cupy \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{170             \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{171                 num\_of\_gpus = cupy.cuda.runtime.getDeviceCount()}
+\DoxyCodeLine{172             \textcolor{keywordflow}{except} cupy.cuda.runtime.CUDARuntimeError:}
+\DoxyCodeLine{173                 num\_of\_gpus = 0}
+\DoxyCodeLine{174         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{175             num\_of\_gpus = 0}
+\DoxyCodeLine{176 }
+\DoxyCodeLine{177         \textcolor{keywordflow}{if} num\_of\_gpus > 0:}
+\DoxyCodeLine{178             gpu\_arch = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_ae5ab045ce3179518e36a01c1a08059d5}{PyCUDAArchitecture}}()}
+\DoxyCodeLine{179             self.py\_registered\_archs[gpu] = gpu\_arch}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{181             \textcolor{keywordflow}{for} dev\_id \textcolor{keywordflow}{in} range(num\_of\_gpus):}
+\DoxyCodeLine{182                 gpu\_dev = cupy.cuda.Device(dev\_id)}
+\DoxyCodeLine{183                 mem\_info = gpu\_dev.mem\_info \textcolor{comment}{\# tuple of free and total memory}}
+\DoxyCodeLine{184                                             \textcolor{comment}{\# in bytes.}}
+\DoxyCodeLine{185                 mem\_sz = long(mem\_info[1])}
+\DoxyCodeLine{186                 py\_cuda\_device = \mbox{\hyperlink{namespaceparla_1_1cython_1_1device__manager_a016fd145d9f51c2a51954ab374587c5b}{PyCUDADevice}}(dev\_id, mem\_sz, VCU\_BASELINE)}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{188                 \textcolor{comment}{\#Add device to the architecture}}
+\DoxyCodeLine{189                 gpu\_arch.add\_device(py\_cuda\_device)}
+\DoxyCodeLine{190 }
+\DoxyCodeLine{191                 \textcolor{comment}{\#Add device to the device manager (list of devices)}}
+\DoxyCodeLine{192                 self.registered\_devices.append(py\_cuda\_device)}
+\DoxyCodeLine{193 }
+\DoxyCodeLine{194                 \textcolor{comment}{\#Register device to the C++ runtime}}
+\DoxyCodeLine{195                 cy\_device = py\_cuda\_device.get\_cy\_device()}
+\DoxyCodeLine{196                 self.cy\_device\_manager.register\_device(cy\_device)}
+\DoxyCodeLine{197 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager, parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs, parla.\+cython.\+device\+\_\+manager.\+Py\+CUDAArchitecture, parla.\+cython.\+device\+\_\+manager.\+Py\+CUDADevice, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+registered\+\_\+devices.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a5da2625eaecd5ea97818cd5494789b41}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a5da2625eaecd5ea97818cd5494789b41}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!register\_devices\_to\_cpp@{register\_devices\_to\_cpp}}
+\index{register\_devices\_to\_cpp@{register\_devices\_to\_cpp}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{register\_devices\_to\_cpp()}{register\_devices\_to\_cpp()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+devices\+\_\+to\+\_\+cpp (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Register devices to the both Python/C++ runtime.
+\end{DoxyVerb}
+ 
+
+Definition at line 234 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{234     \textcolor{keyword}{def }register\_devices\_to\_cpp(self):}
+\DoxyCodeLine{235         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{236 \textcolor{stringliteral}{        Register devices to the both Python/C++ runtime.}}
+\DoxyCodeLine{237 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{238         current\_idx = 0}
+\DoxyCodeLine{239         \textcolor{keywordflow}{for} py\_arch \textcolor{keywordflow}{in} self.py\_registered\_archs:}
+\DoxyCodeLine{240             \textcolor{keywordflow}{for} py\_device \textcolor{keywordflow}{in} py\_arch.devices:}
+\DoxyCodeLine{241                 cy\_device = py\_device.get\_cy\_device()}
+\DoxyCodeLine{242                 self.cy\_device\_manager.register\_device(cy\_device)}
+\DoxyCodeLine{243                 py\_device.global\_id = current\_idx }
+\DoxyCodeLine{244                 current\_idx += 1}
+\DoxyCodeLine{245 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager, and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_acd5858cca7b7ae935935bd9a687965be}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_acd5858cca7b7ae935935bd9a687965be}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!unpack\_placements@{unpack\_placements}}
+\index{unpack\_placements@{unpack\_placements}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{unpack\_placements()}{unpack\_placements()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{placement\+\_\+components,  }\item[{}]{vcus,  }\item[{}]{memory }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb} Unpack a placement parameter and return a list of
+    a pair of devices and requirements in a proper hierarchy structure.
+    Placements (from @spawn) could be collections, for
+    multi-device placements, a pair of architecture and
+    resource requirement, or a pair of device and resource requirement.
+\end{DoxyVerb}
+ 
+
+Definition at line 371 of file device\+\_\+manager.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{371     \textcolor{keyword}{def }unpack\_placements(self, placement\_components, vcus, memory):}
+\DoxyCodeLine{372         \textcolor{stringliteral}{"{}"{}"{} Unpack a placement parameter and return a list of}}
+\DoxyCodeLine{373 \textcolor{stringliteral}{            a pair of devices and requirements in a proper hierarchy structure.}}
+\DoxyCodeLine{374 \textcolor{stringliteral}{            Placements (from @spawn) could be collections, for}}
+\DoxyCodeLine{375 \textcolor{stringliteral}{            multi-\/device placements, a pair of architecture and}}
+\DoxyCodeLine{376 \textcolor{stringliteral}{            resource requirement, or a pair of device and resource requirement.}}
+\DoxyCodeLine{377 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{378         assert(isinstance(placement\_components, List) \textcolor{keywordflow}{or} \(\backslash\)}
+\DoxyCodeLine{379             isinstance(placement\_components, Tuple))}
+\DoxyCodeLine{380         \textcolor{comment}{\# Multi-\/device resource requirement or}}
+\DoxyCodeLine{381         \textcolor{comment}{\# a list of devices, architectures, or multi-\/device }}
+\DoxyCodeLine{382         \textcolor{comment}{\# requirements.}}
+\DoxyCodeLine{383         unpacked\_devices = []}
+\DoxyCodeLine{384         \textcolor{keywordflow}{for} c \textcolor{keywordflow}{in} placement\_components:}
+\DoxyCodeLine{385             \textcolor{keywordflow}{if} isinstance(c, Tuple) \textcolor{keywordflow}{and} self.is\_multidevice\_placement(c):}
+\DoxyCodeLine{386                 \textcolor{comment}{\# Multi-\/device placement is specified}}
+\DoxyCodeLine{387                 \textcolor{comment}{\# through a nested tuple of the placement API.}}
+\DoxyCodeLine{388                 \textcolor{comment}{\# Which means that, each nested tuple in the}}
+\DoxyCodeLine{389                 \textcolor{comment}{\# placement specifies a single placement for}}
+\DoxyCodeLine{390                 \textcolor{comment}{\# a task. The placement API allows multiple tuples for}}
+\DoxyCodeLine{391                 \textcolor{comment}{\# multi-\/device placements (e.g., placement=[(), (), ..]),}}
+\DoxyCodeLine{392                 \textcolor{comment}{\# and the task mapper chooses one of those options}}
+\DoxyCodeLine{393                 \textcolor{comment}{\# as the target requirement based on device states.}}
+\DoxyCodeLine{394                 \textcolor{comment}{\# In this case, recursively call this function and}}
+\DoxyCodeLine{395                 \textcolor{comment}{\# construct a list of member devices and their resource}}
+\DoxyCodeLine{396                 \textcolor{comment}{\# requirements to distinguish them from other flat}}
+\DoxyCodeLine{397                 \textcolor{comment}{\# resource requirements.}}
+\DoxyCodeLine{398                 unpacked\_devices.append(self.unpack\_placements(c, vcus, memory))}
+\DoxyCodeLine{399             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{400                 unpacked\_devices.append(self.construct\_resource\_requirements(c, vcus, memory))}
+\DoxyCodeLine{401         \textcolor{keywordflow}{return} unpacked\_devices}
+\DoxyCodeLine{402 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+construct\+\_\+resource\+\_\+requirements(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+is\+\_\+multidevice\+\_\+placement(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements().
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+device\+\_\+reqs\+\_\+from\+\_\+placement(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+unpack\+\_\+placements().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_acd5858cca7b7ae935935bd9a687965be_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_acd5858cca7b7ae935935bd9a687965be_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ac65a972d47cf3467a68374ad79340f48}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ac65a972d47cf3467a68374ad79340f48}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!cy\_device\_manager@{cy\_device\_manager}}
+\index{cy\_device\_manager@{cy\_device\_manager}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{cy\_device\_manager}{cy\_device\_manager}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+cy\+\_\+device\+\_\+manager}
+
+
+
+Definition at line 134 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+cy\+\_\+device\+\_\+manager(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+globalid\+\_\+to\+\_\+parrayid(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parrayid\+\_\+to\+\_\+globalid(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+print\+\_\+registered\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cpu\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cupy\+\_\+gpu\+\_\+devices(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+devices\+\_\+to\+\_\+cpp().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aff592f78ff089e96a4e7d536c54b5303}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_aff592f78ff089e96a4e7d536c54b5303}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!num\_real\_gpus@{num\_real\_gpus}}
+\index{num\_real\_gpus@{num\_real\_gpus}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{num\_real\_gpus}{num\_real\_gpus}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+num\+\_\+real\+\_\+gpus}
+
+
+
+Definition at line 141 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a594901118827094fe326a7e39a5b09a6}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a594901118827094fe326a7e39a5b09a6}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!py\_registered\_archs@{py\_registered\_archs}}
+\index{py\_registered\_archs@{py\_registered\_archs}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{py\_registered\_archs}{py\_registered\_archs}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+py\+\_\+registered\+\_\+archs}
+
+
+
+Definition at line 136 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+\_\+\+\_\+dealloc\+\_\+\+\_\+(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+all\+\_\+architectures(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+architecture(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+num\+\_\+cpus(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+num\+\_\+gpus(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+print\+\_\+registered\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cpu\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cupy\+\_\+gpu\+\_\+devices(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+devices\+\_\+to\+\_\+cpp().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a796da49b3d52e712fddc8c7431e86aae}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_a796da49b3d52e712fddc8c7431e86aae}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!registered\_devices@{registered\_devices}}
+\index{registered\_devices@{registered\_devices}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{registered\_devices}{registered\_devices}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+registered\+\_\+devices}
+
+
+
+Definition at line 137 of file device\+\_\+manager.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+get\+\_\+all\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+parse\+\_\+config\+\_\+and\+\_\+register\+\_\+devices(), parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cpu\+\_\+devices(), and parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+register\+\_\+cupy\+\_\+gpu\+\_\+devices().
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ad1a470f5d7897256c300b721149bd487}\label{classparla_1_1cython_1_1device__manager_1_1PyDeviceManager_ad1a470f5d7897256c300b721149bd487}} 
+\index{parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}!stream\_pool@{stream\_pool}}
+\index{stream\_pool@{stream\_pool}!parla.cython.device\_manager.PyDeviceManager@{parla.cython.device\_manager.PyDeviceManager}}
+\doxysubsubsection{\texorpdfstring{stream\_pool}{stream\_pool}}
+{\footnotesize\ttfamily parla.\+cython.\+device\+\_\+manager.\+Py\+Device\+Manager.\+stream\+\_\+pool}
+
+
+
+Definition at line 156 of file device\+\_\+manager.\+pyx.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device__manager_8pyx}{device\+\_\+manager.\+pyx}}\end{DoxyCompactItemize}

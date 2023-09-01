@@ -1,0 +1,217 @@
+\hypertarget{classInnerDataTask}{}\doxysection{Inner\+Data\+Task Class Reference}
+\label{classInnerDataTask}\index{InnerDataTask@{InnerDataTask}}
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+
+
+Inheritance diagram for Inner\+Data\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=166pt]{classInnerDataTask__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Inner\+Data\+Task\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerDataTask__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classInnerDataTask_aa08e0a7d0a084ccd6eed9ef955a750be}{Inner\+Data\+Task}} ()=delete
+\item 
+\mbox{\hyperlink{classInnerDataTask_a94f4ec7c5149df4dff87f64947afb623}{Inner\+Data\+Task}} (std\+::string \mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}}, long long int \mbox{\hyperlink{classInnerTask_a88465fe59b98a130865d0594ca6c5e6c}{id}}, \mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$parray, \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} access\+\_\+mode, int dev\+\_\+id)
+\item 
+void $\ast$ \mbox{\hyperlink{classInnerDataTask_a7c48db928eb06acad5f01379effcfc89}{get\+\_\+py\+\_\+parray}} ()
+\begin{DoxyCompactList}\small\item\em Return a python PArray pointer (as void$\ast$). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} \mbox{\hyperlink{classInnerDataTask_afb4d64ae42adce273eae56ec4212f514}{get\+\_\+access\+\_\+mode}} ()
+\begin{DoxyCompactList}\small\item\em Return a access mode of PArray. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classInnerDataTask_ab09701f69206c9fd3cc8f50996c7c7d6}{get\+\_\+device\+\_\+id}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$ \mbox{\hyperlink{classInnerDataTask_ac23d101f6f732f9dac7de0eca3a4080f}{parray\+\_\+}}
+\item 
+\mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} \mbox{\hyperlink{classInnerDataTask_a9f8ad9019274386620293f83d8828780}{access\+\_\+mode\+\_\+}}
+\item 
+int \mbox{\hyperlink{classInnerDataTask_a487b12e3b6220846a06f4be060aa51a5}{dev\+\_\+id\+\_\+}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 595 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classInnerDataTask_aa08e0a7d0a084ccd6eed9ef955a750be}\label{classInnerDataTask_aa08e0a7d0a084ccd6eed9ef955a750be}} 
+\index{InnerDataTask@{InnerDataTask}!InnerDataTask@{InnerDataTask}}
+\index{InnerDataTask@{InnerDataTask}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{InnerDataTask()}{InnerDataTask()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Inner\+Data\+Task\+::\+Inner\+Data\+Task (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\mbox{\Hypertarget{classInnerDataTask_a94f4ec7c5149df4dff87f64947afb623}\label{classInnerDataTask_a94f4ec7c5149df4dff87f64947afb623}} 
+\index{InnerDataTask@{InnerDataTask}!InnerDataTask@{InnerDataTask}}
+\index{InnerDataTask@{InnerDataTask}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{InnerDataTask()}{InnerDataTask()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Inner\+Data\+Task\+::\+Inner\+Data\+Task (\begin{DoxyParamCaption}\item[{std\+::string}]{name,  }\item[{long long int}]{id,  }\item[{\mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}} $\ast$}]{parray,  }\item[{\mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}}}]{access\+\_\+mode,  }\item[{int}]{dev\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 604 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{606       : \mbox{\hyperlink{classInnerDataTask_ac23d101f6f732f9dac7de0eca3a4080f}{parray\_}}(\mbox{\hyperlink{namespaceparray}{parray}}), \mbox{\hyperlink{classInnerDataTask_a9f8ad9019274386620293f83d8828780}{access\_mode\_}}(access\_mode), \mbox{\hyperlink{classInnerDataTask_a487b12e3b6220846a06f4be060aa51a5}{dev\_id\_}}(dev\_id),}
+\DoxyCodeLine{607         \mbox{\hyperlink{classInnerTask_af32062a9097ed548c0eaa95311ae302a}{InnerTask}}(\mbox{\hyperlink{classInnerTask_acb61a5fe433a54450591008fcb215521}{name}}, \textcolor{keywordtype}{id}, \textcolor{keyword}{nullptr}) \{}
+\DoxyCodeLine{608     this-\/>\mbox{\hyperlink{classInnerTask_a4c985b02ab4725fcdfd93c57cd67bb0f}{is\_data}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{609     \textcolor{comment}{// Data tasks are created after persistent resource reservation.}}
+\DoxyCodeLine{610     \textcolor{comment}{// Therefore its start state is always RESERVED.}}
+\DoxyCodeLine{611     this-\/>\mbox{\hyperlink{classInnerTask_a4886533d4e5d2c0c9f36283c440c6da1}{set\_state}}(\mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ac0474346713027b27d364defd7bba79b}{Task::RESERVED}});}
+\DoxyCodeLine{612   \}}
+
+\end{DoxyCode}
+
+
+References access\+\_\+mode\+\_\+, dev\+\_\+id\+\_\+, Inner\+Data\+Task(), parray\+\_\+, and Task\+::\+RESERVED.
+
+
+
+Referenced by Inner\+Data\+Task().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=242pt]{classInnerDataTask_a94f4ec7c5149df4dff87f64947afb623_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=242pt]{classInnerDataTask_a94f4ec7c5149df4dff87f64947afb623_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classInnerDataTask_afb4d64ae42adce273eae56ec4212f514}\label{classInnerDataTask_afb4d64ae42adce273eae56ec4212f514}} 
+\index{InnerDataTask@{InnerDataTask}!get\_access\_mode@{get\_access\_mode}}
+\index{get\_access\_mode@{get\_access\_mode}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{get\_access\_mode()}{get\_access\_mode()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} Inner\+Data\+Task\+::get\+\_\+access\+\_\+mode (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Return a access mode of PArray. 
+
+
+
+Definition at line 469 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{469 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerDataTask_a9f8ad9019274386620293f83d8828780}{access\_mode\_}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classInnerDataTask_ab09701f69206c9fd3cc8f50996c7c7d6}\label{classInnerDataTask_ab09701f69206c9fd3cc8f50996c7c7d6}} 
+\index{InnerDataTask@{InnerDataTask}!get\_device\_id@{get\_device\_id}}
+\index{get\_device\_id@{get\_device\_id}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{get\_device\_id()}{get\_device\_id()}}
+{\footnotesize\ttfamily int Inner\+Data\+Task\+::get\+\_\+device\+\_\+id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 621 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{621 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerDataTask_a487b12e3b6220846a06f4be060aa51a5}{dev\_id\_}}; \}}
+
+\end{DoxyCode}
+
+
+References dev\+\_\+id\+\_\+.
+
+\mbox{\Hypertarget{classInnerDataTask_a7c48db928eb06acad5f01379effcfc89}\label{classInnerDataTask_a7c48db928eb06acad5f01379effcfc89}} 
+\index{InnerDataTask@{InnerDataTask}!get\_py\_parray@{get\_py\_parray}}
+\index{get\_py\_parray@{get\_py\_parray}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{get\_py\_parray()}{get\_py\_parray()}}
+{\footnotesize\ttfamily void $\ast$ Inner\+Data\+Task\+::get\+\_\+py\+\_\+parray (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Return a python PArray pointer (as void$\ast$). 
+
+
+
+Definition at line 467 of file task.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{467 \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerDataTask_ac23d101f6f732f9dac7de0eca3a4080f}{parray\_}}-\/>\mbox{\hyperlink{classparray_1_1InnerPArray_ad8004b6b791cd01e834239cbed51a7ef}{get\_py\_parray}}(); \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classInnerDataTask_a9f8ad9019274386620293f83d8828780}\label{classInnerDataTask_a9f8ad9019274386620293f83d8828780}} 
+\index{InnerDataTask@{InnerDataTask}!access\_mode\_@{access\_mode\_}}
+\index{access\_mode\_@{access\_mode\_}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{access\_mode\_}{access\_mode\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} Inner\+Data\+Task\+::access\+\_\+mode\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 625 of file runtime.\+hpp.
+
+
+
+Referenced by Inner\+Data\+Task().
+
+\mbox{\Hypertarget{classInnerDataTask_a487b12e3b6220846a06f4be060aa51a5}\label{classInnerDataTask_a487b12e3b6220846a06f4be060aa51a5}} 
+\index{InnerDataTask@{InnerDataTask}!dev\_id\_@{dev\_id\_}}
+\index{dev\_id\_@{dev\_id\_}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{dev\_id\_}{dev\_id\_}}
+{\footnotesize\ttfamily int Inner\+Data\+Task\+::dev\+\_\+id\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 626 of file runtime.\+hpp.
+
+
+
+Referenced by get\+\_\+device\+\_\+id(), and Inner\+Data\+Task().
+
+\mbox{\Hypertarget{classInnerDataTask_ac23d101f6f732f9dac7de0eca3a4080f}\label{classInnerDataTask_ac23d101f6f732f9dac7de0eca3a4080f}} 
+\index{InnerDataTask@{InnerDataTask}!parray\_@{parray\_}}
+\index{parray\_@{parray\_}!InnerDataTask@{InnerDataTask}}
+\doxysubsubsection{\texorpdfstring{parray\_}{parray\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classparray_1_1InnerPArray}{parray\+::\+Inner\+PArray}}$\ast$ Inner\+Data\+Task\+::parray\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 624 of file runtime.\+hpp.
+
+
+
+Referenced by Inner\+Data\+Task().
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{task_8cpp}{task.\+cpp}}\end{DoxyCompactItemize}

@@ -1,0 +1,216 @@
+\hypertarget{device_8hpp}{}\doxysection{src/c/backend/include/device.hpp File Reference}
+\label{device_8hpp}\index{src/c/backend/include/device.hpp@{src/c/backend/include/device.hpp}}
+
+
+Provides interface for abstract device object.  
+
+
+{\ttfamily \#include \char`\"{}resources.\+hpp\char`\"{}}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+Include dependency graph for device.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{device_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{device_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classDevice}{Device}}
+\begin{DoxyCompactList}\small\item\em Devices can be distinguished from other devices by a class type and its index. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classCUDADevice}{CUDADevice}}
+\item 
+class \mbox{\hyperlink{classCPUDevice}{CPUDevice}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{device_8hpp_a3faef5554708f43b283115c0820e4c9f}{PARLA\+\_\+\+DEVICE\+\_\+\+HPP}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} = uint32\+\_\+t
+\item 
+using \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} = \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}}
+\item 
+using \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} = \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}}
+\item 
+using \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} = \mbox{\hyperlink{classResourcePool}{Resource\+Pool}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} \{ \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9accc0377a8afbf50e7094f5c23a8af223}{INVALID}} = -\/2
+, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9ab1c94ca2fbc3e78fc30069c8d0f01680}{All}} = -\/1
+, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9a2b55387dd066c5bac646ac61543d152d}{CPU}} = 0
+, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9aa33b7755e5f9b504d2d038eaca4ff28d}{CUDA}} = 1
+ \}
+\begin{DoxyCompactList}\small\item\em Architecture types for devices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+constexpr const std\+::array \mbox{\hyperlink{device_8hpp_a0d1543ce78494ee034dc5f68c714bcbd}{architecture\+\_\+types}}
+\item 
+constexpr const int \mbox{\hyperlink{device_8hpp_a6a479ba58c5f2521ddb9c2025f16b496}{NUM\+\_\+\+DEVICE\+\_\+\+TYPES}} = architecture\+\_\+types.\+size()
+\item 
+const std\+::array$<$ std\+::string, \mbox{\hyperlink{device_8hpp_a6a479ba58c5f2521ddb9c2025f16b496}{NUM\+\_\+\+DEVICE\+\_\+\+TYPES}} $>$ \mbox{\hyperlink{device_8hpp_a8080609036eca963d0496dbb9c24724e}{architecture\+\_\+names}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides interface for abstract device object. 
+
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{device_8hpp_a3faef5554708f43b283115c0820e4c9f}\label{device_8hpp_a3faef5554708f43b283115c0820e4c9f}} 
+\index{device.hpp@{device.hpp}!PARLA\_DEVICE\_HPP@{PARLA\_DEVICE\_HPP}}
+\index{PARLA\_DEVICE\_HPP@{PARLA\_DEVICE\_HPP}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{PARLA\_DEVICE\_HPP}{PARLA\_DEVICE\_HPP}}
+{\footnotesize\ttfamily \#define PARLA\+\_\+\+DEVICE\+\_\+\+HPP}
+
+
+
+Definition at line 7 of file device.\+hpp.
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{device_8hpp_a1a60ef2726088f66773542604d44bdd7}\label{device_8hpp_a1a60ef2726088f66773542604d44bdd7}} 
+\index{device.hpp@{device.hpp}!DevID\_t@{DevID\_t}}
+\index{DevID\_t@{DevID\_t}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{DevID\_t}{DevID\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} =  uint32\+\_\+t}
+
+
+
+Definition at line 16 of file device.\+hpp.
+
+\mbox{\Hypertarget{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}\label{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}} 
+\index{device.hpp@{device.hpp}!MemorySz\_t@{MemorySz\_t}}
+\index{MemorySz\_t@{MemorySz\_t}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{MemorySz\_t}{MemorySz\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} =  \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}}}
+
+
+
+Definition at line 17 of file device.\+hpp.
+
+\mbox{\Hypertarget{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}\label{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}} 
+\index{device.hpp@{device.hpp}!ResourcePool\_t@{ResourcePool\_t}}
+\index{ResourcePool\_t@{ResourcePool\_t}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{ResourcePool\_t}{ResourcePool\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} =  \mbox{\hyperlink{classResourcePool}{Resource\+Pool}}}
+
+
+
+Definition at line 20 of file device.\+hpp.
+
+\mbox{\Hypertarget{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}\label{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}} 
+\index{device.hpp@{device.hpp}!VCU\_t@{VCU\_t}}
+\index{VCU\_t@{VCU\_t}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{VCU\_t}{VCU\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} =  \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}}}
+
+
+
+Definition at line 18 of file device.\+hpp.
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{device_8hpp_ad258d4c51629346fceac4679b3209ad9}\label{device_8hpp_ad258d4c51629346fceac4679b3209ad9}} 
+\index{device.hpp@{device.hpp}!DeviceType@{DeviceType}}
+\index{DeviceType@{DeviceType}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{DeviceType}{DeviceType}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+Architecture types for devices. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INVALID@{INVALID}!device.hpp@{device.hpp}}\index{device.hpp@{device.hpp}!INVALID@{INVALID}}}\mbox{\Hypertarget{device_8hpp_ad258d4c51629346fceac4679b3209ad9accc0377a8afbf50e7094f5c23a8af223}\label{device_8hpp_ad258d4c51629346fceac4679b3209ad9accc0377a8afbf50e7094f5c23a8af223}} 
+INVALID&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{All@{All}!device.hpp@{device.hpp}}\index{device.hpp@{device.hpp}!All@{All}}}\mbox{\Hypertarget{device_8hpp_ad258d4c51629346fceac4679b3209ad9ab1c94ca2fbc3e78fc30069c8d0f01680}\label{device_8hpp_ad258d4c51629346fceac4679b3209ad9ab1c94ca2fbc3e78fc30069c8d0f01680}} 
+All&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CPU@{CPU}!device.hpp@{device.hpp}}\index{device.hpp@{device.hpp}!CPU@{CPU}}}\mbox{\Hypertarget{device_8hpp_ad258d4c51629346fceac4679b3209ad9a2b55387dd066c5bac646ac61543d152d}\label{device_8hpp_ad258d4c51629346fceac4679b3209ad9a2b55387dd066c5bac646ac61543d152d}} 
+CPU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CUDA@{CUDA}!device.hpp@{device.hpp}}\index{device.hpp@{device.hpp}!CUDA@{CUDA}}}\mbox{\Hypertarget{device_8hpp_ad258d4c51629346fceac4679b3209ad9aa33b7755e5f9b504d2d038eaca4ff28d}\label{device_8hpp_ad258d4c51629346fceac4679b3209ad9aa33b7755e5f9b504d2d038eaca4ff28d}} 
+CUDA&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 27 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{27 \{ \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9accc0377a8afbf50e7094f5c23a8af223}{INVALID}} = -\/2, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9ab1c94ca2fbc3e78fc30069c8d0f01680}{All}} = -\/1, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9a2b55387dd066c5bac646ac61543d152d}{CPU}} = 0, \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9aa33b7755e5f9b504d2d038eaca4ff28d}{CUDA}} = 1 \};}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{device_8hpp_a8080609036eca963d0496dbb9c24724e}\label{device_8hpp_a8080609036eca963d0496dbb9c24724e}} 
+\index{device.hpp@{device.hpp}!architecture\_names@{architecture\_names}}
+\index{architecture\_names@{architecture\_names}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{architecture\_names}{architecture\_names}}
+{\footnotesize\ttfamily const std\+::array$<$std\+::string, \mbox{\hyperlink{device_8hpp_a6a479ba58c5f2521ddb9c2025f16b496}{NUM\+\_\+\+DEVICE\+\_\+\+TYPES}}$>$ architecture\+\_\+names\hspace{0.3cm}{\ttfamily [inline]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{    \textcolor{stringliteral}{"{}CPU"{}}, \textcolor{stringliteral}{"{}CUDA"{}}\}}
+
+\end{DoxyCode}
+
+
+Definition at line 32 of file device.\+hpp.
+
+\mbox{\Hypertarget{device_8hpp_a0d1543ce78494ee034dc5f68c714bcbd}\label{device_8hpp_a0d1543ce78494ee034dc5f68c714bcbd}} 
+\index{device.hpp@{device.hpp}!architecture\_types@{architecture\_types}}
+\index{architecture\_types@{architecture\_types}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{architecture\_types}{architecture\_types}}
+{\footnotesize\ttfamily constexpr const std\+::array architecture\+\_\+types\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{\mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9a2b55387dd066c5bac646ac61543d152d}{DeviceType::CPU}},}
+\DoxyCodeLine{                                                     \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9aa33b7755e5f9b504d2d038eaca4ff28d}{DeviceType::CUDA}}\}}
+
+\end{DoxyCode}
+
+
+Definition at line 29 of file device.\+hpp.
+
+\mbox{\Hypertarget{device_8hpp_a6a479ba58c5f2521ddb9c2025f16b496}\label{device_8hpp_a6a479ba58c5f2521ddb9c2025f16b496}} 
+\index{device.hpp@{device.hpp}!NUM\_DEVICE\_TYPES@{NUM\_DEVICE\_TYPES}}
+\index{NUM\_DEVICE\_TYPES@{NUM\_DEVICE\_TYPES}!device.hpp@{device.hpp}}
+\doxysubsubsection{\texorpdfstring{NUM\_DEVICE\_TYPES}{NUM\_DEVICE\_TYPES}}
+{\footnotesize\ttfamily constexpr const int NUM\+\_\+\+DEVICE\+\_\+\+TYPES = architecture\+\_\+types.\+size()\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [constexpr]}}
+
+
+
+Definition at line 31 of file device.\+hpp.
+

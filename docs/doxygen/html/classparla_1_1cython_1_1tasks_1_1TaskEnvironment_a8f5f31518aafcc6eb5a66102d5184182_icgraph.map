@@ -1,0 +1,16 @@
+<map id="parla.cython.tasks.TaskEnvironment.devices" name="parla.cython.tasks.TaskEnvironment.devices">
+<area shape="rect" id="node1" title=" " alt="" coords="904,202,1216,229"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#ae743dbcb8260af878501bf37afc29533" title=" " alt="" coords="572,5,835,47"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#ac660130a85203a1c6f103f0b4849b97b" title=" " alt="" coords="572,71,835,112"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#a8e408a02087f9579b8a82343e812e40c" title=" " alt="" coords="552,136,855,177"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#a60603221c6b73be3d3f187af6ddb4b92" title=" " alt="" coords="551,202,856,229"/>
+<area shape="rect" id="node12" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#a67c2a2e04fbf0571ae57feaa51e4fdf7" title=" " alt="" coords="552,253,855,295"/>
+<area shape="rect" id="node13" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#ad0d50525f61871f54e02e27e80c1075d" title=" " alt="" coords="556,319,851,360"/>
+<area shape="rect" id="node14" href="$classparla_1_1cython_1_1tasks_1_1TaskEnvironment.html#a1c1c3be44824c62f4ad987bac09ae508" title=" " alt="" coords="556,384,851,425"/>
+<area shape="rect" id="node6" href="$classparla_1_1cython_1_1device_1_1DeviceResourceRequirement.html#a77486788314982a6b9f670621ca500c5" title=" " alt="" coords="279,195,503,236"/>
+<area shape="rect" id="node7" href="$classparla_1_1common_1_1globals_1_1Storage.html#ad6c48b63836ac81ba4d5164ce7d00955" title=" " alt="" coords="5,64,231,105"/>
+<area shape="rect" id="node8" href="$classparla_1_1common_1_1globals_1_1LocalStack.html#aeb6fac35b2e1e6378019fa35e868d215" title=" " alt="" coords="15,129,221,171"/>
+<area shape="rect" id="node9" href="$classparla_1_1cython_1_1device_1_1Stream.html#a81bf8ecb094f8169aab1e4c9ad6bb285" title=" " alt="" coords="15,195,221,236"/>
+<area shape="rect" id="node10" href="$classparla_1_1cython_1_1device_1_1CupyStream.html#ada8fcc8ba847c7f98e924841336fc7d3" title=" " alt="" coords="25,260,211,301"/>
+<area shape="rect" id="node11" href="$classparla_1_1cython_1_1tasks_1_1TaskState.html#a5e8bd8b694fb9610698dc759e595d85f" title=" " alt="" coords="11,325,225,367"/>
+</map>

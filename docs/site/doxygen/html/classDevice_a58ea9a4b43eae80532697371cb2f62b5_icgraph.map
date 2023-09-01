@@ -1,0 +1,5 @@
+<map id="Device::get_mapped_pool" name="Device::get_mapped_pool">
+<area shape="rect" id="node1" title="Returns the currently mapped resources on the device." alt="" coords="220,46,411,73"/>
+<area shape="rect" id="node2" href="$classPArrayTracker.html#a2b40aadf78c88fac068b5fe500665539" title="Release a PArray from a specified device." alt="" coords="5,5,172,47"/>
+<area shape="rect" id="node3" href="$classPArrayTracker.html#a59b544edce17171c9731c950c603af85" title="Reserve PArray usage in a specified device." alt="" coords="5,71,172,112"/>
+</map>

@@ -1,0 +1,228 @@
+\hypertarget{namespaceparla}{}\doxysection{parla Namespace Reference}
+\label{namespaceparla}\index{parla@{parla}}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1common}{common}}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1cython}{cython}}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1utility}{utility}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1Parla}{Parla}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_af434c74f1cbaa8dff1d3e652e8727263}{signal\+\_\+handler}} (signal, frame)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_a3c744bf99f10b958b87e806886537d04}{specialize}} = variants.\+specialize
+\item 
+\mbox{\hyperlink{namespaceparla_a097d7fff6edcb9c48b2342e1f9f87ab3}{sleep\+\_\+gil}} = core.\+cpu\+\_\+bsleep\+\_\+gil
+\item 
+\mbox{\hyperlink{namespaceparla_a5777a3f4c6668f9bda69d9dae0437559}{sleep\+\_\+nogil}} = core.\+cpu\+\_\+bsleep\+\_\+nogil
+\item 
+\mbox{\hyperlink{namespaceparla_a9240a6308012c442e8b0712709d1299e}{gpu\+\_\+sleep\+\_\+gil}} = core.\+gpu\+\_\+bsleep\+\_\+gil
+\item 
+\mbox{\hyperlink{namespaceparla_ab7359d8f9f3f98d5f9e1344e3dc8b045}{gpu\+\_\+sleep\+\_\+nogil}} = core.\+gpu\+\_\+bsleep\+\_\+nogil
+\item 
+\mbox{\hyperlink{namespaceparla_a36622c3f1023c843a2106d70e9807281}{Task\+Space}} = tasks.\+Task\+Space
+\item 
+\mbox{\hyperlink{namespaceparla_a84d432cd7ca747113dc2461eeb7df557}{Tasks}} = tasks.\+Task\+Collection
+\item 
+\mbox{\hyperlink{namespaceparla_a71b3737ed5e0b306d883468b6b05393c}{Device\+Manager}} = device\+\_\+manager.\+Py\+Device\+Manager
+\item 
+\mbox{\hyperlink{namespaceparla_ac35ea720eba8fbbbc47c2b6b94deaf26}{Stream}} = device.\+Stream
+\item 
+\mbox{\hyperlink{namespaceparla_a6d7f714f3fd39b2efdc1db3cefc24121}{create\+\_\+env}} = tasks.\+create\+\_\+env
+\item 
+\mbox{\hyperlink{namespaceparla_af262ae64b05ce847dc7c5a38d9d63833}{Task\+Environment}} = tasks.\+Task\+Environment
+\item 
+\mbox{\hyperlink{namespaceparla_a96976dfac94e7b468eec46a8dd94e1ec}{GPUEnvironment}} = tasks.\+GPUEnvironment
+\item 
+list \mbox{\hyperlink{namespaceparla_a1b2acda3bd55d36120c006ff147293ef}{\+\_\+\+\_\+all\+\_\+\+\_\+}}
+\item 
+\mbox{\hyperlink{namespaceparla_a76be0c163755c99d2941d1cc21a09169}{parla\+\_\+num\+\_\+threads}} = os.\+environ.\+get(\char`\"{}PARLA\+\_\+\+NUM\+\_\+\+THREADS\char`\"{}, None)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{namespaceparla_af434c74f1cbaa8dff1d3e652e8727263}\label{namespaceparla_af434c74f1cbaa8dff1d3e652e8727263}} 
+\index{parla@{parla}!signal\_handler@{signal\_handler}}
+\index{signal\_handler@{signal\_handler}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{signal\_handler()}{signal\_handler()}}
+{\footnotesize\ttfamily def parla.\+signal\+\_\+handler (\begin{DoxyParamCaption}\item[{}]{signal,  }\item[{}]{frame }\end{DoxyParamCaption})}
+
+
+
+Definition at line 37 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{37 \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_af434c74f1cbaa8dff1d3e652e8727263}{signal\_handler}}(signal, frame):}
+\DoxyCodeLine{38     print(\textcolor{stringliteral}{"{}You pressed Ctrl+C!"{}})}
+\DoxyCodeLine{39     sys.exit(0)}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{41 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceparla_a1b2acda3bd55d36120c006ff147293ef}\label{namespaceparla_a1b2acda3bd55d36120c006ff147293ef}} 
+\index{parla@{parla}!\_\_all\_\_@{\_\_all\_\_}}
+\index{\_\_all\_\_@{\_\_all\_\_}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{\_\_all\_\_}{\_\_all\_\_}}
+{\footnotesize\ttfamily list parla.\+\_\+\+\_\+all\+\_\+\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 =  [\textcolor{stringliteral}{'spawn'}, \textcolor{stringliteral}{'TaskSpace'}, \textcolor{stringliteral}{'Parla'}, \textcolor{stringliteral}{'sleep\_gil'},}
+\DoxyCodeLine{2            \textcolor{stringliteral}{'sleep\_nogil'}, \textcolor{stringliteral}{'Tasks'}, \textcolor{stringliteral}{'parla\_num\_threads'},}
+\DoxyCodeLine{3            \textcolor{stringliteral}{'parray'}]}
+
+\end{DoxyCode}
+
+
+Definition at line 32 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a6d7f714f3fd39b2efdc1db3cefc24121}\label{namespaceparla_a6d7f714f3fd39b2efdc1db3cefc24121}} 
+\index{parla@{parla}!create\_env@{create\_env}}
+\index{create\_env@{create\_env}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{create\_env}{create\_env}}
+{\footnotesize\ttfamily parla.\+create\+\_\+env = tasks.\+create\+\_\+env}
+
+
+
+Definition at line 27 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a71b3737ed5e0b306d883468b6b05393c}\label{namespaceparla_a71b3737ed5e0b306d883468b6b05393c}} 
+\index{parla@{parla}!DeviceManager@{DeviceManager}}
+\index{DeviceManager@{DeviceManager}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{DeviceManager}{DeviceManager}}
+{\footnotesize\ttfamily parla.\+Device\+Manager = device\+\_\+manager.\+Py\+Device\+Manager}
+
+
+
+Definition at line 24 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a9240a6308012c442e8b0712709d1299e}\label{namespaceparla_a9240a6308012c442e8b0712709d1299e}} 
+\index{parla@{parla}!gpu\_sleep\_gil@{gpu\_sleep\_gil}}
+\index{gpu\_sleep\_gil@{gpu\_sleep\_gil}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{gpu\_sleep\_gil}{gpu\_sleep\_gil}}
+{\footnotesize\ttfamily parla.\+gpu\+\_\+sleep\+\_\+gil = core.\+gpu\+\_\+bsleep\+\_\+gil}
+
+
+
+Definition at line 18 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_ab7359d8f9f3f98d5f9e1344e3dc8b045}\label{namespaceparla_ab7359d8f9f3f98d5f9e1344e3dc8b045}} 
+\index{parla@{parla}!gpu\_sleep\_nogil@{gpu\_sleep\_nogil}}
+\index{gpu\_sleep\_nogil@{gpu\_sleep\_nogil}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{gpu\_sleep\_nogil}{gpu\_sleep\_nogil}}
+{\footnotesize\ttfamily parla.\+gpu\+\_\+sleep\+\_\+nogil = core.\+gpu\+\_\+bsleep\+\_\+nogil}
+
+
+
+Definition at line 19 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a96976dfac94e7b468eec46a8dd94e1ec}\label{namespaceparla_a96976dfac94e7b468eec46a8dd94e1ec}} 
+\index{parla@{parla}!GPUEnvironment@{GPUEnvironment}}
+\index{GPUEnvironment@{GPUEnvironment}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{GPUEnvironment}{GPUEnvironment}}
+{\footnotesize\ttfamily parla.\+GPUEnvironment = tasks.\+GPUEnvironment}
+
+
+
+Definition at line 29 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a76be0c163755c99d2941d1cc21a09169}\label{namespaceparla_a76be0c163755c99d2941d1cc21a09169}} 
+\index{parla@{parla}!parla\_num\_threads@{parla\_num\_threads}}
+\index{parla\_num\_threads@{parla\_num\_threads}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{parla\_num\_threads}{parla\_num\_threads}}
+{\footnotesize\ttfamily parla.\+parla\+\_\+num\+\_\+threads = os.\+environ.\+get(\char`\"{}PARLA\+\_\+\+NUM\+\_\+\+THREADS\char`\"{}, None)}
+
+
+
+Definition at line 42 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a097d7fff6edcb9c48b2342e1f9f87ab3}\label{namespaceparla_a097d7fff6edcb9c48b2342e1f9f87ab3}} 
+\index{parla@{parla}!sleep\_gil@{sleep\_gil}}
+\index{sleep\_gil@{sleep\_gil}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{sleep\_gil}{sleep\_gil}}
+{\footnotesize\ttfamily parla.\+sleep\+\_\+gil = core.\+cpu\+\_\+bsleep\+\_\+gil}
+
+
+
+Definition at line 15 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a5777a3f4c6668f9bda69d9dae0437559}\label{namespaceparla_a5777a3f4c6668f9bda69d9dae0437559}} 
+\index{parla@{parla}!sleep\_nogil@{sleep\_nogil}}
+\index{sleep\_nogil@{sleep\_nogil}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{sleep\_nogil}{sleep\_nogil}}
+{\footnotesize\ttfamily parla.\+sleep\+\_\+nogil = core.\+cpu\+\_\+bsleep\+\_\+nogil}
+
+
+
+Definition at line 16 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a3c744bf99f10b958b87e806886537d04}\label{namespaceparla_a3c744bf99f10b958b87e806886537d04}} 
+\index{parla@{parla}!specialize@{specialize}}
+\index{specialize@{specialize}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{specialize}{specialize}}
+{\footnotesize\ttfamily parla.\+specialize = variants.\+specialize}
+
+
+
+Definition at line 13 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_ac35ea720eba8fbbbc47c2b6b94deaf26}\label{namespaceparla_ac35ea720eba8fbbbc47c2b6b94deaf26}} 
+\index{parla@{parla}!Stream@{Stream}}
+\index{Stream@{Stream}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{Stream}{Stream}}
+{\footnotesize\ttfamily parla.\+Stream = device.\+Stream}
+
+
+
+Definition at line 26 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_af262ae64b05ce847dc7c5a38d9d63833}\label{namespaceparla_af262ae64b05ce847dc7c5a38d9d63833}} 
+\index{parla@{parla}!TaskEnvironment@{TaskEnvironment}}
+\index{TaskEnvironment@{TaskEnvironment}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{TaskEnvironment}{TaskEnvironment}}
+{\footnotesize\ttfamily parla.\+Task\+Environment = tasks.\+Task\+Environment}
+
+
+
+Definition at line 28 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a84d432cd7ca747113dc2461eeb7df557}\label{namespaceparla_a84d432cd7ca747113dc2461eeb7df557}} 
+\index{parla@{parla}!Tasks@{Tasks}}
+\index{Tasks@{Tasks}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{Tasks}{Tasks}}
+{\footnotesize\ttfamily parla.\+Tasks = tasks.\+Task\+Collection}
+
+
+
+Definition at line 22 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+\mbox{\Hypertarget{namespaceparla_a36622c3f1023c843a2106d70e9807281}\label{namespaceparla_a36622c3f1023c843a2106d70e9807281}} 
+\index{parla@{parla}!TaskSpace@{TaskSpace}}
+\index{TaskSpace@{TaskSpace}!parla@{parla}}
+\doxysubsubsection{\texorpdfstring{TaskSpace}{TaskSpace}}
+{\footnotesize\ttfamily parla.\+Task\+Space = tasks.\+Task\+Space}
+
+
+
+Definition at line 21 of file \+\_\+\+\_\+init\+\_\+\+\_\+.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+execute\+\_\+graph().
+

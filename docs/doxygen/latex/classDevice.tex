@@ -1,0 +1,698 @@
+\hypertarget{classDevice}{}\doxysection{Device Class Reference}
+\label{classDevice}\index{Device@{Device}}
+
+
+Devices can be distinguished from other devices by a class type and its index.  
+
+
+
+
+{\ttfamily \#include $<$device.\+hpp$>$}
+
+
+
+Inheritance diagram for Device\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=248pt]{classDevice__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Device\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=191pt]{classDevice__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDevice_ab885f54aff5585b4898be0f40791d909}{Device}} ()=delete
+\item 
+\mbox{\hyperlink{classDevice_ab0dd3e2e83bb791bf4f3a6b1fa64e136}{Device}} (\mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} arch, \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id, \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} mem\+\_\+sz, \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} num\+\_\+vcus, void $\ast$py\+\_\+dev, int copy\+\_\+engines=2)
+\item 
+const \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} \mbox{\hyperlink{classDevice_a5aeb76c513e055e8e47a5b9f03743fde}{get\+\_\+id}} () const
+\begin{DoxyCompactList}\small\item\em Return a device id. \end{DoxyCompactList}\item 
+const std\+::string \mbox{\hyperlink{classDevice_a2c9568600a86e525b66fe663528d37db}{get\+\_\+name}} () const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_a4b26ae0012a7b853adb6e98de08d88b1}{query\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_acd7f11ff4c446e1974badb0debcf6131}{query\+\_\+reserved\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_afd0a8da679e6ac19c58932c2fd2ec5e8}{query\+\_\+mapped\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} \mbox{\hyperlink{classDevice_ae26407c94fe213ee4ec467e52e1f50a1}{get\+\_\+type}} () const
+\item 
+const \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \& \mbox{\hyperlink{classDevice_a1d755791d45e1d02a9a7afe470480367}{get\+\_\+resource\+\_\+pool}} () const
+\begin{DoxyCompactList}\small\item\em Returns the device details (maximum resources available) This is assumed to be constant after device creation. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \& \mbox{\hyperlink{classDevice_a58ea9a4b43eae80532697371cb2f62b5}{get\+\_\+mapped\+\_\+pool}} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently mapped resources on the device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \& \mbox{\hyperlink{classDevice_a23e7c65c6d833d56755aead8128763b7}{get\+\_\+reserved\+\_\+pool}} ()
+\begin{DoxyCompactList}\small\item\em Returns the currently reserved resources on the device. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{classDevice_a59fc750398c29af515a2480aebd6bfb4}{get\+\_\+py\+\_\+device}} ()
+\begin{DoxyCompactList}\small\item\em Returns the pointer to the python device object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classDevice_a744aaf55791a61d805b190921a94073c}{set\+\_\+global\+\_\+id}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} global\+\_\+id)
+\item 
+const \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} \mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\+\_\+global\+\_\+id}} () const
+\item 
+const \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} \mbox{\hyperlink{classDevice_ae93fff5c4dc44306c68d5c25199e1985}{get\+\_\+memory\+\_\+size}} () const
+\item 
+const \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} \mbox{\hyperlink{classDevice_ab5ac17db1d5ccc214dfa22cfe3cbd65a}{get\+\_\+num\+\_\+vcus}} () const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_a98363845869ffc432a6577c783cb0474}{get\+\_\+max\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_a70602bef730bdc71e78d0fc8ada3696f}{get\+\_\+reserved\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} \mbox{\hyperlink{classDevice_a25828b4a150bbbf944bae4220e071ad2}{get\+\_\+mapped\+\_\+resource}} (\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}} type) const
+\item 
+const bool \mbox{\hyperlink{classDevice_aca1649a233aee0f1251e1a16faf45ab3}{check\+\_\+resource\+\_\+availability}} (\mbox{\hyperlink{classDeviceRequirement}{Device\+Requirement}} $\ast$dev\+\_\+req) const
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} \mbox{\hyperlink{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}{dev\+\_\+type\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} \mbox{\hyperlink{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}{dev\+\_\+id\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} \mbox{\hyperlink{classDevice_a30f314a235587162d64ea1d21914f6b7}{dev\+\_\+global\+\_\+id\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\+\_\+res\+\_\+}}
+\item 
+\mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} \mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\+\_\+res\+\_\+}}
+\item 
+void $\ast$ \mbox{\hyperlink{classDevice_a270084874024798e55899f4faeda475b}{py\+\_\+dev\+\_\+}}
+\item 
+std\+::unordered\+\_\+map$<$ std\+::string, size\+\_\+t $>$ \mbox{\hyperlink{classDevice_ad3712adb7153fab746d9cae53325db5e}{resource\+\_\+map\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Devices can be distinguished from other devices by a class type and its index. 
+
+Definition at line 37 of file device.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classDevice_ab885f54aff5585b4898be0f40791d909}\label{classDevice_ab885f54aff5585b4898be0f40791d909}} 
+\index{Device@{Device}!Device@{Device}}
+\index{Device@{Device}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{Device()}{Device()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Device\+::\+Device (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\mbox{\Hypertarget{classDevice_ab0dd3e2e83bb791bf4f3a6b1fa64e136}\label{classDevice_ab0dd3e2e83bb791bf4f3a6b1fa64e136}} 
+\index{Device@{Device}!Device@{Device}}
+\index{Device@{Device}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{Device()}{Device()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Device\+::\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}}}]{arch,  }\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id,  }\item[{\mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}}}]{mem\+\_\+sz,  }\item[{\mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}}}]{num\+\_\+vcus,  }\item[{void $\ast$}]{py\+\_\+dev,  }\item[{int}]{copy\+\_\+engines = {\ttfamily 2} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 42 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{44       : \mbox{\hyperlink{classDevice_a270084874024798e55899f4faeda475b}{py\_dev\_}}(py\_dev), \mbox{\hyperlink{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}{dev\_id\_}}(dev\_id), \mbox{\hyperlink{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}{dev\_type\_}}(arch) \{}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{46     \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}, num\_vcus);}
+\DoxyCodeLine{47     \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, mem\_sz);}
+\DoxyCodeLine{48     \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Resource::Copy}}, copy\_engines);}
+\DoxyCodeLine{49 }
+\DoxyCodeLine{50     \mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}, num\_vcus);}
+\DoxyCodeLine{51     \mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, mem\_sz);}
+\DoxyCodeLine{52     \mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Resource::Copy}}, copy\_engines);}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54     \mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}, 0);}
+\DoxyCodeLine{55     \mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}}, 0);}
+\DoxyCodeLine{56     \mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}.\mbox{\hyperlink{classResourcePool_a260294bdcc14fb6502e85a4cf096a28f}{set}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a5fb63579fc981698f97d55bfecb213ea}{Resource::Copy}}, 0);}
+\DoxyCodeLine{57   \}}
+
+\end{DoxyCode}
+
+
+References Copy, dev\+\_\+type\+\_\+, Device(), mapped\+\_\+res\+\_\+, Memory, py\+\_\+dev\+\_\+, res\+\_\+, reserved\+\_\+res\+\_\+, and VCU.
+
+
+
+Referenced by Device().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=170pt]{classDevice_ab0dd3e2e83bb791bf4f3a6b1fa64e136_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=170pt]{classDevice_ab0dd3e2e83bb791bf4f3a6b1fa64e136_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classDevice_aca1649a233aee0f1251e1a16faf45ab3}\label{classDevice_aca1649a233aee0f1251e1a16faf45ab3}} 
+\index{Device@{Device}!check\_resource\_availability@{check\_resource\_availability}}
+\index{check\_resource\_availability@{check\_resource\_availability}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{check\_resource\_availability()}{check\_resource\_availability()}}
+{\footnotesize\ttfamily const bool Device\+::check\+\_\+resource\+\_\+availability (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDeviceRequirement}{Device\+Requirement}} $\ast$}]{dev\+\_\+req }\end{DoxyParamCaption}) const}
+
+
+
+Definition at line 5 of file device.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{5                                                                     \{}
+\DoxyCodeLine{6   \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a1d755791d45e1d02a9a7afe470480367}{get\_resource\_pool}}().\mbox{\hyperlink{classResourcePool_a6e6f954ecbf68bc7039b1a6826664f76}{check\_greater}}<\mbox{\hyperlink{resources_8hpp_aaf78cb490f07150f95154e6a8c907436ab1c94ca2fbc3e78fc30069c8d0f01680}{ResourceCategory::All}}>(}
+\DoxyCodeLine{7       dev\_req-\/>\mbox{\hyperlink{classDeviceRequirement_a3fdfcd1cd4f5e76c803a61aafbcb3d41}{res\_req}}());}
+\DoxyCodeLine{8 \}}
+
+\end{DoxyCode}
+
+
+References All, get\+\_\+resource\+\_\+pool(), and Device\+Requirement\+::res\+\_\+req().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_aca1649a233aee0f1251e1a16faf45ab3_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}\label{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}} 
+\index{Device@{Device}!get\_global\_id@{get\_global\_id}}
+\index{get\_global\_id@{get\_global\_id}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_global\_id()}{get\_global\_id()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} Device\+::get\+\_\+global\+\_\+id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 111 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{111 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a30f314a235587162d64ea1d21914f6b7}{dev\_global\_id\_}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDevice_a5aeb76c513e055e8e47a5b9f03743fde}\label{classDevice_a5aeb76c513e055e8e47a5b9f03743fde}} 
+\index{Device@{Device}!get\_id@{get\_id}}
+\index{get\_id@{get\_id}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_id()}{get\_id()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} Device\+::get\+\_\+id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Return a device id. 
+
+
+
+Definition at line 60 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{60 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}{dev\_id\_}}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classDevice_a58ea9a4b43eae80532697371cb2f62b5}\label{classDevice_a58ea9a4b43eae80532697371cb2f62b5}} 
+\index{Device@{Device}!get\_mapped\_pool@{get\_mapped\_pool}}
+\index{get\_mapped\_pool@{get\_mapped\_pool}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_mapped\_pool()}{get\_mapped\_pool()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}\& Device\+::get\+\_\+mapped\+\_\+pool (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the currently mapped resources on the device. 
+
+This starts at 0 and increases as resources are mapped. Decreased when resources are released at the end of a task. This is not runtime necessary, but useful to mapping policy. 
+
+Definition at line 95 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{95 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}; \}}
+
+\end{DoxyCode}
+
+
+References mapped\+\_\+res\+\_\+.
+
+
+
+Referenced by PArray\+Tracker\+::release\+\_\+parray(), and PArray\+Tracker\+::reserve\+\_\+parray().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_a58ea9a4b43eae80532697371cb2f62b5_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_a25828b4a150bbbf944bae4220e071ad2}\label{classDevice_a25828b4a150bbbf944bae4220e071ad2}} 
+\index{Device@{Device}!get\_mapped\_resource@{get\_mapped\_resource}}
+\index{get\_mapped\_resource@{get\_mapped\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_mapped\_resource()}{get\_mapped\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::get\+\_\+mapped\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 127 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{127                                                             \{}
+\DoxyCodeLine{128     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{129   \}}
+
+\end{DoxyCode}
+
+
+References mapped\+\_\+res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a98363845869ffc432a6577c783cb0474}\label{classDevice_a98363845869ffc432a6577c783cb0474}} 
+\index{Device@{Device}!get\_max\_resource@{get\_max\_resource}}
+\index{get\_max\_resource@{get\_max\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_max\_resource()}{get\_max\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::get\+\_\+max\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 119 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{119                                                          \{}
+\DoxyCodeLine{120     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{121   \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_ae93fff5c4dc44306c68d5c25199e1985}\label{classDevice_ae93fff5c4dc44306c68d5c25199e1985}} 
+\index{Device@{Device}!get\_memory\_size@{get\_memory\_size}}
+\index{get\_memory\_size@{get\_memory\_size}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_memory\_size()}{get\_memory\_size()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_a29cfae87e45ed1e9b4bd4dca95e542ae}{Memory\+Sz\+\_\+t}} Device\+::get\+\_\+memory\+\_\+size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 113 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{113                                            \{}
+\DoxyCodeLine{114     \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95a4789f23283b3a61f858b641a1bef19a3}{Resource::Memory}});}
+\DoxyCodeLine{115   \}}
+
+\end{DoxyCode}
+
+
+References Memory, and res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a2c9568600a86e525b66fe663528d37db}\label{classDevice_a2c9568600a86e525b66fe663528d37db}} 
+\index{Device@{Device}!get\_name@{get\_name}}
+\index{get\_name@{get\_name}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_name()}{get\_name()}}
+{\footnotesize\ttfamily const std\+::string Device\+::get\+\_\+name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 62 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{62                                    \{}
+\DoxyCodeLine{63     \textcolor{keywordflow}{return} \mbox{\hyperlink{device_8hpp_a8080609036eca963d0496dbb9c24724e}{architecture\_names}}[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(this-\/>\mbox{\hyperlink{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}{dev\_type\_}})] + \textcolor{stringliteral}{"{}:"{}} +}
+\DoxyCodeLine{64            std::to\_string(\mbox{\hyperlink{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}{dev\_id\_}});}
+\DoxyCodeLine{65   \}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+device\+\_\+manager.\+Printable\+Frozen\+Set\+::\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_a2c9568600a86e525b66fe663528d37db_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_ab5ac17db1d5ccc214dfa22cfe3cbd65a}\label{classDevice_ab5ac17db1d5ccc214dfa22cfe3cbd65a}} 
+\index{Device@{Device}!get\_num\_vcus@{get\_num\_vcus}}
+\index{get\_num\_vcus@{get\_num\_vcus}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_num\_vcus()}{get\_num\_vcus()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_ab5d045ba947b7ffbd87244a9f269cef8}{VCU\+\_\+t}} Device\+::get\+\_\+num\+\_\+vcus (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 117 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{117 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95ae562320a23c563a5b5fdd918670625bc}{Resource::VCU}}); \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+, and VCU.
+
+\mbox{\Hypertarget{classDevice_a59fc750398c29af515a2480aebd6bfb4}\label{classDevice_a59fc750398c29af515a2480aebd6bfb4}} 
+\index{Device@{Device}!get\_py\_device@{get\_py\_device}}
+\index{get\_py\_device@{get\_py\_device}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_py\_device()}{get\_py\_device()}}
+{\footnotesize\ttfamily void$\ast$ Device\+::get\+\_\+py\+\_\+device (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the pointer to the python device object. 
+
+
+
+Definition at line 109 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{109 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a270084874024798e55899f4faeda475b}{py\_dev\_}}; \}}
+
+\end{DoxyCode}
+
+
+References py\+\_\+dev\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a23e7c65c6d833d56755aead8128763b7}\label{classDevice_a23e7c65c6d833d56755aead8128763b7}} 
+\index{Device@{Device}!get\_reserved\_pool@{get\_reserved\_pool}}
+\index{get\_reserved\_pool@{get\_reserved\_pool}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_reserved\_pool()}{get\_reserved\_pool()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}\& Device\+::get\+\_\+reserved\+\_\+pool (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the currently reserved resources on the device. 
+
+This starts at max and decreases as resources are reserved. This represents the resources currently in use by the tasks. This is necessary to determine if tasks can be scheduled without oversubscription or OOM errors. 
+
+Definition at line 104 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{104 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}; \}}
+
+\end{DoxyCode}
+
+
+References reserved\+\_\+res\+\_\+.
+
+
+
+Referenced by Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_a23e7c65c6d833d56755aead8128763b7_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_a70602bef730bdc71e78d0fc8ada3696f}\label{classDevice_a70602bef730bdc71e78d0fc8ada3696f}} 
+\index{Device@{Device}!get\_reserved\_resource@{get\_reserved\_resource}}
+\index{get\_reserved\_resource@{get\_reserved\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_reserved\_resource()}{get\_reserved\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::get\+\_\+reserved\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 123 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{123                                                               \{}
+\DoxyCodeLine{124     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{125   \}}
+
+\end{DoxyCode}
+
+
+References reserved\+\_\+res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a1d755791d45e1d02a9a7afe470480367}\label{classDevice_a1d755791d45e1d02a9a7afe470480367}} 
+\index{Device@{Device}!get\_resource\_pool@{get\_resource\_pool}}
+\index{get\_resource\_pool@{get\_resource\_pool}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_resource\_pool()}{get\_resource\_pool()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}}\& Device\+::get\+\_\+resource\+\_\+pool (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the device details (maximum resources available) This is assumed to be constant after device creation. 
+
+
+
+Definition at line 87 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{87 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}; \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+.
+
+
+
+Referenced by check\+\_\+resource\+\_\+availability().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_a1d755791d45e1d02a9a7afe470480367_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_ae26407c94fe213ee4ec467e52e1f50a1}\label{classDevice_ae26407c94fe213ee4ec467e52e1f50a1}} 
+\index{Device@{Device}!get\_type@{get\_type}}
+\index{get\_type@{get\_type}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{get\_type()}{get\_type()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} Device\+::get\+\_\+type (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 79 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{79 \{ \textcolor{keywordflow}{return} \mbox{\hyperlink{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}{dev\_type\_}}; \}}
+
+\end{DoxyCode}
+
+
+References dev\+\_\+type\+\_\+.
+
+
+
+Referenced by Device\+Manager\+::globalid\+\_\+to\+\_\+parrayid(), and Device\+Manager\+::register\+\_\+device().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classDevice_ae26407c94fe213ee4ec467e52e1f50a1_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classDevice_afd0a8da679e6ac19c58932c2fd2ec5e8}\label{classDevice_afd0a8da679e6ac19c58932c2fd2ec5e8}} 
+\index{Device@{Device}!query\_mapped\_resource@{query\_mapped\_resource}}
+\index{query\_mapped\_resource@{query\_mapped\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{query\_mapped\_resource()}{query\_mapped\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::query\+\_\+mapped\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 75 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{75                                                               \{}
+\DoxyCodeLine{76     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_a304a6c9041b89ea26eab65077b4d5b58}{mapped\_res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{77   \}}
+
+\end{DoxyCode}
+
+
+References mapped\+\_\+res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_acd7f11ff4c446e1974badb0debcf6131}\label{classDevice_acd7f11ff4c446e1974badb0debcf6131}} 
+\index{Device@{Device}!query\_reserved\_resource@{query\_reserved\_resource}}
+\index{query\_reserved\_resource@{query\_reserved\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{query\_reserved\_resource()}{query\_reserved\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::query\+\_\+reserved\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 71 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{71                                                                 \{}
+\DoxyCodeLine{72     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}{reserved\_res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{73   \}}
+
+\end{DoxyCode}
+
+
+References reserved\+\_\+res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a4b26ae0012a7b853adb6e98de08d88b1}\label{classDevice_a4b26ae0012a7b853adb6e98de08d88b1}} 
+\index{Device@{Device}!query\_resource@{query\_resource}}
+\index{query\_resource@{query\_resource}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{query\_resource()}{query\_resource()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{resources_8hpp_af7b216c3232c4a212aba859a02f42004}{Resource\+\_\+t}} Device\+::query\+\_\+resource (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{resources_8hpp_acf246a87e41f47012fc7628989d3fe95}{Resource}}}]{type }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 67 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{67                                                        \{}
+\DoxyCodeLine{68     \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}{res\_}}.\mbox{\hyperlink{classResourcePool_aece6bf4470a29259e28efa15a443a8a5}{get}}(type);}
+\DoxyCodeLine{69   \}}
+
+\end{DoxyCode}
+
+
+References res\+\_\+.
+
+\mbox{\Hypertarget{classDevice_a744aaf55791a61d805b190921a94073c}\label{classDevice_a744aaf55791a61d805b190921a94073c}} 
+\index{Device@{Device}!set\_global\_id@{set\_global\_id}}
+\index{set\_global\_id@{set\_global\_id}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{set\_global\_id()}{set\_global\_id()}}
+{\footnotesize\ttfamily void Device\+::set\+\_\+global\+\_\+id (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{global\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 110 of file device.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{110 \{ \mbox{\hyperlink{classDevice_a30f314a235587162d64ea1d21914f6b7}{dev\_global\_id\_}} = global\_id; \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classDevice_a30f314a235587162d64ea1d21914f6b7}\label{classDevice_a30f314a235587162d64ea1d21914f6b7}} 
+\index{Device@{Device}!dev\_global\_id\_@{dev\_global\_id\_}}
+\index{dev\_global\_id\_@{dev\_global\_id\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{dev\_global\_id\_}{dev\_global\_id\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} Device\+::dev\+\_\+global\+\_\+id\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 136 of file device.\+hpp.
+
+\mbox{\Hypertarget{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}\label{classDevice_ade5ecee954cfc9f7510cc0f6da25a8f5}} 
+\index{Device@{Device}!dev\_id\_@{dev\_id\_}}
+\index{dev\_id\_@{dev\_id\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{dev\_id\_}{dev\_id\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} Device\+::dev\+\_\+id\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 135 of file device.\+hpp.
+
+\mbox{\Hypertarget{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}\label{classDevice_abc60fe5d594f140b053f6f6b81f77d6d}} 
+\index{Device@{Device}!dev\_type\_@{dev\_type\_}}
+\index{dev\_type\_@{dev\_type\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{dev\_type\_}{dev\_type\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_ad258d4c51629346fceac4679b3209ad9}{Device\+Type}} Device\+::dev\+\_\+type\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 134 of file device.\+hpp.
+
+
+
+Referenced by Device(), and get\+\_\+type().
+
+\mbox{\Hypertarget{classDevice_a304a6c9041b89ea26eab65077b4d5b58}\label{classDevice_a304a6c9041b89ea26eab65077b4d5b58}} 
+\index{Device@{Device}!mapped\_res\_@{mapped\_res\_}}
+\index{mapped\_res\_@{mapped\_res\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{mapped\_res\_}{mapped\_res\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} Device\+::mapped\+\_\+res\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 138 of file device.\+hpp.
+
+
+
+Referenced by Device(), get\+\_\+mapped\+\_\+pool(), get\+\_\+mapped\+\_\+resource(), and query\+\_\+mapped\+\_\+resource().
+
+\mbox{\Hypertarget{classDevice_a270084874024798e55899f4faeda475b}\label{classDevice_a270084874024798e55899f4faeda475b}} 
+\index{Device@{Device}!py\_dev\_@{py\_dev\_}}
+\index{py\_dev\_@{py\_dev\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{py\_dev\_}{py\_dev\_}}
+{\footnotesize\ttfamily void$\ast$ Device\+::py\+\_\+dev\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 140 of file device.\+hpp.
+
+
+
+Referenced by Device(), and get\+\_\+py\+\_\+device().
+
+\mbox{\Hypertarget{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}\label{classDevice_a3cdeb8e06bcc822960ebeaf7c0de6c6c}} 
+\index{Device@{Device}!res\_@{res\_}}
+\index{res\_@{res\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{res\_}{res\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} Device\+::res\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 137 of file device.\+hpp.
+
+
+
+Referenced by Device(), get\+\_\+max\+\_\+resource(), get\+\_\+memory\+\_\+size(), get\+\_\+num\+\_\+vcus(), get\+\_\+resource\+\_\+pool(), and query\+\_\+resource().
+
+\mbox{\Hypertarget{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}\label{classDevice_aacf896eac4bd447ac1e17a57aa3bcd29}} 
+\index{Device@{Device}!reserved\_res\_@{reserved\_res\_}}
+\index{reserved\_res\_@{reserved\_res\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{reserved\_res\_}{reserved\_res\_}}
+{\footnotesize\ttfamily \mbox{\hyperlink{device_8hpp_aa547d4f72098a570e3d6c263aaa9c9ae}{Resource\+Pool\+\_\+t}} Device\+::reserved\+\_\+res\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 139 of file device.\+hpp.
+
+
+
+Referenced by Device(), get\+\_\+reserved\+\_\+pool(), get\+\_\+reserved\+\_\+resource(), and query\+\_\+reserved\+\_\+resource().
+
+\mbox{\Hypertarget{classDevice_ad3712adb7153fab746d9cae53325db5e}\label{classDevice_ad3712adb7153fab746d9cae53325db5e}} 
+\index{Device@{Device}!resource\_map\_@{resource\_map\_}}
+\index{resource\_map\_@{resource\_map\_}!Device@{Device}}
+\doxysubsubsection{\texorpdfstring{resource\_map\_}{resource\_map\_}}
+{\footnotesize\ttfamily std\+::unordered\+\_\+map$<$std\+::string, size\+\_\+t$>$ Device\+::resource\+\_\+map\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 141 of file device.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{device_8hpp}{device.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{device_8cpp}{device.\+cpp}}\end{DoxyCompactItemize}

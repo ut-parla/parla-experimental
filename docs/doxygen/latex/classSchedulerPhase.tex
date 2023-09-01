@@ -1,0 +1,273 @@
+\hypertarget{classSchedulerPhase}{}\doxysection{Scheduler\+Phase Class Reference}
+\label{classSchedulerPhase}\index{SchedulerPhase@{SchedulerPhase}}
+
+
+Abstract Interface for general scheduler runtime phase.  
+
+
+
+
+{\ttfamily \#include $<$phases.\+hpp$>$}
+
+
+
+Inheritance diagram for Scheduler\+Phase\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classSchedulerPhase__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Scheduler\+Phase\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classSchedulerPhase__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classSchedulerPhase_af30330d46896e1e64815407abbb06ab8}{Scheduler\+Phase}} ()=default
+\item 
+\mbox{\hyperlink{classSchedulerPhase_ac072216548814d50ca21391a6bb3c240}{Scheduler\+Phase}} (\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}, \mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$devices)
+\begin{DoxyCompactList}\small\item\em Constructor for the scheduler phase. \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classSchedulerPhase_ab728fba49a9d47d0baa1694df9debb92}{enqueue}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)=0
+\begin{DoxyCompactList}\small\item\em Enqueue a task to the phase. \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classSchedulerPhase_a61e9e3138f4eb16579cde472887e9255}{enqueue}} (std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&tasks)=0
+\begin{DoxyCompactList}\small\item\em Enqueue a vector of tasks to the phase. \end{DoxyCompactList}\item 
+virtual void \mbox{\hyperlink{classSchedulerPhase_a23e561996d5bbc884e2701d6966f5670}{run}} (\mbox{\hyperlink{classSchedulerPhase}{Scheduler\+Phase}} $\ast$next\+\_\+phase)=0
+\begin{DoxyCompactList}\small\item\em Run the phase. Check tasks in the enqueued buffer, check phase condition, and move tasks to the next phase. \end{DoxyCompactList}\item 
+virtual size\+\_\+t \mbox{\hyperlink{classSchedulerPhase_a0d81d78469a09647970acdc42244e79e}{get\+\_\+count}} ()=0
+\begin{DoxyCompactList}\small\item\em Get the number of tasks enqueued (and waiting) in the phase. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::mutex \mbox{\hyperlink{classSchedulerPhase_a0ebc5d496229586112174dba4ab370a6}{mtx}}
+\begin{DoxyCompactList}\small\item\em Mutex lock for the phase (In case of a workerthread driven scheduler, ensure only 1 thread is running the phase at a time) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$ \mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}
+\begin{DoxyCompactList}\small\item\em The scheduler that the phase belongs to. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$ \mbox{\hyperlink{classSchedulerPhase_aafed560a47871439d6ff5a2b404159f3}{device\+\_\+manager}}
+\begin{DoxyCompactList}\small\item\em The device manager that the phase uses. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} \mbox{\hyperlink{classSchedulerPhase_aab55b1899f107cb11a71beea1e58e9ba}{enqueue\+\_\+buffer}}
+\begin{DoxyCompactList}\small\item\em The number of tasks enqueued (and waiting) in the phase. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const std\+::string \mbox{\hyperlink{classSchedulerPhase_a60d3156832ed1307565a9b936a62e1e6}{name}} \{\char`\"{}Phase\char`\"{}\}
+\begin{DoxyCompactList}\small\item\em The name of the phase. Used for debugging and tracing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstract Interface for general scheduler runtime phase. 
+
+Definition at line 104 of file phases.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classSchedulerPhase_af30330d46896e1e64815407abbb06ab8}\label{classSchedulerPhase_af30330d46896e1e64815407abbb06ab8}} 
+\index{SchedulerPhase@{SchedulerPhase}!SchedulerPhase@{SchedulerPhase}}
+\index{SchedulerPhase@{SchedulerPhase}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{SchedulerPhase()}{SchedulerPhase()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Scheduler\+Phase\+::\+Scheduler\+Phase (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\mbox{\Hypertarget{classSchedulerPhase_ac072216548814d50ca21391a6bb3c240}\label{classSchedulerPhase_ac072216548814d50ca21391a6bb3c240}} 
+\index{SchedulerPhase@{SchedulerPhase}!SchedulerPhase@{SchedulerPhase}}
+\index{SchedulerPhase@{SchedulerPhase}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{SchedulerPhase()}{SchedulerPhase()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Scheduler\+Phase\+::\+Scheduler\+Phase (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$}]{scheduler,  }\item[{\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$}]{devices }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor for the scheduler phase. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduler} & The scheduler that the phase belongs to. \\
+\hline
+{\em devices} & The device manager that the phase uses. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 113 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{114       : \mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}(\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}), \mbox{\hyperlink{classSchedulerPhase_aafed560a47871439d6ff5a2b404159f3}{device\_manager}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4cd77e2b819d63fe1c64f5f59c52360b}{devices}}) \{\}}
+
+\end{DoxyCode}
+
+
+References device\+\_\+manager, and scheduler.
+
+
+
+Referenced by Launcher\+::\+Launcher(), Mapper\+::\+Mapper(), Memory\+Reserver\+::\+Memory\+Reserver(), and Runtime\+Reserver\+::\+Runtime\+Reserver().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classSchedulerPhase_ac072216548814d50ca21391a6bb3c240_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classSchedulerPhase_ab728fba49a9d47d0baa1694df9debb92}\label{classSchedulerPhase_ab728fba49a9d47d0baa1694df9debb92}} 
+\index{SchedulerPhase@{SchedulerPhase}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily virtual void Scheduler\+Phase\+::enqueue (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Enqueue a task to the phase. 
+
+
+
+Implemented in \mbox{\hyperlink{classLauncher_a5b6bdce05738701c16814a95c6562470}{Launcher}}, \mbox{\hyperlink{classRuntimeReserver_aeab29f38dfdcc8f13fd839bf2629d1f5}{Runtime\+Reserver}}, \mbox{\hyperlink{classMemoryReserver_a2127dac8a80858f60a723345a7b7e8bc}{Memory\+Reserver}}, and \mbox{\hyperlink{classMapper_a5899d440fb93667e0cdda5683d98e791}{Mapper}}.
+
+\mbox{\Hypertarget{classSchedulerPhase_a61e9e3138f4eb16579cde472887e9255}\label{classSchedulerPhase_a61e9e3138f4eb16579cde472887e9255}} 
+\index{SchedulerPhase@{SchedulerPhase}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily virtual void Scheduler\+Phase\+::enqueue (\begin{DoxyParamCaption}\item[{std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&}]{tasks }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Enqueue a vector of tasks to the phase. 
+
+
+
+Implemented in \mbox{\hyperlink{classLauncher_aad6517ac14e5f482e85c6a9bc27637a8}{Launcher}}, \mbox{\hyperlink{classRuntimeReserver_a2a24f89c881efa2bb6a99b85372c857f}{Runtime\+Reserver}}, \mbox{\hyperlink{classMemoryReserver_a99c935a4dd4940daa0be370e2f8d9de9}{Memory\+Reserver}}, and \mbox{\hyperlink{classMapper_af2c6c845ed6287807f14780f697b3065}{Mapper}}.
+
+\mbox{\Hypertarget{classSchedulerPhase_a0d81d78469a09647970acdc42244e79e}\label{classSchedulerPhase_a0d81d78469a09647970acdc42244e79e}} 
+\index{SchedulerPhase@{SchedulerPhase}!get\_count@{get\_count}}
+\index{get\_count@{get\_count}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{get\_count()}{get\_count()}}
+{\footnotesize\ttfamily virtual size\+\_\+t Scheduler\+Phase\+::get\+\_\+count (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Get the number of tasks enqueued (and waiting) in the phase. 
+
+
+
+Implemented in \mbox{\hyperlink{classLauncher_a4735556d50f5c29ca5a503f1318b438c}{Launcher}}, \mbox{\hyperlink{classRuntimeReserver_a23475509344951f743f48f6239eda1bf}{Runtime\+Reserver}}, \mbox{\hyperlink{classMemoryReserver_afe7011e52a6115c22c09aa4ce80b37e4}{Memory\+Reserver}}, and \mbox{\hyperlink{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}{Mapper}}.
+
+\mbox{\Hypertarget{classSchedulerPhase_a23e561996d5bbc884e2701d6966f5670}\label{classSchedulerPhase_a23e561996d5bbc884e2701d6966f5670}} 
+\index{SchedulerPhase@{SchedulerPhase}!run@{run}}
+\index{run@{run}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily virtual void Scheduler\+Phase\+::run (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSchedulerPhase}{Scheduler\+Phase}} $\ast$}]{next\+\_\+phase }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Run the phase. Check tasks in the enqueued buffer, check phase condition, and move tasks to the next phase. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em next\+\_\+phase} & The next phase to move tasks to. \\
+\hline
+\end{DoxyParams}
+
+
+Implemented in \mbox{\hyperlink{classLauncher_abe18604894b9aa9d7594b10f68fa2fee}{Launcher}}, \mbox{\hyperlink{classRuntimeReserver_aaa9106861bccbc209f7f1fa81defdfd9}{Runtime\+Reserver}}, \mbox{\hyperlink{classMemoryReserver_a03b6be802b5d6d19761773fa7a1df866}{Memory\+Reserver}}, and \mbox{\hyperlink{classMapper_aac615e8b8eca887e3d788db09d2d989d}{Mapper}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classSchedulerPhase_aafed560a47871439d6ff5a2b404159f3}\label{classSchedulerPhase_aafed560a47871439d6ff5a2b404159f3}} 
+\index{SchedulerPhase@{SchedulerPhase}!device\_manager@{device\_manager}}
+\index{device\_manager@{device\_manager}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{device\_manager}{device\_manager}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDeviceManager}{Device\+Manager}}$\ast$ Scheduler\+Phase\+::device\+\_\+manager\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The device manager that the phase uses. 
+
+
+
+Definition at line 147 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler\+::get\+\_\+device\+\_\+reqs\+\_\+from\+\_\+placement(), and Scheduler\+Phase().
+
+\mbox{\Hypertarget{classSchedulerPhase_aab55b1899f107cb11a71beea1e58e9ba}\label{classSchedulerPhase_aab55b1899f107cb11a71beea1e58e9ba}} 
+\index{SchedulerPhase@{SchedulerPhase}!enqueue\_buffer@{enqueue\_buffer}}
+\index{enqueue\_buffer@{enqueue\_buffer}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{enqueue\_buffer}{enqueue\_buffer}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} Scheduler\+Phase\+::enqueue\+\_\+buffer\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The number of tasks enqueued (and waiting) in the phase. 
+
+
+
+Definition at line 149 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classSchedulerPhase_a0ebc5d496229586112174dba4ab370a6}\label{classSchedulerPhase_a0ebc5d496229586112174dba4ab370a6}} 
+\index{SchedulerPhase@{SchedulerPhase}!mtx@{mtx}}
+\index{mtx@{mtx}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{mtx}{mtx}}
+{\footnotesize\ttfamily std\+::mutex Scheduler\+Phase\+::mtx\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Mutex lock for the phase (In case of a workerthread driven scheduler, ensure only 1 thread is running the phase at a time) 
+
+
+
+Definition at line 143 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classSchedulerPhase_a60d3156832ed1307565a9b936a62e1e6}\label{classSchedulerPhase_a60d3156832ed1307565a9b936a62e1e6}} 
+\index{SchedulerPhase@{SchedulerPhase}!name@{name}}
+\index{name@{name}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily const std\+::string Scheduler\+Phase\+::name \{\char`\"{}Phase\char`\"{}\}\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}, {\ttfamily [protected]}}
+
+
+
+The name of the phase. Used for debugging and tracing. 
+
+
+
+Definition at line 140 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+::get\+\_\+name(), parla.\+cython.\+tasks.\+Task\+::unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task\+::update\+\_\+name().
+
+\mbox{\Hypertarget{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}\label{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}} 
+\index{SchedulerPhase@{SchedulerPhase}!scheduler@{scheduler}}
+\index{scheduler@{scheduler}!SchedulerPhase@{SchedulerPhase}}
+\doxysubsubsection{\texorpdfstring{scheduler}{scheduler}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}}$\ast$ Scheduler\+Phase\+::scheduler\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The scheduler that the phase belongs to. 
+
+
+
+Definition at line 145 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler\+Context\+::\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Data\+Movement\+Task\+::\+\_\+execute\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::\+\_\+initialize(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::run(), Scheduler\+Phase(), and parla.\+cython.\+tasks.\+Task\+::set\+\_\+scheduler().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{phases_8hpp}{phases.\+hpp}}\end{DoxyCompactItemize}

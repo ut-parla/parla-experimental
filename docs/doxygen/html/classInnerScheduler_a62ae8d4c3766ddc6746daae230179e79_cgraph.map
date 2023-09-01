@@ -1,0 +1,5 @@
+<map id="InnerScheduler::decrease_num_active_tasks" name="InnerScheduler::decrease_num_active_tasks">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,192,47"/>
+<area shape="rect" id="node2" href="$classInnerScheduler.html#a3af3b46d1f72a9789f2f085f878e0cca" title=" " alt="" coords="240,13,395,39"/>
+<area shape="rect" id="node3" href="$runtime_8hpp.html#a8beb32839b6aa57c6e1e6de62b6056a6" title="Callback function to stop the main scheduler thread. Acquires the interpreter and signals the Python ..." alt="" coords="443,13,604,39"/>
+</map>

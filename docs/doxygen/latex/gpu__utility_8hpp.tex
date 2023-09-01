@@ -1,0 +1,140 @@
+\hypertarget{gpu__utility_8hpp}{}\doxysection{src/c/backend/include/gpu\+\_\+utility.hpp File Reference}
+\label{gpu__utility_8hpp}\index{src/c/backend/include/gpu\_utility.hpp@{src/c/backend/include/gpu\_utility.hpp}}
+
+
+Provides architecture independent interface to event and stream creation \& synchronization.  
+
+
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstdio$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$sys/time.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+Include dependency graph for gpu\+\_\+utility.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gpu__utility_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gpu__utility_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{gpu__utility_8hpp_a754d684c2620b0ada7ab2a4f88b0cba2}{gpu\+\_\+busy\+\_\+sleep}} (const int device, const unsigned long cycles, uintptr\+\_\+t stream\+\_\+ptr)
+\item 
+void \mbox{\hyperlink{gpu__utility_8hpp_a9cbce551b0c6c22a40a5bdb3c0cbb807}{cpu\+\_\+busy\+\_\+sleep}} (unsigned int micro)
+\item 
+void \mbox{\hyperlink{gpu__utility_8hpp_a103c1b3c466bb969bff0352087486a36}{event\+\_\+synchronize}} (uintptr\+\_\+t event\+\_\+ptr)
+\item 
+void \mbox{\hyperlink{gpu__utility_8hpp_ac495adf1b9a015e55da7b78fd5911a87}{event\+\_\+wait}} (uintptr\+\_\+t event\+\_\+ptr, uintptr\+\_\+t stream\+\_\+ptr)
+\item 
+void \mbox{\hyperlink{gpu__utility_8hpp_ae72933f5e89cd715c870b49885e05b17}{stream\+\_\+synchronize}} (uintptr\+\_\+t stream\+\_\+ptr)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides architecture independent interface to event and stream creation \& synchronization. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{gpu__utility_8hpp_a9cbce551b0c6c22a40a5bdb3c0cbb807}\label{gpu__utility_8hpp_a9cbce551b0c6c22a40a5bdb3c0cbb807}} 
+\index{gpu\_utility.hpp@{gpu\_utility.hpp}!cpu\_busy\_sleep@{cpu\_busy\_sleep}}
+\index{cpu\_busy\_sleep@{cpu\_busy\_sleep}!gpu\_utility.hpp@{gpu\_utility.hpp}}
+\doxysubsubsection{\texorpdfstring{cpu\_busy\_sleep()}{cpu\_busy\_sleep()}}
+{\footnotesize\ttfamily void cpu\+\_\+busy\+\_\+sleep (\begin{DoxyParamCaption}\item[{unsigned int}]{micro }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 34 of file gpu\+\_\+utility.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{34                                                \{}
+\DoxyCodeLine{35   \textcolor{comment}{// compute\_range r("{}sleep::busy"{}, nvtx3::rgb\{0, 127, 127\});}}
+\DoxyCodeLine{36   \textcolor{comment}{// int count = 0;}}
+\DoxyCodeLine{37   \textcolor{keyword}{auto} block = std::chrono::microseconds(micro);}
+\DoxyCodeLine{38   \textcolor{keyword}{auto} time\_start = std::chrono::high\_resolution\_clock::now();}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{40   \textcolor{keyword}{auto} now = std::chrono::high\_resolution\_clock::now();}
+\DoxyCodeLine{41   \textcolor{keyword}{auto} elapsed =}
+\DoxyCodeLine{42       std::chrono::duration\_cast<std::chrono::microseconds>(now -\/ time\_start);}
+\DoxyCodeLine{43 }
+\DoxyCodeLine{44   \textcolor{keywordflow}{do} \{}
+\DoxyCodeLine{45     now = std::chrono::high\_resolution\_clock::now();}
+\DoxyCodeLine{46     elapsed =}
+\DoxyCodeLine{47         std::chrono::duration\_cast<std::chrono::microseconds>(now -\/ time\_start);}
+\DoxyCodeLine{48   \} \textcolor{keywordflow}{while} (elapsed.count() < micro);}
+\DoxyCodeLine{49 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{gpu__utility_8hpp_a103c1b3c466bb969bff0352087486a36}\label{gpu__utility_8hpp_a103c1b3c466bb969bff0352087486a36}} 
+\index{gpu\_utility.hpp@{gpu\_utility.hpp}!event\_synchronize@{event\_synchronize}}
+\index{event\_synchronize@{event\_synchronize}!gpu\_utility.hpp@{gpu\_utility.hpp}}
+\doxysubsubsection{\texorpdfstring{event\_synchronize()}{event\_synchronize()}}
+{\footnotesize\ttfamily void event\+\_\+synchronize (\begin{DoxyParamCaption}\item[{uintptr\+\_\+t}]{event\+\_\+ptr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 8 of file utility.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{8 \{\};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{gpu__utility_8hpp_ac495adf1b9a015e55da7b78fd5911a87}\label{gpu__utility_8hpp_ac495adf1b9a015e55da7b78fd5911a87}} 
+\index{gpu\_utility.hpp@{gpu\_utility.hpp}!event\_wait@{event\_wait}}
+\index{event\_wait@{event\_wait}!gpu\_utility.hpp@{gpu\_utility.hpp}}
+\doxysubsubsection{\texorpdfstring{event\_wait()}{event\_wait()}}
+{\footnotesize\ttfamily void event\+\_\+wait (\begin{DoxyParamCaption}\item[{uintptr\+\_\+t}]{event\+\_\+ptr,  }\item[{uintptr\+\_\+t}]{stream\+\_\+ptr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 9 of file utility.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{9 \{\};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{gpu__utility_8hpp_a754d684c2620b0ada7ab2a4f88b0cba2}\label{gpu__utility_8hpp_a754d684c2620b0ada7ab2a4f88b0cba2}} 
+\index{gpu\_utility.hpp@{gpu\_utility.hpp}!gpu\_busy\_sleep@{gpu\_busy\_sleep}}
+\index{gpu\_busy\_sleep@{gpu\_busy\_sleep}!gpu\_utility.hpp@{gpu\_utility.hpp}}
+\doxysubsubsection{\texorpdfstring{gpu\_busy\_sleep()}{gpu\_busy\_sleep()}}
+{\footnotesize\ttfamily void gpu\+\_\+busy\+\_\+sleep (\begin{DoxyParamCaption}\item[{const int}]{device,  }\item[{const unsigned long}]{cycles,  }\item[{uintptr\+\_\+t}]{stream\+\_\+ptr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3 of file utility.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{4                                           \{}
+\DoxyCodeLine{5   printf(\textcolor{stringliteral}{"{}gpu\_busy\_sleep() is not implemented for this backend.\(\backslash\)n"{}});}
+\DoxyCodeLine{6 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{gpu__utility_8hpp_ae72933f5e89cd715c870b49885e05b17}\label{gpu__utility_8hpp_ae72933f5e89cd715c870b49885e05b17}} 
+\index{gpu\_utility.hpp@{gpu\_utility.hpp}!stream\_synchronize@{stream\_synchronize}}
+\index{stream\_synchronize@{stream\_synchronize}!gpu\_utility.hpp@{gpu\_utility.hpp}}
+\doxysubsubsection{\texorpdfstring{stream\_synchronize()}{stream\_synchronize()}}
+{\footnotesize\ttfamily void stream\+\_\+synchronize (\begin{DoxyParamCaption}\item[{uintptr\+\_\+t}]{stream\+\_\+ptr }\end{DoxyParamCaption})}
+
+
+
+Definition at line 10 of file utility.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{10 \{\};}
+
+\end{DoxyCode}

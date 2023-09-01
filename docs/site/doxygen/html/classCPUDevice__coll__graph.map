@@ -1,0 +1,5 @@
+<map id="CPUDevice" name="CPUDevice">
+<area shape="rect" id="node1" title=" " alt="" coords="13,200,108,227"/>
+<area shape="rect" id="node2" href="$classDevice.html" title="Devices can be distinguished from other devices by a class type and its index." alt="" coords="27,124,94,151"/>
+<area shape="rect" id="node3" href="$classResourcePool.html" title="A pool of resources, allows for comparisons and updates of current values." alt="" coords="5,5,116,32"/>
+</map>

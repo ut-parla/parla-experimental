@@ -1,0 +1,62 @@
+\hypertarget{execute_8py}{}\doxysection{src/python/parla/utility/execute.py File Reference}
+\label{execute_8py}\index{src/python/parla/utility/execute.py@{src/python/parla/utility/execute.py}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GPUInfo}{parla.\+utility.\+execute.\+GPUInfo}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext}{parla.\+utility.\+execute.\+Graph\+Context}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute}{parla.\+utility.\+execute}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a59276b82194374cbbefddea28d9a5fb7}{parla.\+utility.\+execute.\+make\+\_\+parrays}} (data\+\_\+list)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a0d98b269ad236b82a5ff24e9cc1fad5b}{parla.\+utility.\+execute.\+estimate\+\_\+frequency}} (n\+\_\+samples=10, ticks=1900000000)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad50b926af45187a1fd4211017243f56f}{parla.\+utility.\+execute.\+get\+\_\+placement\+\_\+set\+\_\+from}} (ps\+\_\+str\+\_\+set, num\+\_\+gpus)
+\item 
+List\mbox{[}np.\+ndarray\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ad9b1c0da9f5296d064e811073bf5488f}{parla.\+utility.\+execute.\+generate\+\_\+data}} (Dict\mbox{[}int, Data\+Info\mbox{]} data\+\_\+config, float data\+\_\+scale, data\+\_\+movement\+\_\+type)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aed85656b4da947051803f2b43f78bebb}{parla.\+utility.\+execute.\+synthetic\+\_\+kernel}} (int total\+\_\+time, Union\mbox{[}Fraction, float\mbox{]} gil\+\_\+fraction, int gil\+\_\+accesses, Run\+Config config)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aba0a90f5fe8ebd1c4d8dba72186a853f}{parla.\+utility.\+execute.\+synthetic\+\_\+kernel\+\_\+gpu}} (int total\+\_\+time, Union\mbox{[}Fraction, float\mbox{]} gil\+\_\+fraction, int gil\+\_\+accesses, Run\+Config config)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a413cb5485dfb3fe11168a7bb98d3cd66}{parla.\+utility.\+execute.\+create\+\_\+task\+\_\+no\+\_\+data}} (task, taskspaces, config, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a1e1558616a61e33a389de419efc0f4fa}{parla.\+utility.\+execute.\+create\+\_\+task\+\_\+eager\+\_\+data}} (task, taskspaces, config=None, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aae6064a04ffee1ae1eac53d47d3c443b}{parla.\+utility.\+execute.\+create\+\_\+task\+\_\+lazy\+\_\+data}} (task, taskspaces, config=None, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a43ff947748f8008c5e914e5a32f7dd60}{parla.\+utility.\+execute.\+execute\+\_\+tasks}} (taskspaces, Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} tasks, Run\+Config run\+\_\+config, data\+\_\+list=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a60754db99c2d6a2a1876af63d96e8c01}{parla.\+utility.\+execute.\+execute\+\_\+graph}} (Dict\mbox{[}int, Data\+Info\mbox{]} data\+\_\+config, Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} tasks, Run\+Config run\+\_\+config, List\mbox{[}Time\+Sample\mbox{]} timing)
+\item 
+Time\+Sample \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{parla.\+utility.\+execute.\+run}} (Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} tasks, Dict\mbox{[}int, Data\+Info\mbox{]} data\+\_\+config=None, Run\+Config run\+\_\+config=None)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a3557769ccde07f9ad874f8d684ee5fd2}{parla.\+utility.\+execute.\+verify\+\_\+order}} (Dict\mbox{[}Task\+ID, Task\+Time\mbox{]} log\+\_\+times, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a21f8962cb471483e18d353cfd071f601}{parla.\+utility.\+execute.\+verify\+\_\+dependencies}} (Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} log\+\_\+graph, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_ae075017f43eee3460ed598223f75b4b3}{parla.\+utility.\+execute.\+verify\+\_\+complete}} (Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} log\+\_\+graph, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a45f94ff549e58e310bb868bce281af42}{parla.\+utility.\+execute.\+verify\+\_\+time}} (Dict\mbox{[}Task\+ID, Task\+Time\mbox{]} log\+\_\+times, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} truth\+\_\+graph, float factor=2.\+0)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a40d72166f4771e543dc1ca324bb26244}{parla.\+utility.\+execute.\+verify\+\_\+ntasks}} (Dict\mbox{[}Task\+ID, Task\+Time\mbox{]} log\+\_\+times, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]} truth\+\_\+graph)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_aab877c9e9e838f5e2acfcfa72c8fdf84}{parla.\+utility.\+execute.\+verify\+\_\+states}} (log\+\_\+states)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a50e9b92625105e162489118fb319f9e0}{parla.\+utility.\+execute.\+timeout}} (seconds\+\_\+before\+\_\+timeout)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a77cf484a209c81a25d537fd8ba9601a2}{parla.\+utility.\+execute.\+PArray}} = parray.\+core.\+PArray
+\item 
+list \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a5a4a9e11ae8733e45bef229c55240a42}{parla.\+utility.\+execute.\+\_\+\+\_\+all\+\_\+\+\_\+}}
+\end{DoxyCompactItemize}

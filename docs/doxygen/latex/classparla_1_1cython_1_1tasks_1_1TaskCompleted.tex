@@ -1,0 +1,211 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted}{}\doxysection{parla.\+cython.\+tasks.\+Task\+Completed Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted}\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+
+
+This state specifies that a task has completed execution.  
+
+
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+Task\+Completed\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskCompleted__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+Task\+Completed\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=293pt]{classparla_1_1cython_1_1tasks_1_1TaskCompleted__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a09ef97617c605c614592d550fe504677}{value}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a215699be14117711cfd3933359821558}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, ret)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ad47c67d9d265f9e2a141bf7b7e4a03f9}{is\+\_\+terminal}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a163a278c57f833084255c4f4d7f94b90}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a2800c8f9ddb4e47e25525e96cb4eca27}{return\+\_\+value}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+list \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ac44bd0b572bd6a7de82d79ea7c43a6dc}{\+\_\+\+\_\+slots\+\_\+\+\_\+}} = \mbox{[}\char`\"{}return\+\_\+value\char`\"{}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This state specifies that a task has completed execution. 
+
+Definition at line 205 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a215699be14117711cfd3933359821558}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a215699be14117711cfd3933359821558}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Completed.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{ret }\end{DoxyParamCaption})}
+
+
+
+Definition at line 216 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{216     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, ret):}
+\DoxyCodeLine{217         self.return\_value = ret}
+\DoxyCodeLine{218 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a163a278c57f833084255c4f4d7f94b90}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a163a278c57f833084255c4f4d7f94b90}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Completed.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_a6f7c1b012b5293566f5e343c6637b56b}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 223 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{223     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{224         \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}TaskCompleted(\{\})"{}}.format(self.return\_value)}
+\DoxyCodeLine{225 }
+\DoxyCodeLine{226 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Runahead.\+return\+\_\+value, and parla.\+cython.\+tasks.\+Task\+Completed.\+return\+\_\+value.
+
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a163a278c57f833084255c4f4d7f94b90_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ad47c67d9d265f9e2a141bf7b7e4a03f9}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ad47c67d9d265f9e2a141bf7b7e4a03f9}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!is\_terminal@{is\_terminal}}
+\index{is\_terminal@{is\_terminal}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{is\_terminal()}{is\_terminal()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Completed.\+is\+\_\+terminal (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_a85fd56c1e5c4b02b45fadb8b3f293fd1}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 220 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{220     \textcolor{keyword}{def }is\_terminal(self):}
+\DoxyCodeLine{221         \textcolor{keywordflow}{return} \textcolor{keyword}{True}}
+\DoxyCodeLine{222 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Environment.\+synchronize().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ad47c67d9d265f9e2a141bf7b7e4a03f9_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a09ef97617c605c614592d550fe504677}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a09ef97617c605c614592d550fe504677}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!value@{value}}
+\index{value@{value}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+Task\+Completed.\+value (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState_ad5b5f8bdd3cec8fd04da782d658dc3ca}{parla.\+cython.\+tasks.\+Task\+State}}.
+
+
+
+Definition at line 213 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{213     \textcolor{keyword}{def }value(self):}
+\DoxyCodeLine{214         \textcolor{keywordflow}{return} 7}
+\DoxyCodeLine{215 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+utility.\+threads.\+Propagate.\+run().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a09ef97617c605c614592d550fe504677_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ac44bd0b572bd6a7de82d79ea7c43a6dc}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_ac44bd0b572bd6a7de82d79ea7c43a6dc}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!\_\_slots\_\_@{\_\_slots\_\_}}
+\index{\_\_slots\_\_@{\_\_slots\_\_}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{\_\_slots\_\_}{\_\_slots\_\_}}
+{\footnotesize\ttfamily list parla.\+cython.\+tasks.\+Task\+Completed.\+\_\+\+\_\+slots\+\_\+\+\_\+ = \mbox{[}\char`\"{}return\+\_\+value\char`\"{}\mbox{]}\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+
+
+Definition at line 210 of file tasks.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a2800c8f9ddb4e47e25525e96cb4eca27}\label{classparla_1_1cython_1_1tasks_1_1TaskCompleted_a2800c8f9ddb4e47e25525e96cb4eca27}} 
+\index{parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}!return\_value@{return\_value}}
+\index{return\_value@{return\_value}!parla.cython.tasks.TaskCompleted@{parla.cython.tasks.TaskCompleted}}
+\doxysubsubsection{\texorpdfstring{return\_value}{return\_value}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+Task\+Completed.\+return\+\_\+value}
+
+
+
+Definition at line 217 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Runahead.\+\_\+\+\_\+repr\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+Completed.\+\_\+\+\_\+repr\+\_\+\+\_\+().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

@@ -1,0 +1,271 @@
+\hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment}{}\doxysection{parla.\+cython.\+tasks.\+GPUEnvironment Class Reference}
+\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment}\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+
+
+Inheritance diagram for parla.\+cython.\+tasks.\+GPUEnvironment\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=274pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+cython.\+tasks.\+GPUEnvironment\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=274pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a8579f7693a3af76373d8c880bf03adab}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a098aa1cb6225f39cebca1ad914dee890}{device}}, \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a26796a37b6cac704e67c2e8fc3a5e856}{blocking}}=False)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a5e6974e1553fce780b7faf9572a0cab6}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a9ec02bcba834e2be97590a7d912f26f0}{\+\_\+\+\_\+enter\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_aa025d65d7f16a1cda5e7fab5cdbfc458}{\+\_\+\+\_\+exit\+\_\+\+\_\+}} (self, exc\+\_\+type, exc\+\_\+val, exc\+\_\+tb)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_ae1390f9bfdd7e5f595cee2d2dd5552a0}{finalize}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adc89707aaf62fc2737ee1fcbde5696e3}{return\+\_\+streams}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adf02d76fc118e542522f1769374b10f2}{active\+\_\+stream}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 1285 of file tasks.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a8579f7693a3af76373d8c880bf03adab}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a8579f7693a3af76373d8c880bf03adab}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device,  }\item[{}]{blocking = {\ttfamily False} }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a132b77f05f925dbe3262b8d91bc0b132}{parla.\+cython.\+tasks.\+Terminal\+Environment}}.
+
+
+
+Definition at line 1287 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1287     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, device, blocking=False):}
+\DoxyCodeLine{1288         super(GPUEnvironment, self).\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(device, blocking=blocking)}
+\DoxyCodeLine{1289 }
+\DoxyCodeLine{1290         stream\_pool = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a89b47766b1f46ec4072bcea1f5742627}{get\_stream\_pool}}()}
+\DoxyCodeLine{1291         stream = stream\_pool.get\_stream(device=device)}
+\DoxyCodeLine{1292         self.stream\_list.append(stream)}
+\DoxyCodeLine{1293 }
+\DoxyCodeLine{1294         self.event\_dict[\textcolor{stringliteral}{'default'}] = stream.create\_event()}
+\DoxyCodeLine{1295 }
+\DoxyCodeLine{1296 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+Task\+Environment.\+event\+\_\+dict, parla.\+common.\+globals.\+get\+\_\+stream\+\_\+pool(), and parla.\+cython.\+tasks.\+Task\+Environment.\+stream\+\_\+list.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a8579f7693a3af76373d8c880bf03adab_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a9ec02bcba834e2be97590a7d912f26f0}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a9ec02bcba834e2be97590a7d912f26f0}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!\_\_enter\_\_@{\_\_enter\_\_}}
+\index{\_\_enter\_\_@{\_\_enter\_\_}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_enter\_\_()}{\_\_enter\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+enter\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ae743dbcb8260af878501bf37afc29533}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1301 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1301     \textcolor{keyword}{def }\_\_enter\_\_(self):}
+\DoxyCodeLine{1302         \textcolor{comment}{\#print("{}Entering GPU Environment: "{}, self, flush=True)}}
+\DoxyCodeLine{1303         Locals.push\_context(self)}
+\DoxyCodeLine{1304         self.active\_stream = self.stream\_list[0]}
+\DoxyCodeLine{1305         ret\_stream = self.active\_stream.\_\_enter\_\_()}
+\DoxyCodeLine{1306         \textcolor{keywordflow}{return} self}
+\DoxyCodeLine{1307 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_aa025d65d7f16a1cda5e7fab5cdbfc458}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_aa025d65d7f16a1cda5e7fab5cdbfc458}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!\_\_exit\_\_@{\_\_exit\_\_}}
+\index{\_\_exit\_\_@{\_\_exit\_\_}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_exit\_\_()}{\_\_exit\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+exit\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{exc\+\_\+type,  }\item[{}]{exc\+\_\+val,  }\item[{}]{exc\+\_\+tb }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_ac660130a85203a1c6f103f0b4849b97b}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1308 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1308     \textcolor{keyword}{def }\_\_exit\_\_(self, exc\_type, exc\_val, exc\_tb):}
+\DoxyCodeLine{1309         \textcolor{comment}{\#print("{}Exiting GPU Environment: "{}, self, flush=True)}}
+\DoxyCodeLine{1310         ret = \textcolor{keyword}{False}}
+\DoxyCodeLine{1311         self.active\_stream.\_\_exit\_\_(exc\_type, exc\_val, exc\_tb)}
+\DoxyCodeLine{1312         Locals.pop\_context()}
+\DoxyCodeLine{1313         \textcolor{keywordflow}{return} ret }
+\DoxyCodeLine{1314 }
+
+\end{DoxyCode}
+
+
+References parla.\+cython.\+tasks.\+GPUEnvironment.\+active\+\_\+stream.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a5e6974e1553fce780b7faf9572a0cab6}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a5e6974e1553fce780b7faf9572a0cab6}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment_a7ce7857bcd529a032f11912574577df2}{parla.\+cython.\+tasks.\+Terminal\+Environment}}.
+
+
+
+Definition at line 1297 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1297     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{1298         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}GPUEnvironment(\{self.\_device\})"{}}}
+\DoxyCodeLine{1299 }
+\DoxyCodeLine{1300 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_a5e6974e1553fce780b7faf9572a0cab6_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_ae1390f9bfdd7e5f595cee2d2dd5552a0}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_ae1390f9bfdd7e5f595cee2d2dd5552a0}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!finalize@{finalize}}
+\index{finalize@{finalize}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{finalize()}{finalize()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+finalize (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a59cc52ecd65912803f1d3c1e418e3ac7}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1315 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1315     \textcolor{keyword}{def }finalize(self):}
+\DoxyCodeLine{1316         stream\_pool = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a89b47766b1f46ec4072bcea1f5742627}{get\_stream\_pool}}()}
+\DoxyCodeLine{1317         \textcolor{keywordflow}{for} stream \textcolor{keywordflow}{in} self.stream\_list:}
+\DoxyCodeLine{1318             stream.synchronize()}
+\DoxyCodeLine{1319             stream\_pool.return\_stream(stream)}
+\DoxyCodeLine{1320 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+get\+\_\+stream\+\_\+pool(), and parla.\+cython.\+tasks.\+Task\+Environment.\+stream\+\_\+list.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_ae1390f9bfdd7e5f595cee2d2dd5552a0_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adc89707aaf62fc2737ee1fcbde5696e3}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adc89707aaf62fc2737ee1fcbde5696e3}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!return\_streams@{return\_streams}}
+\index{return\_streams@{return\_streams}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{return\_streams()}{return\_streams()}}
+{\footnotesize\ttfamily def parla.\+cython.\+tasks.\+GPUEnvironment.\+return\+\_\+streams (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment_a4af20b86d734de5bf19b036efa622cf1}{parla.\+cython.\+tasks.\+Task\+Environment}}.
+
+
+
+Definition at line 1321 of file tasks.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1321     \textcolor{keyword}{def }return\_streams(self):}
+\DoxyCodeLine{1322         stream\_pool = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a89b47766b1f46ec4072bcea1f5742627}{get\_stream\_pool}}()}
+\DoxyCodeLine{1323         \textcolor{keywordflow}{for} stream \textcolor{keywordflow}{in} self.stream\_list:}
+\DoxyCodeLine{1324             stream\_pool.return\_stream(stream)}
+\DoxyCodeLine{1325 }
+\DoxyCodeLine{1326 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+get\+\_\+stream\+\_\+pool(), and parla.\+cython.\+tasks.\+Task\+Environment.\+stream\+\_\+list.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adc89707aaf62fc2737ee1fcbde5696e3_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adf02d76fc118e542522f1769374b10f2}\label{classparla_1_1cython_1_1tasks_1_1GPUEnvironment_adf02d76fc118e542522f1769374b10f2}} 
+\index{parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}!active\_stream@{active\_stream}}
+\index{active\_stream@{active\_stream}!parla.cython.tasks.GPUEnvironment@{parla.cython.tasks.GPUEnvironment}}
+\doxysubsubsection{\texorpdfstring{active\_stream}{active\_stream}}
+{\footnotesize\ttfamily parla.\+cython.\+tasks.\+GPUEnvironment.\+active\+\_\+stream}
+
+
+
+Definition at line 1304 of file tasks.\+pyx.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+GPUEnvironment.\+\_\+\+\_\+exit\+\_\+\+\_\+().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{tasks_8pyx}{tasks.\+pyx}}\end{DoxyCompactItemize}

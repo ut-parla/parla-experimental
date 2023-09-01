@@ -1,0 +1,342 @@
+\hypertarget{classparla_1_1common_1_1containers_1_1TaskSet}{}\doxysection{parla.\+common.\+containers.\+Task\+Set Class Reference}
+\label{classparla_1_1common_1_1containers_1_1TaskSet}\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+
+
+Inheritance diagram for parla.\+common.\+containers.\+Task\+Set\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+common.\+containers.\+Task\+Set\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=228pt]{classparla_1_1common_1_1containers_1_1TaskSet__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a1dcd2a9c789c2ca9f05f666b2868c4fa}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, tasks)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a87ebc8cf5d598b28d05cec32458c0508}{\+\_\+\+\_\+await\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_ac3e75ceffb8c926508a7bcdd6fe430ee}{\+\_\+\+\_\+len\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a5743197f112dc825c1a6c550a5b5ecc2}{\+\_\+\+\_\+iter\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a08b103c6924aee47ffcf2d4c9990336d}{\+\_\+\+\_\+contains\+\_\+\+\_\+}} (self, x)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a9eac028f73643c9d740cf8cf9876ff64}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a54bf8ccdd6df6fc31cf6ef31cdb085eb}{\+\_\+tasks}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a3a503fbfe69cf256796e4cf52fca27cc}{\+\_\+flat\+\_\+tasks}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSet_a04eac35584c1e2db6f371088cfcf0e50}{\+\_\+tasks}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 13 of file containers.\+py.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a1dcd2a9c789c2ca9f05f666b2868c4fa}\label{classparla_1_1common_1_1containers_1_1TaskSet_a1dcd2a9c789c2ca9f05f666b2868c4fa}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{tasks }\end{DoxyParamCaption})}
+
+
+
+Definition at line 15 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{15     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, tasks):}
+\DoxyCodeLine{16         self.\_tasks = tasks}
+\DoxyCodeLine{17 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a87ebc8cf5d598b28d05cec32458c0508}\label{classparla_1_1common_1_1containers_1_1TaskSet_a87ebc8cf5d598b28d05cec32458c0508}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_await\_\_@{\_\_await\_\_}}
+\index{\_\_await\_\_@{\_\_await\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_await\_\_()}{\_\_await\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+await\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 35 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{35     \textcolor{keyword}{def }\_\_await\_\_(self):}
+\DoxyCodeLine{36         \textcolor{keywordflow}{return} (\textcolor{keywordflow}{yield} \mbox{\hyperlink{namespaceparla_1_1common_1_1containers_abfe869ec43ee2e49f768af61fb870151}{TaskAwaitTasks}}(self.\_flat\_tasks, \textcolor{keywordtype}{None}))}
+\DoxyCodeLine{37 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+flat\+\_\+tasks(), and parla.\+common.\+containers.\+Task\+Await\+Tasks.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a87ebc8cf5d598b28d05cec32458c0508_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a08b103c6924aee47ffcf2d4c9990336d}\label{classparla_1_1common_1_1containers_1_1TaskSet_a08b103c6924aee47ffcf2d4c9990336d}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_contains\_\_@{\_\_contains\_\_}}
+\index{\_\_contains\_\_@{\_\_contains\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_contains\_\_()}{\_\_contains\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+contains\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 44 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{44     \textcolor{keyword}{def }\_\_contains\_\_(self, x):}
+\DoxyCodeLine{45         \textcolor{keywordflow}{return} x \textcolor{keywordflow}{in} self.\_tasks}
+\DoxyCodeLine{46 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, and parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a08b103c6924aee47ffcf2d4c9990336d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a5743197f112dc825c1a6c550a5b5ecc2}\label{classparla_1_1common_1_1containers_1_1TaskSet_a5743197f112dc825c1a6c550a5b5ecc2}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_iter\_\_@{\_\_iter\_\_}}
+\index{\_\_iter\_\_@{\_\_iter\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_iter\_\_()}{\_\_iter\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+iter\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 41 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{41     \textcolor{keyword}{def }\_\_iter\_\_(self):}
+\DoxyCodeLine{42         \textcolor{keywordflow}{return} iter(self.\_tasks)}
+\DoxyCodeLine{43 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, and parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a5743197f112dc825c1a6c550a5b5ecc2_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_ac3e75ceffb8c926508a7bcdd6fe430ee}\label{classparla_1_1common_1_1containers_1_1TaskSet_ac3e75ceffb8c926508a7bcdd6fe430ee}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_len\_\_@{\_\_len\_\_}}
+\index{\_\_len\_\_@{\_\_len\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_len\_\_()}{\_\_len\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+len\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 38 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{38     \textcolor{keyword}{def }\_\_len\_\_(self):}
+\DoxyCodeLine{39         \textcolor{keywordflow}{return} len(self.\_tasks)}
+\DoxyCodeLine{40 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, and parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_ac3e75ceffb8c926508a7bcdd6fe430ee_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a9eac028f73643c9d740cf8cf9876ff64}\label{classparla_1_1common_1_1containers_1_1TaskSet_a9eac028f73643c9d740cf8cf9876ff64}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSpace_a1305d2ff20239642624538f90f007410}{parla.\+common.\+containers.\+Task\+Space}}.
+
+
+
+Definition at line 47 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{47     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{48         \textcolor{keywordflow}{return} \textcolor{stringliteral}{"{}tasks(\{\})"{}}.format(\textcolor{stringliteral}{"{}, "{}}.join(repr(x) \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} self.\_tasks))}
+\DoxyCodeLine{49 }
+\DoxyCodeLine{50 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, and parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks.
+
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a9eac028f73643c9d740cf8cf9876ff64_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a9eac028f73643c9d740cf8cf9876ff64_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a3a503fbfe69cf256796e4cf52fca27cc}\label{classparla_1_1common_1_1containers_1_1TaskSet_a3a503fbfe69cf256796e4cf52fca27cc}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_flat\_tasks@{\_flat\_tasks}}
+\index{\_flat\_tasks@{\_flat\_tasks}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_flat\_tasks()}{\_flat\_tasks()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+flat\+\_\+tasks (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 22 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{22     \textcolor{keyword}{def }\_flat\_tasks(self):}
+\DoxyCodeLine{23         dependencies = []}
+\DoxyCodeLine{24         \textcolor{keywordflow}{for} ds \textcolor{keywordflow}{in} self.\_tasks:}
+\DoxyCodeLine{25             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(ds, Iterable):}
+\DoxyCodeLine{26                 ds = (ds,)}
+\DoxyCodeLine{27             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} ds:}
+\DoxyCodeLine{28                 \textcolor{keywordflow}{if} hasattr(d, \textcolor{stringliteral}{"{}task"{}}):}
+\DoxyCodeLine{29                     \textcolor{keywordflow}{if} d.task \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{30                         d = d.task}
+\DoxyCodeLine{31                 dependencies.append(d)}
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33         \textcolor{keywordflow}{return} dependencies}
+\DoxyCodeLine{34 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks, parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+tasks, parla.\+cython.\+tasks.\+Task\+List.\+\_\+tasks, parla.\+cython.\+tasks.\+Backend\+Task\+List.\+\_\+tasks, and parla.\+cython.\+tasks.\+Task\+Space.\+\_\+tasks.
+
+
+
+Referenced by parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+await\+\_\+\+\_\+().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a3a503fbfe69cf256796e4cf52fca27cc_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a3a503fbfe69cf256796e4cf52fca27cc_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a54bf8ccdd6df6fc31cf6ef31cdb085eb}\label{classparla_1_1common_1_1containers_1_1TaskSet_a54bf8ccdd6df6fc31cf6ef31cdb085eb}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_tasks@{\_tasks}}
+\index{\_tasks@{\_tasks}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_tasks()}{\_tasks()}}
+{\footnotesize\ttfamily def parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reimplemented in \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1TaskSpace_af8b92e99b36188e354e1094ad06ec330}{parla.\+common.\+containers.\+Task\+Space}}, and \mbox{\hyperlink{classparla_1_1common_1_1containers_1_1Tasks_a17f1c970b6a36f9ff0e29049644e100b}{parla.\+common.\+containers.\+Tasks}}.
+
+
+
+Definition at line 18 of file containers.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{18     \textcolor{keyword}{def }\_tasks(self):}
+\DoxyCodeLine{19         \textcolor{keywordflow}{pass}}
+\DoxyCodeLine{20 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+List.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+List.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+eq\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+List.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+iter\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+len\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+flat\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+tasks(), parla.\+cython.\+tasks.\+Task\+Space.\+tasks(), and parla.\+cython.\+tasks.\+Task\+Space.\+view().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1containers_1_1TaskSet_a54bf8ccdd6df6fc31cf6ef31cdb085eb_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1containers_1_1TaskSet_a04eac35584c1e2db6f371088cfcf0e50}\label{classparla_1_1common_1_1containers_1_1TaskSet_a04eac35584c1e2db6f371088cfcf0e50}} 
+\index{parla.common.containers.TaskSet@{parla.common.containers.TaskSet}!\_tasks@{\_tasks}}
+\index{\_tasks@{\_tasks}!parla.common.containers.TaskSet@{parla.common.containers.TaskSet}}
+\doxysubsubsection{\texorpdfstring{\_tasks}{\_tasks}}
+{\footnotesize\ttfamily parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 16 of file containers.\+py.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+List.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+List.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+eq\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Collection.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+List.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+iadd\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+iter\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+len\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+\+\_\+repr\+\_\+\+\_\+(), parla.\+common.\+containers.\+Task\+Set.\+\_\+flat\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Set.\+\_\+tasks(), parla.\+common.\+containers.\+Tasks.\+\_\+tasks(), parla.\+common.\+containers.\+Task\+Space.\+\_\+tasks(), parla.\+cython.\+tasks.\+Task\+Collection.\+tasks(), parla.\+cython.\+tasks.\+Task\+Space.\+tasks(), and parla.\+cython.\+tasks.\+Task\+Space.\+view().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/\mbox{\hyperlink{containers_8py}{containers.\+py}}\end{DoxyCompactItemize}

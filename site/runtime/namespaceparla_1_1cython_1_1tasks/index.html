@@ -1,0 +1,1617 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A heterogenous parallel programming framework for Python.">
+      
+      
+        <meta name="author" content="UT Parla Team">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.13">
+    
+    
+      
+        <title>Namespace parla::cython::tasks - Parla MkDoxy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a6bdf11c.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+        html.glightbox-open { overflow: initial; height: 100%; }
+        .gslide-title { margin-top: 0px; user-select: text; }
+        .gslide-desc { color: #666; user-select: text; }
+        .gslide-image img { background: white; }
+        
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}
+            </style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="orange" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#namespace-parlacythontasks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Parla MkDoxy" class="md-header__button md-logo" aria-label="Parla MkDoxy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Parla MkDoxy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Namespace parla::cython::tasks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="orange" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+            
+              <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_2" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_2">
+            
+              <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+        </form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ut-parla/parla-experimental" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ut-parla/parla-experimental
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../tutorial/0_hello_world/" class="md-tabs__link">
+      Tutorials
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        Runtime
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Parla MkDoxy" class="md-nav__button md-logo" aria-label="Parla MkDoxy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Parla MkDoxy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ut-parla/parla-experimental" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ut-parla/parla-experimental
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/0_hello_world/" class="md-nav__link">
+        Tutorials
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Runtime</a>
+          
+            <label for="__nav_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Runtime
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../links/" class="md-nav__link">
+        Links
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          Classes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Classes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotated/" class="md-nav__link">
+        Class List
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classes/" class="md-nav__link">
+        Class Index
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hierarchy/" class="md-nav__link">
+        Class Hierarchy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_members/" class="md-nav__link">
+        Class Members
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_functions/" class="md-nav__link">
+        Class Member Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_variables/" class="md-nav__link">
+        Class Member Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_typedefs/" class="md-nav__link">
+        Class Member Typedefs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class_member_enums/" class="md-nav__link">
+        Class Member Enumerations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          Namespaces
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Namespaces
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaces/" class="md-nav__link">
+        Namespace List
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_members/" class="md-nav__link">
+        Namespace Members
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_functions/" class="md-nav__link">
+        Namespace Member Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_variables/" class="md-nav__link">
+        Namespace Member Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_typedefs/" class="md-nav__link">
+        Namespace Member Typedefs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespace_member_enums/" class="md-nav__link">
+        Namespace Member Enumerations
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions/" class="md-nav__link">
+        Functions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variables/" class="md-nav__link">
+        Variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../macros/" class="md-nav__link">
+        Macros
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../files/" class="md-nav__link">
+        Files
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    Classes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes" class="md-nav__link">
+    Public Attributes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    Public Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes-documentation" class="md-nav__link">
+    Public Attributes Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-deviceresourcerequirement" class="md-nav__link">
+    variable DeviceResourceRequirement
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-devicetype" class="md-nav__link">
+    variable DeviceType
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-none" class="md-nav__link">
+    variable None
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-pyarchitecture" class="md-nav__link">
+    variable PyArchitecture
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-pycpudevice" class="md-nav__link">
+    variable PyCPUDevice
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-pycudaarchitecture" class="md-nav__link">
+    variable PyCUDAArchitecture
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-pycudadevice" class="md-nav__link">
+    variable PyCUDADevice
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-pydevice" class="md-nav__link">
+    variable PyDevice
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-taskawaittasks" class="md-nav__link">
+    variable TaskAwaitTasks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-barrier" class="md-nav__link">
+    variable barrier
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-cpu" class="md-nav__link">
+    variable cpu
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-create" class="md-nav__link">
+    variable create
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-depth" class="md-nav__link">
+    variable depth
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-dim" class="md-nav__link">
+    variable dim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-i" class="md-nav__link">
+    variable i
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-index" class="md-nav__link">
+    variable index
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-index_list" class="md-nav__link">
+    variable index_list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-istart" class="md-nav__link">
+    variable istart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-istep" class="md-nav__link">
+    variable istep
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-istop" class="md-nav__link">
+    variable istop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-keys" class="md-nav__link">
+    variable keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-lower_boundary" class="md-nav__link">
+    variable lower_boundary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-max_dim" class="md-nav__link">
+    variable max_dim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-new_index" class="md-nav__link">
+    variable new_index
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-new_tasks" class="md-nav__link">
+    variable new_tasks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-output" class="md-nav__link">
+    variable output
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-remainder" class="md-nav__link">
+    variable remainder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-shape" class="md-nav__link">
+    variable shape
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-shape_flag" class="md-nav__link">
+    variable shape_flag
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-start" class="md-nav__link">
+    variable start
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-start_flag" class="md-nav__link">
+    variable start_flag
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-task" class="md-nav__link">
+    variable task
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-task_list" class="md-nav__link">
+    variable task_list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-task_locals" class="md-nav__link">
+    variable task_locals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-tasks" class="md-nav__link">
+    variable tasks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-upper_boundary" class="md-nav__link">
+    variable upper_boundary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    Public Functions Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-create_device_env" class="md-nav__link">
+    function create_device_env
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-create_env" class="md-nav__link">
+    function create_env
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-parse_index" class="md-nav__link">
+    function parse_index
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="namespace-parlacythontasks">Namespace parla::cython::tasks</h1>
+<p><a href="../namespaces/"><strong>Namespace List</strong></a> <strong>&gt;</strong> <a href="../namespaceparla/"><strong>parla</strong></a> <strong>&gt;</strong> <a href="../namespaceparla_1_1cython/"><strong>cython</strong></a> <strong>&gt;</strong> <a href="./"><strong>tasks</strong></a></p>
+<h2 id="classes">Classes</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1AtomicTaskList/"><strong>AtomicTaskList</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace/"><strong>AtomicTaskSpace</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1BackendTaskList/"><strong>BackendTaskList</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1BackendTaskSpace/"><strong>BackendTaskSpace</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1CPUEnvironment/"><strong>CPUEnvironment</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1ComputeTask/"><strong>ComputeTask</strong></a> <br><em>A compute task is a task that executes a user defined Python function on a device.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1DataMovementTask/"><strong>DataMovementTask</strong></a> <br><em>A data movement task is a task that moves data between devices.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1GPUEnvironment/"><strong>GPUEnvironment</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1Task/"><strong>Task</strong></a> <br><em>Python</em> <a href="../classparla_1_1cython_1_1tasks_1_1Task/"><em><strong>Task</strong></em></a> <em>interface.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskCollection/"><strong>TaskCollection</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskCompleted/"><strong>TaskCompleted</strong></a> <br><em>This state specifies that a task has completed execution.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskCreated/"><strong>TaskCreated</strong></a> <br><em>This state specifies that a task has been created but not yet spawned.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskEnvironment/"><strong>TaskEnvironment</strong></a> <br><em>A</em> <a href="../classparla_1_1cython_1_1tasks_1_1TaskEnvironment/"><em><strong>TaskEnvironment</strong></em></a> <em>is a collection of devices or other TaskEnvironments used to coordinate and synchronize kernels in the</em><a href="../classparla_1_1cython_1_1tasks_1_1Task/"><em><strong>Task</strong></em></a> <em>body.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskException/"><strong>TaskException</strong></a> <br><em>This state specifies that a task has completed execution with an exception.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskList/"><strong>TaskList</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskMapped/"><strong>TaskMapped</strong></a> <br><em>This state specifies that a task has been mapped to a device set, but not yet resered its resources there.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskReady/"><strong>TaskReady</strong></a> <br><em>This state specifies that a task is "ready" to be launched.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskReserved/"><strong>TaskReserved</strong></a> <br><em>This state specifies that a task has reserved its persistent resources (e.g.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskRunahead/"><strong>TaskRunahead</strong></a> <br><em>State: A task is executing in a stream but the body has completed.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskRunning/"><strong>TaskRunning</strong></a> <br><em>This state specifies that a task is executing in a stream.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskSpace/"><strong>TaskSpace</strong></a> <br></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskSpawned/"><strong>TaskSpawned</strong></a> <br><em>This state specifies that a task is ready to be mapped to a specific device set.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TaskState/"><strong>TaskState</strong></a> <br><em>Abstract base class for</em> <a href="../classparla_1_1cython_1_1tasks_1_1Task/"><em><strong>Task</strong></em></a> <em>State.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1TerminalEnvironment/"><strong>TerminalEnvironment</strong></a> <br><em>An endpoint</em> <a href="../classparla_1_1cython_1_1tasks_1_1TaskEnvironment/"><em><strong>TaskEnvironment</strong></em></a> <em>representing a single device.</em></td>
+</tr>
+<tr>
+<td align="right">class</td>
+<td align="left"><a href="../classparla_1_1cython_1_1tasks_1_1__TaskLocals/"><strong>_TaskLocals</strong></a> <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-attributes">Public Attributes</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-deviceresourcerequirement"><strong>DeviceResourceRequirement</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1DeviceResourceRequirement/"><strong>device.DeviceResourceRequirement</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-devicetype"><strong>DeviceType</strong></a>   = =  PyDeviceType<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-none"><strong>None</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-pyarchitecture"><strong>PyArchitecture</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1PyArchitecture/"><strong>device.PyArchitecture</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-pycpudevice"><strong>PyCPUDevice</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1PyCPUDevice/"><strong>device.PyCPUDevice</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-pycudaarchitecture"><strong>PyCUDAArchitecture</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1PyCUDAArchitecture/"><strong>device.PyCUDAArchitecture</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-pycudadevice"><strong>PyCUDADevice</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1PyCUDADevice/"><strong>device.PyCUDADevice</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-pydevice"><strong>PyDevice</strong></a>   = =  <a href="../classparla_1_1cython_1_1device_1_1PyDevice/"><strong>device.PyDevice</strong></a><br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-taskawaittasks"><strong>TaskAwaitTasks</strong></a>   = =  namedtuple("AwaitTasks", ["dependencies", "value_task"])<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-barrier"><strong>barrier</strong></a>   = =  <a href="../classparla_1_1cython_1_1tasks_1_1BackendTaskList/"><strong>BackendTaskList</strong></a>(barrier)<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-cpu"><strong>cpu</strong></a>   = =  device_manager.cpu<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-create"><strong>create</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-depth"><strong>depth</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-dim"><strong>dim</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-i"><strong>i</strong></a>   = =  i.tasks<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-index"><strong>index</strong></a>   = =  index_list[i]<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-index_list"><strong>index_list</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-istart"><strong>istart</strong></a>   = =  max(i.start, lower_boundary) if i.start is not None else lower_boundary<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-istep"><strong>istep</strong></a>   = =  i.step or 1<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-istop"><strong>istop</strong></a>   = =  min(i.stop, upper_boundary) if i.stop is not None else upper_boundary<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-keys"><strong>keys</strong></a>   = =  tasks.keys()<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-lower_boundary"><strong>lower_boundary</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-max_dim"><strong>max_dim</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-new_index"><strong>new_index</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-new_tasks"><strong>new_tasks</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-output"><strong>output</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-remainder"><strong>remainder</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-shape"><strong>shape</strong></a>   = =  None<br></td>
+</tr>
+<tr>
+<td align="right">tuple</td>
+<td align="left"><a href="#variable-shape_flag"><strong>shape_flag</strong></a>   = =  (shape is not None)<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-start"><strong>start</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right">tuple</td>
+<td align="left"><a href="#variable-start_flag"><strong>start_flag</strong></a>   = =  (start is not None)<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-task"><strong>task</strong></a>   = =  tasks[i]<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-task_list"><strong>task_list</strong></a>  <br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-task_locals"><strong>task_locals</strong></a>   = =  <a href="../classparla_1_1cython_1_1tasks_1_1__TaskLocals/"><strong>_TaskLocals</strong></a>()<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-tasks"><strong>tasks</strong></a>   = =  tasks.tasks<br></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="left"><a href="#variable-upper_boundary"><strong>upper_boundary</strong></a>  <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions">Public Functions</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Type</th>
+<th align="left">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">def</td>
+<td align="left"><a href="#function-create_device_env"><strong>create_device_env</strong></a> (device device) <br><em>Create a terminal device environment from a PyDevice.</em></td>
+</tr>
+<tr>
+<td align="right">def</td>
+<td align="left"><a href="#function-create_env"><strong>create_env</strong></a> (sources sources) <br><em>Create the union</em> <a href="../classparla_1_1cython_1_1tasks_1_1TaskEnvironment/"><em><strong>TaskEnvironment</strong></em></a> <em>from a list of TaskEnvironments or PyDevices.</em></td>
+</tr>
+<tr>
+<td align="right">def</td>
+<td align="left"><a href="#function-parse_index"><strong>parse_index</strong></a> (prefix prefix, index index, step step, stop stop) <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-attributes-documentation">Public Attributes Documentation</h2>
+<h3 id="variable-deviceresourcerequirement">variable DeviceResourceRequirement</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">DeviceResourceRequirement</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-devicetype">variable DeviceType</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">DeviceType</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-none">variable None</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="kc">None</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-pyarchitecture">variable PyArchitecture</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">PyArchitecture</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-pycpudevice">variable PyCPUDevice</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">PyCPUDevice</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-pycudaarchitecture">variable PyCUDAArchitecture</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">PyCUDAArchitecture</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-pycudadevice">variable PyCUDADevice</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">PyCUDADevice</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-pydevice">variable PyDevice</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">PyDevice</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-taskawaittasks">variable TaskAwaitTasks</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">TaskAwaitTasks</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-barrier">variable barrier</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">barrier</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-cpu">variable cpu</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">cpu</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-create">variable create</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">create</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-depth">variable depth</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">depth</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-dim">variable dim</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">dim</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-i">variable i</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">i</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-index">variable index</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">index</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-index_list">variable index_list</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">index_list</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-istart">variable istart</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">istart</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-istep">variable istep</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">int</span> <span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">istep</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-istop">variable istop</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">int</span> <span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">istop</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-keys">variable keys</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">keys</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-lower_boundary">variable lower_boundary</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">lower_boundary</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-max_dim">variable max_dim</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">max_dim</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-new_index">variable new_index</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">new_index</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-new_tasks">variable new_tasks</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">new_tasks</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-output">variable output</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">output</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-remainder">variable remainder</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">remainder</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-shape">variable shape</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">shape</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-shape_flag">variable shape_flag</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">tuple</span> <span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">shape_flag</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-start">variable start</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">start</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-start_flag">variable start_flag</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">tuple</span> <span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">start_flag</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-task">variable task</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">task</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-task_list">variable task_list</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">task_list</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-task_locals">variable task_locals</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">task_locals</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-tasks">variable tasks</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">tasks</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="variable-upper_boundary">variable upper_boundary</h3>
+<div class="highlight"><pre><span></span><code><span class="n">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="o">.</span><span class="n">upper_boundary</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="public-functions-documentation">Public Functions Documentation</h2>
+<h3 id="function-create_device_env">function create_device_env</h3>
+<p><em>Create a terminal device environment from a PyDevice.</em> 
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">create_device_env</span> <span class="p">(</span>
+    <span class="n">device</span> <span class="n">device</span>
+<span class="p">)</span> 
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>device</code> The PyDevice to create the environment from. </li>
+</ul>
+<h3 id="function-create_env">function create_env</h3>
+<p><em>Create the union</em> <a href="../classparla_1_1cython_1_1tasks_1_1TaskEnvironment/"><em><strong>TaskEnvironment</strong></em></a> <em>from a list of TaskEnvironments or PyDevices.</em>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">create_env</span> <span class="p">(</span>
+    <span class="n">sources</span> <span class="n">sources</span>
+<span class="p">)</span> 
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>sources</code> The list of PyDevices (or Environments) to create the new environment from. </li>
+</ul>
+<h3 id="function-parse_index">function parse_index</h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">parla</span><span class="p">::</span><span class="n">cython</span><span class="p">::</span><span class="n">tasks</span><span class="p">::</span><span class="n">parse_index</span> <span class="p">(</span>
+    <span class="n">prefix</span> <span class="n">prefix</span><span class="p">,</span>
+    <span class="n">index</span> <span class="n">index</span><span class="p">,</span>
+    <span class="n">step</span> <span class="n">step</span><span class="p">,</span>
+    <span class="n">stop</span> <span class="n">stop</span>
+<span class="p">)</span> 
+</code></pre></div>
+<hr />
+<p>The documentation for this class was generated from the following file <code>src/python/parla/cython/tasks.pyx</code></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ut-parla/parla-experimental" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.indexes", "navigation.top", "navigation.instant", "navigation.tracking"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+        <script src="../../js/open_in_new_tab.js"></script>
+      
+    
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
+</html>

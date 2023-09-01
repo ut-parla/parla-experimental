@@ -1,0 +1,482 @@
+\hypertarget{classInnerWorker}{}\doxysection{Inner\+Worker Class Reference}
+\label{classInnerWorker}\index{InnerWorker@{InnerWorker}}
+
+
+A worker is a thread that executes tasks.  
+
+
+
+
+{\ttfamily \#include $<$runtime.\+hpp$>$}
+
+
+
+Collaboration diagram for Inner\+Worker\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerWorker__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classInnerWorker_a3f504479812a34d1b1f3005b2f020517}{Inner\+Worker}} ()=default
+\item 
+\mbox{\hyperlink{classInnerWorker_a0894be28c0c8dc2e9d72c146197508e7}{Inner\+Worker}} (void $\ast$worker)
+\item 
+void \mbox{\hyperlink{classInnerWorker_ad92690cf1ada9e39e1374326083eceac}{set\+\_\+py\+\_\+worker}} (void $\ast$worker)
+\begin{DoxyCompactList}\small\item\em Set the backlink to the python worker. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_a2f72602312edb39ceaef2df8eea60f14}{set\+\_\+scheduler}} (\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$\mbox{\hyperlink{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}{scheduler}})
+\begin{DoxyCompactList}\small\item\em Store the scheduler that owns this worker. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_a1df5b833e99599b2410677acd7352e16}{set\+\_\+thread\+\_\+idx}} (int idx)
+\begin{DoxyCompactList}\small\item\em Set the thread index of this worker. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_afa8e91ab9d84a155fd975d2f0ab5e664}{wait}} ()
+\begin{DoxyCompactList}\small\item\em wait for a task to be assigned \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_a0ad91300f87f6409eeeb336a3b61eaf3}{assign\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$\mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}})
+\begin{DoxyCompactList}\small\item\em assign a task to the worker and notify worker that it is available \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_a75cd1f64d0abbc2d16bd8cc97664f2d0}{get\+\_\+task}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$\ast$\mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}}, bool $\ast$is\+\_\+data\+\_\+task)
+\begin{DoxyCompactList}\small\item\em Get the C++ task instance that this worker thread will execute. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classInnerWorker_a6747e52a01465719f623a1dc1618f21c}{remove\+\_\+task}} ()
+\item 
+void \mbox{\hyperlink{classInnerWorker_a6423bb38586ec271c3cee65c102bf76e}{stop}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+void $\ast$ \mbox{\hyperlink{classInnerWorker_a850326d5521ba4c26800a1030113d868}{py\+\_\+worker}} = nullptr
+\item 
+\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ \mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}} = nullptr
+\item 
+\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$ \mbox{\hyperlink{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}{scheduler}} = nullptr
+\item 
+std\+::mutex \mbox{\hyperlink{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}{mtx}}
+\item 
+std\+::condition\+\_\+variable \mbox{\hyperlink{classInnerWorker_a9d5e449d550de485133bd9253bf61810}{cv}}
+\item 
+bool \mbox{\hyperlink{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}{ready}} = false
+\item 
+bool \mbox{\hyperlink{classInnerWorker_a048723ebe32421bbef411e0100fc1110}{notified}} = false
+\item 
+int \mbox{\hyperlink{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}{thread\+\_\+idx}} = -\/1
+\item 
+\mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} \mbox{\hyperlink{classInnerWorker_a167aa52303185501a619b420987435f6}{enqueue\+\_\+buffer}}
+\begin{DoxyCompactList}\small\item\em A list of newly ready tasks that will be enqueued by this worker. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A worker is a thread that executes tasks. 
+
+The worker is a C++ object that is created by the Python runtime. It is responsible for executing tasks assigned to it by the scheduler. The worker sleeps until it receives a task from the scheduler. When it recieves a task, it wakes up and acquires the GIL. 
+
+Definition at line 771 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classInnerWorker_a3f504479812a34d1b1f3005b2f020517}\label{classInnerWorker_a3f504479812a34d1b1f3005b2f020517}} 
+\index{InnerWorker@{InnerWorker}!InnerWorker@{InnerWorker}}
+\index{InnerWorker@{InnerWorker}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{InnerWorker()}{InnerWorker()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Inner\+Worker\+::\+Inner\+Worker (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\mbox{\Hypertarget{classInnerWorker_a0894be28c0c8dc2e9d72c146197508e7}\label{classInnerWorker_a0894be28c0c8dc2e9d72c146197508e7}} 
+\index{InnerWorker@{InnerWorker}!InnerWorker@{InnerWorker}}
+\index{InnerWorker@{InnerWorker}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{InnerWorker()}{InnerWorker()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Inner\+Worker\+::\+Inner\+Worker (\begin{DoxyParamCaption}\item[{void $\ast$}]{worker }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 798 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{798 : \mbox{\hyperlink{classInnerWorker_a850326d5521ba4c26800a1030113d868}{py\_worker}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}})\{\};}
+
+\end{DoxyCode}
+
+
+References py\+\_\+worker.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classInnerWorker_a0ad91300f87f6409eeeb336a3b61eaf3}\label{classInnerWorker_a0ad91300f87f6409eeeb336a3b61eaf3}} 
+\index{InnerWorker@{InnerWorker}!assign\_task@{assign\_task}}
+\index{assign\_task@{assign\_task}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{assign\_task()}{assign\_task()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::assign\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})}
+
+
+
+assign a task to the worker and notify worker that it is available 
+
+
+
+Definition at line 27 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{27                                              \{}
+\DoxyCodeLine{28   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}worker:assign\_task"{}}, \mbox{\hyperlink{profiling_8hpp_a703f7c2d0fab0c0f3b5fa422f46489b8}{NVTX\_COLOR\_CYAN}})}
+\DoxyCodeLine{29   \textcolor{comment}{// std::cout << "{}Assigning task (C++) "{} << this-\/>thread\_idx << "{} "{}}}
+\DoxyCodeLine{30   \textcolor{comment}{//           << this-\/>ready << std::endl;}}
+\DoxyCodeLine{31   assert(\mbox{\hyperlink{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}{ready}} == \textcolor{keyword}{false});}
+\DoxyCodeLine{32   std::unique\_lock<std::mutex> lck(\mbox{\hyperlink{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}{mtx}});}
+\DoxyCodeLine{33   this-\/>task = \mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}};}
+\DoxyCodeLine{34   this-\/>\mbox{\hyperlink{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}{ready}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{35   this-\/>\mbox{\hyperlink{classInnerWorker_a048723ebe32421bbef411e0100fc1110}{notified}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{36   \mbox{\hyperlink{classInnerWorker_a9d5e449d550de485133bd9253bf61810}{cv}}.notify\_one();}
+\DoxyCodeLine{37 \}}
+
+\end{DoxyCode}
+
+
+References notified, ready, and task.
+
+\mbox{\Hypertarget{classInnerWorker_a75cd1f64d0abbc2d16bd8cc97664f2d0}\label{classInnerWorker_a75cd1f64d0abbc2d16bd8cc97664f2d0}} 
+\index{InnerWorker@{InnerWorker}!get\_task@{get\_task}}
+\index{get\_task@{get\_task}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{get\_task()}{get\_task()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::get\+\_\+task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$\ast$}]{task,  }\item[{bool $\ast$}]{is\+\_\+data\+\_\+task }\end{DoxyParamCaption})}
+
+
+
+Get the C++ task instance that this worker thread will execute. 
+
+This function returns two outputs, a pointer to a task pointer and a pointer to a flag specifying if this task is data task or not. If that is the data task, the callee creates a Python data task instance and makes a connection between the Python and the C++ instances.
+
+
+\begin{DoxyParams}{Parameters}
+{\em task} & A pointer to a pointer to a task (output) \\
+\hline
+{\em is\+\_\+data\+\_\+task} & A pointer to a flag that sets True if the task is data task. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 39 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{39                                                                \{}
+\DoxyCodeLine{40   this-\/>\mbox{\hyperlink{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}{scheduler}}-\/>\mbox{\hyperlink{classInnerScheduler_a5d5353340c8b72bf630d2cecaeca1638}{decrease\_num\_notified\_workers}}();}
+\DoxyCodeLine{41   *task = this-\/>\mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}};}
+\DoxyCodeLine{42   *is\_data\_task = this-\/>task-\/>\mbox{\hyperlink{classInnerTask_a4ca098a528447af8182270837cf03ece}{is\_data\_task}}();}
+\DoxyCodeLine{43 \}}
+
+\end{DoxyCode}
+
+
+References Inner\+Scheduler\+::decrease\+\_\+num\+\_\+notified\+\_\+workers(), Inner\+Task\+::is\+\_\+data\+\_\+task(), scheduler, and task.
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerWorker_a75cd1f64d0abbc2d16bd8cc97664f2d0_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerWorker_a6747e52a01465719f623a1dc1618f21c}\label{classInnerWorker_a6747e52a01465719f623a1dc1618f21c}} 
+\index{InnerWorker@{InnerWorker}!remove\_task@{remove\_task}}
+\index{remove\_task@{remove\_task}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{remove\_task()}{remove\_task()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::remove\+\_\+task (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 45 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{45                               \{}
+\DoxyCodeLine{46   \textcolor{comment}{// std::cout << "{}Removing task (C++) "{} << this-\/>thread\_idx << "{} "{}}}
+\DoxyCodeLine{47   \textcolor{comment}{//           << this-\/>task-\/>name << std::endl;}}
+\DoxyCodeLine{48   std::unique\_lock<std::mutex> lck(\mbox{\hyperlink{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}{mtx}});}
+\DoxyCodeLine{49   this-\/>\mbox{\hyperlink{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}{task}} = \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{50   this-\/>\mbox{\hyperlink{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}{ready}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{51   this-\/>\mbox{\hyperlink{classInnerWorker_a048723ebe32421bbef411e0100fc1110}{notified}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{52 \}}
+
+\end{DoxyCode}
+
+
+References notified, ready, and task.
+
+
+
+Referenced by Inner\+Scheduler\+::task\+\_\+cleanup\+\_\+postsync().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerWorker_a6747e52a01465719f623a1dc1618f21c_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classInnerWorker_ad92690cf1ada9e39e1374326083eceac}\label{classInnerWorker_ad92690cf1ada9e39e1374326083eceac}} 
+\index{InnerWorker@{InnerWorker}!set\_py\_worker@{set\_py\_worker}}
+\index{set\_py\_worker@{set\_py\_worker}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{set\_py\_worker()}{set\_py\_worker()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::set\+\_\+py\+\_\+worker (\begin{DoxyParamCaption}\item[{void $\ast$}]{worker }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Set the backlink to the python worker. 
+
+
+
+Definition at line 801 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{801 \{ this-\/>\mbox{\hyperlink{classInnerWorker_a850326d5521ba4c26800a1030113d868}{py\_worker}} = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}}; \};}
+
+\end{DoxyCode}
+
+
+References py\+\_\+worker.
+
+\mbox{\Hypertarget{classInnerWorker_a2f72602312edb39ceaef2df8eea60f14}\label{classInnerWorker_a2f72602312edb39ceaef2df8eea60f14}} 
+\index{InnerWorker@{InnerWorker}!set\_scheduler@{set\_scheduler}}
+\index{set\_scheduler@{set\_scheduler}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{set\_scheduler()}{set\_scheduler()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::set\+\_\+scheduler (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$}]{scheduler }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Store the scheduler that owns this worker. 
+
+
+
+Definition at line 804 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{804                                                 \{}
+\DoxyCodeLine{805     this-\/>scheduler = \mbox{\hyperlink{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}{scheduler}};}
+\DoxyCodeLine{806   \};}
+
+\end{DoxyCode}
+
+
+References scheduler.
+
+\mbox{\Hypertarget{classInnerWorker_a1df5b833e99599b2410677acd7352e16}\label{classInnerWorker_a1df5b833e99599b2410677acd7352e16}} 
+\index{InnerWorker@{InnerWorker}!set\_thread\_idx@{set\_thread\_idx}}
+\index{set\_thread\_idx@{set\_thread\_idx}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{set\_thread\_idx()}{set\_thread\_idx()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::set\+\_\+thread\+\_\+idx (\begin{DoxyParamCaption}\item[{int}]{idx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Set the thread index of this worker. 
+
+
+
+Definition at line 809 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{809 \{ this-\/>\mbox{\hyperlink{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}{thread\_idx}} = idx; \};}
+
+\end{DoxyCode}
+
+
+References thread\+\_\+idx.
+
+\mbox{\Hypertarget{classInnerWorker_a6423bb38586ec271c3cee65c102bf76e}\label{classInnerWorker_a6423bb38586ec271c3cee65c102bf76e}} 
+\index{InnerWorker@{InnerWorker}!stop@{stop}}
+\index{stop@{stop}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::stop (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 54 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{54                        \{}
+\DoxyCodeLine{55   \textcolor{comment}{// signal cv so that we can terminate}}
+\DoxyCodeLine{56   std::unique\_lock<std::mutex> lck(\mbox{\hyperlink{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}{mtx}});}
+\DoxyCodeLine{57   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a61fc173cd03db618eb2f64b60f42b55b}{WORKER}}, \textcolor{stringliteral}{"{}Worker stopping: \{\}"{}}, this-\/>\mbox{\hyperlink{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}{thread\_idx}});}
+\DoxyCodeLine{58   this-\/>\mbox{\hyperlink{classInnerWorker_a048723ebe32421bbef411e0100fc1110}{notified}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{59   \mbox{\hyperlink{classInnerWorker_a9d5e449d550de485133bd9253bf61810}{cv}}.notify\_all();}
+\DoxyCodeLine{60 \}}
+
+\end{DoxyCode}
+
+
+References notified.
+
+\mbox{\Hypertarget{classInnerWorker_afa8e91ab9d84a155fd975d2f0ab5e664}\label{classInnerWorker_afa8e91ab9d84a155fd975d2f0ab5e664}} 
+\index{InnerWorker@{InnerWorker}!wait@{wait}}
+\index{wait@{wait}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{wait()}{wait()}}
+{\footnotesize\ttfamily void Inner\+Worker\+::wait (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+wait for a task to be assigned 
+
+
+
+Definition at line 16 of file scheduler.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{16                        \{}
+\DoxyCodeLine{17   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}worker:wait"{}}, \mbox{\hyperlink{profiling_8hpp_a703f7c2d0fab0c0f3b5fa422f46489b8}{NVTX\_COLOR\_CYAN}})}
+\DoxyCodeLine{18   \mbox{\hyperlink{profiling_8hpp_a9ebb3c6ae8e23ea2260d5274b3a22a89}{LOG\_INFO}}(\mbox{\hyperlink{profiling_8hpp_a61fc173cd03db618eb2f64b60f42b55b}{WORKER}}, \textcolor{stringliteral}{"{}Worker waiting: \{\}"{}}, this-\/>\mbox{\hyperlink{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}{thread\_idx}});}
+\DoxyCodeLine{19   std::unique\_lock<std::mutex> lck(\mbox{\hyperlink{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}{mtx}});}
+\DoxyCodeLine{20   \textcolor{comment}{// std::cout << "{}Waiting for task (C++) "{} << this-\/>thread\_idx << std::endl;}}
+\DoxyCodeLine{21   \mbox{\hyperlink{classInnerWorker_a9d5e449d550de485133bd9253bf61810}{cv}}.wait(lck, [\textcolor{keyword}{this}] \{ \textcolor{keywordflow}{return} this-\/>\mbox{\hyperlink{classInnerWorker_a048723ebe32421bbef411e0100fc1110}{notified}}; \});}
+\DoxyCodeLine{22   \textcolor{comment}{// std::cout << "{}Task assigned (C++) "{} << this-\/>thread\_idx << "{} "{}}}
+\DoxyCodeLine{23   \textcolor{comment}{//           << this-\/>ready << std::endl;}}
+\DoxyCodeLine{24   this-\/>\mbox{\hyperlink{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}{scheduler}}-\/>\mbox{\hyperlink{classInnerScheduler_a50bff0e55ab7dc8beb2a4851be3f2895}{increase\_num\_notified\_workers}}();}
+\DoxyCodeLine{25 \}}
+
+\end{DoxyCode}
+
+
+References Inner\+Scheduler\+::increase\+\_\+num\+\_\+notified\+\_\+workers(), and scheduler.
+
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classInnerWorker_afa8e91ab9d84a155fd975d2f0ab5e664_cgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classInnerWorker_a9d5e449d550de485133bd9253bf61810}\label{classInnerWorker_a9d5e449d550de485133bd9253bf61810}} 
+\index{InnerWorker@{InnerWorker}!cv@{cv}}
+\index{cv@{cv}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{cv}{cv}}
+{\footnotesize\ttfamily std\+::condition\+\_\+variable Inner\+Worker\+::cv}
+
+
+
+Definition at line 784 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerWorker_a167aa52303185501a619b420987435f6}\label{classInnerWorker_a167aa52303185501a619b420987435f6}} 
+\index{InnerWorker@{InnerWorker}!enqueue\_buffer@{enqueue\_buffer}}
+\index{enqueue\_buffer@{enqueue\_buffer}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{enqueue\_buffer}{enqueue\_buffer}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} Inner\+Worker\+::enqueue\+\_\+buffer}
+
+
+
+A list of newly ready tasks that will be enqueued by this worker. 
+
+
+
+Definition at line 791 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}\label{classInnerWorker_a4a4574aac262b6c6bf0647f8bc5ff71d}} 
+\index{InnerWorker@{InnerWorker}!mtx@{mtx}}
+\index{mtx@{mtx}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{mtx}{mtx}}
+{\footnotesize\ttfamily std\+::mutex Inner\+Worker\+::mtx}
+
+
+
+Definition at line 783 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{classInnerWorker_a048723ebe32421bbef411e0100fc1110}\label{classInnerWorker_a048723ebe32421bbef411e0100fc1110}} 
+\index{InnerWorker@{InnerWorker}!notified@{notified}}
+\index{notified@{notified}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{notified}{notified}}
+{\footnotesize\ttfamily bool Inner\+Worker\+::notified = false}
+
+
+
+Definition at line 786 of file runtime.\+hpp.
+
+
+
+Referenced by assign\+\_\+task(), remove\+\_\+task(), and stop().
+
+\mbox{\Hypertarget{classInnerWorker_a850326d5521ba4c26800a1030113d868}\label{classInnerWorker_a850326d5521ba4c26800a1030113d868}} 
+\index{InnerWorker@{InnerWorker}!py\_worker@{py\_worker}}
+\index{py\_worker@{py\_worker}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{py\_worker}{py\_worker}}
+{\footnotesize\ttfamily void$\ast$ Inner\+Worker\+::py\+\_\+worker = nullptr}
+
+
+
+Definition at line 775 of file runtime.\+hpp.
+
+
+
+Referenced by Inner\+Worker(), and set\+\_\+py\+\_\+worker().
+
+\mbox{\Hypertarget{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}\label{classInnerWorker_ad2bb642bde24263fd2633ad9e2f49dbd}} 
+\index{InnerWorker@{InnerWorker}!ready@{ready}}
+\index{ready@{ready}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{ready}{ready}}
+{\footnotesize\ttfamily bool Inner\+Worker\+::ready = false}
+
+
+
+Definition at line 785 of file runtime.\+hpp.
+
+
+
+Referenced by assign\+\_\+task(), and remove\+\_\+task().
+
+\mbox{\Hypertarget{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}\label{classInnerWorker_ae354c8891674dcc504bdd65db1433fd2}} 
+\index{InnerWorker@{InnerWorker}!scheduler@{scheduler}}
+\index{scheduler@{scheduler}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{scheduler}{scheduler}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}}$\ast$ Inner\+Worker\+::scheduler = nullptr}
+
+
+
+Definition at line 781 of file runtime.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Scheduler\+Context\+::\+\_\+\+\_\+enter\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Data\+Movement\+Task\+::\+\_\+execute\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::\+\_\+initialize(), get\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::run(), set\+\_\+scheduler(), parla.\+cython.\+tasks.\+Task\+::set\+\_\+scheduler(), and wait().
+
+\mbox{\Hypertarget{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}\label{classInnerWorker_a6a240eeaa1d4cf51a5ae53687ed77964}} 
+\index{InnerWorker@{InnerWorker}!task@{task}}
+\index{task@{task}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{task}{task}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classInnerTask}{Inner\+Task}}$\ast$ Inner\+Worker\+::task = nullptr}
+
+
+
+Definition at line 779 of file runtime.\+hpp.
+
+
+
+Referenced by assign\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::assign\+\_\+task(), get\+\_\+task(), remove\+\_\+task(), parla.\+cython.\+scheduler.\+Worker\+Thread\+::remove\+\_\+task(), and parla.\+cython.\+scheduler.\+Worker\+Thread\+::run().
+
+\mbox{\Hypertarget{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}\label{classInnerWorker_a55517979a6c8e583e80ca22168b25ef4}} 
+\index{InnerWorker@{InnerWorker}!thread\_idx@{thread\_idx}}
+\index{thread\_idx@{thread\_idx}!InnerWorker@{InnerWorker}}
+\doxysubsubsection{\texorpdfstring{thread\_idx}{thread\_idx}}
+{\footnotesize\ttfamily int Inner\+Worker\+::thread\+\_\+idx = -\/1}
+
+
+
+Definition at line 788 of file runtime.\+hpp.
+
+
+
+Referenced by set\+\_\+thread\+\_\+idx().
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{runtime_8hpp}{runtime.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{scheduler_8cpp}{scheduler.\+cpp}}\end{DoxyCompactItemize}

@@ -1,0 +1,694 @@
+\hypertarget{classMapper}{}\doxysection{Mapper Class Reference}
+\label{classMapper}\index{Mapper@{Mapper}}
+
+
+\mbox{\hyperlink{classMapper}{Mapper}} phase of the scheduler.  
+
+
+
+
+{\ttfamily \#include $<$phases.\+hpp$>$}
+
+
+
+Inheritance diagram for Mapper\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=174pt]{classMapper__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Mapper\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classMapper__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classMapper_a1f71bd1c65296ebc9ceeddf065f4d911}{Mapper}} ()=delete
+\item 
+\mbox{\hyperlink{classMapper_a01adf5e4f7773930bcda3bed03ba4c22}{Mapper}} (\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}, \mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$devices, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMappingPolicy}{Mapping\+Policy}} $>$ policy)
+\item 
+void \mbox{\hyperlink{classMapper_a5899d440fb93667e0cdda5683d98e791}{enqueue}} (\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$task)
+\begin{DoxyCompactList}\small\item\em Enqueue a task to the phase. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMapper_af2c6c845ed6287807f14780f697b3065}{enqueue}} (std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&tasks)
+\begin{DoxyCompactList}\small\item\em Enqueue a vector of tasks to the phase. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMapper_aac615e8b8eca887e3d788db09d2d989d}{run}} (\mbox{\hyperlink{classSchedulerPhase}{Scheduler\+Phase}} $\ast$next\+\_\+phase)
+\begin{DoxyCompactList}\small\item\em Run the phase. Check tasks in the enqueued buffer, check phase condition, and move tasks to the next phase. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}{get\+\_\+count}} ()
+\begin{DoxyCompactList}\small\item\em Get the number of tasks enqueued (and waiting) in the phase. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classMapper_a32e4bc4620925682a38b1a6baea698f7}{atomic\+\_\+incr\+\_\+num\+\_\+mapped\+\_\+tasks}} ()
+\begin{DoxyCompactList}\small\item\em Increase the number of the total mapped tasks to the whole devices. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classMapper_a34451d282c01c95fbaa901d9a4257851}{atomic\+\_\+incr\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Increase the number of the tasks mapped to a device. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classMapper_a054abe1628186510f525eb1c4dbdbe93}{atomic\+\_\+decr\+\_\+num\+\_\+mapped\+\_\+tasks}} ()
+\begin{DoxyCompactList}\small\item\em Decrease the number of the total mapped tasks to the whole devices. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{classMapper_a249e4cf233adb2744dd7084f4b46517f}{atomic\+\_\+decr\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Decrease the number of the tasks mapped to a device. \end{DoxyCompactList}\item 
+const size\+\_\+t \mbox{\hyperlink{classMapper_a3e63ef68173ab3c9ce42e0e077e681cf}{atomic\+\_\+load\+\_\+total\+\_\+num\+\_\+mapped\+\_\+tasks}} () const
+\begin{DoxyCompactList}\small\item\em Return the number of total mapped tasks to the whole devices. \end{DoxyCompactList}\item 
+const size\+\_\+t \mbox{\hyperlink{classMapper_a4fda5c4fbe57ee41131f07d039d45d37}{atomic\+\_\+load\+\_\+dev\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device}} (\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}} dev\+\_\+id) const
+\begin{DoxyCompactList}\small\item\em Return the number of mapped tasks to a single device. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classMapperStatus}{Mapper\+Status}} \mbox{\hyperlink{classMapper_a49ee98e364a99c457910f7e40acdc7c5}{status}} \{\mbox{\hyperlink{classMapper_a72b982c470fba6bafe05ee4a8c211d09}{name}}\}
+\item 
+\mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}} \mbox{\hyperlink{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}{mappable\+\_\+tasks}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \mbox{\hyperlink{classMapper_ad900b8cd65a18ec3e587e5f36564dd39}{mapped\+\_\+tasks\+\_\+buffer}}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{classMapper_a9c12a38bc6a52b2dd931dc2def2f258f}{dummy\+\_\+dev\+\_\+idx\+\_\+}}
+\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMappingPolicy}{Mapping\+Policy}} $>$ \mbox{\hyperlink{classMapper_a3f52f0699adc3265920bdd7214f04a0f}{policy\+\_\+}}
+\item 
+std\+::atomic$<$ size\+\_\+t $>$ \mbox{\hyperlink{classMapper_af50417216b3e3f7224601a72d41a26c3}{total\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+}} \{0\}
+\begin{DoxyCompactList}\small\item\em The total number of tasks mapped to and running on the whole devices. \end{DoxyCompactList}\item 
+std\+::vector$<$ \mbox{\hyperlink{classCopyableAtomic}{Copyable\+Atomic}}$<$ size\+\_\+t $>$ $>$ \mbox{\hyperlink{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}{dev\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+}}
+\begin{DoxyCompactList}\small\item\em The total number of tasks mapped to and running on a single device. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const std\+::string \mbox{\hyperlink{classMapper_a72b982c470fba6bafe05ee4a8c211d09}{name}} \{\char`\"{}Mapper\char`\"{}\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\mbox{\hyperlink{classMapper}{Mapper}} phase of the scheduler. 
+
+Uses constraints to assign tasks to device sets. 
+
+Definition at line 141 of file phases.\+hpp.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classMapper_a1f71bd1c65296ebc9ceeddf065f4d911}\label{classMapper_a1f71bd1c65296ebc9ceeddf065f4d911}} 
+\index{Mapper@{Mapper}!Mapper@{Mapper}}
+\index{Mapper@{Mapper}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{Mapper()}{Mapper()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Mapper\+::\+Mapper (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\mbox{\Hypertarget{classMapper_a01adf5e4f7773930bcda3bed03ba4c22}\label{classMapper_a01adf5e4f7773930bcda3bed03ba4c22}} 
+\index{Mapper@{Mapper}!Mapper@{Mapper}}
+\index{Mapper@{Mapper}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{Mapper()}{Mapper()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Mapper\+::\+Mapper (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}} $\ast$}]{scheduler,  }\item[{\mbox{\hyperlink{classDeviceManager}{Device\+Manager}} $\ast$}]{devices,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMappingPolicy}{Mapping\+Policy}} $>$}]{policy }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 144 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{146       : \mbox{\hyperlink{classSchedulerPhase_af30330d46896e1e64815407abbb06ab8}{SchedulerPhase}}(\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4cd77e2b819d63fe1c64f5f59c52360b}{devices}}), \mbox{\hyperlink{classMapper_a9c12a38bc6a52b2dd931dc2def2f258f}{dummy\_dev\_idx\_}}\{0\}, \mbox{\hyperlink{classMapper_a3f52f0699adc3265920bdd7214f04a0f}{policy\_}}\{policy\} \{}
+\DoxyCodeLine{147     \mbox{\hyperlink{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}{dev\_num\_mapped\_tasks\_}}.resize(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4cd77e2b819d63fe1c64f5f59c52360b}{devices}}-\/>get\_num\_devices());}
+\DoxyCodeLine{148   \}}
+
+\end{DoxyCode}
+
+
+References Mapper(), and Scheduler\+Phase\+::\+Scheduler\+Phase().
+
+
+
+Referenced by Mapper().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classMapper_a01adf5e4f7773930bcda3bed03ba4c22_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=176pt]{classMapper_a01adf5e4f7773930bcda3bed03ba4c22_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMapper_a054abe1628186510f525eb1c4dbdbe93}\label{classMapper_a054abe1628186510f525eb1c4dbdbe93}} 
+\index{Mapper@{Mapper}!atomic\_decr\_num\_mapped\_tasks@{atomic\_decr\_num\_mapped\_tasks}}
+\index{atomic\_decr\_num\_mapped\_tasks@{atomic\_decr\_num\_mapped\_tasks}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_decr\_num\_mapped\_tasks()}{atomic\_decr\_num\_mapped\_tasks()}}
+{\footnotesize\ttfamily size\+\_\+t Mapper\+::atomic\+\_\+decr\+\_\+num\+\_\+mapped\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Decrease the number of the total mapped tasks to the whole devices. 
+
+\begin{DoxyReturn}{Returns}
+The number of the total mapped tasks 
+\end{DoxyReturn}
+
+
+Definition at line 174 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{174                                         \{}
+\DoxyCodeLine{175     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_af50417216b3e3f7224601a72d41a26c3}{total\_num\_mapped\_tasks\_}}.fetch\_sub(1, std::memory\_order\_relaxed);}
+\DoxyCodeLine{176   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_a249e4cf233adb2744dd7084f4b46517f}\label{classMapper_a249e4cf233adb2744dd7084f4b46517f}} 
+\index{Mapper@{Mapper}!atomic\_decr\_num\_mapped\_tasks\_device@{atomic\_decr\_num\_mapped\_tasks\_device}}
+\index{atomic\_decr\_num\_mapped\_tasks\_device@{atomic\_decr\_num\_mapped\_tasks\_device}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_decr\_num\_mapped\_tasks\_device()}{atomic\_decr\_num\_mapped\_tasks\_device()}}
+{\footnotesize\ttfamily size\+\_\+t Mapper\+::atomic\+\_\+decr\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Decrease the number of the tasks mapped to a device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dev\+\_\+id} & \mbox{\hyperlink{classDevice}{Device}} global ID where a task is mapped \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The number of the tasks mapped to a device 
+\end{DoxyReturn}
+
+
+Definition at line 182 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{182                                                              \{}
+\DoxyCodeLine{183     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}{dev\_num\_mapped\_tasks\_}}[dev\_id].fetch\_sub(1,}
+\DoxyCodeLine{184                                                    std::memory\_order\_relaxed);}
+\DoxyCodeLine{185   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_a32e4bc4620925682a38b1a6baea698f7}\label{classMapper_a32e4bc4620925682a38b1a6baea698f7}} 
+\index{Mapper@{Mapper}!atomic\_incr\_num\_mapped\_tasks@{atomic\_incr\_num\_mapped\_tasks}}
+\index{atomic\_incr\_num\_mapped\_tasks@{atomic\_incr\_num\_mapped\_tasks}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_incr\_num\_mapped\_tasks()}{atomic\_incr\_num\_mapped\_tasks()}}
+{\footnotesize\ttfamily size\+\_\+t Mapper\+::atomic\+\_\+incr\+\_\+num\+\_\+mapped\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Increase the number of the total mapped tasks to the whole devices. 
+
+\begin{DoxyReturn}{Returns}
+The number of the total mapped tasks 
+\end{DoxyReturn}
+
+
+Definition at line 158 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{158                                         \{}
+\DoxyCodeLine{159     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_af50417216b3e3f7224601a72d41a26c3}{total\_num\_mapped\_tasks\_}}.fetch\_add(1, std::memory\_order\_relaxed);}
+\DoxyCodeLine{160   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_a34451d282c01c95fbaa901d9a4257851}\label{classMapper_a34451d282c01c95fbaa901d9a4257851}} 
+\index{Mapper@{Mapper}!atomic\_incr\_num\_mapped\_tasks\_device@{atomic\_incr\_num\_mapped\_tasks\_device}}
+\index{atomic\_incr\_num\_mapped\_tasks\_device@{atomic\_incr\_num\_mapped\_tasks\_device}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_incr\_num\_mapped\_tasks\_device()}{atomic\_incr\_num\_mapped\_tasks\_device()}}
+{\footnotesize\ttfamily size\+\_\+t Mapper\+::atomic\+\_\+incr\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Increase the number of the tasks mapped to a device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dev\+\_\+id} & \mbox{\hyperlink{classDevice}{Device}} global ID where a task is mapped \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The number of the tasks mapped to a device 
+\end{DoxyReturn}
+
+
+Definition at line 166 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{166                                                              \{}
+\DoxyCodeLine{167     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}{dev\_num\_mapped\_tasks\_}}[dev\_id].fetch\_add(1,}
+\DoxyCodeLine{168                                                    std::memory\_order\_relaxed);}
+\DoxyCodeLine{169   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_a4fda5c4fbe57ee41131f07d039d45d37}\label{classMapper_a4fda5c4fbe57ee41131f07d039d45d37}} 
+\index{Mapper@{Mapper}!atomic\_load\_dev\_num\_mapped\_tasks\_device@{atomic\_load\_dev\_num\_mapped\_tasks\_device}}
+\index{atomic\_load\_dev\_num\_mapped\_tasks\_device@{atomic\_load\_dev\_num\_mapped\_tasks\_device}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_load\_dev\_num\_mapped\_tasks\_device()}{atomic\_load\_dev\_num\_mapped\_tasks\_device()}}
+{\footnotesize\ttfamily const size\+\_\+t Mapper\+::atomic\+\_\+load\+\_\+dev\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{Dev\+ID\+\_\+t}}}]{dev\+\_\+id }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Return the number of mapped tasks to a single device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dev\+\_\+id} & \mbox{\hyperlink{classDevice}{Device}} global ID where a task is mapped \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The old number of the tasks mapped to a device 
+\end{DoxyReturn}
+
+
+Definition at line 198 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{198                                                                              \{}
+\DoxyCodeLine{199     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}{dev\_num\_mapped\_tasks\_}}[dev\_id].load(std::memory\_order\_relaxed);}
+\DoxyCodeLine{200   \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_a3e63ef68173ab3c9ce42e0e077e681cf}\label{classMapper_a3e63ef68173ab3c9ce42e0e077e681cf}} 
+\index{Mapper@{Mapper}!atomic\_load\_total\_num\_mapped\_tasks@{atomic\_load\_total\_num\_mapped\_tasks}}
+\index{atomic\_load\_total\_num\_mapped\_tasks@{atomic\_load\_total\_num\_mapped\_tasks}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{atomic\_load\_total\_num\_mapped\_tasks()}{atomic\_load\_total\_num\_mapped\_tasks()}}
+{\footnotesize\ttfamily const size\+\_\+t Mapper\+::atomic\+\_\+load\+\_\+total\+\_\+num\+\_\+mapped\+\_\+tasks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Return the number of total mapped tasks to the whole devices. 
+
+\begin{DoxyReturn}{Returns}
+The old number of total mapped tasks 
+\end{DoxyReturn}
+
+
+Definition at line 190 of file phases.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{190                                                           \{}
+\DoxyCodeLine{191     \textcolor{keywordflow}{return} \mbox{\hyperlink{classMapper_af50417216b3e3f7224601a72d41a26c3}{total\_num\_mapped\_tasks\_}}.load(std::memory\_order\_relaxed);}
+\DoxyCodeLine{192   \}}
+
+\end{DoxyCode}
+
+
+Referenced by Locality\+Load\+Balancing\+Mapping\+Policy\+::calc\+\_\+score\+\_\+devplacement().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classMapper_a3e63ef68173ab3c9ce42e0e077e681cf_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classMapper_a5899d440fb93667e0cdda5683d98e791}\label{classMapper_a5899d440fb93667e0cdda5683d98e791}} 
+\index{Mapper@{Mapper}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void Mapper\+::enqueue (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$}]{task }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Enqueue a task to the phase. 
+
+
+
+Implements \mbox{\hyperlink{classSchedulerPhase_ab728fba49a9d47d0baa1694df9debb92}{Scheduler\+Phase}}.
+
+
+
+Definition at line 16 of file phases.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{16 \{ this-\/>\mbox{\hyperlink{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}{mappable\_tasks}}.\mbox{\hyperlink{classProtectedQueue_ac6ffde296a8379e8cb1088ba71ceb519}{push\_back}}(task); \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::enqueue\+\_\+task().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classMapper_a5899d440fb93667e0cdda5683d98e791_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classMapper_af2c6c845ed6287807f14780f697b3065}\label{classMapper_af2c6c845ed6287807f14780f697b3065}} 
+\index{Mapper@{Mapper}!enqueue@{enqueue}}
+\index{enqueue@{enqueue}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{enqueue()}{enqueue()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void Mapper\+::enqueue (\begin{DoxyParamCaption}\item[{std\+::vector$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$ \&}]{tasks }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Enqueue a vector of tasks to the phase. 
+
+
+
+Implements \mbox{\hyperlink{classSchedulerPhase_a61e9e3138f4eb16579cde472887e9255}{Scheduler\+Phase}}.
+
+
+
+Definition at line 18 of file phases.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{18                                                   \{}
+\DoxyCodeLine{19   this-\/>\mbox{\hyperlink{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}{mappable\_tasks}}.\mbox{\hyperlink{classProtectedQueue_ac6ffde296a8379e8cb1088ba71ceb519}{push\_back}}(\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{tasks}});}
+\DoxyCodeLine{20 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}\label{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}} 
+\index{Mapper@{Mapper}!get\_count@{get\_count}}
+\index{get\_count@{get\_count}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{get\_count()}{get\_count()}}
+{\footnotesize\ttfamily size\+\_\+t Mapper\+::get\+\_\+count (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Get the number of tasks enqueued (and waiting) in the phase. 
+
+
+
+Implements \mbox{\hyperlink{classSchedulerPhase_a0d81d78469a09647970acdc42244e79e}{Scheduler\+Phase}}.
+
+
+
+Definition at line 22 of file phases.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{22                          \{}
+\DoxyCodeLine{23   \textcolor{keywordtype}{size\_t} count = this-\/>\mbox{\hyperlink{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}{mappable\_tasks}}.\mbox{\hyperlink{classProtectedQueue_ab5b583131a483f4c478d4e1d70d1afcb}{atomic\_size}}();}
+\DoxyCodeLine{24   \textcolor{keywordflow}{return} count;}
+\DoxyCodeLine{25 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMapper_aac615e8b8eca887e3d788db09d2d989d}\label{classMapper_aac615e8b8eca887e3d788db09d2d989d}} 
+\index{Mapper@{Mapper}!run@{run}}
+\index{run@{run}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily void Mapper\+::run (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSchedulerPhase}{Scheduler\+Phase}} $\ast$}]{next\+\_\+phase }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Run the phase. Check tasks in the enqueued buffer, check phase condition, and move tasks to the next phase. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em next\+\_\+phase} & The next phase to move tasks to. \\
+\hline
+\end{DoxyParams}
+
+
+Implements \mbox{\hyperlink{classSchedulerPhase_a23e561996d5bbc884e2701d6966f5670}{Scheduler\+Phase}}.
+
+
+
+Definition at line 27 of file phases.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{27                                            \{}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29   \mbox{\hyperlink{profiling_8hpp_a4ed1a04fa9103ac0c29157e53ed53e66}{NVTX\_RANGE}}(\textcolor{stringliteral}{"{}Mapper::run"{}}, \mbox{\hyperlink{profiling_8hpp_a166725049865b4af08e946c886ebe327}{NVTX\_COLOR\_LIGHT\_GREEN}})}
+\DoxyCodeLine{30 }
+\DoxyCodeLine{31   \textcolor{comment}{//std::cout << "{}Mapper::run"{} << std::endl;}}
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33   \mbox{\hyperlink{classMemoryReserver}{MemoryReserver}} *memory\_reserver = \textcolor{keyword}{dynamic\_cast<}\mbox{\hyperlink{classMemoryReserver}{MemoryReserver}} *\textcolor{keyword}{>}(next\_phase);}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35   \textcolor{comment}{// TODO: Refactor this so its readable without as many nested conditionals}}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{37   \textcolor{comment}{// This is a non-\/critical region}}
+\DoxyCodeLine{38   \textcolor{comment}{// Comment(wlr): Why is this a noncritical region?}}
+\DoxyCodeLine{39   \textcolor{comment}{// Comment(lhc): Only one thread performs this function.}}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{41   \textcolor{comment}{// Assumptions:}}
+\DoxyCodeLine{42   \textcolor{comment}{// Scheduler maps a task to a device.}}
+\DoxyCodeLine{43   \textcolor{comment}{// Scheduler does not reserve any resource at this phase.}}
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45   \textcolor{keywordtype}{bool} has\_task = \textcolor{keyword}{true};}
+\DoxyCodeLine{46 }
+\DoxyCodeLine{47   has\_task = this-\/>\mbox{\hyperlink{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}{get\_count}}() > 0;}
+\DoxyCodeLine{48   \textcolor{keywordflow}{while} (has\_task) \{}
+\DoxyCodeLine{49     \textcolor{comment}{//Comment(wlr): this assumes the task is always able to be mapped.}}
+\DoxyCodeLine{50     \mbox{\hyperlink{classInnerTask}{InnerTask}} *\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}} = this-\/>\mbox{\hyperlink{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}{mappable\_tasks}}.\mbox{\hyperlink{classProtectedQueue_aea030d0a97437e889fcc8ca1d371863b}{front\_and\_pop}}();}
+\DoxyCodeLine{51     \mbox{\hyperlink{classPlacementRequirementCollections}{PlacementRequirementCollections}} \&placement\_req\_options =}
+\DoxyCodeLine{52         \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>get\_placement\_req\_options();}
+\DoxyCodeLine{53     std::vector<std::shared\_ptr<PlacementRequirementBase>>}
+\DoxyCodeLine{54         placement\_req\_options\_vec =}
+\DoxyCodeLine{55             placement\_req\_options.\mbox{\hyperlink{classPlacementRequirementCollections_acff96d68919881bcddbef0d28337907b}{get\_placement\_req\_opts\_ref}}();}
+\DoxyCodeLine{56     std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>}
+\DoxyCodeLine{57         \&parray\_list = \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>parray\_list;}
+\DoxyCodeLine{58     \textcolor{comment}{// A set of chosen devices to a task.}}
+\DoxyCodeLine{59     \mbox{\hyperlink{policy_8hpp_acc133555210d07ca50d128e110e9e7a9}{Score\_t}} best\_score\{-\/1\};}
+\DoxyCodeLine{60     std::vector<std::shared\_ptr<DeviceRequirement>> chosen\_devices;}
+\DoxyCodeLine{61 }
+\DoxyCodeLine{62     \textcolor{comment}{// Iterate all placement requirements passed by users and calculate}}
+\DoxyCodeLine{63     \textcolor{comment}{// scores based on a policy.}}
+\DoxyCodeLine{64     \textcolor{keywordflow}{for} (std::shared\_ptr<PlacementRequirementBase> base\_req :}
+\DoxyCodeLine{65          placement\_req\_options\_vec) \{}
+\DoxyCodeLine{66       \textcolor{keywordflow}{if} (base\_req-\/>is\_multidev\_req()) \{}
+\DoxyCodeLine{67         \textcolor{comment}{// Multi-\/device placement requirements.}}
+\DoxyCodeLine{68         \textcolor{comment}{// std::cout << "{}[Multi-\/device requirement]\(\backslash\)n"{};}}
+\DoxyCodeLine{69         \mbox{\hyperlink{classMultiDeviceRequirements}{MultiDeviceRequirements}} *mdev\_reqs =}
+\DoxyCodeLine{70             \textcolor{keyword}{dynamic\_cast<}\mbox{\hyperlink{classMultiDeviceRequirements}{MultiDeviceRequirements}} *\textcolor{keyword}{>}(base\_req.get());}
+\DoxyCodeLine{71         std::vector<std::shared\_ptr<DeviceRequirement>> mdev\_reqs\_vec;}
+\DoxyCodeLine{72         \mbox{\hyperlink{policy_8hpp_acc133555210d07ca50d128e110e9e7a9}{Score\_t}} score\{0\};}
+\DoxyCodeLine{73         \textcolor{keywordtype}{bool} is\_req\_available = \mbox{\hyperlink{classMapper_a3f52f0699adc3265920bdd7214f04a0f}{policy\_}}-\/>calc\_score\_mdevplacement(}
+\DoxyCodeLine{74             \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, mdev\_reqs, *\textcolor{keyword}{this}, \&mdev\_reqs\_vec, \&score, parray\_list);}
+\DoxyCodeLine{75         \textcolor{keywordflow}{if} (!is\_req\_available) \{}
+\DoxyCodeLine{76           \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{77         \}}
+\DoxyCodeLine{78         \textcolor{keywordflow}{if} (best\_score <= score) \{}
+\DoxyCodeLine{79           best\_score = score;}
+\DoxyCodeLine{80           chosen\_devices.swap(mdev\_reqs\_vec);}
+\DoxyCodeLine{81         \}}
+\DoxyCodeLine{82       \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (base\_req-\/>is\_dev\_req()) \{}
+\DoxyCodeLine{83         \textcolor{comment}{// A single device placement requirement.}}
+\DoxyCodeLine{84         std::shared\_ptr<DeviceRequirement> dev\_req =}
+\DoxyCodeLine{85             std::dynamic\_pointer\_cast<DeviceRequirement>(base\_req);}
+\DoxyCodeLine{86         \mbox{\hyperlink{policy_8hpp_acc133555210d07ca50d128e110e9e7a9}{Score\_t}} score\{0\};}
+\DoxyCodeLine{87         \textcolor{keywordtype}{bool} is\_req\_available = \mbox{\hyperlink{classMapper_a3f52f0699adc3265920bdd7214f04a0f}{policy\_}}-\/>calc\_score\_devplacement(}
+\DoxyCodeLine{88             \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, dev\_req, *\textcolor{keyword}{this}, \&score, parray\_list[0]);}
+\DoxyCodeLine{89         \textcolor{keywordflow}{if} (!is\_req\_available) \{}
+\DoxyCodeLine{90           \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{91         \}}
+\DoxyCodeLine{92         \textcolor{keywordflow}{if} (best\_score <= score) \{}
+\DoxyCodeLine{93           assert(dev\_req != \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{94           best\_score = score;}
+\DoxyCodeLine{95           chosen\_devices.clear();}
+\DoxyCodeLine{96           chosen\_devices.emplace\_back(dev\_req);}
+\DoxyCodeLine{97         \}}
+\DoxyCodeLine{98       \} \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (base\_req-\/>is\_arch\_req()) \{}
+\DoxyCodeLine{99         \textcolor{comment}{// A single architecture placement requirement.}}
+\DoxyCodeLine{100         \mbox{\hyperlink{classArchitectureRequirement}{ArchitectureRequirement}} *arch\_req =}
+\DoxyCodeLine{101             \textcolor{keyword}{dynamic\_cast<}\mbox{\hyperlink{classArchitectureRequirement}{ArchitectureRequirement}} *\textcolor{keyword}{>}(base\_req.get());}
+\DoxyCodeLine{102         std::shared\_ptr<DeviceRequirement> chosen\_dev\_req\{\textcolor{keyword}{nullptr}\};}
+\DoxyCodeLine{103         \mbox{\hyperlink{policy_8hpp_acc133555210d07ca50d128e110e9e7a9}{Score\_t}} chosen\_dev\_score\{0\};}
+\DoxyCodeLine{104         \textcolor{comment}{// std::cout << "{}[Mapper] Task name:"{} << task-\/>get\_name() << "{}, "{} << "{}Checking arch requirement."{}}}
+\DoxyCodeLine{105         \textcolor{comment}{//           << "{}\(\backslash\)n"{};}}
+\DoxyCodeLine{106         \textcolor{keywordtype}{bool} is\_req\_available = \mbox{\hyperlink{classMapper_a3f52f0699adc3265920bdd7214f04a0f}{policy\_}}-\/>calc\_score\_archplacement(}
+\DoxyCodeLine{107             \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, arch\_req, *\textcolor{keyword}{this}, chosen\_dev\_req, \&chosen\_dev\_score,}
+\DoxyCodeLine{108             parray\_list[0]);}
+\DoxyCodeLine{109         \textcolor{keywordflow}{if} (!is\_req\_available) \{}
+\DoxyCodeLine{110           \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{111         \}}
+\DoxyCodeLine{112         \textcolor{keywordflow}{if} (best\_score <= chosen\_dev\_score) \{}
+\DoxyCodeLine{113           assert(chosen\_dev\_req != \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{114           best\_score = chosen\_dev\_score;}
+\DoxyCodeLine{115           chosen\_devices.clear();}
+\DoxyCodeLine{116           chosen\_devices.emplace\_back(chosen\_dev\_req);}
+\DoxyCodeLine{117         \}}
+\DoxyCodeLine{118       \}}
+\DoxyCodeLine{119     \}}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122     \textcolor{keywordflow}{if} (chosen\_devices.empty()) \{}
+\DoxyCodeLine{123       \textcolor{comment}{// It means that none of the devices is available for this task.}}
+\DoxyCodeLine{124       \textcolor{comment}{// If it is, re-\/enqueue the task to the mappable task queue.}}
+\DoxyCodeLine{125       this-\/>\mbox{\hyperlink{classMapper_a5899d440fb93667e0cdda5683d98e791}{enqueue}}(task);}
+\DoxyCodeLine{126       \textcolor{comment}{//std::cout << "{}Task has not been mapped"{} << std::endl;}}
+\DoxyCodeLine{127     \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{128       std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>}
+\DoxyCodeLine{129           *parray\_list = \&(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>parray\_list);}
+\DoxyCodeLine{130       \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < chosen\_devices.size(); ++\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}) \{}
+\DoxyCodeLine{131         assert(chosen\_devices[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}] != \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{132         \mbox{\hyperlink{classDevice}{Device}} *chosen\_device = chosen\_devices[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]-\/>device();}
+\DoxyCodeLine{133         \mbox{\hyperlink{device_8hpp_a1a60ef2726088f66773542604d44bdd7}{DevID\_t}} global\_dev\_id = chosen\_device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}();}
+\DoxyCodeLine{134         \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>assigned\_devices.push\_back(chosen\_device);}
+\DoxyCodeLine{135         \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>device\_constraints.insert(}
+\DoxyCodeLine{136             \{chosen\_device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}(), chosen\_devices[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]-\/>res\_req()\});}
+\DoxyCodeLine{137         this-\/>\mbox{\hyperlink{classMapper_a34451d282c01c95fbaa901d9a4257851}{atomic\_incr\_num\_mapped\_tasks\_device}}(}
+\DoxyCodeLine{138             chosen\_device-\/>\mbox{\hyperlink{classDevice_a7a4beec758f8c827ffce31562ee9ebdb}{get\_global\_id}}());}
+\DoxyCodeLine{139         \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} j = 0; j < (*parray\_list)[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}].size(); ++j) \{}
+\DoxyCodeLine{140           \mbox{\hyperlink{classparray_1_1InnerPArray}{parray::InnerPArray}} *\mbox{\hyperlink{namespaceparray}{parray}} = (*parray\_list)[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}][j].first;}
+\DoxyCodeLine{141           this-\/>\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}-\/>\mbox{\hyperlink{classInnerScheduler_aacaabfd3ed87c7f92225e9561046d437}{get\_parray\_tracker}}()-\/>\mbox{\hyperlink{classPArrayTracker_a59b544edce17171c9731c950c603af85}{reserve\_parray}}(*parray,}
+\DoxyCodeLine{142                                                                 chosen\_device);}
+\DoxyCodeLine{143           \mbox{\hyperlink{namespaceparray}{parray}}-\/>incr\_num\_active\_tasks(global\_dev\_id);}
+\DoxyCodeLine{144         \}}
+\DoxyCodeLine{145       \}}
+\DoxyCodeLine{146 }
+\DoxyCodeLine{147 \textcolor{preprocessor}{\#if 0}}
+\DoxyCodeLine{148       std::cout << \textcolor{stringliteral}{"{}[Mapper] Task name:"{}} << \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>get\_name() << \textcolor{stringliteral}{"{}, "{}} << \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}}
+\DoxyCodeLine{149                 << \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{150       \textcolor{keywordflow}{for} (\textcolor{keywordtype}{size\_t} \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} = 0; \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} < \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>assigned\_devices.size(); ++\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}) \{}
+\DoxyCodeLine{151         std::cout << \textcolor{stringliteral}{"{}\(\backslash\)t ["{}} << \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}} << \textcolor{stringliteral}{"{}] "{}}}
+\DoxyCodeLine{152                   << \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}-\/>assigned\_devices[\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{i}}]-\/>get\_name() << \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{153         \textcolor{comment}{/*}}
+\DoxyCodeLine{154 \textcolor{comment}{        auto res = task-\/>device\_constraints[task-\/>assigned\_devices[i]}}
+\DoxyCodeLine{155 \textcolor{comment}{                                                -\/>get\_global\_id()];}}
+\DoxyCodeLine{156 \textcolor{comment}{        std::cout << "{}\(\backslash\)t memory:"{} << res.get(Resource::Memory)}}
+\DoxyCodeLine{157 \textcolor{comment}{                  << "{}, vcu:"{} << res.get(Resource::VCU) << "{}\(\backslash\)n"{};}}
+\DoxyCodeLine{158 \textcolor{comment}{        */}}
+\DoxyCodeLine{159       \}}
+\DoxyCodeLine{160 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162       this-\/>\mbox{\hyperlink{classMapper_ad900b8cd65a18ec3e587e5f36564dd39}{mapped\_tasks\_buffer}}.push\_back(task);}
+\DoxyCodeLine{163       this-\/>\mbox{\hyperlink{classMapper_a32e4bc4620925682a38b1a6baea698f7}{atomic\_incr\_num\_mapped\_tasks}}();}
+\DoxyCodeLine{164     \}}
+\DoxyCodeLine{165     has\_task = this-\/>\mbox{\hyperlink{classMapper_ad5cbc1ebf9f3cbd5da453370b9ad23a1}{get\_count}}() > 0;}
+\DoxyCodeLine{166   \} \textcolor{comment}{// while there are mappable tasks}}
+\DoxyCodeLine{167 }
+\DoxyCodeLine{168   \textcolor{keywordflow}{for} (\mbox{\hyperlink{classInnerTask}{InnerTask}} *mapped\_task : this-\/>\mbox{\hyperlink{classMapper_ad900b8cd65a18ec3e587e5f36564dd39}{mapped\_tasks\_buffer}}) \{}
+\DoxyCodeLine{169     mapped\_task-\/>notify\_dependents(this-\/>\mbox{\hyperlink{classSchedulerPhase_ab309120518ecaa5abdaba9c4ece2bf5a}{enqueue\_buffer}}, \mbox{\hyperlink{namespaceTask_afa88d99eb2a58c8f078a53f1195c53a8ab43c01b4d5d6836f5762c907a12728de}{Task::MAPPED}});}
+\DoxyCodeLine{170     this-\/>\mbox{\hyperlink{classSchedulerPhase_a5b1a4e7a44cc2162e50cded7bba4376f}{scheduler}}-\/>\mbox{\hyperlink{classInnerScheduler_a6a93e103808105662ffde5d371a8f309}{enqueue\_tasks}}(this-\/>\mbox{\hyperlink{classSchedulerPhase_ab309120518ecaa5abdaba9c4ece2bf5a}{enqueue\_buffer}});}
+\DoxyCodeLine{171     this-\/>\mbox{\hyperlink{classSchedulerPhase_ab309120518ecaa5abdaba9c4ece2bf5a}{enqueue\_buffer}}.clear();}
+\DoxyCodeLine{172 }
+\DoxyCodeLine{173     \textcolor{keywordtype}{bool} enqueue\_flag =}
+\DoxyCodeLine{174         (mapped\_task-\/>num\_unreserved\_dependencies.fetch\_sub(1) == 1);}
+\DoxyCodeLine{175 }
+\DoxyCodeLine{176     \textcolor{keywordflow}{if} (enqueue\_flag) \{}
+\DoxyCodeLine{177       mapped\_task-\/>set\_status(\mbox{\hyperlink{namespaceTask_a4397689d62196d2cfecf970fcbed6cb5a069042a66f1cb686d69b8b7c08fd85f6}{Task::RESERVABLE}});}
+\DoxyCodeLine{178       memory\_reserver-\/>\mbox{\hyperlink{classMemoryReserver_a2127dac8a80858f60a723345a7b7e8bc}{enqueue}}(mapped\_task);}
+\DoxyCodeLine{179     \}}
+\DoxyCodeLine{180   \}}
+\DoxyCodeLine{181   this-\/>mapped\_tasks\_buffer.clear();}
+\DoxyCodeLine{182 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::activate().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classMapper_aac615e8b8eca887e3d788db09d2d989d_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}\label{classMapper_a9a2cbe5e572451e44156f3e9205f35aa}} 
+\index{Mapper@{Mapper}!dev\_num\_mapped\_tasks\_@{dev\_num\_mapped\_tasks\_}}
+\index{dev\_num\_mapped\_tasks\_@{dev\_num\_mapped\_tasks\_}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{dev\_num\_mapped\_tasks\_}{dev\_num\_mapped\_tasks\_}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classCopyableAtomic}{Copyable\+Atomic}}$<$size\+\_\+t$>$ $>$ Mapper\+::dev\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The total number of tasks mapped to and running on a single device. 
+
+
+
+Definition at line 213 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classMapper_a9c12a38bc6a52b2dd931dc2def2f258f}\label{classMapper_a9c12a38bc6a52b2dd931dc2def2f258f}} 
+\index{Mapper@{Mapper}!dummy\_dev\_idx\_@{dummy\_dev\_idx\_}}
+\index{dummy\_dev\_idx\_@{dummy\_dev\_idx\_}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{dummy\_dev\_idx\_}{dummy\_dev\_idx\_}}
+{\footnotesize\ttfamily uint64\+\_\+t Mapper\+::dummy\+\_\+dev\+\_\+idx\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 207 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}\label{classMapper_aa4ecc5bde531bc2cb9cfbb87d10bdcaa}} 
+\index{Mapper@{Mapper}!mappable\_tasks@{mappable\_tasks}}
+\index{mappable\_tasks@{mappable\_tasks}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{mappable\_tasks}{mappable\_tasks}}
+{\footnotesize\ttfamily \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}} Mapper\+::mappable\+\_\+tasks\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 205 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classMapper_ad900b8cd65a18ec3e587e5f36564dd39}\label{classMapper_ad900b8cd65a18ec3e587e5f36564dd39}} 
+\index{Mapper@{Mapper}!mapped\_tasks\_buffer@{mapped\_tasks\_buffer}}
+\index{mapped\_tasks\_buffer@{mapped\_tasks\_buffer}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{mapped\_tasks\_buffer}{mapped\_tasks\_buffer}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$ Mapper\+::mapped\+\_\+tasks\+\_\+buffer\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 206 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classMapper_a72b982c470fba6bafe05ee4a8c211d09}\label{classMapper_a72b982c470fba6bafe05ee4a8c211d09}} 
+\index{Mapper@{Mapper}!name@{name}}
+\index{name@{name}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily const std\+::string Mapper\+::name \{\char`\"{}Mapper\char`\"{}\}\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}, {\ttfamily [protected]}}
+
+
+
+Definition at line 203 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+::\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+::get\+\_\+name(), parla.\+cython.\+tasks.\+Task\+::unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task\+::update\+\_\+name().
+
+\mbox{\Hypertarget{classMapper_a3f52f0699adc3265920bdd7214f04a0f}\label{classMapper_a3f52f0699adc3265920bdd7214f04a0f}} 
+\index{Mapper@{Mapper}!policy\_@{policy\_}}
+\index{policy\_@{policy\_}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{policy\_}{policy\_}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classMappingPolicy}{Mapping\+Policy}}$>$ Mapper\+::policy\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 209 of file phases.\+hpp.
+
+\mbox{\Hypertarget{classMapper_a49ee98e364a99c457910f7e40acdc7c5}\label{classMapper_a49ee98e364a99c457910f7e40acdc7c5}} 
+\index{Mapper@{Mapper}!status@{status}}
+\index{status@{status}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{status}{status}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classMapperStatus}{Mapper\+Status}} Mapper\+::status \{\mbox{\hyperlink{classMapper_a72b982c470fba6bafe05ee4a8c211d09}{name}}\}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 204 of file phases.\+hpp.
+
+
+
+Referenced by parla.\+cython.\+scheduler.\+Worker\+Thread\+::run().
+
+\mbox{\Hypertarget{classMapper_af50417216b3e3f7224601a72d41a26c3}\label{classMapper_af50417216b3e3f7224601a72d41a26c3}} 
+\index{Mapper@{Mapper}!total\_num\_mapped\_tasks\_@{total\_num\_mapped\_tasks\_}}
+\index{total\_num\_mapped\_tasks\_@{total\_num\_mapped\_tasks\_}!Mapper@{Mapper}}
+\doxysubsubsection{\texorpdfstring{total\_num\_mapped\_tasks\_}{total\_num\_mapped\_tasks\_}}
+{\footnotesize\ttfamily std\+::atomic$<$size\+\_\+t$>$ Mapper\+::total\+\_\+num\+\_\+mapped\+\_\+tasks\+\_\+ \{0\}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The total number of tasks mapped to and running on the whole devices. 
+
+
+
+Definition at line 211 of file phases.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{phases_8hpp}{phases.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{phases_8cpp}{phases.\+cpp}}\end{DoxyCompactItemize}

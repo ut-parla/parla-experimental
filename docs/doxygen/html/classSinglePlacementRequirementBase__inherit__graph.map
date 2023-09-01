@@ -1,0 +1,6 @@
+<map id="SinglePlacementRequirementBase" name="SinglePlacementRequirementBase">
+<area shape="rect" id="node1" title=" " alt="" coords="71,80,317,107"/>
+<area shape="rect" id="node3" href="$classArchitectureRequirement.html" title=" " alt="" coords="5,155,191,181"/>
+<area shape="rect" id="node4" href="$classDeviceRequirement.html" title=" " alt="" coords="215,155,365,181"/>
+<area shape="rect" id="node2" href="$classPlacementRequirementBase.html" title="Base classes." alt="" coords="91,5,297,32"/>
+</map>

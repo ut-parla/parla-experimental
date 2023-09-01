@@ -1,0 +1,96 @@
+\hypertarget{graphs_8py}{}\doxysection{src/python/parla/utility/graphs.py File Reference}
+\label{graphs_8py}\index{src/python/parla/utility/graphs.py@{src/python/parla/utility/graphs.py}}
+
+
+Provides the core classes for representing and generating synthetic task graphs.  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DeviceType}{parla.\+utility.\+graphs.\+Device\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1LogState}{parla.\+utility.\+graphs.\+Log\+State}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1MovementType}{parla.\+utility.\+graphs.\+Movement\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInitType}{parla.\+utility.\+graphs.\+Data\+Init\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskID}{parla.\+utility.\+graphs.\+Task\+ID}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskRuntimeInfo}{parla.\+utility.\+graphs.\+Task\+Runtime\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskDataInfo}{parla.\+utility.\+graphs.\+Task\+Data\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskInfo}{parla.\+utility.\+graphs.\+Task\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1DataInfo}{parla.\+utility.\+graphs.\+Data\+Info}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskTime}{parla.\+utility.\+graphs.\+Task\+Time}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TimeSample}{parla.\+utility.\+graphs.\+Time\+Sample}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskConfig}{parla.\+utility.\+graphs.\+Task\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1TaskConfigs}{parla.\+utility.\+graphs.\+Task\+Configs}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1GraphConfig}{parla.\+utility.\+graphs.\+Graph\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1IndependentConfig}{parla.\+utility.\+graphs.\+Independent\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1SerialConfig}{parla.\+utility.\+graphs.\+Serial\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionConfig}{parla.\+utility.\+graphs.\+Reduction\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1ReductionScatterConfig}{parla.\+utility.\+graphs.\+Reduction\+Scatter\+Config}}
+\item 
+class \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{parla.\+utility.\+graphs.\+Run\+Config}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs}{parla.\+utility.\+graphs}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae1abf0f8056a29df96a56673ddfe8f6a}{parla.\+utility.\+graphs.\+convert\+\_\+to\+\_\+dictionary}} (List\mbox{[}Task\+Info\mbox{]} task\+\_\+list)
+\item 
+Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a31de3aa5796ba52c96a31676f5fcfaed}{parla.\+utility.\+graphs.\+shuffle\+\_\+tasks}} (Dict\mbox{[}Task\+ID, Task\+Info\mbox{]} tasks)
+\item 
+Union\mbox{[}int, Fraction\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a05f8adea1d435af5369c1ee8df975ffc}{parla.\+utility.\+graphs.\+extract}} (str string)
+\item 
+Tuple\mbox{[}Dict\mbox{[}int, Data\+Info\mbox{]}, Dict\mbox{[}Task\+ID, Task\+Info\mbox{]}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}{parla.\+utility.\+graphs.\+read\+\_\+pgraph}} (str filename)
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a68326b9dfaa2cdc94962da90b2d19f5c}{parla.\+utility.\+graphs.\+get\+\_\+time}} (str line)
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a609d97a4399ec9e52333ecc2b4dd7428}{parla.\+utility.\+graphs.\+check\+\_\+log\+\_\+line}} (str line)
+\item 
+Task\+ID \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae605dd6b2b3610b8c2e31d34905a063b}{parla.\+utility.\+graphs.\+convert\+\_\+task\+\_\+id}} (str task\+\_\+id, int instance=0)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a91464daf4588b93c8f2414815b03f0af}{parla.\+utility.\+graphs.\+get\+\_\+task\+\_\+properties}} (str line)
+\item 
+Tuple\mbox{[}Dict\mbox{[}Task\+ID, Task\+Time\mbox{]}, Dict\mbox{[}Task\+ID, List\mbox{[}Task\+ID\mbox{]}\mbox{]}\mbox{]} \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5176733360f40aa9f08acda45b7371c1}{parla.\+utility.\+graphs.\+parse\+\_\+blog}} (str filename=\textquotesingle{}parla.\+blog\textquotesingle{})
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a5f39eb578ed535adc1aaf6732fa9b018}{parla.\+utility.\+graphs.\+generate\+\_\+serial\+\_\+graph}} (Serial\+Config config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ab0c7670d2bc11735677b41be708863d0}{parla.\+utility.\+graphs.\+generate\+\_\+reduction\+\_\+graph}} (Reduction\+Config config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a64b229b169c8b31245540d05fa70198f}{parla.\+utility.\+graphs.\+generate\+\_\+independent\+\_\+graph}} (Independent\+Config config)
+\item 
+str \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a520c9919c5811c7f167dc9322d688f27}{parla.\+utility.\+graphs.\+generate\+\_\+reduction\+\_\+scatter\+\_\+graph}} (Reduction\+Scatter\+Config tgraph\+\_\+config)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ac4eb344f9f706421c6ca4559f15967cb}{parla.\+utility.\+graphs.\+num\+\_\+gpus}} = 4
+\item 
+\mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_a960ebc3be7f47b455783b439a7a884fd}{parla.\+utility.\+graphs.\+task\+\_\+filter}} = re.\+compile(r\textquotesingle{}Inner\+Task\textbackslash{}\{ .$\ast$? \textbackslash{}\}\textquotesingle{})
+\item 
+list \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ae9d9fca669cb92e7995c50e4ae3d8632}{parla.\+utility.\+graphs.\+\_\+\+\_\+all\+\_\+\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides the core classes for representing and generating synthetic task graphs. 
+

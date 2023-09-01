@@ -1,0 +1,239 @@
+\hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow}{}\doxysection{parla.\+common.\+dataflow.\+Dataflow Class Reference}
+\label{classparla_1_1common_1_1dataflow_1_1Dataflow}\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a154fa3ef313cb8f6098963e7e3d6caff}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_ac4e3062a51d53eef90bcf6dbe33b08a9}{input}}, List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_ae6a6f21e88436c2d19a159aac0f0573c}{output}}, List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a7f8382a92e81dad5844ee970172b4694}{inout}})
+\item 
+List \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_ac4e3062a51d53eef90bcf6dbe33b08a9}{input}} (self)
+\item 
+List \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_ae6a6f21e88436c2d19a159aac0f0573c}{output}} (self)
+\item 
+List \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a7f8382a92e81dad5844ee970172b4694}{inout}} (self)
+\item 
+List\mbox{[}Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]} \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_aee699f9657277b8f28e0ce210dbf5ce1}{process\+\_\+crosspys}} (self, List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]} \+\_\+in)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_ac41183d4d7f2004b6ca948af4a1635c5}{\+\_\+\+\_\+iter\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a055d53905b38738728a7bbb0fe3865a8}{\+\_\+input}}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a61c71266a16d739af187ad4144f0aaf4}{\+\_\+output}}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1dataflow_1_1Dataflow_a2dcc9e3b76f5f4babbd154f842924615}{\+\_\+inout}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}This class manages a dataflow of a task.
+The dataflow consists of input, output, and input/output PArrays.
+The dataflow can be iterated through DataflowIterator.
+\end{DoxyVerb}
+ 
+
+Definition at line 46 of file dataflow.\+py.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_a154fa3ef313cb8f6098963e7e3d6caff}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_a154fa3ef313cb8f6098963e7e3d6caff}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+dataflow.\+Dataflow.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]}}]{input,  }\item[{List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]}}]{output,  }\item[{List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]}}]{inout }\end{DoxyParamCaption})}
+
+
+
+Definition at line 53 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{55                  inout: List[Union[CrossPyArray, Tuple[PArray, int]]]):}
+\DoxyCodeLine{56         self.\_input = self.process\_crosspys(input)}
+\DoxyCodeLine{57         self.\_output = self.process\_crosspys(output)}
+\DoxyCodeLine{58         self.\_inout = self.process\_crosspys(inout)}
+\DoxyCodeLine{59 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_ac41183d4d7f2004b6ca948af4a1635c5}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_ac41183d4d7f2004b6ca948af4a1635c5}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!\_\_iter\_\_@{\_\_iter\_\_}}
+\index{\_\_iter\_\_@{\_\_iter\_\_}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{\_\_iter\_\_()}{\_\_iter\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+dataflow.\+Dataflow.\+\_\+\+\_\+iter\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 105 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{105     \textcolor{keyword}{def }\_\_iter\_\_(self):}
+\DoxyCodeLine{106         \textcolor{keywordflow}{return} DataflowIterator(self)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_a7f8382a92e81dad5844ee970172b4694}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_a7f8382a92e81dad5844ee970172b4694}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!inout@{inout}}
+\index{inout@{inout}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{inout()}{inout()}}
+{\footnotesize\ttfamily  List parla.\+common.\+dataflow.\+Dataflow.\+inout (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 73 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{73     \textcolor{keyword}{def }inout(self) -\/> List:}
+\DoxyCodeLine{74         \textcolor{keywordflow}{if} self.\_inout == \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{75             \textcolor{keywordflow}{return} []}
+\DoxyCodeLine{76         \textcolor{keywordflow}{return} self.\_inout}
+\DoxyCodeLine{77 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+dataflow.\+Dataflow.\+\_\+inout.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_ac4e3062a51d53eef90bcf6dbe33b08a9}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_ac4e3062a51d53eef90bcf6dbe33b08a9}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!input@{input}}
+\index{input@{input}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{input()}{input()}}
+{\footnotesize\ttfamily  List parla.\+common.\+dataflow.\+Dataflow.\+input (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 61 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{61     \textcolor{keyword}{def }input(self) -\/> List:}
+\DoxyCodeLine{62         \textcolor{keywordflow}{if} self.\_input == \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{63             \textcolor{keywordflow}{return} []}
+\DoxyCodeLine{64         \textcolor{keywordflow}{return} self.\_input}
+\DoxyCodeLine{65 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+dataflow.\+Dataflow.\+\_\+input.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_ae6a6f21e88436c2d19a159aac0f0573c}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_ae6a6f21e88436c2d19a159aac0f0573c}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!output@{output}}
+\index{output@{output}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{output()}{output()}}
+{\footnotesize\ttfamily  List parla.\+common.\+dataflow.\+Dataflow.\+output (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 67 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{67     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a4e4004f34c57f2440d72f08f43b9d9ce}{output}}(self) -\/> List:}
+\DoxyCodeLine{68         \textcolor{keywordflow}{if} self.\_output == \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{69             \textcolor{keywordflow}{return} []}
+\DoxyCodeLine{70         \textcolor{keywordflow}{return} self.\_output}
+\DoxyCodeLine{71 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+dataflow.\+Dataflow.\+\_\+output.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_aee699f9657277b8f28e0ce210dbf5ce1}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_aee699f9657277b8f28e0ce210dbf5ce1}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!process\_crosspys@{process\_crosspys}}
+\index{process\_crosspys@{process\_crosspys}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{process\_crosspys()}{process\_crosspys()}}
+{\footnotesize\ttfamily  List\mbox{[}Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]} parla.\+common.\+dataflow.\+Dataflow.\+process\+\_\+crosspys (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{List\mbox{[}Union\mbox{[}Cross\+Py\+Array, Tuple\mbox{[}\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1core_1_1PArray}{PArray}}, int\mbox{]}\mbox{]}\mbox{]}}]{\+\_\+in }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Check elements of IN/OUT/INOUT parameters in @spawn
+and convert to Tuple[PArray, int] if an element is a CrossPyArray
+\end{DoxyVerb}
+ 
+
+Definition at line 78 of file dataflow.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{80             -\/> List[Tuple[PArray, int]]:}
+\DoxyCodeLine{81         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{82 \textcolor{stringliteral}{        Check elements of IN/OUT/INOUT parameters in @spawn}}
+\DoxyCodeLine{83 \textcolor{stringliteral}{        and convert to Tuple[PArray, int] if an element is a CrossPyArray}}
+\DoxyCodeLine{84 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{85         \_out = []}
+\DoxyCodeLine{86         \textcolor{keywordflow}{if} \_in \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{87             \textcolor{keywordflow}{for} element \textcolor{keywordflow}{in} \_in:}
+\DoxyCodeLine{88                 \textcolor{keywordflow}{if} isinstance(element, tuple):}
+\DoxyCodeLine{89                     \textcolor{keyword}{assert} isinstance(element[0], PArray)}
+\DoxyCodeLine{90                     \textcolor{keyword}{assert} isinstance(element[1], int)}
+\DoxyCodeLine{91                     \_out.append(element)}
+\DoxyCodeLine{92                 \textcolor{keywordflow}{elif} isinstance(element, CrossPyArray):}
+\DoxyCodeLine{93                     \textcolor{comment}{\# A Crosspy's partition number is corresponding}}
+\DoxyCodeLine{94                     \textcolor{comment}{\# to an order of the placement.}}
+\DoxyCodeLine{95                     \textcolor{keywordflow}{for} i, parray\_list \textcolor{keywordflow}{in} enumerate(element.device\_view()):}
+\DoxyCodeLine{96                         \textcolor{keywordflow}{for} parray \textcolor{keywordflow}{in} parray\_list:}
+\DoxyCodeLine{97                             \textcolor{keywordflow}{if} isinstance(parray, PArray):}
+\DoxyCodeLine{98                                 \textcolor{comment}{\# Skip CuPy or NumPy arrays.}}
+\DoxyCodeLine{99                                 \_out.append((parray, i))}
+\DoxyCodeLine{100                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{101                     \textcolor{keywordflow}{raise} TypeError(\textcolor{stringliteral}{"{}IN/OUT/INOUT should be either a tuple of PArray"{}},}
+\DoxyCodeLine{102                                     \textcolor{stringliteral}{"{}and its partition number or CrossPyArray"{}})}
+\DoxyCodeLine{103         \textcolor{keywordflow}{return} \_out}
+\DoxyCodeLine{104 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_a2dcc9e3b76f5f4babbd154f842924615}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_a2dcc9e3b76f5f4babbd154f842924615}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!\_inout@{\_inout}}
+\index{\_inout@{\_inout}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{\_inout}{\_inout}}
+{\footnotesize\ttfamily parla.\+common.\+dataflow.\+Dataflow.\+\_\+inout\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 58 of file dataflow.\+py.
+
+
+
+Referenced by parla.\+common.\+dataflow.\+Dataflow.\+inout().
+
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_a055d53905b38738728a7bbb0fe3865a8}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_a055d53905b38738728a7bbb0fe3865a8}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!\_input@{\_input}}
+\index{\_input@{\_input}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{\_input}{\_input}}
+{\footnotesize\ttfamily parla.\+common.\+dataflow.\+Dataflow.\+\_\+input\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 56 of file dataflow.\+py.
+
+
+
+Referenced by parla.\+common.\+dataflow.\+Dataflow.\+input().
+
+\mbox{\Hypertarget{classparla_1_1common_1_1dataflow_1_1Dataflow_a61c71266a16d739af187ad4144f0aaf4}\label{classparla_1_1common_1_1dataflow_1_1Dataflow_a61c71266a16d739af187ad4144f0aaf4}} 
+\index{parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}!\_output@{\_output}}
+\index{\_output@{\_output}!parla.common.dataflow.Dataflow@{parla.common.dataflow.Dataflow}}
+\doxysubsubsection{\texorpdfstring{\_output}{\_output}}
+{\footnotesize\ttfamily parla.\+common.\+dataflow.\+Dataflow.\+\_\+output\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 57 of file dataflow.\+py.
+
+
+
+Referenced by parla.\+common.\+dataflow.\+Dataflow.\+output().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/\mbox{\hyperlink{dataflow_8py}{dataflow.\+py}}\end{DoxyCompactItemize}

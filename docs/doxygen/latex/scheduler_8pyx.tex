@@ -1,0 +1,72 @@
+\hypertarget{scheduler_8pyx}{}\doxysection{src/python/parla/cython/scheduler.pyx File Reference}
+\label{scheduler_8pyx}\index{src/python/parla/cython/scheduler.pyx@{src/python/parla/cython/scheduler.pyx}}
+
+
+Contains the core Python logic to manage workers and launch tasks.  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1TaskBodyException}{parla.\+cython.\+scheduler.\+Task\+Body\+Exception}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1SchedulerException}{parla.\+cython.\+scheduler.\+Scheduler\+Exception}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThreadException}{parla.\+cython.\+scheduler.\+Worker\+Thread\+Exception}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1__SchedulerLocals}{parla.\+cython.\+scheduler.\+\_\+\+Scheduler\+Locals}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1SchedulerContext}{parla.\+cython.\+scheduler.\+Scheduler\+Context}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1ControllableThread}{parla.\+cython.\+scheduler.\+Controllable\+Thread}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1WorkerThread}{parla.\+cython.\+scheduler.\+Worker\+Thread}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1scheduler_1_1Scheduler}{parla.\+cython.\+scheduler.\+Scheduler}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler}{parla.\+cython.\+scheduler}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_af5afabc02c5a3ad34a341292f287be53}{parla.\+cython.\+scheduler.\+get\+\_\+scheduler\+\_\+context}} ()
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a48a89a1509b9ea570b1fa5970a108b59}{parla.\+cython.\+scheduler.\+get\+\_\+device\+\_\+manager}} ()
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_add9a64a44e1a62f0c47305c897b83ab6}{parla.\+cython.\+scheduler.\+get\+\_\+stream\+\_\+pool}} ()
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_af47c3a9f7563cfa0d116b5ca01afd3d6}{parla.\+cython.\+scheduler.\+\_\+task\+\_\+callback}} (task, body)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_ac22efeecc0efd6120ffcfa61f3910757}{parla.\+cython.\+scheduler.\+Task}} = tasks.\+Task
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a93aae477e8803564e378671b9481b80e}{parla.\+cython.\+scheduler.\+Compute\+Task}} = tasks.\+Compute\+Task
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a0de604202e2ebf491a46339c6f907f37}{parla.\+cython.\+scheduler.\+Data\+Movement\+Task}} = tasks.\+Data\+Movement\+Task
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a596a1f93270534bb45eb4f349739d3de}{parla.\+cython.\+scheduler.\+Task\+Space}} = tasks.\+Task\+Space
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a8b742569094275feefebc080975be1bf}{parla.\+cython.\+scheduler.\+Atomic\+Task\+Space}} = tasks.\+Atomic\+Task\+Space
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_abc10cb50813e11852ca046c51423a642}{parla.\+cython.\+scheduler.\+create\+\_\+env}} = tasks.\+create\+\_\+env
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a97d93a92b975e3ed2aaeb58a9f5e0c35}{parla.\+cython.\+scheduler.\+Py\+Inner\+Scheduler}} = core.\+Py\+Inner\+Scheduler
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_ad3dd68883caa4a130cf9663057a842ad}{parla.\+cython.\+scheduler.\+Py\+Inner\+Worker}} = core.\+Py\+Inner\+Worker
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_ae6140a01d6c3b0e1e5d08420b2722722}{parla.\+cython.\+scheduler.\+Py\+Inner\+Task}} = core.\+Py\+Inner\+Task
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_a2309add70c4b31c05c41640f4a8d3593}{parla.\+cython.\+scheduler.\+nvtx}} = NVTXTracer
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1scheduler_afe6b006e55538384bfe3e448dd333837}{parla.\+cython.\+scheduler.\+\_\+scheduler\+\_\+locals}} = \+\_\+\+Scheduler\+Locals()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the core Python logic to manage workers and launch tasks. 
+

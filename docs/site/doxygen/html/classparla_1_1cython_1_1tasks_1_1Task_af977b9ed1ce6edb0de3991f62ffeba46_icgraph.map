@@ -1,0 +1,6 @@
+<map id="parla.cython.tasks.Task.environment" name="parla.cython.tasks.Task.environment">
+<area shape="rect" id="node1" title="The active TaskEnvironment of the task." alt="" coords="603,54,865,81"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1Task.html#a29fa0bb542ccd73b911c6ff4cd3b3eea" title=" " alt="" coords="292,54,555,81"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1Task.html#ae81ab05536f8f0211287a3433412f996" title="Wait (or synchronize) on all events that the task depends on." alt="" coords="13,5,236,47"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1Task.html#a1e00db75a5ef4243601fc9b466aa638b" title="Wait (or synchronize) on all events that the task depends on." alt="" coords="5,80,244,121"/>
+</map>

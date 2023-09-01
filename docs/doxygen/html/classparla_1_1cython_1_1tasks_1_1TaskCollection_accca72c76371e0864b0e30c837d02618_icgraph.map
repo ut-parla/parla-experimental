@@ -1,0 +1,15 @@
+<map id="parla.cython.tasks.TaskCollection.tasks" name="parla.cython.tasks.TaskCollection.tasks">
+<area shape="rect" id="node1" title=" " alt="" coords="571,209,849,235"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1TaskCollection.html#ae425ffd295f8327245aa3e8afb0634a6" title=" " alt="" coords="279,5,523,47"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1TaskList.html#aebf46b2d62e34b4025efc0d60ed2238c" title=" " alt="" coords="299,71,502,112"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1TaskCollection.html#a6b7105cb8fde9078e9aabc5528b800c1" title=" " alt="" coords="279,136,523,177"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1tasks_1_1TaskCollection.html#a64a5f769a971bedd2441842d008f2ffb" title=" " alt="" coords="279,201,523,243"/>
+<area shape="rect" id="node6" href="$classparla_1_1cython_1_1tasks_1_1TaskCollection.html#a8f67740644517f07389b840547ddf326" title=" " alt="" coords="279,267,523,308"/>
+<area shape="rect" id="node12" href="$classparla_1_1cython_1_1tasks_1_1TaskList.html#a34af6793436f6e26d9121916593eafbe" title=" " alt="" coords="299,332,502,373"/>
+<area shape="rect" id="node13" href="$classparla_1_1cython_1_1tasks_1_1AtomicTaskList.html#a7efc7ccbcd12033c590a47da773335cc" title=" " alt="" coords="305,397,497,439"/>
+<area shape="rect" id="node7" href="$classparla_1_1common_1_1globals_1_1Storage.html#ad6c48b63836ac81ba4d5164ce7d00955" title=" " alt="" coords="5,267,231,308"/>
+<area shape="rect" id="node8" href="$classparla_1_1common_1_1globals_1_1LocalStack.html#aeb6fac35b2e1e6378019fa35e868d215" title=" " alt="" coords="15,332,221,373"/>
+<area shape="rect" id="node9" href="$classparla_1_1cython_1_1device_1_1Stream.html#a81bf8ecb094f8169aab1e4c9ad6bb285" title=" " alt="" coords="15,397,221,439"/>
+<area shape="rect" id="node10" href="$classparla_1_1cython_1_1device_1_1CupyStream.html#ada8fcc8ba847c7f98e924841336fc7d3" title=" " alt="" coords="25,463,211,504"/>
+<area shape="rect" id="node11" href="$classparla_1_1cython_1_1tasks_1_1TaskState.html#a5e8bd8b694fb9610698dc759e595d85f" title=" " alt="" coords="11,201,225,243"/>
+</map>

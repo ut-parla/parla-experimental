@@ -1,0 +1,46 @@
+\hypertarget{array_8py}{}\doxysection{src/python/parla/common/array.py File Reference}
+\label{array_8py}\index{src/python/parla/common/array.py@{src/python/parla/common/array.py}}
+
+
+Contains the dispatching logic for Cu\+Py \& Num\+Py arrays based on the active Task Environment.  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1array_1_1ArrayType}{parla.\+common.\+array.\+Array\+Type}}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1array_1_1NumpyArray}{parla.\+common.\+array.\+Numpy\+Array}}
+\item 
+class \mbox{\hyperlink{classparla_1_1common_1_1array_1_1CupyArray}{parla.\+common.\+array.\+Cupy\+Array}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1common_1_1array}{parla.\+common.\+array}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_a8e485710b019c063b604ce567ca898d1}{parla.\+common.\+array.\+\_\+register\+\_\+array\+\_\+type}} (ty, Array\+Type get\+\_\+memory\+\_\+impl)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_ab049a1a648a55658cbb087592d89e999}{parla.\+common.\+array.\+can\+\_\+assign\+\_\+from}} (a, b)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_afde400cdbd0def19ac9250f756bd526b}{parla.\+common.\+array.\+get\+\_\+array\+\_\+module}} (a)
+\item 
+bool \mbox{\hyperlink{namespaceparla_1_1common_1_1array_a268e77177f856cc7a8be5c5b449fcdb8}{parla.\+common.\+array.\+is\+\_\+array}} (a)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_aef962d460291a9a7bb386b1e9916b7a3}{parla.\+common.\+array.\+asnumpy}} (a)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_adcb8d71426772a7e69a362ae58287b8c}{parla.\+common.\+array.\+copy}} (destination, source)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_a2fb98621d2f781a43f8922f7b5015cac}{parla.\+common.\+array.\+clone\+\_\+here}} (source, kind=None)
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1common_1_1array_ae1227110199451602c5479dda1e9df5e}{parla.\+common.\+array.\+storage\+\_\+size}} ($\ast$arrays)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the dispatching logic for Cu\+Py \& Num\+Py arrays based on the active Task Environment. 
+
+This file contains the dispatching logic for Cu\+Py \& Num\+Py arrays based on the active Task Environment. This is used to determine which array type to use for a given task. The manual data movement functions {\ttfamily copy} and {\ttfamily clone\+\_\+here} are defined here. 

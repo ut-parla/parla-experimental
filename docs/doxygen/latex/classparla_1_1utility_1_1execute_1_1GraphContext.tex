@@ -1,0 +1,298 @@
+\hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext}{}\doxysection{parla.\+utility.\+execute.\+Graph\+Context Class Reference}
+\label{classparla_1_1utility_1_1execute_1_1GraphContext}\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+
+
+Inheritance diagram for parla.\+utility.\+execute.\+Graph\+Context\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=225pt]{classparla_1_1utility_1_1execute_1_1GraphContext__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+utility.\+execute.\+Graph\+Context\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=225pt]{classparla_1_1utility_1_1execute_1_1GraphContext__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a3e216ab2b1695dc757ea40d3fa04b1a4}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1GraphConfig}{Graph\+Config}} \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a677a2644c4ee4e286189887e6e0a53ab}{config}}, str \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_af0c32f7802cdfbddf2827101b9adba69}{name}}, graph\+\_\+path=None)
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a2dbd766d06c418631d220a2d6da12d5f}{\+\_\+\+\_\+enter\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a7f29afeed246ca0ee4129e8a009d1a7f}{run}} (self, \mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}} run\+\_\+config, int max\+\_\+time=100)
+\item 
+def \mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a194c076af6994b3dfd2d2c4e0e8812d3}{\+\_\+\+\_\+exit\+\_\+\+\_\+}} (self, type, value, traceback)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a677a2644c4ee4e286189887e6e0a53ab}{config}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_ab7b2c11905d245f739e0383de7f4cae0}{graph}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_ade5132347721c16f46d61e7801f388cd}{data\+\_\+config}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_af0c32f7802cdfbddf2827101b9adba69}{name}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_ae9a4f02f0c6e8f1eab43ba6541bed366}{graph\+\_\+function}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a368c874c55917521d87d6ef83978006c}{tmpfilepath}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a6a598f096ebc040855020b41e986520b}{diro}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_ae548b118567832a57a77eb6841e91549}{dir}}
+\item 
+\mbox{\hyperlink{classparla_1_1utility_1_1execute_1_1GraphContext_a015399178655ead542fd7347f575104a}{tmplogpath}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 754 of file execute.\+py.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a3e216ab2b1695dc757ea40d3fa04b1a4}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a3e216ab2b1695dc757ea40d3fa04b1a4}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+Graph\+Context.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1GraphConfig}{Graph\+Config}}}]{config,  }\item[{str}]{name,  }\item[{}]{graph\+\_\+path = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 756 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{756     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, config: GraphConfig, name: str, graph\_path=\textcolor{keywordtype}{None}):}
+\DoxyCodeLine{757         self.config = config}
+\DoxyCodeLine{758         self.graph = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{759         self.data\_config = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{760 }
+\DoxyCodeLine{761         self.name = name}
+\DoxyCodeLine{762         self.graph\_function = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{763 }
+\DoxyCodeLine{764         \textcolor{keywordflow}{if} isinstance(config, SerialConfig):}
+\DoxyCodeLine{765             self.graph\_function = generate\_serial\_graph}
+\DoxyCodeLine{766         \textcolor{keywordflow}{elif} isinstance(config, IndependentConfig):}
+\DoxyCodeLine{767             self.graph\_function = generate\_independent\_graph}
+\DoxyCodeLine{768         \textcolor{keywordflow}{elif} isinstance(config, ReductionConfig):}
+\DoxyCodeLine{769             self.graph\_function = generate\_reduction\_graph}
+\DoxyCodeLine{770         \textcolor{keywordflow}{elif} isinstance(config, ReductionScatterConfig):}
+\DoxyCodeLine{771             self.graph\_function = generate\_reduction\_scatter\_graph}
+\DoxyCodeLine{772 }
+\DoxyCodeLine{773         \textcolor{keywordflow}{if} graph\_path \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{774             self.tmpfilepath = graph\_path}
+\DoxyCodeLine{775         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{776             self.tmpfilepath = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{777 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a2dbd766d06c418631d220a2d6da12d5f}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a2dbd766d06c418631d220a2d6da12d5f}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!\_\_enter\_\_@{\_\_enter\_\_}}
+\index{\_\_enter\_\_@{\_\_enter\_\_}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{\_\_enter\_\_()}{\_\_enter\_\_()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+Graph\+Context.\+\_\+\+\_\+enter\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 778 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{778     \textcolor{keyword}{def }\_\_enter\_\_(self):}
+\DoxyCodeLine{779 }
+\DoxyCodeLine{780         self.diro = tempfile.TemporaryDirectory()}
+\DoxyCodeLine{781         self.dir = self.diro.\_\_enter\_\_()}
+\DoxyCodeLine{782 }
+\DoxyCodeLine{783         \textcolor{keywordflow}{if} self.tmpfilepath \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{784             self.tmpfilepath = os.path.join(}
+\DoxyCodeLine{785                 self.dir, \textcolor{stringliteral}{'test\_'}+str(self.name)+\textcolor{stringliteral}{'.graph'})}
+\DoxyCodeLine{786         self.tmplogpath = os.path.join(}
+\DoxyCodeLine{787             self.dir, \textcolor{stringliteral}{'test\_'}+str(self.name)+\textcolor{stringliteral}{'\_.blog'})}
+\DoxyCodeLine{788 }
+\DoxyCodeLine{789         print(\textcolor{stringliteral}{"{}Graph Path:"{}}, self.tmpfilepath)}
+\DoxyCodeLine{790         \textcolor{keyword}{with} open(self.tmpfilepath, \textcolor{stringliteral}{'w'}) \textcolor{keyword}{as} tmpfile:}
+\DoxyCodeLine{791             graph = self.graph\_function(self.config)}
+\DoxyCodeLine{792             \textcolor{comment}{\# print(graph)}}
+\DoxyCodeLine{793             tmpfile.write(graph)}
+\DoxyCodeLine{794 }
+\DoxyCodeLine{795         self.data\_config, self.graph = \mbox{\hyperlink{namespaceparla_1_1utility_1_1graphs_ad56d530ed6f726f7f36b624aec7e96d5}{read\_pgraph}}(self.tmpfilepath)}
+\DoxyCodeLine{796 }
+\DoxyCodeLine{797         \textcolor{keywordflow}{return} self}
+\DoxyCodeLine{798 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a194c076af6994b3dfd2d2c4e0e8812d3}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a194c076af6994b3dfd2d2c4e0e8812d3}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!\_\_exit\_\_@{\_\_exit\_\_}}
+\index{\_\_exit\_\_@{\_\_exit\_\_}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{\_\_exit\_\_()}{\_\_exit\_\_()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+Graph\+Context.\+\_\+\+\_\+exit\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{type,  }\item[{}]{value,  }\item[{}]{traceback }\end{DoxyParamCaption})}
+
+
+
+Definition at line 807 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{807     \textcolor{keyword}{def }\_\_exit\_\_(self, type, value, traceback):}
+\DoxyCodeLine{808         self.diro.\_\_exit\_\_(type, value, traceback)}
+\DoxyCodeLine{809 }
+\DoxyCodeLine{810 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+Graph\+Context.\+diro.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a7f29afeed246ca0ee4129e8a009d1a7f}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a7f29afeed246ca0ee4129e8a009d1a7f}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!run@{run}}
+\index{run@{run}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily def parla.\+utility.\+execute.\+Graph\+Context.\+run (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{\mbox{\hyperlink{classparla_1_1utility_1_1graphs_1_1RunConfig}{Run\+Config}}}]{run\+\_\+config,  }\item[{int }]{max\+\_\+time = {\ttfamily 100} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 799 of file execute.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{799     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{run}}(self, run\_config: RunConfig, max\_time: int = 100):}
+\DoxyCodeLine{800 }
+\DoxyCodeLine{801         \textcolor{preprocessor}{@timeout(max\_time)}}
+\DoxyCodeLine{802         \textcolor{keyword}{def }run\_with\_timeout():}
+\DoxyCodeLine{803             \textcolor{keywordflow}{return} \mbox{\hyperlink{namespaceparla_1_1utility_1_1execute_a8a7b4a0f22674fe7982b3167eb89adcd}{run}}(self.graph, self.data\_config, run\_config)}
+\DoxyCodeLine{804 }
+\DoxyCodeLine{805         \textcolor{keywordflow}{return} run\_with\_timeout()}
+\DoxyCodeLine{806 }
+
+\end{DoxyCode}
+
+
+References parla.\+utility.\+execute.\+Graph\+Context.\+data\+\_\+config, and parla.\+utility.\+execute.\+Graph\+Context.\+graph.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a677a2644c4ee4e286189887e6e0a53ab}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a677a2644c4ee4e286189887e6e0a53ab}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!config@{config}}
+\index{config@{config}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{config}{config}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+config}
+
+
+
+Definition at line 757 of file execute.\+py.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_ade5132347721c16f46d61e7801f388cd}\label{classparla_1_1utility_1_1execute_1_1GraphContext_ade5132347721c16f46d61e7801f388cd}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!data\_config@{data\_config}}
+\index{data\_config@{data\_config}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{data\_config}{data\_config}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+data\+\_\+config}
+
+
+
+Definition at line 759 of file execute.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+Graph\+Context.\+run().
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_ae548b118567832a57a77eb6841e91549}\label{classparla_1_1utility_1_1execute_1_1GraphContext_ae548b118567832a57a77eb6841e91549}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!dir@{dir}}
+\index{dir@{dir}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{dir}{dir}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+dir}
+
+
+
+Definition at line 781 of file execute.\+py.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a6a598f096ebc040855020b41e986520b}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a6a598f096ebc040855020b41e986520b}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!diro@{diro}}
+\index{diro@{diro}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{diro}{diro}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+diro}
+
+
+
+Definition at line 780 of file execute.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+Graph\+Context.\+\_\+\+\_\+exit\+\_\+\+\_\+().
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_ab7b2c11905d245f739e0383de7f4cae0}\label{classparla_1_1utility_1_1execute_1_1GraphContext_ab7b2c11905d245f739e0383de7f4cae0}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!graph@{graph}}
+\index{graph@{graph}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{graph}{graph}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+graph}
+
+
+
+Definition at line 758 of file execute.\+py.
+
+
+
+Referenced by parla.\+utility.\+execute.\+Graph\+Context.\+run().
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_ae9a4f02f0c6e8f1eab43ba6541bed366}\label{classparla_1_1utility_1_1execute_1_1GraphContext_ae9a4f02f0c6e8f1eab43ba6541bed366}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!graph\_function@{graph\_function}}
+\index{graph\_function@{graph\_function}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{graph\_function}{graph\_function}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+graph\+\_\+function}
+
+
+
+Definition at line 762 of file execute.\+py.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_af0c32f7802cdfbddf2827101b9adba69}\label{classparla_1_1utility_1_1execute_1_1GraphContext_af0c32f7802cdfbddf2827101b9adba69}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!name@{name}}
+\index{name@{name}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+name}
+
+
+
+Definition at line 761 of file execute.\+py.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task.\+\_\+\+\_\+hash\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task.\+get\+\_\+name(), parla.\+cython.\+tasks.\+Task.\+unpack\+\_\+name(), and parla.\+cython.\+tasks.\+Task.\+update\+\_\+name().
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a368c874c55917521d87d6ef83978006c}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a368c874c55917521d87d6ef83978006c}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!tmpfilepath@{tmpfilepath}}
+\index{tmpfilepath@{tmpfilepath}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{tmpfilepath}{tmpfilepath}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+tmpfilepath}
+
+
+
+Definition at line 774 of file execute.\+py.
+
+\mbox{\Hypertarget{classparla_1_1utility_1_1execute_1_1GraphContext_a015399178655ead542fd7347f575104a}\label{classparla_1_1utility_1_1execute_1_1GraphContext_a015399178655ead542fd7347f575104a}} 
+\index{parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}!tmplogpath@{tmplogpath}}
+\index{tmplogpath@{tmplogpath}!parla.utility.execute.GraphContext@{parla.utility.execute.GraphContext}}
+\doxysubsubsection{\texorpdfstring{tmplogpath}{tmplogpath}}
+{\footnotesize\ttfamily parla.\+utility.\+execute.\+Graph\+Context.\+tmplogpath}
+
+
+
+Definition at line 786 of file execute.\+py.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/utility/\mbox{\hyperlink{execute_8py}{execute.\+py}}\end{DoxyCompactItemize}

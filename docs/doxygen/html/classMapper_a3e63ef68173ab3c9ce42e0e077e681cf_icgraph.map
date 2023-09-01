@@ -1,0 +1,4 @@
+<map id="Mapper::atomic_load_total_num_mapped_tasks" name="Mapper::atomic_load_total_num_mapped_tasks">
+<area shape="rect" id="node1" title="Return the number of total mapped tasks to the whole devices." alt="" coords="289,5,487,47"/>
+<area shape="rect" id="node2" href="$classLocalityLoadBalancingMappingPolicy.html#ad4dd7032ab349a74f3ab4498c867a341" title="Calculate a score of the device placement requirement." alt="" coords="5,5,241,47"/>
+</map>

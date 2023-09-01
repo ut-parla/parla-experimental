@@ -1,0 +1,113 @@
+\hypertarget{classparla_1_1cython_1_1device_1_1DeviceResource}{}\doxysection{parla.\+cython.\+device.\+Device\+Resource Class Reference}
+\label{classparla_1_1cython_1_1device_1_1DeviceResource}\index{parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_a4ed77e5db5395178a561d0b3e839ecdb}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_ac794b8acb4b74fb4155e9cd260636251}{memory\+\_\+sz}}=0, \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_a87e711c57c947514a15968c06e43c729}{num\+\_\+vcus}}=0)
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_afc8c2fbc7cb16e99bd5007c1b0b8fedd}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_ac794b8acb4b74fb4155e9cd260636251}{memory\+\_\+sz}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceResource_a87e711c57c947514a15968c06e43c729}{num\+\_\+vcus}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 78 of file device.\+pyx.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceResource_a4ed77e5db5395178a561d0b3e839ecdb}\label{classparla_1_1cython_1_1device_1_1DeviceResource_a4ed77e5db5395178a561d0b3e839ecdb}} 
+\index{parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Device\+Resource.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{memory\+\_\+sz = {\ttfamily 0},  }\item[{}]{num\+\_\+vcus = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Definition at line 79 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{79     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, memory\_sz = 0, num\_vcus = 0):}
+\DoxyCodeLine{80         \textcolor{comment}{\# This class represents a device total resource size.}}
+\DoxyCodeLine{81         \textcolor{comment}{\# This can also be used to specify resource requirements}}
+\DoxyCodeLine{82         \textcolor{comment}{\# of a task for task mapping. }}
+\DoxyCodeLine{83         \textcolor{comment}{\# 0 value implies that there is no constraint in a}}
+\DoxyCodeLine{84         \textcolor{comment}{\# resource. In the same sense, 0 value in a requirement}}
+\DoxyCodeLine{85         \textcolor{comment}{\# implies that it can be mapped to a device even though }}
+\DoxyCodeLine{86         \textcolor{comment}{\# that device does not have enough resource.}}
+\DoxyCodeLine{87         \textcolor{comment}{\# TODO(hc): better design? map still has a problem that}}
+\DoxyCodeLine{88         \textcolor{comment}{\#           users should remember keys.}}
+\DoxyCodeLine{89         self.memory\_sz = memory\_sz}
+\DoxyCodeLine{90         self.num\_vcus = num\_vcus}
+\DoxyCodeLine{91 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceResource_afc8c2fbc7cb16e99bd5007c1b0b8fedd}\label{classparla_1_1cython_1_1device_1_1DeviceResource_afc8c2fbc7cb16e99bd5007c1b0b8fedd}} 
+\index{parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Device\+Resource.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 93 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{93     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{94         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}DeviceResource(memory\_sz=\{self.memory\_sz\}, num\_vcus=\{self.num\_vcus\})"{}}}
+\DoxyCodeLine{95 }
+\DoxyCodeLine{96 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device_1_1DeviceResource_afc8c2fbc7cb16e99bd5007c1b0b8fedd_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceResource_ac794b8acb4b74fb4155e9cd260636251}\label{classparla_1_1cython_1_1device_1_1DeviceResource_ac794b8acb4b74fb4155e9cd260636251}} 
+\index{parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}!memory\_sz@{memory\_sz}}
+\index{memory\_sz@{memory\_sz}!parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}}
+\doxysubsubsection{\texorpdfstring{memory\_sz}{memory\_sz}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Device\+Resource.\+memory\+\_\+sz}
+
+
+
+Definition at line 89 of file device.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceResource_a87e711c57c947514a15968c06e43c729}\label{classparla_1_1cython_1_1device_1_1DeviceResource_a87e711c57c947514a15968c06e43c729}} 
+\index{parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}!num\_vcus@{num\_vcus}}
+\index{num\_vcus@{num\_vcus}!parla.cython.device.DeviceResource@{parla.cython.device.DeviceResource}}
+\doxysubsubsection{\texorpdfstring{num\_vcus}{num\_vcus}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Device\+Resource.\+num\+\_\+vcus}
+
+
+
+Definition at line 90 of file device.\+pyx.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device_8pyx}{device.\+pyx}}\end{DoxyCompactItemize}

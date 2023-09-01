@@ -1,0 +1,156 @@
+\hypertarget{tasks_8pyx}{}\doxysection{src/python/parla/cython/tasks.pyx File Reference}
+\label{tasks_8pyx}\index{src/python/parla/cython/tasks.pyx@{src/python/parla/cython/tasks.pyx}}
+
+
+Contains the \mbox{\hyperlink{namespaceTask}{Task}} and Task\+Environment classes, which are used to represent tasks and their execution environments.  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskState}{parla.\+cython.\+tasks.\+Task\+State}}
+\begin{DoxyCompactList}\small\item\em Abstract base class for \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task}{Task}} State. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCreated}{parla.\+cython.\+tasks.\+Task\+Created}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task has been created but not yet spawned. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpawned}{parla.\+cython.\+tasks.\+Task\+Spawned}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task is ready to be mapped to a specific device set. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskMapped}{parla.\+cython.\+tasks.\+Task\+Mapped}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task has been mapped to a device set, but not yet resered its resources there. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskReserved}{parla.\+cython.\+tasks.\+Task\+Reserved}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task has reserved its persistent resources (e.\+g. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskReady}{parla.\+cython.\+tasks.\+Task\+Ready}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task is \char`\"{}ready\char`\"{} to be launched. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunning}{parla.\+cython.\+tasks.\+Task\+Running}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task is executing in a stream. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskRunahead}{parla.\+cython.\+tasks.\+Task\+Runahead}}
+\begin{DoxyCompactList}\small\item\em State\+: A task is executing in a stream but the body has completed. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCompleted}{parla.\+cython.\+tasks.\+Task\+Completed}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task has completed execution. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskException}{parla.\+cython.\+tasks.\+Task\+Exception}}
+\begin{DoxyCompactList}\small\item\em This state specifies that a task has completed execution with an exception. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1__TaskLocals}{parla.\+cython.\+tasks.\+\_\+\+Task\+Locals}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task}{parla.\+cython.\+tasks.\+Task}}
+\begin{DoxyCompactList}\small\item\em Python \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task}{Task}} interface. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1ComputeTask}{parla.\+cython.\+tasks.\+Compute\+Task}}
+\begin{DoxyCompactList}\small\item\em A compute task is a task that executes a user defined Python function on a device. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1DataMovementTask}{parla.\+cython.\+tasks.\+Data\+Movement\+Task}}
+\begin{DoxyCompactList}\small\item\em A data movement task is a task that moves data between devices. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{parla.\+cython.\+tasks.\+Task\+Environment}}
+\begin{DoxyCompactList}\small\item\em A \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} is a collection of devices or other Task\+Environments used to coordinate and synchronize kernels in the \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1Task}{Task}} body. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TerminalEnvironment}{parla.\+cython.\+tasks.\+Terminal\+Environment}}
+\begin{DoxyCompactList}\small\item\em An endpoint \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} representing a single device. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1CPUEnvironment}{parla.\+cython.\+tasks.\+CPUEnvironment}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1GPUEnvironment}{parla.\+cython.\+tasks.\+GPUEnvironment}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskCollection}{parla.\+cython.\+tasks.\+Task\+Collection}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskList}{parla.\+cython.\+tasks.\+Task\+List}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskList}{parla.\+cython.\+tasks.\+Atomic\+Task\+List}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1BackendTaskList}{parla.\+cython.\+tasks.\+Backend\+Task\+List}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskSpace}{parla.\+cython.\+tasks.\+Task\+Space}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace}{parla.\+cython.\+tasks.\+Atomic\+Task\+Space}}
+\item 
+class \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1BackendTaskSpace}{parla.\+cython.\+tasks.\+Backend\+Task\+Space}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks}{parla.\+cython.\+tasks}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a2fd492bc4408c01e40e1b7a05ad1c8f4}{parla.\+cython.\+tasks.\+create\+\_\+device\+\_\+env}} (device)
+\begin{DoxyCompactList}\small\item\em Create a terminal device environment from a Py\+Device. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ae8dea34c793aa19a58b1eb80e74bd663}{parla.\+cython.\+tasks.\+create\+\_\+env}} (sources)
+\begin{DoxyCompactList}\small\item\em Create the union \mbox{\hyperlink{classparla_1_1cython_1_1tasks_1_1TaskEnvironment}{Task\+Environment}} from a list of Task\+Environments or Py\+Devices. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad36e6787e61929230966f45aa7d4ddea}{parla.\+cython.\+tasks.\+parse\+\_\+index}} (prefix, index, step, stop)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a314c0d943c390d1b15035877a706c08c}{parla.\+cython.\+tasks.\+Py\+Device}} = device.\+Py\+Device
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a0574e4c1497361648bd5fd70b4878532}{parla.\+cython.\+tasks.\+Py\+CUDADevice}} = device.\+Py\+CUDADevice
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_aaf9e973b3dee32ea14f81d96c4f037c7}{parla.\+cython.\+tasks.\+Py\+CPUDevice}} = device.\+Py\+CPUDevice
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a8d85065bad6ce83ef7db563fa4d4e60a}{parla.\+cython.\+tasks.\+Py\+Architecture}} = device.\+Py\+Architecture
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ac87b04677102e6d903ea65ef50bba1b2}{parla.\+cython.\+tasks.\+Py\+CUDAArchitecture}} = device.\+Py\+CUDAArchitecture
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_aee630003533e32ad10e8b1cadac900ee}{parla.\+cython.\+tasks.\+Device\+Type}} = Py\+Device\+Type
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a5e3c2bbb680d8e2c0f537f31ea9f2575}{parla.\+cython.\+tasks.\+Device\+Resource\+Requirement}} = device.\+Device\+Resource\+Requirement
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ab5f3c7c7a43a3fc0efce53385cb3f364}{parla.\+cython.\+tasks.\+cpu}} = device\+\_\+manager.\+cpu
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a3877903e4410458b1eaeb7d94e4f13de}{parla.\+cython.\+tasks.\+Task\+Await\+Tasks}} = namedtuple(\char`\"{}Await\+Tasks\char`\"{}, \mbox{[}\char`\"{}dependencies\char`\"{}, \char`\"{}value\+\_\+task\char`\"{}\mbox{]})
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_aa99ac0b30fe00a1d900301b08cd21dba}{parla.\+cython.\+tasks.\+task\+\_\+locals}} = \+\_\+\+Task\+Locals()
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a4e4004f34c57f2440d72f08f43b9d9ce}{parla.\+cython.\+tasks.\+output}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad0d88a7d8f89ecf110a042149d853fb4}{parla.\+cython.\+tasks.\+tasks}} = tasks.\+tasks
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a247d20379bfa88a65f4fb34fa69e28dd}{parla.\+cython.\+tasks.\+task}} = tasks\mbox{[}i\mbox{]}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a83206470aa63f6e6fb8614d30dcbbe74}{parla.\+cython.\+tasks.\+keys}} = tasks.\+keys()
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ab8e0de9e0e52f3fedc10446b6bd5c384}{parla.\+cython.\+tasks.\+depth}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_aa3b718a4c8d0533992eb21a3df17c572}{parla.\+cython.\+tasks.\+shape}} = None
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acec20ed07f03b2db87179a56f56a0c6c}{parla.\+cython.\+tasks.\+None}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a7d5fca07d1b416bb4096f051626e4992}{parla.\+cython.\+tasks.\+start}}
+\item 
+tuple \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a2403306e120206bdee6e5297111a050a}{parla.\+cython.\+tasks.\+shape\+\_\+flag}} = (shape is not None)
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a44fe760096a48ca34900bc29dd4964f8}{parla.\+cython.\+tasks.\+max\+\_\+dim}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a790db1b00ea0864b7dbfff1a8c6e3cdd}{parla.\+cython.\+tasks.\+dim}}
+\item 
+tuple \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a148b0f918d1d097aecac21fed249b36f}{parla.\+cython.\+tasks.\+start\+\_\+flag}} = (start is not None)
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a5f4487a866c88bdef0199ffdcadaaf9d}{parla.\+cython.\+tasks.\+lower\+\_\+boundary}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a4998a4d33756752358aa01c75ff4ca78}{parla.\+cython.\+tasks.\+upper\+\_\+boundary}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a0e602b6454ee33222235d0de7cde0364}{parla.\+cython.\+tasks.\+istart}} = max(i.\+start, lower\+\_\+boundary) if i.\+start is not None else lower\+\_\+boundary
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_af41dc95dd140b95e33feafd53486a094}{parla.\+cython.\+tasks.\+istop}} = min(i.\+stop, upper\+\_\+boundary) if i.\+stop is not None else upper\+\_\+boundary
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_afb932bdf533adf223842296c75366218}{parla.\+cython.\+tasks.\+istep}} = i.\+step or 1
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ad86e5c5e40b5bf338a6d10e714856b22}{parla.\+cython.\+tasks.\+remainder}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a17820f0441e4e8e4a8af4a5c50bae09d}{parla.\+cython.\+tasks.\+i}} = i.\+tasks
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ac144ca92c12f9d36f4273ed986122aa6}{parla.\+cython.\+tasks.\+index\+\_\+list}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ab80fbcc3f22dfd587dd48df843871126}{parla.\+cython.\+tasks.\+create}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a525270c0931f4fa32431496228d228cd}{parla.\+cython.\+tasks.\+task\+\_\+list}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a08c15bd5b22cbddb939b06e82b2b3b6a}{parla.\+cython.\+tasks.\+new\+\_\+tasks}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_acbada373d9ef1b0f921d1cba524c7d58}{parla.\+cython.\+tasks.\+new\+\_\+index}}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a6051e1607a75f5e7f15dbd3d8e9f7e30}{parla.\+cython.\+tasks.\+index}} = index\+\_\+list\mbox{[}i\mbox{]}
+\item 
+\mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_a08248af954cdd1a71b4bcb9bf074ef94}{parla.\+cython.\+tasks.\+barrier}} = Backend\+Task\+List(barrier)
+\item 
+dictionary \mbox{\hyperlink{namespaceparla_1_1cython_1_1tasks_ac95f7e0425cd9fc546930befaff261ab}{parla.\+cython.\+tasks.\+\_\+task\+\_\+space\+\_\+globals}} = \{\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains the \mbox{\hyperlink{namespaceTask}{Task}} and Task\+Environment classes, which are used to represent tasks and their execution environments. 
+

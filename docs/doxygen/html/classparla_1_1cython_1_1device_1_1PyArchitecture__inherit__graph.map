@@ -1,0 +1,10 @@
+<map id="parla.cython.device.PyArchitecture" name="parla.cython.device.PyArchitecture">
+<area shape="rect" id="node1" title=" " alt="" coords="143,64,392,91"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1device_1_1ImportableArchitecture.html" title=" " alt="" coords="471,57,696,98"/>
+<area shape="rect" id="node7" href="$classparla_1_1cython_1_1device_1_1PyCPUArchitecture.html" title=" " alt="" coords="445,5,721,32"/>
+<area shape="rect" id="node8" href="$classparla_1_1cython_1_1device_1_1PyCUDAArchitecture.html" title=" " alt="" coords="440,123,727,149"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,39,95,65"/>
+<area shape="rect" id="node3" title=" " alt="" coords="9,89,91,116"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1device_1_1ImportableCPUArchitecture.html" title=" " alt="" coords="775,11,1000,53"/>
+<area shape="rect" id="node6" href="$classparla_1_1cython_1_1device_1_1ImportableCUDAArchitecture.html" title=" " alt="" coords="775,90,1000,131"/>
+</map>

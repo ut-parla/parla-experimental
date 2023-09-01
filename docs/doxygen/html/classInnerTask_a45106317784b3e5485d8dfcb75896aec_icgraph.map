@@ -1,0 +1,4 @@
+<map id="InnerTask::wait_dependency_events" name="InnerTask::wait_dependency_events">
+<area shape="rect" id="node1" title=" " alt="" coords="257,5,464,47"/>
+<area shape="rect" id="node2" href="$classInnerTask.html#ae793eaad07cdee1e26cde8ec2f05ec66" title="Dispatches to the appropriate synchronization function for runahead scheduling." alt="" coords="5,5,209,47"/>
+</map>

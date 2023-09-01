@@ -1,0 +1,4 @@
+<map id="InnerTaskSpace" name="InnerTaskSpace">
+<area shape="rect" id="node1" title="The C++ backend for the Parla TaskSpace." alt="" coords="5,80,128,107"/>
+<area shape="rect" id="node2" href="$classTaskBarrier.html" title="A task barrier is a synchronization primitive that notifies when a set of tasks are completed." alt="" coords="19,5,114,32"/>
+</map>

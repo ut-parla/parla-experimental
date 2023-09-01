@@ -1,0 +1,6 @@
+<map id="parla.cython.tasks.TaskEnvironment" name="parla.cython.tasks.TaskEnvironment">
+<area shape="rect" id="node1" title="A TaskEnvironment is a collection of devices or other TaskEnvironments used to coordinate and synchro..." alt="" coords="144,5,403,32"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1tasks_1_1TerminalEnvironment.html" title="An endpoint TaskEnvironment representing a single device." alt="" coords="172,80,375,121"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1CPUEnvironment.html" title=" " alt="" coords="5,169,261,196"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1GPUEnvironment.html" title=" " alt="" coords="286,169,543,196"/>
+</map>

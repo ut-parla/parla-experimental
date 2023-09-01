@@ -1,0 +1,1146 @@
+\hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer}{}\doxysection{parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer Class Reference}
+\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer}\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_abb0e5ccebf38fbf153fc9a65eba47605}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, int num\+\_\+gpu, \mbox{\hyperlink{classparla_1_1cython_1_1cyparray__state_1_1CyPArrayState}{Cy\+PArray\+State}} cyparray\+\_\+state)
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a664d51b36aceb5da8e9ca331a2eb2ec4}{nbytes\+\_\+at}} (self, int device\+\_\+id)
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a895106a0d6d4a7b1b274336329d4287d}{set\+\_\+complete\+\_\+array}} (self, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}} array)
+\item 
+None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a6d33d491f7e07a8deafb698f8c4a2c99}{set}} (self, int device\+\_\+id, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}} array, bool is\+\_\+complete=True, bool overwrite=False)
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}$\vert$List\mbox{[}\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}\mbox{]}$\vert$None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac2450884231bb23038186e9fc4c0a9e4}{get}} (self, int device\+\_\+id)
+\item 
+\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}$\vert$None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a68e12ae25d88fdd9e489186134fec370}{get\+\_\+global\+\_\+slices}} (self, int device\+\_\+id, int subarray\+\_\+index)
+\item 
+(int, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}) \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aacde9e2ed5e266c6e57d43582f7d7f94}{map\+\_\+local\+\_\+slices}} (self, int device\+\_\+id, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} global\+\_\+slices)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a947e8b6f97c7faa04834589bacfa2718}{set\+\_\+slices\+\_\+mapping}} (self, int device\+\_\+id, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} global\+\_\+slices)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acc12b8be39f0c83625f43520943c1134}{get\+\_\+by\+\_\+global\+\_\+slices}} (self, int device\+\_\+id, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} global\+\_\+slices)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4e42d95eb71d879d30cc80e1a0069169}{set\+\_\+by\+\_\+global\+\_\+slices}} (self, int device\+\_\+id, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} global\+\_\+slices, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}$\vert$Any value)
+\item 
+None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aad239d22c9408d37937afe39042d0607}{copy\+\_\+data\+\_\+between\+\_\+device}} (self, int dst, int src, bool dst\+\_\+is\+\_\+current\+\_\+device=True)
+\item 
+int \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a0cb9fd0b4074e5512981a442ccea02c8}{get\+\_\+slices\+\_\+hash}} (self, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} global\+\_\+slices)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ade178b2932bc7c02724e6da3f8abddf2}{\+\_\+\+\_\+str\+\_\+\+\_\+}} (self)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acbca0f9d7331bc3c76f6e92fc554b8e8}{\+\_\+\+\_\+contains\+\_\+\+\_\+}} (self, device\+\_\+id)
+\item 
+None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a8fc4b7cd50b55c9b9302df88ebd98636}{clear}} (self, device\+\_\+id)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a78b1e058866dbf400afd1043b8e642d0}{shape}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4bf82540d32971461a0df5fbdc66910d}{\+\_\+move\+\_\+data}} (self, copy\+\_\+func, int dst, int src, int subarray\+\_\+index, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} dst\+\_\+slices, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} src\+\_\+slices, bool dst\+\_\+is\+\_\+current\+\_\+device=True)
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+int$\vert$None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2d86f1748dcba8d9a91d163700b5860d}{\+\_\+map\+\_\+int\+\_\+with\+\_\+int\+\_\+map}} (int n, Dict\mbox{[}int, int\mbox{]} int\+\_\+map)
+\item 
+int$\vert$None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_af1419d2d3cfff083077d74453d3d60dd}{\+\_\+map\+\_\+int\+\_\+with\+\_\+slice}} (int n, tuple target\+\_\+slice)
+\item 
+tuple$\vert$None \mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac93b0d62d841a0e4764a3ec7af2ce9b0}{\+\_\+map\+\_\+slice\+\_\+with\+\_\+slice}} (tuple input\+\_\+slice, tuple target\+\_\+slice)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aca71b06fe529adc0b3a496078e6f0ea9}{\+\_\+buffer}}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aade7a2afcf23a4558ab3ab76bdf84bf8}{\+\_\+indices\+\_\+map}}
+\item 
+\mbox{\hyperlink{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2724046ada9ede6dc591baa5bd937e78}{\+\_\+cyparray\+\_\+state}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}Underlying Buffer of PArray.
+
+It holds per device array copy and also index mapping.
+\end{DoxyVerb}
+ 
+
+Definition at line 22 of file memory.\+py.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_abb0e5ccebf38fbf153fc9a65eba47605}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_abb0e5ccebf38fbf153fc9a65eba47605}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{num\+\_\+gpu,  }\item[{\mbox{\hyperlink{classparla_1_1cython_1_1cyparray__state_1_1CyPArrayState}{Cy\+PArray\+State}}}]{cyparray\+\_\+state }\end{DoxyParamCaption})}
+
+
+
+Definition at line 33 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{33     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_abd75527c775e8a2eda6c2bd84fc0761a}{\_\_init\_\_}}(self, num\_gpu: int, cyparray\_state: CyPArrayState):}
+\DoxyCodeLine{34         \textcolor{comment}{\# per device buffer}}
+\DoxyCodeLine{35         \textcolor{comment}{\# key: device\_id}}
+\DoxyCodeLine{36         \textcolor{comment}{\# val: single (complete) ndarray or list of (sub) ndarray}}
+\DoxyCodeLine{37         self.\_buffer = \{n: \textcolor{keywordtype}{None} \textcolor{keywordflow}{for} n \textcolor{keywordflow}{in} range(num\_gpu)\}  \textcolor{comment}{\# add gpu id}}
+\DoxyCodeLine{38         self.\_buffer[CPU\_INDEX] = \textcolor{keywordtype}{None}  \textcolor{comment}{\# add cpu id}}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{40         \textcolor{comment}{\# per device indices mapping}}
+\DoxyCodeLine{41         \textcolor{comment}{\# key: device\_id}}
+\DoxyCodeLine{42         \textcolor{comment}{\# val: list of \{global\_index: local\_index\} and tuple(begin, end, stop), and the tuple is a represent of slice(begin, end, stop)}}
+\DoxyCodeLine{43         self.\_indices\_map = \{n: \textcolor{keywordtype}{None} \textcolor{keywordflow}{for} n \textcolor{keywordflow}{in} range(num\_gpu)\}}
+\DoxyCodeLine{44         self.\_indices\_map[CPU\_INDEX] = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{45 }
+\DoxyCodeLine{46         \textcolor{comment}{\# the shape of the complete array}}
+\DoxyCodeLine{47         self.shape = ()}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49         self.\_cyparray\_state = cyparray\_state}
+\DoxyCodeLine{50 }
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acbca0f9d7331bc3c76f6e92fc554b8e8}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acbca0f9d7331bc3c76f6e92fc554b8e8}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_\_contains\_\_@{\_\_contains\_\_}}
+\index{\_\_contains\_\_@{\_\_contains\_\_}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_\_contains\_\_()}{\_\_contains\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+\+\_\+contains\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Return True if there is a copy in this device
+\end{DoxyVerb}
+ 
+
+Definition at line 517 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{517     \textcolor{keyword}{def }\_\_contains\_\_(self, device\_id):}
+\DoxyCodeLine{518         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{519 \textcolor{stringliteral}{        Return True if there is a copy in this device}}
+\DoxyCodeLine{520 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{521         \textcolor{keywordflow}{return} device\_id \textcolor{keywordflow}{in} self.\_buffer \textcolor{keywordflow}{and} self.\_buffer[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{522 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ade178b2932bc7c02724e6da3f8abddf2}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ade178b2932bc7c02724e6da3f8abddf2}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_\_str\_\_@{\_\_str\_\_}}
+\index{\_\_str\_\_@{\_\_str\_\_}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_\_str\_\_()}{\_\_str\_\_()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+\+\_\+str\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 514 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{514     \textcolor{keyword}{def }\_\_str\_\_(self):}
+\DoxyCodeLine{515         \textcolor{keywordflow}{return} str(self.\_buffer)}
+\DoxyCodeLine{516 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2d86f1748dcba8d9a91d163700b5860d}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2d86f1748dcba8d9a91d163700b5860d}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_map\_int\_with\_int\_map@{\_map\_int\_with\_int\_map}}
+\index{\_map\_int\_with\_int\_map@{\_map\_int\_with\_int\_map}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_map\_int\_with\_int\_map()}{\_map\_int\_with\_int\_map()}}
+{\footnotesize\ttfamily  int $\vert$ None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+map\+\_\+int\+\_\+with\+\_\+int\+\_\+map (\begin{DoxyParamCaption}\item[{int}]{n,  }\item[{Dict\mbox{[}int, int\mbox{]}}]{int\+\_\+map }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+\begin{DoxyVerb}Find the mapping of `n` in `int_map`
+
+if `n` not in `int_map`, return None
+
+example:
+    n: 2
+    int_map: {1:0, 2:1}
+    return: 1
+\end{DoxyVerb}
+ 
+
+Definition at line 144 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{144     \textcolor{keyword}{def }\_map\_int\_with\_int\_map(n: int, int\_map: Dict[int, int]) -\/> int | \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{145         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{146 \textcolor{stringliteral}{        Find the mapping of `n` in `int\_map`}}
+\DoxyCodeLine{147 \textcolor{stringliteral}{}}
+\DoxyCodeLine{148 \textcolor{stringliteral}{        if `n` not in `int\_map`, return None}}
+\DoxyCodeLine{149 \textcolor{stringliteral}{}}
+\DoxyCodeLine{150 \textcolor{stringliteral}{        example:}}
+\DoxyCodeLine{151 \textcolor{stringliteral}{            n: 2}}
+\DoxyCodeLine{152 \textcolor{stringliteral}{            int\_map: \{1:0, 2:1\}}}
+\DoxyCodeLine{153 \textcolor{stringliteral}{            return: 1}}
+\DoxyCodeLine{154 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{155         \textcolor{keywordflow}{return} \textcolor{keywordtype}{None} \textcolor{keywordflow}{if} n \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} int\_map \textcolor{keywordflow}{else} int\_map[n]}
+\DoxyCodeLine{156 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2d86f1748dcba8d9a91d163700b5860d_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_af1419d2d3cfff083077d74453d3d60dd}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_af1419d2d3cfff083077d74453d3d60dd}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_map\_int\_with\_slice@{\_map\_int\_with\_slice}}
+\index{\_map\_int\_with\_slice@{\_map\_int\_with\_slice}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_map\_int\_with\_slice()}{\_map\_int\_with\_slice()}}
+{\footnotesize\ttfamily  int $\vert$ None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+map\+\_\+int\+\_\+with\+\_\+slice (\begin{DoxyParamCaption}\item[{int}]{n,  }\item[{tuple}]{target\+\_\+slice }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+\begin{DoxyVerb}Find the mapping of `n` in a `target_slice` (find index of `n` in `target_slice`)
+`target_slice` is a tuple(begin, end, step)
+
+if `n` not in `target_slice`, return None
+
+example:
+    n: 2
+    target_slice: (2, 4, 1)
+    return: 0
+\end{DoxyVerb}
+ 
+
+Definition at line 158 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{158     \textcolor{keyword}{def }\_map\_int\_with\_slice(n: int, target\_slice: tuple) -\/> int | \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{159         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{160 \textcolor{stringliteral}{        Find the mapping of `n` in a `target\_slice` (find index of `n` in `target\_slice`)}}
+\DoxyCodeLine{161 \textcolor{stringliteral}{        `target\_slice` is a tuple(begin, end, step)}}
+\DoxyCodeLine{162 \textcolor{stringliteral}{}}
+\DoxyCodeLine{163 \textcolor{stringliteral}{        if `n` not in `target\_slice`, return None}}
+\DoxyCodeLine{164 \textcolor{stringliteral}{}}
+\DoxyCodeLine{165 \textcolor{stringliteral}{        example:}}
+\DoxyCodeLine{166 \textcolor{stringliteral}{            n: 2}}
+\DoxyCodeLine{167 \textcolor{stringliteral}{            target\_slice: (2, 4, 1)}}
+\DoxyCodeLine{168 \textcolor{stringliteral}{            return: 0}}
+\DoxyCodeLine{169 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{170         \textcolor{comment}{\# TODO: assume slice is simple (no neg value)}}
+\DoxyCodeLine{171         begin, end, step = target\_slice}
+\DoxyCodeLine{172         step = 1 \textcolor{keywordflow}{if} step \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} step}
+\DoxyCodeLine{173 }
+\DoxyCodeLine{174         \textcolor{comment}{\# bound checking}}
+\DoxyCodeLine{175         \textcolor{keywordflow}{if} n < begin \textcolor{keywordflow}{or} n >= end:}
+\DoxyCodeLine{176             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{177         \textcolor{keywordflow}{if} (n -\/ begin) \% step != 0:}
+\DoxyCodeLine{178             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{179 }
+\DoxyCodeLine{180         \textcolor{keywordflow}{return} (n -\/ begin) // step}
+\DoxyCodeLine{181 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac93b0d62d841a0e4764a3ec7af2ce9b0}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac93b0d62d841a0e4764a3ec7af2ce9b0}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_map\_slice\_with\_slice@{\_map\_slice\_with\_slice}}
+\index{\_map\_slice\_with\_slice@{\_map\_slice\_with\_slice}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_map\_slice\_with\_slice()}{\_map\_slice\_with\_slice()}}
+{\footnotesize\ttfamily  tuple $\vert$ None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+map\+\_\+slice\+\_\+with\+\_\+slice (\begin{DoxyParamCaption}\item[{tuple}]{input\+\_\+slice,  }\item[{tuple}]{target\+\_\+slice }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+\begin{DoxyVerb}Find the mapping of `input_slice` in a `target_slice`
+`input_slice` and `target_slice` is a tuple(begin, end, step)
+
+if `input_slice` not a subset of `target_slice`, return None
+
+example:
+    input_slice: (2, 10, 4)
+    target_slice: (0, 10, 2)
+    return: (1, 5, 2)
+\end{DoxyVerb}
+ 
+
+Definition at line 183 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{183     \textcolor{keyword}{def }\_map\_slice\_with\_slice(input\_slice: tuple, target\_slice: tuple) -\/> tuple | \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{184         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{185 \textcolor{stringliteral}{        Find the mapping of `input\_slice` in a `target\_slice`}}
+\DoxyCodeLine{186 \textcolor{stringliteral}{        `input\_slice` and `target\_slice` is a tuple(begin, end, step)}}
+\DoxyCodeLine{187 \textcolor{stringliteral}{}}
+\DoxyCodeLine{188 \textcolor{stringliteral}{        if `input\_slice` not a subset of `target\_slice`, return None}}
+\DoxyCodeLine{189 \textcolor{stringliteral}{}}
+\DoxyCodeLine{190 \textcolor{stringliteral}{        example:}}
+\DoxyCodeLine{191 \textcolor{stringliteral}{            input\_slice: (2, 10, 4)}}
+\DoxyCodeLine{192 \textcolor{stringliteral}{            target\_slice: (0, 10, 2)}}
+\DoxyCodeLine{193 \textcolor{stringliteral}{            return: (1, 5, 2)}}
+\DoxyCodeLine{194 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{195         \textcolor{comment}{\# TODO: assume slice is simple (no neg value)}}
+\DoxyCodeLine{196         target\_begin, target\_end, target\_step = target\_slice}
+\DoxyCodeLine{197         target\_step = 1 \textcolor{keywordflow}{if} target\_step \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} target\_step}
+\DoxyCodeLine{198 }
+\DoxyCodeLine{199         input\_begin, input\_end, input\_step = input\_slice}
+\DoxyCodeLine{200         input\_step = 1 \textcolor{keywordflow}{if} input\_step \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{else} input\_step}
+\DoxyCodeLine{201 }
+\DoxyCodeLine{202         mapped\_begin = MultiDeviceBuffer.\_map\_int\_with\_slice(}
+\DoxyCodeLine{203             input\_begin, target\_slice)}
+\DoxyCodeLine{204 }
+\DoxyCodeLine{205         \textcolor{comment}{\# get the last possible element in range of `input\_slice`}}
+\DoxyCodeLine{206         \textcolor{comment}{\# TODO: what if last\_element < input\_begin ?}}
+\DoxyCodeLine{207         last\_element = input\_end -\/ input\_step + (input\_end -\/ input\_begin) \% input\_step}
+\DoxyCodeLine{208         mapped\_end = MultiDeviceBuffer.\_map\_int\_with\_slice(last\_element, target\_slice)}
+\DoxyCodeLine{209 }
+\DoxyCodeLine{210         \textcolor{keywordflow}{if} mapped\_begin \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{or} mapped\_end \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{211             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{212 }
+\DoxyCodeLine{213         \textcolor{comment}{\# adjust step}}
+\DoxyCodeLine{214         \textcolor{keywordflow}{if} input\_step \% target\_step != 0:}
+\DoxyCodeLine{215             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{216         mapped\_step = input\_step // target\_step}
+\DoxyCodeLine{217 }
+\DoxyCodeLine{218         \textcolor{keywordflow}{return} mapped\_begin, mapped\_end + 1, mapped\_step  \textcolor{comment}{\# tuple}}
+\DoxyCodeLine{219 }
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4bf82540d32971461a0df5fbdc66910d}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4bf82540d32971461a0df5fbdc66910d}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_move\_data@{\_move\_data}}
+\index{\_move\_data@{\_move\_data}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_move\_data()}{\_move\_data()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+move\+\_\+data (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{copy\+\_\+func,  }\item[{int}]{dst,  }\item[{int}]{src,  }\item[{int}]{subarray\+\_\+index,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{dst\+\_\+slices,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{src\+\_\+slices,  }\item[{bool }]{dst\+\_\+is\+\_\+current\+\_\+device = {\ttfamily True} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyVerb}Helper function for copy_data_between_device
+\end{DoxyVerb}
+ 
+
+Definition at line 421 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{421     \textcolor{keyword}{def }\_move\_data(self, copy\_func, dst: int, src: int, subarray\_index: int, dst\_slices: SlicesType, src\_slices: SlicesType, dst\_is\_current\_device:bool = \textcolor{keyword}{True}):}
+\DoxyCodeLine{422         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{423 \textcolor{stringliteral}{        Helper function for copy\_data\_between\_device}}
+\DoxyCodeLine{424 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{425         \textcolor{keywordflow}{if} dst\_is\_current\_device:}
+\DoxyCodeLine{426             \textcolor{keywordflow}{if} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Complete to Complete}}
+\DoxyCodeLine{427                 self.\_buffer[dst] = copy\_func(self.\_buffer[src])}
+\DoxyCodeLine{428             \textcolor{keywordflow}{elif} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Incomplete to Complete}}
+\DoxyCodeLine{429                 self.\_buffer[dst][src\_slices] = copy\_func(self.\_buffer[src][subarray\_index])}
+\DoxyCodeLine{430             \textcolor{keywordflow}{elif} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Complete to incomplete}}
+\DoxyCodeLine{431                 \textcolor{keywordflow}{if} self.\_buffer[dst] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{432                     self.\_buffer[dst] = []}
+\DoxyCodeLine{433                 self.\_buffer[dst].append(copy\_func(self.\_buffer[src][dst\_slices]))}
+\DoxyCodeLine{434             \textcolor{keywordflow}{else}:  \textcolor{comment}{\# incomplete to incomplete}}
+\DoxyCodeLine{435                 \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Copy from subarray to subarray is unsupported"{}})}
+\DoxyCodeLine{436         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{437             \textcolor{keyword}{with} cupy.cuda.Device(dst):  \textcolor{comment}{\# switch device}}
+\DoxyCodeLine{438                 \textcolor{keywordflow}{if} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Complete to Complete}}
+\DoxyCodeLine{439                     self.\_buffer[dst] = copy\_func(self.\_buffer[src])}
+\DoxyCodeLine{440                 \textcolor{keywordflow}{elif} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Incomplete to Complete}}
+\DoxyCodeLine{441                     self.\_buffer[dst][src\_slices] = copy\_func(self.\_buffer[src][subarray\_index])}
+\DoxyCodeLine{442                 \textcolor{keywordflow}{elif} dst\_slices \textcolor{keywordflow}{is} \textcolor{keywordflow}{not} \textcolor{keywordtype}{None} \textcolor{keywordflow}{and} src\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# Complete to incomplete}}
+\DoxyCodeLine{443                     \textcolor{keywordflow}{if} self.\_buffer[dst] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{444                         self.\_buffer[dst] = []}
+\DoxyCodeLine{445                     self.\_buffer[dst].append(copy\_func(self.\_buffer[src][dst\_slices]))}
+\DoxyCodeLine{446                 \textcolor{keywordflow}{else}:  \textcolor{comment}{\# incomplete to incomplete}}
+\DoxyCodeLine{447                     \textcolor{keywordflow}{raise} ValueError(\textcolor{stringliteral}{"{}Copy from subarray to subarray is unsupported"{}})}
+\DoxyCodeLine{448 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer.
+
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+copy\+\_\+data\+\_\+between\+\_\+device().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4bf82540d32971461a0df5fbdc66910d_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a8fc4b7cd50b55c9b9302df88ebd98636}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a8fc4b7cd50b55c9b9302df88ebd98636}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!clear@{clear}}
+\index{clear@{clear}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{clear()}{clear()}}
+{\footnotesize\ttfamily  None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+clear (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Clear data in device_id
+\end{DoxyVerb}
+ 
+
+Definition at line 523 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{523     \textcolor{keyword}{def }clear(self, device\_id) -\/> None:}
+\DoxyCodeLine{524         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{525 \textcolor{stringliteral}{        Clear data in device\_id}}
+\DoxyCodeLine{526 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{527         self.\_indices\_map[device\_id] = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{528         self.\_buffer[device\_id] = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{529         self.\_cyparray\_state.set\_exist\_on\_device(device\_id, \textcolor{keyword}{False})}
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer, parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+core.\+PArray.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+cyparray\+\_\+state, and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aad239d22c9408d37937afe39042d0607}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aad239d22c9408d37937afe39042d0607}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!copy\_data\_between\_device@{copy\_data\_between\_device}}
+\index{copy\_data\_between\_device@{copy\_data\_between\_device}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{copy\_data\_between\_device()}{copy\_data\_between\_device()}}
+{\footnotesize\ttfamily  None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+copy\+\_\+data\+\_\+between\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{dst,  }\item[{int}]{src,  }\item[{bool }]{dst\+\_\+is\+\_\+current\+\_\+device = {\ttfamily True} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Copy data from src to dst.
+
+dst is current device if `dst_is_current_device` is True
+\end{DoxyVerb}
+ 
+
+Definition at line 449 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{449     \textcolor{keyword}{def }copy\_data\_between\_device(self, dst: int, src: int, dst\_is\_current\_device: bool = \textcolor{keyword}{True}) -\/> \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{450         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{451 \textcolor{stringliteral}{        Copy data from src to dst.}}
+\DoxyCodeLine{452 \textcolor{stringliteral}{}}
+\DoxyCodeLine{453 \textcolor{stringliteral}{        dst is current device if `dst\_is\_current\_device` is True}}
+\DoxyCodeLine{454 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{455         \textcolor{comment}{\# a function to copy data between GPU devices async}}
+\DoxyCodeLine{456         \textcolor{keyword}{def }copy\_from\_device\_async(src):}
+\DoxyCodeLine{457             dst\_data = cupy.empty\_like(src)}
+\DoxyCodeLine{458             dst\_data.data.copy\_from\_device\_async(src.data, src.nbytes)}
+\DoxyCodeLine{459             \textcolor{keywordflow}{return} dst\_data}
+\DoxyCodeLine{460 }
+\DoxyCodeLine{461         \textcolor{keywordflow}{if} self.\_indices\_map[src] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{462             src\_slices\_list = [\textcolor{keywordtype}{None}]}
+\DoxyCodeLine{463         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{464             src\_slices\_list = [self.get\_global\_slices(src, i) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(self.\_indices\_map[src]))]}
+\DoxyCodeLine{465 }
+\DoxyCodeLine{466         \textcolor{comment}{\# TRICK: if there are multiple subarray in this device, always pick the last one}}
+\DoxyCodeLine{467         \textcolor{comment}{\# this is because load of data always comes together with create indices mapping}}
+\DoxyCodeLine{468         \textcolor{comment}{\# so the indices mapping will put at the end of self.\_indices\_map}}
+\DoxyCodeLine{469         dst\_slices = self.get\_global\_slices(dst, -\/1)}
+\DoxyCodeLine{470 }
+\DoxyCodeLine{471         \textcolor{keywordflow}{for} subarray\_index \textcolor{keywordflow}{in} range(len(src\_slices\_list)):}
+\DoxyCodeLine{472             src\_slices = src\_slices\_list[subarray\_index]}
+\DoxyCodeLine{473             \textcolor{keywordflow}{if} src == CPU\_INDEX:  \textcolor{comment}{\# copy from CPU to GPU}}
+\DoxyCodeLine{474                 self.\_move\_data(cupy.asarray, dst, src, subarray\_index, dst\_slices, src\_slices, dst\_is\_current\_device)}
+\DoxyCodeLine{475             \textcolor{keywordflow}{elif} dst != CPU\_INDEX:  \textcolor{comment}{\# copy from GPU to GPU}}
+\DoxyCodeLine{476                 self.\_move\_data(copy\_from\_device\_async, dst, src, subarray\_index, dst\_slices, src\_slices, dst\_is\_current\_device)}
+\DoxyCodeLine{477             \textcolor{keywordflow}{else}:  \textcolor{comment}{\# copy from GPU to CPU}}
+\DoxyCodeLine{478                 self.\_move\_data(cupy.asnumpy, dst, src, subarray\_index, dst\_slices, src\_slices)  \textcolor{comment}{\# dst\_is\_current\_device is no need if dst is CPU}}
+\DoxyCodeLine{479         self.\_cyparray\_state.set\_exist\_on\_device(dst, \textcolor{keyword}{True})}
+\DoxyCodeLine{480 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+core.\+PArray.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+move\+\_\+data(), and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+global\+\_\+slices().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aad239d22c9408d37937afe39042d0607_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac2450884231bb23038186e9fc4c0a9e4}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_ac2450884231bb23038186e9fc4c0a9e4}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!get@{get}}
+\index{get@{get}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily  \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}} $\vert$ List\mbox{[}\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}\mbox{]} $\vert$ None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Return the copy at a device
+
+Args:
+    device_id: gpu device_id or CPU_INDEX
+
+Return
+    :class:`cupy.ndarray` or :class:`numpy.array` object
+\end{DoxyVerb}
+ 
+
+Definition at line 109 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{109     \textcolor{keyword}{def }get(self, device\_id: int) -\/> ndarray | List[ndarray] | \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{110         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{111 \textcolor{stringliteral}{        Return the copy at a device}}
+\DoxyCodeLine{112 \textcolor{stringliteral}{}}
+\DoxyCodeLine{113 \textcolor{stringliteral}{        Args:}}
+\DoxyCodeLine{114 \textcolor{stringliteral}{            device\_id: gpu device\_id or CPU\_INDEX}}
+\DoxyCodeLine{115 \textcolor{stringliteral}{}}
+\DoxyCodeLine{116 \textcolor{stringliteral}{        Return}}
+\DoxyCodeLine{117 \textcolor{stringliteral}{            :class:`cupy.ndarray` or :class:`numpy.array` object}}
+\DoxyCodeLine{118 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{119         \textcolor{keywordflow}{return} self.\_buffer[device\_id]}
+\DoxyCodeLine{120 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acc12b8be39f0c83625f43520943c1134}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acc12b8be39f0c83625f43520943c1134}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!get\_by\_global\_slices@{get\_by\_global\_slices}}
+\index{get\_by\_global\_slices@{get\_by\_global\_slices}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{get\_by\_global\_slices()}{get\_by\_global\_slices()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+by\+\_\+global\+\_\+slices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{global\+\_\+slices }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Indexing/Slicing the buffer by `global_slices`.
+
+`global_slices` will be first converted into local slices
+
+Args:
+    device_id: gpu device_id or CPU_INDEX
+    global_slices: slice/ints/tuple/list<int>, use the same format as advance indexing of numpy
+
+Return
+    :class:`cupy.ndarray` or :class:`numpy.array` object or `None` if there is no copy at that device
+\end{DoxyVerb}
+ 
+
+Definition at line 361 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{361     \textcolor{keyword}{def }get\_by\_global\_slices(self, device\_id: int, global\_slices: SlicesType):}
+\DoxyCodeLine{362         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{363 \textcolor{stringliteral}{        Indexing/Slicing the buffer by `global\_slices`.}}
+\DoxyCodeLine{364 \textcolor{stringliteral}{}}
+\DoxyCodeLine{365 \textcolor{stringliteral}{        `global\_slices` will be first converted into local slices}}
+\DoxyCodeLine{366 \textcolor{stringliteral}{}}
+\DoxyCodeLine{367 \textcolor{stringliteral}{        Args:}}
+\DoxyCodeLine{368 \textcolor{stringliteral}{            device\_id: gpu device\_id or CPU\_INDEX}}
+\DoxyCodeLine{369 \textcolor{stringliteral}{            global\_slices: slice/ints/tuple/list<int>, use the same format as advance indexing of numpy}}
+\DoxyCodeLine{370 \textcolor{stringliteral}{}}
+\DoxyCodeLine{371 \textcolor{stringliteral}{        Return}}
+\DoxyCodeLine{372 \textcolor{stringliteral}{            :class:`cupy.ndarray` or :class:`numpy.array` object or `None` if there is no copy at that device}}
+\DoxyCodeLine{373 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{374         \textcolor{comment}{\# check if a copy exists at this device}}
+\DoxyCodeLine{375         \textcolor{comment}{\#}}
+\DoxyCodeLine{376         \textcolor{comment}{\# This is needed for the usage of @spawn() annotation}}
+\DoxyCodeLine{377         \textcolor{comment}{\# sometimes device has no copy but still need a parray slices view object in advance}}
+\DoxyCodeLine{378         \textcolor{comment}{\# Example:}}
+\DoxyCodeLine{379         \textcolor{comment}{\# A = parray(numpy\_array)}}
+\DoxyCodeLine{380         \textcolor{comment}{\# @spawn(inout=[A], placement=gpu(0))}}
+\DoxyCodeLine{381         \textcolor{comment}{\# def task1():}}
+\DoxyCodeLine{382         \textcolor{comment}{\#   ... a task move A to GPU. free CPU copy ...}}
+\DoxyCodeLine{383         \textcolor{comment}{\# @spawn(inout=[A[0]], placement=gpu(1))}}
+\DoxyCodeLine{384         \textcolor{comment}{\# def task2():}}
+\DoxyCodeLine{385         \textcolor{comment}{\#   error: cpu's copy is freed -\/> `inout=[A[0]]` trigger an exception,}}
+\DoxyCodeLine{386         \textcolor{comment}{\#   since it try a slice A at CPU (spawn() itself is happened at outer CPU task)}}
+\DoxyCodeLine{387         \textcolor{keywordflow}{if} self.\_buffer[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{388             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390         \textcolor{comment}{\# check if there is a mapping}}
+\DoxyCodeLine{391         \textcolor{keywordflow}{if} self.\_indices\_map[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{392             \textcolor{keywordflow}{return} self.\_buffer[device\_id].\_\_getitem\_\_(global\_slices)}
+\DoxyCodeLine{393         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{394             \textcolor{comment}{\# map global slices to local slices}}
+\DoxyCodeLine{395             subarray\_index, local\_slices = self.map\_local\_slices(device\_id, global\_slices)}
+\DoxyCodeLine{396             \textcolor{keywordflow}{return} self.\_buffer[device\_id][subarray\_index].\_\_getitem\_\_(local\_slices)}
+\DoxyCodeLine{397 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map, and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_acc12b8be39f0c83625f43520943c1134_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a68e12ae25d88fdd9e489186134fec370}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a68e12ae25d88fdd9e489186134fec370}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!get\_global\_slices@{get\_global\_slices}}
+\index{get\_global\_slices@{get\_global\_slices}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{get\_global\_slices()}{get\_global\_slices()}}
+{\footnotesize\ttfamily  \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}} $\vert$ None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+global\+\_\+slices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{int}]{subarray\+\_\+index }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Return global slices of one copy at the device.
+
+If the copy is complete, return None
+\end{DoxyVerb}
+ 
+
+Definition at line 121 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{121     \textcolor{keyword}{def }get\_global\_slices(self, device\_id:int, subarray\_index:int) -\/> SlicesType | \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{122         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{123 \textcolor{stringliteral}{        Return global slices of one copy at the device.}}
+\DoxyCodeLine{124 \textcolor{stringliteral}{}}
+\DoxyCodeLine{125 \textcolor{stringliteral}{        If the copy is complete, return None}}
+\DoxyCodeLine{126 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{127         \textcolor{keywordflow}{if} self.\_indices\_map[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{128             \textcolor{keywordflow}{return} \textcolor{keywordtype}{None}}
+\DoxyCodeLine{129         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{130             slices = []}
+\DoxyCodeLine{131             \textcolor{keywordflow}{for} device\_indices \textcolor{keywordflow}{in} self.\_indices\_map[device\_id][subarray\_index]:}
+\DoxyCodeLine{132                 \textcolor{keywordflow}{if} isinstance(device\_indices, dict):}
+\DoxyCodeLine{133                     index = list(device\_indices.keys())}
+\DoxyCodeLine{134                     \textcolor{keywordflow}{if} len(index) == 1:}
+\DoxyCodeLine{135                         slices.append(index[0])}
+\DoxyCodeLine{136                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{137                         slices.append(index)}
+\DoxyCodeLine{138                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{139                     slices.append(slice(*device\_indices))}
+\DoxyCodeLine{140 }
+\DoxyCodeLine{141             \textcolor{keywordflow}{return} tuple(slices)}
+\DoxyCodeLine{142 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map.
+
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+copy\+\_\+data\+\_\+between\+\_\+device().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a68e12ae25d88fdd9e489186134fec370_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a0cb9fd0b4074e5512981a442ccea02c8}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a0cb9fd0b4074e5512981a442ccea02c8}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!get\_slices\_hash@{get\_slices\_hash}}
+\index{get\_slices\_hash@{get\_slices\_hash}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{get\_slices\_hash()}{get\_slices\_hash()}}
+{\footnotesize\ttfamily  int parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+slices\+\_\+hash (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{global\+\_\+slices }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Get hash value of a slices of complete array.
+
+This could be done by replaing list and slice to tuple
+\end{DoxyVerb}
+ 
+
+Definition at line 481 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{481     \textcolor{keyword}{def }get\_slices\_hash(self, global\_slices: SlicesType) -\/> int:}
+\DoxyCodeLine{482         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{483 \textcolor{stringliteral}{        Get hash value of a slices of complete array.}}
+\DoxyCodeLine{484 \textcolor{stringliteral}{}}
+\DoxyCodeLine{485 \textcolor{stringliteral}{        This could be done by replaing list and slice to tuple}}
+\DoxyCodeLine{486 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{487         \textcolor{comment}{\# little chance to have collision, but what if it happened?}}
+\DoxyCodeLine{488         hash\_value = 17 \textcolor{comment}{\# use a none zero hash value, so hash(0) != 0}}
+\DoxyCodeLine{489         prime = 31}
+\DoxyCodeLine{490         \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(global\_slices, tuple):}
+\DoxyCodeLine{491             \textcolor{keywordflow}{if} isinstance(global\_slices, list):}
+\DoxyCodeLine{492                 \textcolor{comment}{\# Built-\/int hash() method might return negtive value.}}
+\DoxyCodeLine{493                 \textcolor{comment}{\# c\_size\_t is to ensure it is not negative}}
+\DoxyCodeLine{494                 hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(tuple(global\_slices))).value}
+\DoxyCodeLine{495             \textcolor{keywordflow}{elif} isinstance(global\_slices, slice):}
+\DoxyCodeLine{496                 hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(global\_slices.indices(self.shape[0]))).value}
+\DoxyCodeLine{497             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{498                 hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(global\_slices)).value}
+\DoxyCodeLine{499         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{500             \textcolor{keywordflow}{if} len(self.shape) < len(global\_slices):}
+\DoxyCodeLine{501                 \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}index out of range, index:\{global\_slices\}"{}})}
+\DoxyCodeLine{502 }
+\DoxyCodeLine{503             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} range(len(global\_slices)):}
+\DoxyCodeLine{504                 index = global\_slices[d]}
+\DoxyCodeLine{505                 \textcolor{keywordflow}{if} isinstance(index, list):}
+\DoxyCodeLine{506                     hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(tuple(index))).value}
+\DoxyCodeLine{507                 \textcolor{keywordflow}{elif} isinstance(index, slice):}
+\DoxyCodeLine{508                     hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(index.indices(self.shape[d]))).value}
+\DoxyCodeLine{509                 \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{510                     hash\_value = hash\_value * prime + ctypes.c\_size\_t(hash(index)).value}
+\DoxyCodeLine{511 }
+\DoxyCodeLine{512         \textcolor{keywordflow}{return} hash\_value}
+\DoxyCodeLine{513 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape, and parla.\+cython.\+tasks.\+Task\+Space.\+shape.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aacde9e2ed5e266c6e57d43582f7d7f94}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aacde9e2ed5e266c6e57d43582f7d7f94}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!map\_local\_slices@{map\_local\_slices}}
+\index{map\_local\_slices@{map\_local\_slices}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{map\_local\_slices()}{map\_local\_slices()}}
+{\footnotesize\ttfamily  (int, \mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}) parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{global\+\_\+slices }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Map a given global slices to local slices wrt buffer at the device.
+
+Raise error if `global_slices` out of range
+
+Return subarray_index: the index of subarray in the list of `_buffer[device_id]`
+       local_slices: the local slices which maps to the `global_slices`
+Note: this method assume a indices mapping exists for this device
+\end{DoxyVerb}
+ 
+
+Definition at line 220 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{220     \textcolor{keyword}{def }map\_local\_slices(self, device\_id: int, global\_slices: SlicesType) -\/> (int, SlicesType):}
+\DoxyCodeLine{221         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{222 \textcolor{stringliteral}{        Map a given global slices to local slices wrt buffer at the device.}}
+\DoxyCodeLine{223 \textcolor{stringliteral}{}}
+\DoxyCodeLine{224 \textcolor{stringliteral}{        Raise error if `global\_slices` out of range}}
+\DoxyCodeLine{225 \textcolor{stringliteral}{}}
+\DoxyCodeLine{226 \textcolor{stringliteral}{        Return subarray\_index: the index of subarray in the list of `\_buffer[device\_id]`}}
+\DoxyCodeLine{227 \textcolor{stringliteral}{               local\_slices: the local slices which maps to the `global\_slices`}}
+\DoxyCodeLine{228 \textcolor{stringliteral}{        Note: this method assume a indices mapping exists for this device}}
+\DoxyCodeLine{229 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{230         \textcolor{comment}{\# indexing into the whole array, index of out bound}}
+\DoxyCodeLine{231         not\_tuple = \textcolor{keyword}{False}}
+\DoxyCodeLine{232         \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(global\_slices, tuple):  \textcolor{comment}{\# if not a tuple, make it a tuple}}
+\DoxyCodeLine{233             global\_slices = tuple([global\_slices])}
+\DoxyCodeLine{234             not\_tuple = \textcolor{keyword}{True}}
+\DoxyCodeLine{235 }
+\DoxyCodeLine{236         local\_slices = []}
+\DoxyCodeLine{237 }
+\DoxyCodeLine{238         \textcolor{keywordflow}{if} len(self.shape) < len(global\_slices):}
+\DoxyCodeLine{239             \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}index out of range, index:\{global\_slices\}"{}})}
+\DoxyCodeLine{240 }
+\DoxyCodeLine{241         final\_subarray\_index = 0}
+\DoxyCodeLine{242 }
+\DoxyCodeLine{243         \textcolor{keywordflow}{for} subarray\_index \textcolor{keywordflow}{in} range(len(self.\_indices\_map[device\_id])):  \textcolor{comment}{\# for each subarray at this device}}
+\DoxyCodeLine{244             indices\_map = self.\_indices\_map[device\_id][subarray\_index]}
+\DoxyCodeLine{245 }
+\DoxyCodeLine{246             \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} range(len(global\_slices)):}
+\DoxyCodeLine{247                 size = self.shape[d]  \textcolor{comment}{\# number of entries at this axis}}
+\DoxyCodeLine{248                 global\_index = global\_slices[d]}
+\DoxyCodeLine{249                 index\_map = \textcolor{keywordtype}{None} \textcolor{keywordflow}{if} d >= len(indices\_map) \textcolor{keywordflow}{else} indices\_map[d]}
+\DoxyCodeLine{250 }
+\DoxyCodeLine{251                 \textcolor{keywordflow}{if} index\_map \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# None means 1:1 map to all elements at this axis}}
+\DoxyCodeLine{252                     local\_index = global\_index}
+\DoxyCodeLine{253                 \textcolor{keywordflow}{elif} isinstance(index\_map, dict) \textcolor{keywordflow}{and} len(index\_map) == 1:}
+\DoxyCodeLine{254                     \textcolor{comment}{\# special case, this axis was indexed by a int, so}}
+\DoxyCodeLine{255                     \textcolor{comment}{\# dimension was reduced by 1,}}
+\DoxyCodeLine{256                     \textcolor{comment}{\# need to ignore this axis, just check index match or not}}
+\DoxyCodeLine{257                     \textcolor{keywordflow}{if} list(index\_map.keys())[0] == global\_index:  \textcolor{comment}{\# false if type or value doesn't match}}
+\DoxyCodeLine{258                         \textcolor{keywordflow}{continue}}
+\DoxyCodeLine{259                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{260                         local\_index = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{261                 \textcolor{keywordflow}{elif} isinstance(index\_map, tuple):}
+\DoxyCodeLine{262                     \textcolor{keywordflow}{if} isinstance(global\_index, int):  \textcolor{comment}{\# int vs slice}}
+\DoxyCodeLine{263                         local\_index = MultiDeviceBuffer.\_map\_int\_with\_slice(global\_index, index\_map)}
+\DoxyCodeLine{264                     \textcolor{keywordflow}{elif} isinstance(global\_index, list):  \textcolor{comment}{\# List[int] vs slice}}
+\DoxyCodeLine{265                         local\_index = [MultiDeviceBuffer.\_map\_int\_with\_slice(i, index\_map) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} global\_index]}
+\DoxyCodeLine{266 }
+\DoxyCodeLine{267                         \textcolor{comment}{\# any index out of bound?}}
+\DoxyCodeLine{268                         \textcolor{keywordflow}{if} \textcolor{keywordtype}{None} \textcolor{keywordflow}{in} local\_index:}
+\DoxyCodeLine{269                             local\_index = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{270                     \textcolor{keywordflow}{elif} isinstance(global\_index, slice):  \textcolor{comment}{\# slice vs slice}}
+\DoxyCodeLine{271                         \textcolor{comment}{\# slice to tuple}}
+\DoxyCodeLine{272                         slice\_tuple = global\_index.indices(size)}
+\DoxyCodeLine{273                         local\_tuple = MultiDeviceBuffer.\_map\_slice\_with\_slice(slice\_tuple, index\_map)}
+\DoxyCodeLine{274                         \textcolor{keywordflow}{if} local\_tuple \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{275                             local\_index = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{276                         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{277                             local\_index = slice(*local\_tuple)}
+\DoxyCodeLine{278                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{279                         \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}Unsupported slices type: \{type(global\_index)\}"{}})}
+\DoxyCodeLine{280                 \textcolor{keywordflow}{else}:  \textcolor{comment}{\# Map is int or list<int>}}
+\DoxyCodeLine{281                     \textcolor{keywordflow}{if} isinstance(global\_index, int):  \textcolor{comment}{\# int vs int/list}}
+\DoxyCodeLine{282                         local\_index = self.\_map\_int\_with\_int\_map(global\_index, index\_map)}
+\DoxyCodeLine{283                     \textcolor{keywordflow}{elif} isinstance(global\_index, list):  \textcolor{comment}{\# list vs int/list}}
+\DoxyCodeLine{284                         local\_index = [self.\_map\_int\_with\_int\_map(i, index\_map) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} global\_index]}
+\DoxyCodeLine{285 }
+\DoxyCodeLine{286                         \textcolor{keywordflow}{if} \textcolor{keywordtype}{None} \textcolor{keywordflow}{in} local\_index:}
+\DoxyCodeLine{287                             local\_index = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{288                     \textcolor{keywordflow}{elif} isinstance(global\_index, slice):  \textcolor{comment}{\# slice vs int/list}}
+\DoxyCodeLine{289                         \textcolor{comment}{\# slice to tuple}}
+\DoxyCodeLine{290                         slice\_tuple = global\_index.indices(size)}
+\DoxyCodeLine{291                         local\_index = [self.\_map\_int\_with\_int\_map(i, index\_map) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(*slice\_tuple)]}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293                         \textcolor{keywordflow}{if} \textcolor{keywordtype}{None} \textcolor{keywordflow}{in} local\_index:}
+\DoxyCodeLine{294                             local\_index = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{295                     \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{296                         \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}Unsupported slices type \{type(global\_index)\}"{}})}
+\DoxyCodeLine{297 }
+\DoxyCodeLine{298                 \textcolor{comment}{\# if None, it means index out of range at this axis}}
+\DoxyCodeLine{299                 \textcolor{keywordflow}{if} local\_index \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{300                     \textcolor{comment}{\# check next copy}}
+\DoxyCodeLine{301                     local\_slices = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{302                     \textcolor{keywordflow}{break}}
+\DoxyCodeLine{303 }
+\DoxyCodeLine{304                 local\_slices.append(local\_index)}
+\DoxyCodeLine{305 }
+\DoxyCodeLine{306             \textcolor{keywordflow}{if} local\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:  \textcolor{comment}{\# result is not found for this subarray}}
+\DoxyCodeLine{307                 \textcolor{keywordflow}{if} subarray\_index == len(self.\_indices\_map[device\_id]) -\/ 1:  \textcolor{comment}{\# this is the last subarray}}
+\DoxyCodeLine{308                     local\_slices = \textcolor{keywordtype}{None}  \textcolor{comment}{\# non slices is found}}
+\DoxyCodeLine{309                 \textcolor{keywordflow}{else}: \textcolor{comment}{\# check next subarray}}
+\DoxyCodeLine{310                     local\_slices = []  \textcolor{comment}{\# clear intermidate result}}
+\DoxyCodeLine{311             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{312                 final\_subarray\_index = subarray\_index}
+\DoxyCodeLine{313                 \textcolor{keywordflow}{break}}
+\DoxyCodeLine{314 }
+\DoxyCodeLine{315         \textcolor{keywordflow}{if} local\_slices \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{316             \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}index out of range, index:\{global\_slices\}"{}})}
+\DoxyCodeLine{317         \textcolor{keywordflow}{elif} not\_tuple:}
+\DoxyCodeLine{318             \textcolor{keywordflow}{if} len(local\_slices) == 0:  \textcolor{comment}{\# only be possible when special case int vs int exists and all axis are ignored}}
+\DoxyCodeLine{319                 \textcolor{keywordflow}{return} final\_subarray\_index, slice(\textcolor{keywordtype}{None}, \textcolor{keywordtype}{None}, \textcolor{keywordtype}{None})}
+\DoxyCodeLine{320             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{321                 \textcolor{keywordflow}{return} final\_subarray\_index, local\_slices[0]}
+\DoxyCodeLine{322         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{323             \textcolor{keywordflow}{return} final\_subarray\_index, tuple(local\_slices)}
+\DoxyCodeLine{324 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+map\+\_\+int\+\_\+with\+\_\+int\+\_\+map(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape, and parla.\+cython.\+tasks.\+Task\+Space.\+shape.
+
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+by\+\_\+global\+\_\+slices(), and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+by\+\_\+global\+\_\+slices().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aacde9e2ed5e266c6e57d43582f7d7f94_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aacde9e2ed5e266c6e57d43582f7d7f94_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a664d51b36aceb5da8e9ca331a2eb2ec4}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a664d51b36aceb5da8e9ca331a2eb2ec4}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!nbytes\_at@{nbytes\_at}}
+\index{nbytes\_at@{nbytes\_at}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{nbytes\_at()}{nbytes\_at()}}
+{\footnotesize\ttfamily  int parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+nbytes\+\_\+at (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Return the buffer size at `device_id`
+\end{DoxyVerb}
+ 
+
+Definition at line 51 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{51     \textcolor{keyword}{def }nbytes\_at(self, device\_id:int) -\/> int:}
+\DoxyCodeLine{52         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{53 \textcolor{stringliteral}{        Return the buffer size at `device\_id`}}
+\DoxyCodeLine{54 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{55         buffer = self.\_buffer[device\_id]}
+\DoxyCodeLine{56         \textcolor{keywordflow}{if} buffer \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{57             \textcolor{keywordflow}{return} 0}
+\DoxyCodeLine{58         \textcolor{keywordflow}{elif} isinstance(buffer, list): \textcolor{comment}{\# subarray at this device buffer}}
+\DoxyCodeLine{59             \textcolor{comment}{\# size is the sum}}
+\DoxyCodeLine{60             nbytes = 0}
+\DoxyCodeLine{61             \textcolor{keywordflow}{for} subarray \textcolor{keywordflow}{in} buffer:}
+\DoxyCodeLine{62                 nbytes += subarray.nbytes}
+\DoxyCodeLine{63             \textcolor{keywordflow}{return} nbytes}
+\DoxyCodeLine{64         \textcolor{keywordflow}{else}:  \textcolor{comment}{\# complete array}}
+\DoxyCodeLine{65             \textcolor{keywordflow}{return} buffer.nbytes}
+\DoxyCodeLine{66 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a6d33d491f7e07a8deafb698f8c4a2c99}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a6d33d491f7e07a8deafb698f8c4a2c99}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!set@{set}}
+\index{set@{set}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{set()}{set()}}
+{\footnotesize\ttfamily  None parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}}]{array,  }\item[{bool }]{is\+\_\+complete = {\ttfamily True},  }\item[{bool }]{overwrite = {\ttfamily False} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Set copy at a device, also clean up existing `indices_map` if necessary
+
+Args:
+    device_id: gpu device_id or CPU_INDEX
+    array: :class:`cupy.ndarray` or :class:`numpy.array` object
+    is_complete: True if `array` is a complete copy, otherwise `array` is a subarray
+    overwrite: True if need to clean other subarray copy inside the device before assign the new array
+\end{DoxyVerb}
+ 
+
+Definition at line 88 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{88     \textcolor{keyword}{def }set(self, device\_id: int, array: ndarray, is\_complete: bool = \textcolor{keyword}{True}, overwrite: bool = \textcolor{keyword}{False}) -\/> \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{89         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{90 \textcolor{stringliteral}{        Set copy at a device, also clean up existing `indices\_map` if necessary}}
+\DoxyCodeLine{91 \textcolor{stringliteral}{}}
+\DoxyCodeLine{92 \textcolor{stringliteral}{        Args:}}
+\DoxyCodeLine{93 \textcolor{stringliteral}{            device\_id: gpu device\_id or CPU\_INDEX}}
+\DoxyCodeLine{94 \textcolor{stringliteral}{            array: :class:`cupy.ndarray` or :class:`numpy.array` object}}
+\DoxyCodeLine{95 \textcolor{stringliteral}{            is\_complete: True if `array` is a complete copy, otherwise `array` is a subarray}}
+\DoxyCodeLine{96 \textcolor{stringliteral}{            overwrite: True if need to clean other subarray copy inside the device before assign the new array}}
+\DoxyCodeLine{97 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{98         \textcolor{keywordflow}{if} is\_complete:}
+\DoxyCodeLine{99             self.\_indices\_map[device\_id] = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{100             self.\_buffer[device\_id] = array}
+\DoxyCodeLine{101         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{102             \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(self.\_buffer[device\_id], List) \textcolor{keywordflow}{or} overwrite:}
+\DoxyCodeLine{103                 self.\_indices\_map[device\_id] = \textcolor{keywordtype}{None}}
+\DoxyCodeLine{104                 self.\_buffer[device\_id] = [array]}
+\DoxyCodeLine{105             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{106                 self.\_buffer[device\_id].append(array)}
+\DoxyCodeLine{107         self.\_cyparray\_state.set\_exist\_on\_device(device\_id, \textcolor{keyword}{True})}
+\DoxyCodeLine{108 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer, parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+core.\+PArray.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+cyparray\+\_\+state, and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4e42d95eb71d879d30cc80e1a0069169}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4e42d95eb71d879d30cc80e1a0069169}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!set\_by\_global\_slices@{set\_by\_global\_slices}}
+\index{set\_by\_global\_slices@{set\_by\_global\_slices}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{set\_by\_global\_slices()}{set\_by\_global\_slices()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+by\+\_\+global\+\_\+slices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{global\+\_\+slices,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}} $\vert$ Any}]{value }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Indexing/Slicing the buffer by `global_slices` and set value.
+
+`global_slices` will be first converted into local slices
+
+Args:
+    device_id: gpu device_id or CPU_INDEX
+    global_slices: slice/ints/tuple/list<int>, use the same format as advance indexing of numpy
+    value: the data to set
+
+Return
+    :class:`cupy.ndarray` or :class:`numpy.array` object
+\end{DoxyVerb}
+ 
+
+Definition at line 398 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{398     \textcolor{keyword}{def }set\_by\_global\_slices(self, device\_id: int, global\_slices: SlicesType, value: ndarray | Any):}
+\DoxyCodeLine{399         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{400 \textcolor{stringliteral}{        Indexing/Slicing the buffer by `global\_slices` and set value.}}
+\DoxyCodeLine{401 \textcolor{stringliteral}{}}
+\DoxyCodeLine{402 \textcolor{stringliteral}{        `global\_slices` will be first converted into local slices}}
+\DoxyCodeLine{403 \textcolor{stringliteral}{}}
+\DoxyCodeLine{404 \textcolor{stringliteral}{        Args:}}
+\DoxyCodeLine{405 \textcolor{stringliteral}{            device\_id: gpu device\_id or CPU\_INDEX}}
+\DoxyCodeLine{406 \textcolor{stringliteral}{            global\_slices: slice/ints/tuple/list<int>, use the same format as advance indexing of numpy}}
+\DoxyCodeLine{407 \textcolor{stringliteral}{            value: the data to set}}
+\DoxyCodeLine{408 \textcolor{stringliteral}{}}
+\DoxyCodeLine{409 \textcolor{stringliteral}{        Return}}
+\DoxyCodeLine{410 \textcolor{stringliteral}{            :class:`cupy.ndarray` or :class:`numpy.array` object}}
+\DoxyCodeLine{411 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{412         \textcolor{comment}{\# check if there is a mapping}}
+\DoxyCodeLine{413         \textcolor{keywordflow}{if} self.\_indices\_map[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{414             self.\_buffer[device\_id].\_\_setitem\_\_(global\_slices, value)}
+\DoxyCodeLine{415         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{416             \textcolor{comment}{\# map global slices to local slices}}
+\DoxyCodeLine{417             subarray\_index, local\_slices = self.map\_local\_slices(device\_id, global\_slices)}
+\DoxyCodeLine{418             self.\_buffer[device\_id][subarray\_index].\_\_setitem\_\_(local\_slices, value)}
+\DoxyCodeLine{419 }
+\DoxyCodeLine{420 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map, and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a4e42d95eb71d879d30cc80e1a0069169_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a895106a0d6d4a7b1b274336329d4287d}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a895106a0d6d4a7b1b274336329d4287d}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!set\_complete\_array@{set\_complete\_array}}
+\index{set\_complete\_array@{set\_complete\_array}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{set\_complete\_array()}{set\_complete\_array()}}
+{\footnotesize\ttfamily  int parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+complete\+\_\+array (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_af2a3d999f166b2ca557f568eceb734f9}{ndarray}}}]{array }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Add array into the buffer (based on array's device).
+
+Args:
+    array: :class:`cupy.ndarray` or :class:`numpy.array` object
+
+Return:
+    a location (device_id) of the array
+\end{DoxyVerb}
+ 
+
+Definition at line 67 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{67     \textcolor{keyword}{def }set\_complete\_array(self, array: ndarray) -\/> int:}
+\DoxyCodeLine{68         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{69 \textcolor{stringliteral}{        Add array into the buffer (based on array's device).}}
+\DoxyCodeLine{70 \textcolor{stringliteral}{}}
+\DoxyCodeLine{71 \textcolor{stringliteral}{        Args:}}
+\DoxyCodeLine{72 \textcolor{stringliteral}{            array: :class:`cupy.ndarray` or :class:`numpy.array` object}}
+\DoxyCodeLine{73 \textcolor{stringliteral}{}}
+\DoxyCodeLine{74 \textcolor{stringliteral}{        Return:}}
+\DoxyCodeLine{75 \textcolor{stringliteral}{            a location (device\_id) of the array}}
+\DoxyCodeLine{76 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{77         \textcolor{comment}{\# get the array's location}}
+\DoxyCodeLine{78         \textcolor{keywordflow}{if} isinstance(array, numpy.ndarray):}
+\DoxyCodeLine{79             location = CPU\_INDEX}
+\DoxyCodeLine{80         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{81             location = int(array.device)}
+\DoxyCodeLine{82 }
+\DoxyCodeLine{83         self.\_buffer[location] = array}
+\DoxyCodeLine{84         self.shape = array.shape}
+\DoxyCodeLine{85         self.\_cyparray\_state.set\_exist\_on\_device(location, \textcolor{keyword}{True})}
+\DoxyCodeLine{86         \textcolor{keywordflow}{return} location}
+\DoxyCodeLine{87 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer, parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+core.\+PArray.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+cyparray\+\_\+state, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape, and parla.\+cython.\+tasks.\+Task\+Space.\+shape.
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a947e8b6f97c7faa04834589bacfa2718}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a947e8b6f97c7faa04834589bacfa2718}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!set\_slices\_mapping@{set\_slices\_mapping}}
+\index{set\_slices\_mapping@{set\_slices\_mapping}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{set\_slices\_mapping()}{set\_slices\_mapping()}}
+{\footnotesize\ttfamily def parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+slices\+\_\+mapping (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{int}]{device\+\_\+id,  }\item[{\mbox{\hyperlink{namespaceparla_1_1common_1_1parray_1_1memory_a79df0bfe1fcd352c6c5d8f5e260f00e6}{Slices\+Type}}}]{global\+\_\+slices }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}set a global slices to local slices mapping wrt buffer at the device.
+
+Raise error if `global_slices` is higher dim than shape
+Note: this call doesn't check slice is within range, if it is not in range
+      exception will be trigger later when trying to index into the copy
+\end{DoxyVerb}
+ 
+
+Definition at line 325 of file memory.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{325     \textcolor{keyword}{def }set\_slices\_mapping(self, device\_id: int, global\_slices: SlicesType):}
+\DoxyCodeLine{326         \textcolor{stringliteral}{"{}"{}"{}}}
+\DoxyCodeLine{327 \textcolor{stringliteral}{        set a global slices to local slices mapping wrt buffer at the device.}}
+\DoxyCodeLine{328 \textcolor{stringliteral}{}}
+\DoxyCodeLine{329 \textcolor{stringliteral}{        Raise error if `global\_slices` is higher dim than shape}}
+\DoxyCodeLine{330 \textcolor{stringliteral}{        Note: this call doesn't check slice is within range, if it is not in range}}
+\DoxyCodeLine{331 \textcolor{stringliteral}{              exception will be trigger later when trying to index into the copy}}
+\DoxyCodeLine{332 \textcolor{stringliteral}{        "{}"{}"{}}}
+\DoxyCodeLine{333         \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} isinstance(global\_slices, tuple):  \textcolor{comment}{\# if not a tuple, make it a tuple}}
+\DoxyCodeLine{334             global\_slices = tuple([global\_slices])}
+\DoxyCodeLine{335 }
+\DoxyCodeLine{336         \textcolor{keywordflow}{if} len(self.shape) < len(global\_slices):}
+\DoxyCodeLine{337             \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}index out of range, index:\{global\_slices\}"{}})}
+\DoxyCodeLine{338 }
+\DoxyCodeLine{339         slices\_map\_list = []}
+\DoxyCodeLine{340         \textcolor{keywordflow}{for} d \textcolor{keywordflow}{in} range(len(global\_slices)):}
+\DoxyCodeLine{341             size = self.shape[d]  \textcolor{comment}{\# number of entries at this axis}}
+\DoxyCodeLine{342             global\_slice = global\_slices[d]}
+\DoxyCodeLine{343 }
+\DoxyCodeLine{344             \textcolor{keywordflow}{if} isinstance(global\_slice, int):  \textcolor{comment}{\# a single integer}}
+\DoxyCodeLine{345                 slice\_map = \{global\_slice: 0\}}
+\DoxyCodeLine{346             \textcolor{keywordflow}{elif} isinstance(global\_slice, list):  \textcolor{comment}{\# a list of integer}}
+\DoxyCodeLine{347                 slice\_map = \{global\_slice[i]: i \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(global\_slice))\}}
+\DoxyCodeLine{348             \textcolor{keywordflow}{elif} isinstance(global\_slice, slice):  \textcolor{comment}{\# slice}}
+\DoxyCodeLine{349                 \textcolor{comment}{\# save slice as a tuple}}
+\DoxyCodeLine{350                 \textcolor{comment}{\# None in slice will be instantiated by concrete values}}
+\DoxyCodeLine{351                 slice\_map = global\_slice.indices(size)}
+\DoxyCodeLine{352             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{353                 \textcolor{keywordflow}{raise} IndexError(f\textcolor{stringliteral}{"{}Unsupported slices type \{type(global\_slice)\}"{}})}
+\DoxyCodeLine{354             slices\_map\_list.append(slice\_map)}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{356         \textcolor{keywordflow}{if} self.\_indices\_map[device\_id] \textcolor{keywordflow}{is} \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{357             self.\_indices\_map[device\_id] = [slices\_map\_list]}
+\DoxyCodeLine{358         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{359             self.\_indices\_map[device\_id].append(slices\_map\_list)}
+\DoxyCodeLine{360 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map, parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape, and parla.\+cython.\+tasks.\+Task\+Space.\+shape.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aca71b06fe529adc0b3a496078e6f0ea9}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aca71b06fe529adc0b3a496078e6f0ea9}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_buffer@{\_buffer}}
+\index{\_buffer@{\_buffer}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_buffer}{\_buffer}}
+{\footnotesize\ttfamily parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+buffer\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 37 of file memory.\+py.
+
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+\+\_\+contains\+\_\+\+\_\+(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+move\+\_\+data(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+clear(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+by\+\_\+global\+\_\+slices(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+nbytes\+\_\+at(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+by\+\_\+global\+\_\+slices(), and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+complete\+\_\+array().
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2724046ada9ede6dc591baa5bd937e78}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a2724046ada9ede6dc591baa5bd937e78}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_cyparray\_state@{\_cyparray\_state}}
+\index{\_cyparray\_state@{\_cyparray\_state}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_cyparray\_state}{\_cyparray\_state}}
+{\footnotesize\ttfamily parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+cyparray\+\_\+state\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 49 of file memory.\+py.
+
+
+
+Referenced by parla.\+common.\+parray.\+coherence.\+Coherence.\+\_\+write\+\_\+back\+\_\+to(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+clear(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+copy\+\_\+data\+\_\+between\+\_\+device(), parla.\+common.\+parray.\+coherence.\+Coherence.\+read(), parla.\+common.\+parray.\+coherence.\+Coherence.\+reset(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+complete\+\_\+array(), parla.\+common.\+parray.\+core.\+PArray.\+update(), and parla.\+common.\+parray.\+coherence.\+Coherence.\+write().
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aade7a2afcf23a4558ab3ab76bdf84bf8}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_aade7a2afcf23a4558ab3ab76bdf84bf8}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!\_indices\_map@{\_indices\_map}}
+\index{\_indices\_map@{\_indices\_map}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{\_indices\_map}{\_indices\_map}}
+{\footnotesize\ttfamily parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+\_\+indices\+\_\+map\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 43 of file memory.\+py.
+
+
+
+Referenced by parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+clear(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+copy\+\_\+data\+\_\+between\+\_\+device(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+by\+\_\+global\+\_\+slices(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+global\+\_\+slices(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+by\+\_\+global\+\_\+slices(), and parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+slices\+\_\+mapping().
+
+\mbox{\Hypertarget{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a78b1e058866dbf400afd1043b8e642d0}\label{classparla_1_1common_1_1parray_1_1memory_1_1MultiDeviceBuffer_a78b1e058866dbf400afd1043b8e642d0}} 
+\index{parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}!shape@{shape}}
+\index{shape@{shape}!parla.common.parray.memory.MultiDeviceBuffer@{parla.common.parray.memory.MultiDeviceBuffer}}
+\doxysubsubsection{\texorpdfstring{shape}{shape}}
+{\footnotesize\ttfamily parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+shape}
+
+
+
+Definition at line 47 of file memory.\+py.
+
+
+
+Referenced by parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+add\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Atomic\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+cython.\+tasks.\+Backend\+Task\+Space.\+\_\+\+\_\+getitem\+\_\+\+\_\+(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+get\+\_\+slices\+\_\+hash(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+map\+\_\+local\+\_\+slices(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+complete\+\_\+array(), parla.\+common.\+parray.\+memory.\+Multi\+Device\+Buffer.\+set\+\_\+slices\+\_\+mapping(), and parla.\+cython.\+tasks.\+Task\+Space.\+view().
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/parray/\mbox{\hyperlink{memory_8py}{memory.\+py}}\end{DoxyCompactItemize}

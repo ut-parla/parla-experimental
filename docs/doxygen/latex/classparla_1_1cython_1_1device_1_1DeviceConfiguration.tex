@@ -1,0 +1,110 @@
+\hypertarget{classparla_1_1cython_1_1device_1_1DeviceConfiguration}{}\doxysection{parla.\+cython.\+device.\+Device\+Configuration Class Reference}
+\label{classparla_1_1cython_1_1device_1_1DeviceConfiguration}\index{parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a2394e06e97a418cd5cbf9b76c78964d8}{\+\_\+\+\_\+repr\+\_\+\+\_\+}} (self)
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a12f91e5b74f4678be1c8e83964dffe4d}{int}}
+\item 
+\mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceConfiguration_afeb228a89665f9ecb863d4cfa33ac6d3}{long}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+dictionary \mbox{\hyperlink{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a975cc5ac137eaa1883dda34f0f956da8}{\+\_\+\+\_\+annotations\+\_\+\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}A dataclass to represent a device configuration.
+\end{DoxyVerb}
+ 
+
+Definition at line 80 of file device.\+pyx.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a2394e06e97a418cd5cbf9b76c78964d8}\label{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a2394e06e97a418cd5cbf9b76c78964d8}} 
+\index{parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}!\_\_repr\_\_@{\_\_repr\_\_}}
+\index{\_\_repr\_\_@{\_\_repr\_\_}!parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}}
+\doxysubsubsection{\texorpdfstring{\_\_repr\_\_()}{\_\_repr\_\_()}}
+{\footnotesize\ttfamily def parla.\+cython.\+device.\+Device\+Configuration.\+\_\+\+\_\+repr\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Definition at line 96 of file device.\+pyx.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{96     \textcolor{keyword}{def }\_\_repr\_\_(self):}
+\DoxyCodeLine{97         \textcolor{keywordflow}{return} f\textcolor{stringliteral}{"{}DeviceConfiguration(device\_type=\{self.device\_type\}, device\_id=\{self.device\_id\}, memory=\{self.memory\_size\}, vcus=\{self.num\_vcus\})"{}}}
+\DoxyCodeLine{98 }
+\DoxyCodeLine{99 }
+\DoxyCodeLine{100 \textcolor{preprocessor}{@dataclass}}
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+globals.\+Storage.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+common.\+globals.\+Local\+Stack.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), parla.\+cython.\+device.\+Cupy\+Stream.\+\_\+\+\_\+str\+\_\+\+\_\+(), and parla.\+cython.\+tasks.\+Task\+State.\+\_\+\+\_\+str\+\_\+\+\_\+().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a2394e06e97a418cd5cbf9b76c78964d8_icgraph}
+\end{center}
+\end{figure}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a975cc5ac137eaa1883dda34f0f956da8}\label{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a975cc5ac137eaa1883dda34f0f956da8}} 
+\index{parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}!\_\_annotations\_\_@{\_\_annotations\_\_}}
+\index{\_\_annotations\_\_@{\_\_annotations\_\_}!parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}}
+\doxysubsubsection{\texorpdfstring{\_\_annotations\_\_}{\_\_annotations\_\_}}
+{\footnotesize\ttfamily dictionary parla.\+cython.\+device.\+Device\+Configuration.\+\_\+\+\_\+annotations\+\_\+\+\_\+\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=  \{}
+\DoxyCodeLine{        \textcolor{stringliteral}{"{}type"{}}: PyDeviceType,}
+\DoxyCodeLine{        \textcolor{stringliteral}{"{}id"{}}: int,}
+\DoxyCodeLine{        \textcolor{stringliteral}{"{}memory"{}}: long,}
+\DoxyCodeLine{        \textcolor{stringliteral}{"{}vcus"{}}: int}
+\DoxyCodeLine{    \}}
+
+\end{DoxyCode}
+
+
+Definition at line 89 of file device.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a12f91e5b74f4678be1c8e83964dffe4d}\label{classparla_1_1cython_1_1device_1_1DeviceConfiguration_a12f91e5b74f4678be1c8e83964dffe4d}} 
+\index{parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}!int@{int}}
+\index{int@{int}!parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}}
+\doxysubsubsection{\texorpdfstring{int}{int}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Device\+Configuration.\+int\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 85 of file device.\+pyx.
+
+\mbox{\Hypertarget{classparla_1_1cython_1_1device_1_1DeviceConfiguration_afeb228a89665f9ecb863d4cfa33ac6d3}\label{classparla_1_1cython_1_1device_1_1DeviceConfiguration_afeb228a89665f9ecb863d4cfa33ac6d3}} 
+\index{parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}!long@{long}}
+\index{long@{long}!parla.cython.device.DeviceConfiguration@{parla.cython.device.DeviceConfiguration}}
+\doxysubsubsection{\texorpdfstring{long}{long}}
+{\footnotesize\ttfamily parla.\+cython.\+device.\+Device\+Configuration.\+long\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line 86 of file device.\+pyx.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/cython/\mbox{\hyperlink{device_8pyx}{device.\+pyx}}\end{DoxyCompactItemize}

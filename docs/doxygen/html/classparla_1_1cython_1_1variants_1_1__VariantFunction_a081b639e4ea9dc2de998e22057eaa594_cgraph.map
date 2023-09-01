@@ -1,0 +1,4 @@
+<map id="parla.cython.variants._VariantFunction.__call__" name="parla.cython.variants._VariantFunction.__call__">
+<area shape="rect" id="node1" title="Call the function, dispatching to the appropriate variant." alt="" coords="5,5,191,47"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1variants_1_1__VariantFunction.html#a8adac216b999d09a3cd9cb26ad8e2897" title="Get the variant for a given specialization key." alt="" coords="239,5,447,47"/>
+</map>

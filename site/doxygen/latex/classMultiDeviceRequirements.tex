@@ -1,0 +1,163 @@
+\hypertarget{classMultiDeviceRequirements}{}\doxysection{Multi\+Device\+Requirements Class Reference}
+\label{classMultiDeviceRequirements}\index{MultiDeviceRequirements@{MultiDeviceRequirements}}
+
+
+{\ttfamily \#include $<$resource\+\_\+requirements.\+hpp$>$}
+
+
+
+Inheritance diagram for Multi\+Device\+Requirements\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=235pt]{classMultiDeviceRequirements__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Multi\+Device\+Requirements\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=235pt]{classMultiDeviceRequirements__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classMultiDeviceRequirements_a6499b918bd78d95f9ee9346c1e632d3d}{append\+\_\+placement\+\_\+req}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}} $>$ req)
+\item 
+bool \mbox{\hyperlink{classMultiDeviceRequirements_a29e23cc25813917490cc84e9373043f9}{is\+\_\+multidev\+\_\+req}} () override
+\item 
+bool \mbox{\hyperlink{classMultiDeviceRequirements_a3f5f0e7190cc1fbe11d3b846db7bf230}{is\+\_\+arch\+\_\+req}} () override
+\item 
+bool \mbox{\hyperlink{classMultiDeviceRequirements_afe5bb6e0bb1dd97972ca11a73535c92c}{is\+\_\+dev\+\_\+req}} () override
+\item 
+const std\+::vector$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}} $>$ $>$ \& \mbox{\hyperlink{classMultiDeviceRequirements_ac5e4ee0e9a54f8e45318f9059aea9540}{get\+\_\+placement\+\_\+reqs\+\_\+ref}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}} $>$ $>$ \mbox{\hyperlink{classMultiDeviceRequirements_a71f27ee8ce3180b5cd8e44ed4acec911}{placement\+\_\+reqs\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 36 of file resource\+\_\+requirements.\+hpp.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMultiDeviceRequirements_a6499b918bd78d95f9ee9346c1e632d3d}\label{classMultiDeviceRequirements_a6499b918bd78d95f9ee9346c1e632d3d}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!append\_placement\_req@{append\_placement\_req}}
+\index{append\_placement\_req@{append\_placement\_req}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{append\_placement\_req()}{append\_placement\_req()}}
+{\footnotesize\ttfamily void Multi\+Device\+Requirements\+::append\+\_\+placement\+\_\+req (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}} $>$}]{req }\end{DoxyParamCaption})}
+
+
+
+Definition at line 13 of file resource\+\_\+requirements.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{14                                                        \{}
+\DoxyCodeLine{15   \mbox{\hyperlink{classMultiDeviceRequirements_a71f27ee8ce3180b5cd8e44ed4acec911}{placement\_reqs\_}}.emplace\_back(}
+\DoxyCodeLine{16       std::shared\_ptr<SinglePlacementRequirementBase>(req));}
+\DoxyCodeLine{17 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMultiDeviceRequirements_ac5e4ee0e9a54f8e45318f9059aea9540}\label{classMultiDeviceRequirements_ac5e4ee0e9a54f8e45318f9059aea9540}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!get\_placement\_reqs\_ref@{get\_placement\_reqs\_ref}}
+\index{get\_placement\_reqs\_ref@{get\_placement\_reqs\_ref}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{get\_placement\_reqs\_ref()}{get\_placement\_reqs\_ref()}}
+{\footnotesize\ttfamily const std\+::vector$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}} $>$ $>$ \& Multi\+Device\+Requirements\+::get\+\_\+placement\+\_\+reqs\+\_\+ref (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 20 of file resource\+\_\+requirements.\+cpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{20                                                 \{}
+\DoxyCodeLine{21   \textcolor{keywordflow}{return} \mbox{\hyperlink{classMultiDeviceRequirements_a71f27ee8ce3180b5cd8e44ed4acec911}{placement\_reqs\_}};}
+\DoxyCodeLine{22 \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMultiDeviceRequirements_a3f5f0e7190cc1fbe11d3b846db7bf230}\label{classMultiDeviceRequirements_a3f5f0e7190cc1fbe11d3b846db7bf230}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!is\_arch\_req@{is\_arch\_req}}
+\index{is\_arch\_req@{is\_arch\_req}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{is\_arch\_req()}{is\_arch\_req()}}
+{\footnotesize\ttfamily bool Multi\+Device\+Requirements\+::is\+\_\+arch\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_ac829bf2b6291c15a2ec4d4d8393d885c}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 41 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{41 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMultiDeviceRequirements_afe5bb6e0bb1dd97972ca11a73535c92c}\label{classMultiDeviceRequirements_afe5bb6e0bb1dd97972ca11a73535c92c}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!is\_dev\_req@{is\_dev\_req}}
+\index{is\_dev\_req@{is\_dev\_req}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{is\_dev\_req()}{is\_dev\_req()}}
+{\footnotesize\ttfamily bool Multi\+Device\+Requirements\+::is\+\_\+dev\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_ad53d4a8c2ac44c5116f90d3dbb5b3102}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 42 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{42 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{false}; \}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{classMultiDeviceRequirements_a29e23cc25813917490cc84e9373043f9}\label{classMultiDeviceRequirements_a29e23cc25813917490cc84e9373043f9}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!is\_multidev\_req@{is\_multidev\_req}}
+\index{is\_multidev\_req@{is\_multidev\_req}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{is\_multidev\_req()}{is\_multidev\_req()}}
+{\footnotesize\ttfamily bool Multi\+Device\+Requirements\+::is\+\_\+multidev\+\_\+req (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classPlacementRequirementBase_a0105e190d361bdf1bd4f73e2880eb487}{Placement\+Requirement\+Base}}.
+
+
+
+Definition at line 40 of file resource\+\_\+requirements.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{40 \{ \textcolor{keywordflow}{return} \textcolor{keyword}{true}; \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classMultiDeviceRequirements_a71f27ee8ce3180b5cd8e44ed4acec911}\label{classMultiDeviceRequirements_a71f27ee8ce3180b5cd8e44ed4acec911}} 
+\index{MultiDeviceRequirements@{MultiDeviceRequirements}!placement\_reqs\_@{placement\_reqs\_}}
+\index{placement\_reqs\_@{placement\_reqs\_}!MultiDeviceRequirements@{MultiDeviceRequirements}}
+\doxysubsubsection{\texorpdfstring{placement\_reqs\_}{placement\_reqs\_}}
+{\footnotesize\ttfamily std\+::vector$<$std\+::shared\+\_\+ptr$<$\mbox{\hyperlink{classSinglePlacementRequirementBase}{Single\+Placement\+Requirement\+Base}}$>$ $>$ Multi\+Device\+Requirements\+::placement\+\_\+reqs\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 48 of file resource\+\_\+requirements.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/c/backend/include/\mbox{\hyperlink{resource__requirements_8hpp}{resource\+\_\+requirements.\+hpp}}\item 
+src/c/backend/\mbox{\hyperlink{resource__requirements_8cpp}{resource\+\_\+requirements.\+cpp}}\end{DoxyCompactItemize}

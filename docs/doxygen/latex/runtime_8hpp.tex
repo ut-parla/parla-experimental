@@ -1,0 +1,557 @@
+\hypertarget{runtime_8hpp}{}\doxysection{src/c/backend/include/runtime.hpp File Reference}
+\label{runtime_8hpp}\index{src/c/backend/include/runtime.hpp@{src/c/backend/include/runtime.hpp}}
+
+
+The core C++ runtime for Parla. Includes the main scheduler and task classes.  
+
+
+{\ttfamily \#include \char`\"{}resources.\+hpp\char`\"{}}\newline
+{\ttfamily \#include $<$assert.\+h$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$condition\+\_\+variable$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$exception$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$utility$>$}\newline
+{\ttfamily \#include \char`\"{}containers.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}device\+\_\+manager.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpu\+\_\+utility.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}parray.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}parray\+\_\+tracker.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}profiling.\+hpp\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}resource\+\_\+requirements.\+hpp\char`\"{}}\newline
+Include dependency graph for runtime.\+hpp\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{runtime_8hpp__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{runtime_8hpp__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classTaskStatusFlags}{Task\+Status\+Flags}}
+\item 
+class \mbox{\hyperlink{classInnerTask}{Inner\+Task}}
+\begin{DoxyCompactList}\small\item\em The C++ runtime implementation of a task. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classInnerDataTask}{Inner\+Data\+Task}}
+\item 
+class \mbox{\hyperlink{classTaskBarrier}{Task\+Barrier}}
+\begin{DoxyCompactList}\small\item\em A task barrier is a synchronization primitive that notifies when a set of tasks are completed. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classInnerTaskSpace}{Inner\+Task\+Space}}
+\begin{DoxyCompactList}\small\item\em The C++ backend for the Parla Task\+Space. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classInnerWorker}{Inner\+Worker}}
+\begin{DoxyCompactList}\small\item\em A worker is a thread that executes tasks. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classWorkerPool}{Worker\+Pool$<$ All\+Workers\+\_\+t, Active\+Workers\+\_\+t $>$}}
+\begin{DoxyCompactList}\small\item\em A worker pool is a collection of workers. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classScheduler_1_1Status}{Scheduler\+::\+Status}}
+\item 
+class \mbox{\hyperlink{classInnerScheduler}{Inner\+Scheduler}}
+\begin{DoxyCompactList}\small\item\em The C++ \char`\"{}\+Mirror\char`\"{} of Parla\textquotesingle{}s Python \mbox{\hyperlink{namespaceScheduler}{Scheduler}} This class is used to create a C++ representation of a Parla \mbox{\hyperlink{namespaceScheduler}{Scheduler}} All scheduling logic should be handled by these after creation until launched by the Python callback. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \mbox{\hyperlink{namespaceScheduler}{Scheduler}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{runtime_8hpp_a295cb549a9479dcc98a4a1b8dbe07f65}{PARLA\+\_\+\+BACKEND\+\_\+\+HPP}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}} = \mbox{\hyperlink{classProtectedQueue}{Protected\+Queue}}$<$ \mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$ $>$
+\item 
+using \mbox{\hyperlink{runtime_8hpp_a5ff8f8b435fba02242f07b56a717af3d}{Worker\+List}} = \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ \mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$ $>$
+\item 
+using \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}} = \mbox{\hyperlink{classProtectedQueue}{Protected\+Queue}}$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$
+\item 
+using \mbox{\hyperlink{runtime_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} = \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$ $>$
+\item 
+using \mbox{\hyperlink{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}{Space\+List}} = \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ \mbox{\hyperlink{classTaskBarrier}{Task\+Barrier}} $\ast$ $>$
+\item 
+using \mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} = \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$ uintptr\+\_\+t $>$
+\item 
+typedef void($\ast$ \mbox{\hyperlink{runtime_8hpp_ae2b3eb18accfe2a72385aa4f5a95f5c3}{launchfunc\+\_\+t}}) (void $\ast$scheduler, void $\ast$task, void $\ast$worker)
+\item 
+typedef void($\ast$ \mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}}) (void $\ast$scheduler)
+\item 
+using \mbox{\hyperlink{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}{Task\+Status\+Pair}} = std\+::pair$<$ \mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$, \mbox{\hyperlink{classTaskStatusFlags}{Task\+Status\+Flags}} $>$
+\begin{DoxyCompactList}\small\item\em A pair of a task and its status information. \end{DoxyCompactList}\item 
+using \mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} = std\+::vector$<$ \mbox{\hyperlink{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}{Task\+Status\+Pair}} $>$
+\begin{DoxyCompactList}\small\item\em A list of task status pairs. \end{DoxyCompactList}\item 
+typedef \mbox{\hyperlink{classWorkerPool}{Worker\+Pool}}$<$ \mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}}, \mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}} $>$ \mbox{\hyperlink{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}{Worker\+Pool\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}} \{ \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40ac86ee0d9d7ed3e7b4fdbf486fa6c0ebb}{IN}} = 0
+, \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40aef373774188a51f80463f37b6bd9e83a}{OUT}} = 1
+, \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40a0c93f5d83bbb636236e9610d01e4f3cd}{INOUT}} = 2
+ \}
+\begin{DoxyCompactList}\small\item\em Access type for a data dependence. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{Task\+State}} \{ \newline
+\mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea98690bf632c29c17c9e4c5a64069903c}{CREATED}} = 0
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab209a200f960648aa69d26a909752826}{SPAWNED}} = 1
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}{MAPPED}} = 2
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea83c7f2aa8c3ac10ed8beb75cad162827}{RESERVED}} = 3
+, \newline
+\mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea2baa69eafc7204f3bd8648eba580c489}{READY}} = 4
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea43491564ebcfd38568918efbd6e840fd}{RUNNING}} = 5
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}{RUNAHEAD}} = 6
+, \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea8f7afecbc8fbc4cd0f50a57d1172482e}{COMPLETED}} = 7
+ \}
+\begin{DoxyCompactList}\small\item\em Tracks the state of of a task within the runtime. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4}{Synchronization\+Type}} \{ \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4ab50339a10e1de285ac99d4c3990b8693}{NONE}} = 0
+, \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a72323e5457d8fb855145bfee934aa415}{BLOCKING}} = 1
+, \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a71fed0a1fc7faaeab0a56a76799e5ad3}{NON\+\_\+\+BLOCKING}} = 2
+, \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a2e40ad879e955201df4dedbf8d479a12}{USER}} = 3
+ \}
+\begin{DoxyCompactList}\small\item\em The type of between task synchronization to use in runahead scheduling on device hardware queues. \end{DoxyCompactList}\item 
+enum class \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8}{Task\+Status}} \{ \newline
+\mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91d26e4b2b105c74655093c9becd30b7}{INITIAL}} = 0
+, \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91c0e022d9f41653b2a03f070e6f92c2}{SPAWNABLE}} = 1
+, \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8af8239cbda0e24a46c75b84ea7c05f275}{MAPPABLE}} = 2
+, \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8afb7f1fb61e055277657c00c178844081}{RESERVABLE}} = 3
+, \newline
+\mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a303b3818708d7782a0c3c1e9c977d732}{COMPUTE\+\_\+\+RUNNABLE}} = 4
+, \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8ab887eaf73362255df616aba88fea4c94}{RUNNABLE}} = 5
+ \}
+\item 
+enum \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379}{Scheduler\+::\+State}} \{ \newline
+\mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379a3d989929eb559f0de83e2adf27c774c6}{Scheduler\+::spawned}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379a3f2cb51e04759ed7239affe933e45899}{Scheduler\+::mapped}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379abfb6ead85015c1e59fe0ab8e4083acf9}{Scheduler\+::reserved}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379abeb642415b464a3b8e0e442b02cdc070}{Scheduler\+::ready}}
+, \newline
+\mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379a6c775b2f3d2b821209533f4d83a2c0a6}{Scheduler\+::launch}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379a3b06c4f2f888f88ed7a238dd1bff0c9b}{Scheduler\+::running}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379aef530dfb93d57837f432a94500628c29}{Scheduler\+::complete}}
+, \mbox{\hyperlink{namespaceScheduler_ad91d87bf2670fecdb32ce7b8bf0ef379aa23d22401c3c41b8106d7efc599caa11}{Scheduler\+::failed}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{runtime_8hpp_abf4e444f9cfb5ea40e162e534d5961c8}{launch\+\_\+task\+\_\+callback}} (\mbox{\hyperlink{runtime_8hpp_ae2b3eb18accfe2a72385aa4f5a95f5c3}{launchfunc\+\_\+t}} func, void $\ast$scheduler, void $\ast$task, void $\ast$worker)
+\begin{DoxyCompactList}\small\item\em Callback function to launch a single task by calling into the Python scheduler. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{runtime_8hpp_a8beb32839b6aa57c6e1e6de62b6056a6}{launch\+\_\+stop\+\_\+callback}} (\mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}} func, void $\ast$scheduler)
+\begin{DoxyCompactList}\small\item\em Callback function to stop the main scheduler thread. Acquires the interpreter and signals the Python runtime to stop. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The core C++ runtime for Parla. Includes the main scheduler and task classes. 
+
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{runtime_8hpp_a295cb549a9479dcc98a4a1b8dbe07f65}\label{runtime_8hpp_a295cb549a9479dcc98a4a1b8dbe07f65}} 
+\index{runtime.hpp@{runtime.hpp}!PARLA\_BACKEND\_HPP@{PARLA\_BACKEND\_HPP}}
+\index{PARLA\_BACKEND\_HPP@{PARLA\_BACKEND\_HPP}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{PARLA\_BACKEND\_HPP}{PARLA\_BACKEND\_HPP}}
+{\footnotesize\ttfamily \#define PARLA\+\_\+\+BACKEND\+\_\+\+HPP}
+
+
+
+Definition at line 3 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{runtime_8hpp_ae2b3eb18accfe2a72385aa4f5a95f5c3}\label{runtime_8hpp_ae2b3eb18accfe2a72385aa4f5a95f5c3}} 
+\index{runtime.hpp@{runtime.hpp}!launchfunc\_t@{launchfunc\_t}}
+\index{launchfunc\_t@{launchfunc\_t}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{launchfunc\_t}{launchfunc\_t}}
+{\footnotesize\ttfamily typedef void($\ast$ launchfunc\+\_\+t) (void $\ast$scheduler, void $\ast$task, void $\ast$worker)}
+
+
+
+Definition at line 76 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}\label{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}} 
+\index{runtime.hpp@{runtime.hpp}!PointerList@{PointerList}}
+\index{PointerList@{PointerList}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{PointerList}{PointerList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a5806c7ab02f5ec0ba984d48729605b8b}{Pointer\+List}} =  \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$uintptr\+\_\+t$>$}
+
+
+
+Definition at line 62 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}\label{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}} 
+\index{runtime.hpp@{runtime.hpp}!SpaceList@{SpaceList}}
+\index{SpaceList@{SpaceList}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{SpaceList}{SpaceList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_ae7c39aa14b1ee73b2b9fce20340a447f}{Space\+List}} =  \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$\mbox{\hyperlink{classTaskBarrier}{Task\+Barrier}} $\ast$$>$}
+
+
+
+Definition at line 61 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}\label{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}} 
+\index{runtime.hpp@{runtime.hpp}!stopfunc\_t@{stopfunc\_t}}
+\index{stopfunc\_t@{stopfunc\_t}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{stopfunc\_t}{stopfunc\_t}}
+{\footnotesize\ttfamily typedef void($\ast$ stopfunc\+\_\+t) (void $\ast$scheduler)}
+
+
+
+Definition at line 77 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}\label{runtime_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}} 
+\index{runtime.hpp@{runtime.hpp}!TaskList@{TaskList}}
+\index{TaskList@{TaskList}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskList}{TaskList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{parray_8hpp_ac4c8b62fd3a9d24a68816d47985773ba}{Task\+List}} =  \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$}
+
+
+
+Definition at line 60 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}\label{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}} 
+\index{runtime.hpp@{runtime.hpp}!TaskQueue@{TaskQueue}}
+\index{TaskQueue@{TaskQueue}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskQueue}{TaskQueue}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a85232eb75afe75bb38ff06e7bb1aef0a}{Task\+Queue}} =  \mbox{\hyperlink{classProtectedQueue}{Protected\+Queue}}$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$$>$}
+
+
+
+Definition at line 59 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}\label{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}} 
+\index{runtime.hpp@{runtime.hpp}!TaskStatusList@{TaskStatusList}}
+\index{TaskStatusList@{TaskStatusList}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskStatusList}{TaskStatusList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a590856e426f16e0d758fdaeeb59507d6}{Task\+Status\+List}} =  std\+::vector$<$\mbox{\hyperlink{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}{Task\+Status\+Pair}}$>$}
+
+
+
+A list of task status pairs. 
+
+
+
+Definition at line 196 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}\label{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}} 
+\index{runtime.hpp@{runtime.hpp}!TaskStatusPair@{TaskStatusPair}}
+\index{TaskStatusPair@{TaskStatusPair}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskStatusPair}{TaskStatusPair}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a9b1337b5483a4c0d2f4b7d42d680bbac}{Task\+Status\+Pair}} =  std\+::pair$<$\mbox{\hyperlink{classInnerTask}{Inner\+Task}} $\ast$, \mbox{\hyperlink{classTaskStatusFlags}{Task\+Status\+Flags}}$>$}
+
+
+
+A pair of a task and its status information. 
+
+
+
+Definition at line 193 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a5ff8f8b435fba02242f07b56a717af3d}\label{runtime_8hpp_a5ff8f8b435fba02242f07b56a717af3d}} 
+\index{runtime.hpp@{runtime.hpp}!WorkerList@{WorkerList}}
+\index{WorkerList@{WorkerList}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{WorkerList}{WorkerList}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a5ff8f8b435fba02242f07b56a717af3d}{Worker\+List}} =  \mbox{\hyperlink{classProtectedVector}{Protected\+Vector}}$<$\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$$>$}
+
+
+
+Definition at line 58 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}\label{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}} 
+\index{runtime.hpp@{runtime.hpp}!WorkerPool\_t@{WorkerPool\_t}}
+\index{WorkerPool\_t@{WorkerPool\_t}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{WorkerPool\_t}{WorkerPool\_t}}
+{\footnotesize\ttfamily typedef \mbox{\hyperlink{classWorkerPool}{Worker\+Pool}}$<$\mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}}, \mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}}$>$ \mbox{\hyperlink{runtime_8hpp_ad1a75a7786204109d89bae6dc95fccc1}{Worker\+Pool\+\_\+t}}}
+
+
+
+Definition at line 908 of file runtime.\+hpp.
+
+\mbox{\Hypertarget{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}\label{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}} 
+\index{runtime.hpp@{runtime.hpp}!WorkerQueue@{WorkerQueue}}
+\index{WorkerQueue@{WorkerQueue}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{WorkerQueue}{WorkerQueue}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{runtime_8hpp_a657bf942b74c7cee16cdd3198244983a}{Worker\+Queue}} =  \mbox{\hyperlink{classProtectedQueue}{Protected\+Queue}}$<$\mbox{\hyperlink{classInnerWorker}{Inner\+Worker}} $\ast$$>$}
+
+
+
+Definition at line 57 of file runtime.\+hpp.
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}\label{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}} 
+\index{runtime.hpp@{runtime.hpp}!AccessMode@{AccessMode}}
+\index{AccessMode@{AccessMode}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{AccessMode}{AccessMode}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40}{Access\+Mode}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+Access type for a data dependence. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IN@{IN}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!IN@{IN}}}\mbox{\Hypertarget{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40ac86ee0d9d7ed3e7b4fdbf486fa6c0ebb}\label{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40ac86ee0d9d7ed3e7b4fdbf486fa6c0ebb}} 
+IN&This data is the input to a task (READ ACCESS). \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{OUT@{OUT}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!OUT@{OUT}}}\mbox{\Hypertarget{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40aef373774188a51f80463f37b6bd9e83a}\label{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40aef373774188a51f80463f37b6bd9e83a}} 
+OUT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INOUT@{INOUT}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!INOUT@{INOUT}}}\mbox{\Hypertarget{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40a0c93f5d83bbb636236e9610d01e4f3cd}\label{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40a0c93f5d83bbb636236e9610d01e4f3cd}} 
+INOUT&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 65 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{65                       \{}
+\DoxyCodeLine{67   \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40ac86ee0d9d7ed3e7b4fdbf486fa6c0ebb}{IN}} = 0,}
+\DoxyCodeLine{68   \textcolor{comment}{// This data is the output to a task (WRITE ACCESS).}}
+\DoxyCodeLine{69   \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40aef373774188a51f80463f37b6bd9e83a}{OUT}} = 1,}
+\DoxyCodeLine{70   \textcolor{comment}{// This data is both input and output of a task. (READ/WRITE ACCESS).}}
+\DoxyCodeLine{71   \mbox{\hyperlink{runtime_8hpp_ab22d35ed086a478dd91e93ac78037f40a0c93f5d83bbb636236e9610d01e4f3cd}{INOUT}} = 2}
+\DoxyCodeLine{72 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4}\label{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4}} 
+\index{runtime.hpp@{runtime.hpp}!SynchronizationType@{SynchronizationType}}
+\index{SynchronizationType@{SynchronizationType}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{SynchronizationType}{SynchronizationType}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4}{Synchronization\+Type}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+The type of between task synchronization to use in runahead scheduling on device hardware queues. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NONE@{NONE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!NONE@{NONE}}}\mbox{\Hypertarget{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4ab50339a10e1de285ac99d4c3990b8693}\label{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4ab50339a10e1de285ac99d4c3990b8693}} 
+NONE&No unahead scheduling. Tasks block for body completion before running ahead \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{BLOCKING@{BLOCKING}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!BLOCKING@{BLOCKING}}}\mbox{\Hypertarget{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a72323e5457d8fb855145bfee934aa415}\label{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a72323e5457d8fb855145bfee934aa415}} 
+BLOCKING&Block task body execution by waiting for events on the streams from dependency tasks to complete. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NON\_BLOCKING@{NON\_BLOCKING}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!NON\_BLOCKING@{NON\_BLOCKING}}}\mbox{\Hypertarget{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a71fed0a1fc7faaeab0a56a76799e5ad3}\label{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a71fed0a1fc7faaeab0a56a76799e5ad3}} 
+NON\+\_\+\+BLOCKING&Do not block task body execution. Cross stream wait events are added to the tasks streams before the body executes. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{USER@{USER}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!USER@{USER}}}\mbox{\Hypertarget{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a2e40ad879e955201df4dedbf8d479a12}\label{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a2e40ad879e955201df4dedbf8d479a12}} 
+USER&No synchronization (relies on user written code to ensure state) \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 129 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{129                                \{}
+\DoxyCodeLine{132   \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4ab50339a10e1de285ac99d4c3990b8693}{NONE}} = 0,}
+\DoxyCodeLine{135   \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a72323e5457d8fb855145bfee934aa415}{BLOCKING}} = 1,}
+\DoxyCodeLine{138   \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a71fed0a1fc7faaeab0a56a76799e5ad3}{NON\_BLOCKING}} = 2,}
+\DoxyCodeLine{140   \mbox{\hyperlink{runtime_8hpp_ac46bedf58300487e1e1249f519d1f0f4a2e40ad879e955201df4dedbf8d479a12}{USER}} = 3}
+\DoxyCodeLine{141 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}} 
+\index{runtime.hpp@{runtime.hpp}!TaskState@{TaskState}}
+\index{TaskState@{TaskState}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskState}{TaskState}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bce}{Task\+State}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+
+
+Tracks the state of of a task within the runtime. 
+
+\begin{DoxyNote}{Note}
+This is the lifecycle of a task within the runtime. These states depend on the runtime acting on the task, in contrast to the Status of a task which depends on the state of the tasks dependencies. 
+\end{DoxyNote}
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CREATED@{CREATED}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!CREATED@{CREATED}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea98690bf632c29c17c9e4c5a64069903c}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea98690bf632c29c17c9e4c5a64069903c}} 
+CREATED&Initial State. Task has been created but not spawned. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SPAWNED@{SPAWNED}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!SPAWNED@{SPAWNED}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab209a200f960648aa69d26a909752826}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab209a200f960648aa69d26a909752826}} 
+SPAWNED&Task has been spawned. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAPPED@{MAPPED}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!MAPPED@{MAPPED}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}} 
+MAPPED&Task has been mapped. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESERVED@{RESERVED}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!RESERVED@{RESERVED}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea83c7f2aa8c3ac10ed8beb75cad162827}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea83c7f2aa8c3ac10ed8beb75cad162827}} 
+RESERVED&Task has persistent resources reserved. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{READY@{READY}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!READY@{READY}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea2baa69eafc7204f3bd8648eba580c489}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea2baa69eafc7204f3bd8648eba580c489}} 
+READY&Task is ready to run. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNNING@{RUNNING}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!RUNNING@{RUNNING}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea43491564ebcfd38568918efbd6e840fd}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea43491564ebcfd38568918efbd6e840fd}} 
+RUNNING&Task is currently running and has runtime resources reserved. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNAHEAD@{RUNAHEAD}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!RUNAHEAD@{RUNAHEAD}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}} 
+RUNAHEAD&Task body has completed but GPU kernels may be asynchronously running. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPLETED@{COMPLETED}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!COMPLETED@{COMPLETED}}}\mbox{\Hypertarget{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea8f7afecbc8fbc4cd0f50a57d1172482e}\label{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea8f7afecbc8fbc4cd0f50a57d1172482e}} 
+COMPLETED&Task has completed. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 106 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{106                      \{}
+\DoxyCodeLine{108   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea98690bf632c29c17c9e4c5a64069903c}{CREATED}} = 0,}
+\DoxyCodeLine{110   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab209a200f960648aa69d26a909752826}{SPAWNED}} = 1,}
+\DoxyCodeLine{112   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bceab52c4f09cb5adc3ee840c7ebdc9ea016}{MAPPED}} = 2,}
+\DoxyCodeLine{114   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea83c7f2aa8c3ac10ed8beb75cad162827}{RESERVED}} = 3,}
+\DoxyCodeLine{116   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea2baa69eafc7204f3bd8648eba580c489}{READY}} = 4,}
+\DoxyCodeLine{118   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea43491564ebcfd38568918efbd6e840fd}{RUNNING}} = 5,}
+\DoxyCodeLine{120   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea9243499fe60aff8780071c849442d1a4}{RUNAHEAD}} = 6,}
+\DoxyCodeLine{122   \mbox{\hyperlink{runtime_8hpp_a724f9ce2351c125b3b7f6c7923822bcea8f7afecbc8fbc4cd0f50a57d1172482e}{COMPLETED}} = 7}
+\DoxyCodeLine{123 \};}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8}} 
+\index{runtime.hpp@{runtime.hpp}!TaskStatus@{TaskStatus}}
+\index{TaskStatus@{TaskStatus}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{TaskStatus}{TaskStatus}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8}{Task\+Status}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INITIAL@{INITIAL}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!INITIAL@{INITIAL}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91d26e4b2b105c74655093c9becd30b7}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91d26e4b2b105c74655093c9becd30b7}} 
+INITIAL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SPAWNABLE@{SPAWNABLE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!SPAWNABLE@{SPAWNABLE}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91c0e022d9f41653b2a03f070e6f92c2}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91c0e022d9f41653b2a03f070e6f92c2}} 
+SPAWNABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MAPPABLE@{MAPPABLE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!MAPPABLE@{MAPPABLE}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8af8239cbda0e24a46c75b84ea7c05f275}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8af8239cbda0e24a46c75b84ea7c05f275}} 
+MAPPABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESERVABLE@{RESERVABLE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!RESERVABLE@{RESERVABLE}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8afb7f1fb61e055277657c00c178844081}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8afb7f1fb61e055277657c00c178844081}} 
+RESERVABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPUTE\_RUNNABLE@{COMPUTE\_RUNNABLE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!COMPUTE\_RUNNABLE@{COMPUTE\_RUNNABLE}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a303b3818708d7782a0c3c1e9c977d732}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a303b3818708d7782a0c3c1e9c977d732}} 
+COMPUTE\+\_\+\+RUNNABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RUNNABLE@{RUNNABLE}!runtime.hpp@{runtime.hpp}}\index{runtime.hpp@{runtime.hpp}!RUNNABLE@{RUNNABLE}}}\mbox{\Hypertarget{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8ab887eaf73362255df616aba88fea4c94}\label{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8ab887eaf73362255df616aba88fea4c94}} 
+RUNNABLE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definition at line 167 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{167                       \{}
+\DoxyCodeLine{168   \textcolor{comment}{// Initial State. Status of dependencies is unknown or not spawned}}
+\DoxyCodeLine{169   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91d26e4b2b105c74655093c9becd30b7}{INITIAL}} = 0,}
+\DoxyCodeLine{170   \textcolor{comment}{// All dependencies are spawned (this task can be safely spawned)}}
+\DoxyCodeLine{171   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a91c0e022d9f41653b2a03f070e6f92c2}{SPAWNABLE}} = 1,}
+\DoxyCodeLine{172   \textcolor{comment}{// All dependencies are mapped (this task can be safely mapped)}}
+\DoxyCodeLine{173   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8af8239cbda0e24a46c75b84ea7c05f275}{MAPPABLE}} = 2,}
+\DoxyCodeLine{174   \textcolor{comment}{// All dependencies have persistent resources reserved (this task can be}}
+\DoxyCodeLine{175   \textcolor{comment}{// safely reserved)}}
+\DoxyCodeLine{176   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8afb7f1fb61e055277657c00c178844081}{RESERVABLE}} = 3,}
+\DoxyCodeLine{177   \textcolor{comment}{// All compute dependencies have RUNAHEAD/COMPLETED status}}
+\DoxyCodeLine{178   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8a303b3818708d7782a0c3c1e9c977d732}{COMPUTE\_RUNNABLE}} = 4,}
+\DoxyCodeLine{179   \textcolor{comment}{// All (including data) dependencies have RUNAHEAD/COMPLETED status}}
+\DoxyCodeLine{180   \mbox{\hyperlink{runtime_8hpp_aacda182df7dba8ce63a50654d7232ba8ab887eaf73362255df616aba88fea4c94}{RUNNABLE}} = 5}
+\DoxyCodeLine{181 \};}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{runtime_8hpp_a8beb32839b6aa57c6e1e6de62b6056a6}\label{runtime_8hpp_a8beb32839b6aa57c6e1e6de62b6056a6}} 
+\index{runtime.hpp@{runtime.hpp}!launch\_stop\_callback@{launch\_stop\_callback}}
+\index{launch\_stop\_callback@{launch\_stop\_callback}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{launch\_stop\_callback()}{launch\_stop\_callback()}}
+{\footnotesize\ttfamily void launch\+\_\+stop\+\_\+callback (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{runtime_8hpp_abd5c6c520d3421f2e921502f9cb2492c}{stopfunc\+\_\+t}}}]{func,  }\item[{void $\ast$}]{scheduler }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Callback function to stop the main scheduler thread. Acquires the interpreter and signals the Python runtime to stop. 
+
+\begin{DoxyNote}{Note}
+Called at Parla runtime shutdown (at context destruction or during exception handling) 
+\end{DoxyNote}
+
+
+Definition at line 96 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{96                                                                    \{}
+\DoxyCodeLine{97   func(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4195e084557aa94bf8abef00df0d727d}{scheduler}});}
+\DoxyCodeLine{98 \}}
+
+\end{DoxyCode}
+
+
+Referenced by Inner\+Scheduler\+::stop().
+
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{runtime_8hpp_a8beb32839b6aa57c6e1e6de62b6056a6_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{runtime_8hpp_abf4e444f9cfb5ea40e162e534d5961c8}\label{runtime_8hpp_abf4e444f9cfb5ea40e162e534d5961c8}} 
+\index{runtime.hpp@{runtime.hpp}!launch\_task\_callback@{launch\_task\_callback}}
+\index{launch\_task\_callback@{launch\_task\_callback}!runtime.hpp@{runtime.hpp}}
+\doxysubsubsection{\texorpdfstring{launch\_task\_callback()}{launch\_task\_callback()}}
+{\footnotesize\ttfamily void launch\+\_\+task\+\_\+callback (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{runtime_8hpp_ae2b3eb18accfe2a72385aa4f5a95f5c3}{launchfunc\+\_\+t}}}]{func,  }\item[{void $\ast$}]{scheduler,  }\item[{void $\ast$}]{task,  }\item[{void $\ast$}]{worker }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Callback function to launch a single task by calling into the Python scheduler. 
+
+\begin{DoxyNote}{Note}
+Currently unused in the C++ runtime. Legacy implementation from the first C++ runtime which would acquire the GIL from the scheduler thread. 
+\end{DoxyNote}
+
+
+Definition at line 85 of file runtime.\+hpp.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{86                                                \{}
+\DoxyCodeLine{87   func(\mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a4195e084557aa94bf8abef00df0d727d}{scheduler}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a80c42ae6cf7c7174352631aa0d84cbe0}{task}}, \mbox{\hyperlink{namespaceparla_1_1cython_1_1core_a8368535304ebfdbd53c01c50f851dbc6}{worker}});}
+\DoxyCodeLine{88 \}}
+
+\end{DoxyCode}

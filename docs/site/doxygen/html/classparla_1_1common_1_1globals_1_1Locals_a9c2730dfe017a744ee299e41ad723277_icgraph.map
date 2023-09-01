@@ -1,0 +1,15 @@
+<map id="parla.common.globals.Locals.scheduler" name="parla.common.globals.Locals.scheduler">
+<area shape="rect" id="node1" title=" " alt="" coords="864,143,1143,170"/>
+<area shape="rect" id="node2" href="$classparla_1_1cython_1_1scheduler_1_1SchedulerContext.html#aed97a7176fe7a5d44029cf47dd782120" title=" " alt="" coords="574,5,811,47"/>
+<area shape="rect" id="node3" href="$classparla_1_1cython_1_1tasks_1_1DataMovementTask.html#aa8a21c76529e5a36268228762f6d9f4f" title="Run the data movement task." alt="" coords="569,71,816,112"/>
+<area shape="rect" id="node5" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a00da869ac5b3aaa5ba15561698efe2aa" title=" " alt="" coords="583,136,802,177"/>
+<area shape="rect" id="node12" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a17878a66843ff4463f81f1e0606b2adf" title=" " alt="" coords="583,201,802,243"/>
+<area shape="rect" id="node13" href="$classparla_1_1cython_1_1tasks_1_1Task.html#a4c4b4032e51c4cfa84fd5402f78b3afe" title="Set the scheduler the task has been spawned by." alt="" coords="593,267,792,308"/>
+<area shape="rect" id="node4" href="$classparla_1_1cython_1_1tasks_1_1Task.html#ab7d356245650520564382e496ea4f80f" title="Run the task body." alt="" coords="312,78,512,105"/>
+<area shape="rect" id="node6" href="$classparla_1_1cython_1_1scheduler_1_1WorkerThread.html#a0d915912dd332944dad2cbef4b141648" title=" " alt="" coords="303,136,521,177"/>
+<area shape="rect" id="node7" href="$classparla_1_1cython_1_1tasks_1_1TaskSpace.html#abd847da888d90f4c723a8d5b5aab6983" title=" " alt="" coords="21,5,239,47"/>
+<area shape="rect" id="node8" href="$classparla_1_1cython_1_1tasks_1_1TaskSpace.html#ae635de6400f6b65ce4c5860424360f43" title=" " alt="" coords="21,71,239,112"/>
+<area shape="rect" id="node9" href="$classparla_1_1cython_1_1tasks_1_1AtomicTaskSpace.html#a91472ba64b98b2c652e7e4e5e456f1d2" title=" " alt="" coords="34,136,226,177"/>
+<area shape="rect" id="node10" href="$classparla_1_1cython_1_1tasks_1_1BackendTaskSpace.html#ad68e39ed8bd187e49763852a21b7088f" title=" " alt="" coords="29,201,231,243"/>
+<area shape="rect" id="node11" href="$classparla_1_1cython_1_1tasks_1_1TaskSpace.html#a4e995220228545da497854984b8272bb" title=" " alt="" coords="5,267,255,294"/>
+</map>

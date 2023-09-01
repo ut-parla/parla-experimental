@@ -1,0 +1,221 @@
+\hypertarget{classparla_1_1common_1_1array_1_1NumpyArray}{}\doxysection{parla.\+common.\+array.\+Numpy\+Array Class Reference}
+\label{classparla_1_1common_1_1array_1_1NumpyArray}\index{parla.common.array.NumpyArray@{parla.common.array.NumpyArray}}
+
+
+Inheritance diagram for parla.\+common.\+array.\+Numpy\+Array\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=246pt]{classparla_1_1common_1_1array_1_1NumpyArray__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for parla.\+common.\+array.\+Numpy\+Array\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=246pt]{classparla_1_1common_1_1array_1_1NumpyArray__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1array_1_1NumpyArray_a59cb04d5eced98a163724021a48ab908}{can\+\_\+assign\+\_\+from}} (self, src, dst)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1array_1_1NumpyArray_a1960bb7b21a387cc389b3719d648f0ca}{get\+\_\+array\+\_\+module}} (self, a)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1array_1_1NumpyArray_ad32c4efed761bbfe92600198f1529134}{copy\+\_\+from}} (self, src, int target\+\_\+device\+\_\+id)
+\item 
+def \mbox{\hyperlink{classparla_1_1common_1_1array_1_1NumpyArray_a1828c7fd4470021b6a049d40dedf6b2a}{copy\+\_\+into}} (self, src, dst)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+Definition at line 64 of file array.\+py.
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classparla_1_1common_1_1array_1_1NumpyArray_a59cb04d5eced98a163724021a48ab908}\label{classparla_1_1common_1_1array_1_1NumpyArray_a59cb04d5eced98a163724021a48ab908}} 
+\index{parla.common.array.NumpyArray@{parla.common.array.NumpyArray}!can\_assign\_from@{can\_assign\_from}}
+\index{can\_assign\_from@{can\_assign\_from}!parla.common.array.NumpyArray@{parla.common.array.NumpyArray}}
+\doxysubsubsection{\texorpdfstring{can\_assign\_from()}{can\_assign\_from()}}
+{\footnotesize\ttfamily def parla.\+common.\+array.\+Numpy\+Array.\+can\+\_\+assign\+\_\+from (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{src,  }\item[{}]{dst }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}:param a: An array of self's type.
+:param b: An array of any type.
+:return: True iff `a` supports assignments from `b`.
+\end{DoxyVerb}
+ 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1common_1_1array_1_1ArrayType_aa9fbf7d04f1c4b57fa19aae086941219}{parla.\+common.\+array.\+Array\+Type}}.
+
+
+
+Definition at line 66 of file array.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{66     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1common_1_1array_ab049a1a648a55658cbb087592d89e999}{can\_assign\_from}}(self, src, dst):}
+\DoxyCodeLine{67         \textcolor{keywordflow}{return} isinstance(src, numpy.ndarray)}
+\DoxyCodeLine{68 }
+
+\end{DoxyCode}
+
+
+Referenced by parla.\+common.\+array.\+Numpy\+Array.\+copy\+\_\+into(), and parla.\+common.\+array.\+Cupy\+Array.\+copy\+\_\+into().
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1array_1_1NumpyArray_a59cb04d5eced98a163724021a48ab908_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1array_1_1NumpyArray_ad32c4efed761bbfe92600198f1529134}\label{classparla_1_1common_1_1array_1_1NumpyArray_ad32c4efed761bbfe92600198f1529134}} 
+\index{parla.common.array.NumpyArray@{parla.common.array.NumpyArray}!copy\_from@{copy\_from}}
+\index{copy\_from@{copy\_from}!parla.common.array.NumpyArray@{parla.common.array.NumpyArray}}
+\doxysubsubsection{\texorpdfstring{copy\_from()}{copy\_from()}}
+{\footnotesize\ttfamily def parla.\+common.\+array.\+Numpy\+Array.\+copy\+\_\+from (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{src,  }\item[{int}]{target\+\_\+device\+\_\+id }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}:param a: An array of some type.
+:return: A copy of `a` of this type
+\end{DoxyVerb}
+ 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1common_1_1array_1_1ArrayType_ab42d664db67cf4c2e4260b295ef57331}{parla.\+common.\+array.\+Array\+Type}}.
+
+
+
+Definition at line 72 of file array.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{72     \textcolor{keyword}{def }copy\_from(self, src, target\_device\_id: int):}
+\DoxyCodeLine{73 }
+\DoxyCodeLine{74         \textcolor{keywordflow}{if} isinstance(src, numpy.ndarray):}
+\DoxyCodeLine{75             \textcolor{keywordflow}{return} src}
+\DoxyCodeLine{76 }
+\DoxyCodeLine{77         current\_context = \mbox{\hyperlink{namespaceparla_1_1common_1_1globals_a984f8b4c44f904aec08e3fe4cbcab416}{get\_current\_context}}()}
+\DoxyCodeLine{78         current\_device = current\_context.devices[0]}
+\DoxyCodeLine{79 }
+\DoxyCodeLine{80         is\_gpu = (current\_device.architecture == DeviceType.CUDA)}
+\DoxyCodeLine{81 }
+\DoxyCodeLine{82         \textcolor{keywordflow}{if} CUPY\_ENABLED \textcolor{keywordflow}{and} isinstance(src, cupy.ndarray):}
+\DoxyCodeLine{83             \textcolor{keywordflow}{if} is\_gpu \textcolor{keywordflow}{and} (src.flags[\textcolor{stringliteral}{'C\_CONTIGUOUS'}] \textcolor{keywordflow}{or} src.flags[\textcolor{stringliteral}{'F\_CONTIGUOUS'}]):}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85                 dst = cupy.empty\_like(src)}
+\DoxyCodeLine{86                 \textcolor{keyword}{with} current\_context:}
+\DoxyCodeLine{87                     target\_stream = cupy.cuda.get\_current\_stream()}
+\DoxyCodeLine{88                     dst.data.copy\_from\_async(}
+\DoxyCodeLine{89                         src.data, src.nbytes, stream=target\_stream)}
+\DoxyCodeLine{90             \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{91                 dst = cupy.asnumpy(src)}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93             \textcolor{keywordflow}{return} dst}
+\DoxyCodeLine{94 }
+\DoxyCodeLine{95         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{96             \textcolor{keywordflow}{raise} NotImplementedError(}
+\DoxyCodeLine{97                 \textcolor{stringliteral}{"{}Non-\/ndarray types are not currently supported"{}})}
+\DoxyCodeLine{98 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+globals.\+get\+\_\+current\+\_\+context().
+
+
+
+Referenced by parla.\+common.\+array.\+Numpy\+Array.\+copy\+\_\+into(), and parla.\+common.\+array.\+Cupy\+Array.\+copy\+\_\+into().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1array_1_1NumpyArray_ad32c4efed761bbfe92600198f1529134_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1array_1_1NumpyArray_ad32c4efed761bbfe92600198f1529134_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1array_1_1NumpyArray_a1828c7fd4470021b6a049d40dedf6b2a}\label{classparla_1_1common_1_1array_1_1NumpyArray_a1828c7fd4470021b6a049d40dedf6b2a}} 
+\index{parla.common.array.NumpyArray@{parla.common.array.NumpyArray}!copy\_into@{copy\_into}}
+\index{copy\_into@{copy\_into}!parla.common.array.NumpyArray@{parla.common.array.NumpyArray}}
+\doxysubsubsection{\texorpdfstring{copy\_into()}{copy\_into()}}
+{\footnotesize\ttfamily def parla.\+common.\+array.\+Numpy\+Array.\+copy\+\_\+into (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{src,  }\item[{}]{dst }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}:param src: An array of some type.
+:param dst: An array of this type.
+:return: A copy of `src` into `dst`.
+\end{DoxyVerb}
+ 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1common_1_1array_1_1ArrayType_ac113bf53b87a75c444fde8cf763c4732}{parla.\+common.\+array.\+Array\+Type}}.
+
+
+
+Definition at line 99 of file array.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{99     \textcolor{keyword}{def }copy\_into(self, src, dst):}
+\DoxyCodeLine{100         \textcolor{comment}{\# TODO: Add contiguous copy into memory buffer directly}}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102         \textcolor{keywordflow}{if} self.can\_assign\_from(src, dst):}
+\DoxyCodeLine{103             dst[:] = src}
+\DoxyCodeLine{104         \textcolor{keywordflow}{elif} isinstance(src, cupy.ndarray):}
+\DoxyCodeLine{105             dst[:] = self.copy\_from(src, dst.device.id)}
+\DoxyCodeLine{106         \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{107             \textcolor{keywordflow}{raise} NotImplementedError(}
+\DoxyCodeLine{108                 \textcolor{stringliteral}{"{}Non-\/ndarray types are not currently supported"{}})}
+\DoxyCodeLine{109 }
+\DoxyCodeLine{110 }
+
+\end{DoxyCode}
+
+
+References parla.\+common.\+array.\+Array\+Type.\+can\+\_\+assign\+\_\+from(), parla.\+common.\+array.\+Numpy\+Array.\+can\+\_\+assign\+\_\+from(), parla.\+common.\+array.\+Cupy\+Array.\+can\+\_\+assign\+\_\+from(), parla.\+common.\+array.\+Array\+Type.\+copy\+\_\+from(), parla.\+common.\+array.\+Numpy\+Array.\+copy\+\_\+from(), and parla.\+common.\+array.\+Cupy\+Array.\+copy\+\_\+from().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classparla_1_1common_1_1array_1_1NumpyArray_a1828c7fd4470021b6a049d40dedf6b2a_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classparla_1_1common_1_1array_1_1NumpyArray_a1960bb7b21a387cc389b3719d648f0ca}\label{classparla_1_1common_1_1array_1_1NumpyArray_a1960bb7b21a387cc389b3719d648f0ca}} 
+\index{parla.common.array.NumpyArray@{parla.common.array.NumpyArray}!get\_array\_module@{get\_array\_module}}
+\index{get\_array\_module@{get\_array\_module}!parla.common.array.NumpyArray@{parla.common.array.NumpyArray}}
+\doxysubsubsection{\texorpdfstring{get\_array\_module()}{get\_array\_module()}}
+{\footnotesize\ttfamily def parla.\+common.\+array.\+Numpy\+Array.\+get\+\_\+array\+\_\+module (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{src }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}:param a: An array of self's type.
+:return: The `numpy` compatible module for the array `a`.
+\end{DoxyVerb}
+ 
+
+Reimplemented from \mbox{\hyperlink{classparla_1_1common_1_1array_1_1ArrayType_aac9efddb34176f9968b62fe61f311087}{parla.\+common.\+array.\+Array\+Type}}.
+
+
+
+Definition at line 69 of file array.\+py.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{69     \textcolor{keyword}{def }\mbox{\hyperlink{namespaceparla_1_1common_1_1array_afde400cdbd0def19ac9250f756bd526b}{get\_array\_module}}(self, a):}
+\DoxyCodeLine{70         \textcolor{keywordflow}{return} numpy}
+\DoxyCodeLine{71 }
+
+\end{DoxyCode}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/python/parla/common/\mbox{\hyperlink{array_8py}{array.\+py}}\end{DoxyCompactItemize}
