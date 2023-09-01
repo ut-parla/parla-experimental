@@ -485,7 +485,10 @@ class PArray:
 
                 scheduler = get_scheduler()
                 if (to_free > 0) and (scheduler is not None):
+                    #This frees the memory on the device in the mapped and reserved pools
                     scheduler.device_manager.free_memory(op.src, to_free)
+                    #TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
+                    
                 
 
             elif op.inst == MemoryOperation.ERROR:
