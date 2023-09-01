@@ -281,6 +281,10 @@ void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
 
   PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
   PArrayTracker *reserved_tracker = this->memory_reserver->get_parray_tracker();
+
+  // TODO: Decide policy for removal.
+  // Simplest is just to call remove_parray on both trackers
+  // Could also be to call DELETED or REMOVED status on do_log
 }
 
 size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
