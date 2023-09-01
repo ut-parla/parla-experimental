@@ -75,7 +75,7 @@ inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
 }
 
-inline const int parrayid_to_globalid(int parray_dev_id) {
+inline const DevID_t parrayid_to_globalid(int parray_dev_id) {
   if (parray_dev_id == -1) {
     // XXX: This assumes that a CPU device is always single and
     //      is added at first.

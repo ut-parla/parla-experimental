@@ -70,17 +70,21 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
     DevID_t global_dev_id = chosen_device->get_global_id();
 
     auto &mapped_pool = chosen_device->get_mapped_pool();
+    auto &task_pool = chosen_device_requirements->res_req();
 
     task->add_assigned_device(chosen_device);
 
-    task->device_constraints.insert({chosen_device->get_global_id(),
-                                     chosen_device_requirements->res_req()});
+    task->device_constraints.insert(
+        {chosen_device->get_global_id(), task_pool});
 
     auto &parray_access_list = parray_list[local_device_idx];
 
-    // TODO(@dialecticDolt): Split into two counters.
+    // TODO(@dialecticDolt): Split into two counters
+    // (one for data, and one for compute).
     int weight = 1; // + parray_access_list.size();
     this->atomic_incr_num_mapped_tasks_device(global_dev_id, weight);
+
+    mapped_pool.increase(task_pool);
 
     for (int i = 0; i < parray_access_list.size(); ++i) {
       auto &parray_access = parray_access_list[i];

@@ -337,12 +337,13 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     Device *device = task->assigned_devices[local_device_idx];
     DevID_t dev_id = device->get_global_id();
 
-    ResourcePool_t &device_pool = device->get_reserved_pool();
+    auto &device_reserved_pool = device->get_reserved_pool();
+    auto &device_mapped_pool = device->get_mapped_pool();
 
-    ResourcePool_t &task_pool =
-        task->device_constraints[device->get_global_id()];
+    auto &task_pool = task->device_constraints[device->get_global_id()];
 
-    device_pool.increase(task_pool);
+    device_reserved_pool.increase(task_pool);
+    device_mapped_pool.decrease(task_pool);
 
     auto &parray_access_list = task->parray_list[local_device_idx];
 
