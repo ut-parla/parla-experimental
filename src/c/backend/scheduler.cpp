@@ -167,6 +167,12 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager, MappingPolicyType 
 
   this->workers.set_num_workers(1);
 
+  DevID_t num_devices = device_manager_->get_num_devices<ParlaDeviceType::All>();
+  this->dev_num_mapped_tasks_.resize(num_devices);
+  this->dev_num_tasks_mapped_states_.resize(num_devices);
+  this->dev_num_tasks_resreserved_states_.resize(num_devices);
+  this->dev_num_ready_tasks_.resize(num_devices);
+  this->dev_num_running_tasks_.resize(num_devices);
   // Initialize the phases
   this->mapper = new Mapper(this, device_manager, &this->parray_tracker_, mapping_policy);
   this->memory_reserver = new MemoryReserver(this, device_manager);
@@ -325,19 +331,17 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         parray::InnerPArray *parray = task->parray_list[i][j].first;
         parray->decr_num_active_tasks(dev_id);
       }
-      this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
-      // XXX(hc): Test
-      if (task->name.find("gemm1") != std::string::npos) {
-        this->mapper->atomic_decr_num_mapped_gemm1_device(dev_id);
-      } else if (task->name.find("subcholesky") != std::string::npos) {
-        this->mapper->atomic_decr_num_mapped_subcholesky_device(dev_id);
-      } else if (task->name.find("gemm2") != std::string::npos) {
-        this->mapper->atomic_decr_num_mapped_gemm2_device(dev_id);
-      } else if (task->name.find("solve") != std::string::npos) {
-        this->mapper->atomic_decr_num_mapped_solve_device(dev_id);
-      } else {
-        this->mapper->atomic_decr_num_mapped_others_device(dev_id);
-      }
+      this->atomic_decr_num_mapped_tasks_device(dev_id);
+      this->atomic_decr_num_running_tasks(dev_id);
+
+      LOG_INFO("Debug",
+          "Completed {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+          task->name, dev_id,
+          this->atomic_load_dev_num_tasks_mapped_states(dev_id),
+          this->atomic_load_dev_num_tasks_resreserved_states(dev_id),
+          this->atomic_load_dev_num_ready_tasks(dev_id),
+          this->atomic_load_dev_num_running_tasks(dev_id),
+          this->atomic_load_dev_num_mapped_tasks_device(dev_id));
       device->reduce_mapped_task_info(task->remote_data_bytes, task->num_dependencies,
           task->num_dependents);
     }

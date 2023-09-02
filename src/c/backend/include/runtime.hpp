@@ -1115,6 +1115,149 @@ public:
     this->task_launching_order_ = 0;
   }
 
+  /// Increase the total number of tasks mapped to any device and
+  /// to device did.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    total_num_mapped_tasks_.fetch_add(weight, std::memory_order_relaxed);
+    return dev_num_mapped_tasks_[dev_id].fetch_add(weight,
+                                                   std::memory_order_relaxed);
+  }
+
+  /// Decrease the total number of tasks mapped to any device and
+  /// to device did.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id,
+                                             size_t weight = 1) {
+    total_num_mapped_tasks_.fetch_sub(weight, std::memory_order_relaxed);
+    return dev_num_mapped_tasks_[dev_id].fetch_sub(weight,
+                                                   std::memory_order_relaxed);
+  }
+
+  /// Return the total number of mapped tasks to any device.
+  ///
+  /// @return The old number of total mapped tasks
+  const size_t atomic_load_total_num_mapped_tasks() const {
+    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
+  }
+
+  /// Return the number of mapped tasks to a single device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The old number of the tasks mapped to a device
+  const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
+    return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
+  }
+
+  /// Increase the number of tasks mapped to device did in a mapped state.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_incr_num_tasks_mapped_states(DevID_t did) {
+    return dev_num_tasks_mapped_states_[did].fetch_add(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of tasks mapped to device did in a mapped state.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The updated number of the tasks
+  size_t atomic_decr_num_tasks_mapped_states(DevID_t did) {
+    return dev_num_tasks_mapped_states_[did].fetch_sub(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Return the number of tasks mapped to device did in a mapped state.
+  ///
+  /// @return The number of tasks before increase 
+  const size_t atomic_load_dev_num_tasks_mapped_states(DevID_t did) const {
+    return dev_num_tasks_mapped_states_[did].load(
+        std::memory_order_relaxed);
+  }
+
+  /// Increase the number of tasks mapped to device did in a
+  /// resource reserved state.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_incr_num_tasks_resreserved_states(DevID_t did) {
+    return dev_num_tasks_resreserved_states_[did].fetch_add(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of tasks mapped to device did in a
+  /// resource reserved state.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The updated number of the tasks
+  size_t atomic_decr_num_tasks_resreserved_states(DevID_t did) {
+    return dev_num_tasks_resreserved_states_[did].fetch_sub(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Return the number of tasks mapped to device did in a
+  /// resource reserved state.
+  ///
+  /// @return The number of tasks before increase 
+  const size_t atomic_load_dev_num_tasks_resreserved_states(DevID_t did) const {
+    return dev_num_tasks_resreserved_states_[did].load(
+        std::memory_order_relaxed);
+  }
+
+  /// Increase the number of ready tasks mapped to device did.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_incr_num_ready_tasks(DevID_t did) {
+    return dev_num_ready_tasks_[did].fetch_add(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of ready tasks mapped to device did.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The updated number of the tasks
+  size_t atomic_decr_num_ready_tasks(DevID_t did) {
+    return dev_num_ready_tasks_[did].fetch_sub(
+        1, std::memory_order_relaxed);
+  }
+
+  /// Return the number of ready tasks mapped to device did.
+  ///
+  /// @return The number of tasks before increase 
+  const size_t atomic_load_dev_num_ready_tasks(DevID_t did) const {
+    return dev_num_ready_tasks_[did].load(
+        std::memory_order_relaxed);
+  }
+
+  /// Increase the number of running tasks mapped to device did.
+  ///
+  /// @param dev_id device global id where a task is mapped
+  /// @return the updated number of the tasks
+  size_t atomic_incr_num_running_tasks(DevID_t did) {
+    return dev_num_running_tasks_[did].fetch_add(1, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of runnig tasks mapped to device did.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The updated number of the tasks
+  size_t atomic_decr_num_running_tasks(DevID_t did) {
+    return dev_num_running_tasks_[did].fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  /// Return the number of running tasks on device did.
+  ///
+  /// @return The number of tasks before increase 
+  const size_t atomic_load_dev_num_running_tasks(DevID_t did) const {
+    return dev_num_running_tasks_[did].load(std::memory_order_relaxed);
+  }
+
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
@@ -1123,6 +1266,15 @@ protected:
   /// It manages the current/planned distribution of PArrays across devices.
   /// Parla task mapping policy considers locality of PArrays through this.
   PArrayTracker parray_tracker_;
+
+  /// The total number of tasks mapped to and running on the whole devices.
+  std::atomic<size_t> total_num_mapped_tasks_{0};
+  /// The total number of tasks mapped to and running on a single device.
+  std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
+  std::vector<CopyableAtomic<size_t>> dev_num_tasks_mapped_states_;
+  std::vector<CopyableAtomic<size_t>> dev_num_tasks_resreserved_states_;
+  std::vector<CopyableAtomic<size_t>> dev_num_ready_tasks_;
+  std::vector<CopyableAtomic<size_t>> dev_num_running_tasks_;
 };
 
 #endif // PARLA_BACKEND_HPP

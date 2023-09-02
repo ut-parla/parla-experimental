@@ -10,8 +10,6 @@
 #include <random>
 #include <torch/torch.h>
 
-class Mapper;
-
 class ExperienceReplay {
 public:
   using BufferTupleType =
@@ -727,27 +725,26 @@ private:
   size_t subepisode_{0};
   std::vector<RLStateTransition*> replay_memory_buffer_;
   std::mutex replay_mem_buffer_mtx_;
-  DevID_t test_dev_{0};
 };
 
 class RLTaskMappingPolicy : public MappingPolicy {
 public:
   RLTaskMappingPolicy(
       DeviceManager *device_manager, PArrayTracker *parray_tracker,
-      Mapper *mapper, bool is_training_mode);
+      InnerScheduler *sched, bool is_training_mode);
 
   ~RLTaskMappingPolicy();
 
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      Mapper *mapper, Score_t *score,
+      InnerScheduler *sched, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      InnerScheduler *sched, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -755,7 +752,7 @@ public:
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      Mapper *mapper,
+      InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -763,7 +760,7 @@ public:
           &parray_list) override;
 
   void run_task_mapping(
-      InnerTask *task, Mapper *mapper,
+      InnerTask *task, InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,

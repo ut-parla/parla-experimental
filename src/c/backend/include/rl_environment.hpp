@@ -12,23 +12,18 @@
 #define NUM_DEVICE_FEATURES 8
 #define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
 
-class Mapper;
-
 class RLEnvironment {
 public:
   RLEnvironment(DeviceManager *device_manager,
-      PArrayTracker *parray_tracker, Mapper *mapper)
+      PArrayTracker *parray_tracker, InnerScheduler *sched)
       : device_manager_(device_manager), parray_tracker_(parray_tracker),
-          mapper_(mapper) {}
+          sched_(sched) {}
 
   /// *** Task states + Active dependency/dependent task states per device +
   /// Device states ***
   void make_current_task_state(
-      InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
-      size_t offset, bool accum);
-  void make_current_device_state(
       InnerTask *task, torch::Tensor current_state, DevID_t num_devices);
-  void make_current_active_deptask_state(
+  void make_current_device_state(
       InnerTask *task, torch::Tensor current_state, DevID_t num_devices);
 
   torch::Tensor make_current_state(InnerTask *task);
@@ -57,7 +52,7 @@ public:
 protected:
   DeviceManager *device_manager_;
   PArrayTracker *parray_tracker_;
-  Mapper *mapper_;
+  InnerScheduler *sched_;
 
   size_t num_reward_accumulation_{0};
   double reward_accumulation_{0};

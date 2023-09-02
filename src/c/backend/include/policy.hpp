@@ -26,14 +26,14 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param dev_placement_req Resource requirement of the device.
-  /// @param mapper Mapper instance to get mapping information.
+  /// @param sched Scheduler instance to get mapping information.
   /// @param score A pointer of a score of the device.
   /// @param parray_list A list of PArray instances used by the target task
   /// @return True if a device is available
   virtual bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      Mapper *mapper, Score_t *score,
+      InnerScheduler *sched, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) = 0;
 
@@ -48,7 +48,7 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param arch_placement_req Resource requirement of the architecture.
-  /// @param mapper Mapper instance to get mapping information.
+  /// @param sched Scheduler instance to get mapping information.
   /// @param chosen_dev_req A pointer of a chosen device and its resource
   ///                       requirement. This is a reference type since
   ///                       this function chooses a device and updates its
@@ -61,7 +61,7 @@ public:
   /// @return True if any device in the architecture is available
   virtual bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      InnerScheduler *sched, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -79,7 +79,7 @@ public:
   ///
   /// @param task Target task for task mapping.
   /// @param mdev_placement_req Resource requirement of the multiple devices.
-  /// @param mapper Mapper instance to get mapping information.
+  /// @param sched Scheduler instance to get mapping information.
   /// @param member_device_reqs A vector of the resource requirement of the
   ///                           member device.
   /// @param chosen_dev_score A pointer of a score of the multiple devices.
@@ -87,7 +87,7 @@ public:
   /// @return True if all devices in the multi-device placement are available.
   virtual bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      Mapper *mapper,
+      InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -95,7 +95,7 @@ public:
           &parray_list) = 0;
 
   virtual void run_task_mapping(
-      InnerTask *task, Mapper *mapper,
+      InnerTask *task, InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
@@ -117,13 +117,13 @@ public:
   bool calc_score_devplacement(
       InnerTask *task,
       const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-      Mapper *mapper, Score_t *score,
+      InnerScheduler *sched, Score_t *score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) override;
 
   bool calc_score_archplacement(
       InnerTask *task, ArchitectureRequirement *arch_placement_req,
-      Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+      InnerScheduler *sched, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
       Score_t *chosen_dev_score,
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list,
@@ -131,7 +131,7 @@ public:
 
   bool calc_score_mdevplacement(
       InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-      Mapper *mapper,
+      InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
       Score_t *average_score,
       const std::vector<
@@ -139,7 +139,7 @@ public:
           &parray_list) override;
 
   void run_task_mapping(
-      InnerTask *task, Mapper *mapper,
+      InnerTask *task, InnerScheduler *sched,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
@@ -147,7 +147,6 @@ public:
 
   void evaluate_and_append_task_mapping(InnerTask*) override {}
   void evaluate_current_epoch(double exec_time_ms, double prev_exec_time_ms) override {}
-  DevID_t test_device{0};
 };
 
 #endif

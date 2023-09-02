@@ -2,13 +2,13 @@
 
 RLTaskMappingPolicy::RLTaskMappingPolicy(
     DeviceManager *device_manager, PArrayTracker *parray_tracker,
-    Mapper *mapper, bool is_training_mode)
+    InnerScheduler *scheduler, bool is_training_mode)
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
   this->rl_agent_ = new RLAgent(NUM_TASK_FEATURES +
       NUM_DEP_TASK_FEATURES * 2 + num_devices * NUM_DEVICE_FEATURES,
       num_devices, num_devices, is_training_mode);
-  this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, mapper);
+  this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, scheduler);
 }
 
 RLTaskMappingPolicy::~RLTaskMappingPolicy() {
@@ -19,7 +19,7 @@ RLTaskMappingPolicy::~RLTaskMappingPolicy() {
 bool RLTaskMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-    Mapper *mapper, Score_t *score,
+    InnerScheduler *scheduler, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
               &parray_list) {
 #if 0
@@ -53,7 +53,7 @@ bool RLTaskMappingPolicy::calc_score_devplacement(
 
 bool RLTaskMappingPolicy::calc_score_archplacement(
     InnerTask *task, ArchitectureRequirement *arch_placement_req,
-    Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+    InnerScheduler *scheduler, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         &parray_list,
@@ -63,7 +63,7 @@ bool RLTaskMappingPolicy::calc_score_archplacement(
 
 bool RLTaskMappingPolicy::calc_score_mdevplacement(
     InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-    Mapper *mapper,
+    InnerScheduler *scheduler,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score,
     const std::vector<
@@ -74,7 +74,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
   const std::vector<std::shared_ptr<SinglePlacementRequirementBase>>
       &placement_reqs_vec = mdev_placement_req->get_placement_reqs_ref();
   member_device_reqs->resize(placement_reqs_vec.size());
-  // Task mapper does not allow to map a multi-device task to the same device
+  // Task scheduler does not allow to map a multi-device task to the same device
   // multiple times. This vector marks an assigned device and filter it
   // out at the next device decision.
   std::vector<bool> is_dev_assigned(
@@ -92,7 +92,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
       DevID_t dev_global_id = dev_req->device()->get_global_id();
       if (!is_dev_assigned[dev_global_id]) {
         is_member_device_available = this->calc_score_devplacement(
-            task, dev_req, mapper, &score, parray_list[did]);
+            task, dev_req, scheduler, &score, parray_list[did]);
         if (is_member_device_available) {
           is_dev_assigned[dev_global_id] = true;
         }
@@ -101,7 +101,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
       ArchitectureRequirement *arch_req =
           dynamic_cast<ArchitectureRequirement *>(placement_req.get());
       is_member_device_available = this->calc_score_archplacement(
-          task, arch_req, mapper, dev_req, &score, parray_list[did],
+          task, arch_req, scheduler, dev_req, &score, parray_list[did],
           &is_dev_assigned);
       if (is_member_device_available) {
         DevID_t dev_global_id = dev_req->device()->get_global_id();
@@ -123,7 +123,7 @@ bool RLTaskMappingPolicy::calc_score_mdevplacement(
 }
 
 void RLTaskMappingPolicy::run_task_mapping(
-    InnerTask *task, Mapper *mapper,
+    InnerTask *task, InnerScheduler *scheduler,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list,

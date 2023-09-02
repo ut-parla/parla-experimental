@@ -4,7 +4,7 @@
 bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
     InnerTask *task,
     const std::shared_ptr<DeviceRequirement> &dev_placement_req,
-    Mapper *mapper, Score_t *score,
+    InnerScheduler *sched, Score_t *score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
               &parray_list) {
   const ParlaDevice &device = *(dev_placement_req->device());
@@ -60,9 +60,10 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 #endif
 
   // Calculate device load balancing.
-  size_t total_num_mapped_tasks = mapper->atomic_load_total_num_mapped_tasks();
+  size_t total_num_mapped_tasks =
+      sched->atomic_load_total_num_mapped_tasks();
   size_t num_tasks_to_device =
-      mapper->atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
+      sched->atomic_load_dev_num_mapped_tasks_device(device.get_global_id());
   double normalizd_device_load{0};
   if (total_num_mapped_tasks != 0) {
     normalizd_device_load =
@@ -92,7 +93,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
     InnerTask *task, ArchitectureRequirement *arch_placement_req,
-    Mapper *mapper, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
+    InnerScheduler *sched, std::shared_ptr<DeviceRequirement> &chosen_dev_req,
     Score_t *chosen_dev_score,
     const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
         &parray_list,
@@ -126,7 +127,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
       // as one of the placements, skip it.
       continue;
     }
-    bool is_dev_available = this->calc_score_devplacement(task, dev_req, mapper,
+    bool is_dev_available = this->calc_score_devplacement(task, dev_req, sched,
                                                           &score, parray_list);
     if (!is_dev_available) {
       continue;
@@ -147,7 +148,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_archplacement(
 
 bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
     InnerTask *task, MultiDeviceRequirements *mdev_placement_req,
-    Mapper *mapper,
+    InnerScheduler *sched,
     std::vector<std::shared_ptr<DeviceRequirement>> *member_device_reqs,
     Score_t *average_score,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
@@ -174,7 +175,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
       DevID_t dev_global_id = dev_req->device()->get_global_id();
       if (!is_dev_assigned[dev_global_id]) {
         is_member_device_available = this->calc_score_devplacement(
-            task, dev_req, mapper, &score, parray_list[did]);
+            task, dev_req, sched, &score, parray_list[did]);
         if (is_member_device_available) {
           is_dev_assigned[dev_global_id] = true;
         }
@@ -183,7 +184,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
       ArchitectureRequirement *arch_req =
           dynamic_cast<ArchitectureRequirement *>(placement_req.get());
       is_member_device_available = this->calc_score_archplacement(
-          task, arch_req, mapper, dev_req, &score, parray_list[did],
+          task, arch_req, sched, dev_req, &score, parray_list[did],
           &is_dev_assigned);
       if (is_member_device_available) {
         DevID_t dev_global_id = dev_req->device()->get_global_id();
@@ -204,7 +205,7 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_mdevplacement(
 }
 
 void LocalityLoadBalancingMappingPolicy::run_task_mapping(
-    InnerTask *task, Mapper *mapper,
+    InnerTask *task, InnerScheduler *sched,
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list,
@@ -228,7 +229,7 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
       std::vector<std::shared_ptr<DeviceRequirement>> mdev_reqs_vec;
       Score_t score{0};
       bool is_req_available = calc_score_mdevplacement(
-          task, mdev_reqs, mapper, &mdev_reqs_vec, &score, parray_list);
+          task, mdev_reqs, sched, &mdev_reqs_vec, &score, parray_list);
       if (!is_req_available) {
         continue;
       }
@@ -243,7 +244,7 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
           std::dynamic_pointer_cast<DeviceRequirement>(base_req);
       Score_t score{0};
       bool is_req_available = calc_score_devplacement(
-          task, dev_req, mapper, &score, parray_list[0]);
+          task, dev_req, sched, &score, parray_list[0]);
       if (!is_req_available) {
         continue;
       }
@@ -260,11 +261,11 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
           dynamic_cast<ArchitectureRequirement *>(base_req.get());
       std::shared_ptr<DeviceRequirement> chosen_dev_req{nullptr};
       Score_t chosen_dev_score{0};
-      // std::cout << "[Mapper] Task name:" << task->get_name() << ", " <<
+      // std::cout << "[scheduler] Task name:" << task->get_name() << ", " <<
       // "Checking arch requirement."
       //           << "\n";
       bool is_req_available = calc_score_archplacement(
-          task, arch_req, mapper, chosen_dev_req, &chosen_dev_score,
+          task, arch_req, sched, chosen_dev_req, &chosen_dev_score,
           parray_list[0]);
       if (!is_req_available) {
         continue;

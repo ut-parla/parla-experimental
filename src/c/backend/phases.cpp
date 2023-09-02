@@ -19,12 +19,6 @@ Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
        PArrayTracker *parray_tracker, MappingPolicyType policy_type)
     : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
   DevID_t num_devices = devices->get_num_devices();
-  this->dev_num_mapped_tasks_.resize(num_devices);
-  this->dev_num_mapped_gemm1_.resize(num_devices);
-  this->dev_num_mapped_subcholesky_.resize(num_devices);
-  this->dev_num_mapped_gemm2_.resize(num_devices);
-  this->dev_num_mapped_solve_.resize(num_devices);
-  this->dev_num_mapped_others_.resize(num_devices);
   if (policy_type == MappingPolicyType::LoadBalancingLocality) {
     std::cout << "Locality- and load balancing-aware heuristic is enabled\n";
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
@@ -32,11 +26,11 @@ Mapper::Mapper(InnerScheduler *scheduler, DeviceManager *devices,
   } else if (policy_type == MappingPolicyType::RLTraining) {
     std::cout << "RL Training is enabled\n";
     this->policy_ = std::make_shared<RLTaskMappingPolicy>(
-        devices, parray_tracker, this, true);
+        devices, parray_tracker, this->scheduler, true);
   } else if (policy_type == MappingPolicyType::RLTest) {
     std::cout << "RL Test is enabled\n";
     this->policy_ = std::make_shared<RLTaskMappingPolicy>(
-        devices, parray_tracker, this, false);
+        devices, parray_tracker, this->scheduler, false);
   } else {
     std::cout << "Unsupported policy type..\n";
     this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
@@ -88,7 +82,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list = task->parray_list;
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
-    policy_->run_task_mapping(task, this, &chosen_devices, parray_list,
+    policy_->run_task_mapping(task, this->scheduler, &chosen_devices, parray_list,
         &placement_req_options_vec);
 
     if (chosen_devices.empty()) {
@@ -111,20 +105,23 @@ void Mapper::run(SchedulerPhase *next_phase) {
         this->scheduler->assign_task_mapping_id(task);
         // Increase the number of mapped tasks as the number of PArrays
         // since the corresponding data movement tasks will be created.
-        this->atomic_incr_num_mapped_tasks_device(global_dev_id);
+        this->scheduler->atomic_incr_num_mapped_tasks_device(global_dev_id);
+        this->scheduler->atomic_incr_num_tasks_mapped_states(global_dev_id);
 
-        // XXX(hc): Test
-        if (task->name.find("gemm1") != std::string::npos) {
-          this->atomic_incr_num_mapped_gemm1_device(global_dev_id);
-        } else if (task->name.find("subcholesky") != std::string::npos) {
-          this->atomic_incr_num_mapped_subcholesky_device(global_dev_id);
-        } else if (task->name.find("gemm2") != std::string::npos) {
-          this->atomic_incr_num_mapped_gemm2_device(global_dev_id);
-        } else if (task->name.find("solve") != std::string::npos) {
-          this->atomic_incr_num_mapped_solve_device(global_dev_id);
-        } else {
-          this->atomic_incr_num_mapped_others_device(global_dev_id);
-        }
+        LOG_INFO("Debug",
+            "Mapping {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+            task->name, global_dev_id,
+            this->scheduler->
+                atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_ready_tasks(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_running_tasks(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+
         for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
           parray::InnerPArray *parray = (*parray_list)[i][j].first;
           this->scheduler->get_parray_tracker()->reserve_parray(*parray,
@@ -301,6 +298,26 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
       this->reservable_tasks->pop();
       this->create_datamove_tasks(task);
       this->reserved_tasks_buffer.push_back(task);
+
+      // A task in this scope is only a computation task.
+      for (ParlaDevice *device : task->assigned_devices) {
+        DevID_t global_dev_id = device->get_global_id();
+        this->scheduler->atomic_decr_num_tasks_mapped_states(global_dev_id);
+        this->scheduler->atomic_incr_num_tasks_resreserved_states(global_dev_id);
+        LOG_INFO("Debug",
+            "ResReserved {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+            task->name, global_dev_id,
+            this->scheduler->
+                atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_ready_tasks(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_running_tasks(global_dev_id),
+            this->scheduler->
+                atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+      }
     } else {
       // TODO:(wlr) we need some break condition to allow the scheduler to
       // continue if not enough resources are available Hochan, do you
@@ -448,6 +465,25 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
           // Decrease Resources
           this->reserve_resources(task);
+          // A task in this scope is only a computation task.
+          for (ParlaDevice *device : task->assigned_devices) {
+            DevID_t global_dev_id = device->get_global_id();
+            this->scheduler->atomic_decr_num_tasks_resreserved_states(global_dev_id);
+            this->scheduler->atomic_incr_num_ready_tasks(global_dev_id);
+            LOG_INFO("Debug",
+                "Ready {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+                task->name, global_dev_id,
+                this->scheduler->
+                    atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+                this->scheduler->
+                    atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+                this->scheduler->
+                    atomic_load_dev_num_ready_tasks(global_dev_id),
+                this->scheduler->
+                    atomic_load_dev_num_running_tasks(global_dev_id),
+                this->scheduler->
+                    atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+          }
           launcher->enqueue(task, worker);
           this->status.increase(RuntimeReserverState::Success);
         } else {
@@ -516,7 +552,25 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
 
   for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
     ParlaDevice *device = task->assigned_devices[i];
+    DevID_t global_dev_id = device->get_global_id();
     device->end_device_idle();
+    if (!task->is_data_task()) {
+      this->scheduler->atomic_decr_num_ready_tasks(global_dev_id);
+      this->scheduler->atomic_incr_num_running_tasks(global_dev_id);
+      LOG_INFO("Debug",
+          "Running {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+          task->name, global_dev_id,
+          this->scheduler->
+              atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+          this->scheduler->
+              atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+          this->scheduler->
+              atomic_load_dev_num_ready_tasks(global_dev_id),
+          this->scheduler->
+              atomic_load_dev_num_running_tasks(global_dev_id),
+          this->scheduler->
+              atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+    }
     //std::cout << task->name << " <- " << device->get_global_id() << "\n";
   }
 
