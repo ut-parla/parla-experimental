@@ -3,6 +3,7 @@
 
 #include "device_manager.hpp"
 #include "rl_environment.hpp"
+#include "rl_utils.h"
 #include "runtime.hpp"
 #include "policy.hpp"
 
@@ -560,11 +561,7 @@ public:
   void append_mapped_task_info(
       InnerTask *task, torch::Tensor current_state, torch::Tensor next_state,
       torch::Tensor chosen_device, torch::Tensor reward) {
-    if (task->name.find("global_0") != std::string::npos ||
-        task->name.find("begin_rl_task") != std::string::npos ||
-        task->name.find("end_rl_task") != std::string::npos ||
-        task->name.find("Reset") != std::string::npos ||
-        task->name.find("CopyBack") != std::string::npos) {
+    if (!check_valid_tasks(task->name)) {
       return;
     }
     //auto current_time = std::chrono::high_resolution_clock::now();
@@ -594,13 +591,7 @@ public:
    */
   void evaluate_and_append_task_mapping(InnerTask *task, RLEnvironment *rl_env) {
     if (this->is_training_mode_) {
-      if (task->name.find("global_0") != std::string::npos ||
-          task->name.find("begin_rl_task") != std::string::npos ||
-          task->name.find("end_rl_task") != std::string::npos ||
-          task->name.find("Reset") != std::string::npos ||
-          task->name.find("CopyBack") != std::string::npos) {
-        return;
-      }
+      if (!check_valid_tasks(task->name)) { return; }
       if (task->is_data_task()) { return; }
       this->replay_mem_buffer_mtx_.lock();
       // Get id of the task

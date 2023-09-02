@@ -39,22 +39,17 @@ double RLEnvironment::check_task_type_using_name(InnerTask *task) {
   return task_type;
 }
 
-
 void RLEnvironment::make_current_task_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
     size_t offset, bool accum) {
   // 1) # of active dependencies:
-  uint32_t num_task_state_types{8};
+  uint32_t num_task_state_types{Task::State::COMPLETED - 1};
   std::vector<int64_t> num_active_dependencies(num_task_state_types, 0);
   for (size_t i = 0; i < task->dependencies.size(); ++i) {
     // Access each dependency of the compute task.
     InnerTask *dependency = task->dependencies.at(i);
     if (dependency->is_data.load()) { continue; }
-    if (task->name.find("global_0") != std::string::npos ||
-        task->name.find("begin_rl_task") != std::string::npos ||
-        task->name.find("end_rl_task") != std::string::npos ||
-        task->name.find("Reset") != std::string::npos ||
-        task->name.find("CopyBack") != std::string::npos) { continue; }
+    if (!check_valid_tasks(task->name)) { continue; }
 
     ++num_active_dependencies[task->get_state()];
     if (dependency->get_state() < Task::State::COMPLETED) {
@@ -83,11 +78,7 @@ void RLEnvironment::make_current_task_state(
     // (Those will be created after this task creates them first)
     InnerTask *dependent = task->dependents.at(i);
     if (dependent->is_data.load()) { continue; }
-    if (task->name.find("global_0") != std::string::npos ||
-        task->name.find("begin_rl_task") != std::string::npos ||
-        task->name.find("end_rl_task") != std::string::npos ||
-        task->name.find("Reset") != std::string::npos ||
-        task->name.find("CopyBack") != std::string::npos) { continue; }
+    if (!check_valid_tasks(task->name)) { continue; }
 
     if (dependent->get_state() < Task::State::COMPLETED) {
       ++num_active_dependents;
@@ -279,12 +270,7 @@ void RLEnvironment::make_current_active_deptask_state(
       // Access each dependency/dependent of the compute task.
       InnerTask *dep_task = dep_task_list.at(i);
       if (dep_task->is_data.load()) { continue; }
-      if (task->name.find("global_0") != std::string::npos ||
-          task->name.find("begin_rl_task") != std::string::npos ||
-          task->name.find("end_rl_task") != std::string::npos ||
-          task->name.find("Reset") != std::string::npos ||
-          task->name.find("CopyBack") != std::string::npos) { continue; }
-
+      if (!check_valid_tasks(task->name)) { continue; }
       if (dep_task->get_state() < Task::State::COMPLETED) {
         ++num_active_tasks;
         this->make_current_task_state(
@@ -330,7 +316,7 @@ torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
     (num_devices * NUM_DEVICE_FEATURES) << "\n";
 #endif
   this->make_current_task_state(task, current_state, num_devices, 0, false);
-  this->make_current_active_deptask_state(task, current_state, num_devices);
+  //this->make_current_active_deptask_state(task, current_state, num_devices);
   this->make_current_device_state(task, current_state, num_devices);
 
   return current_state;

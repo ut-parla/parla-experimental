@@ -2,13 +2,14 @@
 #define PARLA_RL_ENVIRONMENT
 
 #include "device_manager.hpp"
+#include "rl_utils.h"
 #include "runtime.hpp"
 
 #include <torch/torch.h>
 
-#define NUM_TASK_FEATURES 11
-#define NUM_DEP_TASK_FEATURES 10
-#define NUM_DEVICE_FEATURES 9
+#define NUM_TASK_FEATURES 7
+#define NUM_DEP_TASK_FEATURES 0
+#define NUM_DEVICE_FEATURES 8
 #define DEVICE_FEATURE_OFFSET (NUM_TASK_FEATURES + NUM_DEP_TASK_FEATURES * 2)
 
 class Mapper;

@@ -205,11 +205,7 @@ void RLTaskMappingPolicy::run_task_mapping(
    //    task->num_dependents);
 
     if (this->rl_agent_->is_training_mode()) {
-      if (task->name.find("global_0") == std::string::npos &&
-          task->name.find("begin_rl_task") == std::string::npos &&
-          task->name.find("end_rl_task") == std::string::npos &&
-          task->name.find("Reset") == std::string::npos &&
-          task->name.find("CopyBack") == std::string::npos) {
+      if (check_valid_tasks(task->name)) {
         this->rl_next_state_ = this->rl_env_->make_next_state(
             this->rl_current_state_, chosen_device_gid, task);
         torch::Tensor reward = this->rl_env_->calculate_reward_parla(
