@@ -12,7 +12,7 @@ using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 double RLEnvironment::check_task_type(InnerTask *task) {
   double task_type;
-  std::string task_type_str = task->name.substr(0, task->name.find("-"));
+  std::string task_type_str = task->name.substr(0, task->name.find("_"));
   auto found = this->task_type_map_.find(task_type_str);
   if (found == this->task_type_map_.end()) {
     task_type = this->last_task_type;
@@ -40,174 +40,117 @@ double RLEnvironment::check_task_type_using_name(InnerTask *task) {
 }
 
 void RLEnvironment::make_current_task_state(
-    InnerTask *task, torch::Tensor current_state, DevID_t num_devices,
-    size_t offset, bool accum) {
+    InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
   // 1) # of active dependencies:
-  uint32_t num_task_state_types{Task::State::COMPLETED - 1};
-  std::vector<int64_t> num_active_dependencies(num_task_state_types, 0);
+  uint32_t num_considering_task_states{
+      Task::State::RUNNING - Task::State::MAPPED + 1};
+  // This vector counts the number of dependencies (parents)
+  // which are between in MAPPED and RUNNING states.
+  // Those dependencies typically could affect the current target
+  // task's execution.
+  std::vector<int64_t> num_dependencies(num_considering_task_states, 0);
   for (size_t i = 0; i < task->dependencies.size(); ++i) {
-    // Access each dependency of the compute task.
+    // Only consider computation tasks, not data movement tasks since
+    // those tasks are considered through data locality related states.
     InnerTask *dependency = task->dependencies.at(i);
+    if (!check_valid_tasks(dependency->name)) { continue; }
     if (dependency->is_data.load()) { continue; }
-    if (!check_valid_tasks(task->name)) { continue; }
-
-    ++num_active_dependencies[task->get_state()];
-    if (dependency->get_state() < Task::State::COMPLETED) {
-      // XXX: it assumes a single device task.
-      // So, always use 0th device id.
-      // XXX: temporarily update device state.
-      auto& dependency_devices = task->get_assigned_devices();
-      if (dependency_devices.size() > 0) {
-        DevID_t device_id = dependency_devices[0]->get_global_id();
-        current_state[0][
-            DEVICE_FEATURE_OFFSET + device_id * NUM_DEVICE_FEATURES + 3] += 1;
-
-#if PRINT_LOG
-        std::cout << "current state[" <<
-            DEVICE_FEATURE_OFFSET + device_id * NUM_DEVICE_FEATURES + 3 << "] = " <<
-            current_state[0][DEVICE_FEATURE_OFFSET + device_id * NUM_DEVICE_FEATURES + 3] << "\n";
-#endif
-      }
-    }
+    Task::State task_state = task->get_state();
+    if (task_state < Task::State::MAPPED ||
+        task_state > Task::State::RUNNING) { continue; }
+    ++num_dependencies[task_state - Task::State::MAPPED];
   }
 
-  // 2) # of visible 1-hop dependents.
-  int64_t num_active_dependents{0};
-  for (size_t i = 0; i < task->dependents.size(); ++i) {
-    // Dependent tasks do not have data movement tasks yet.
-    // (Those will be created after this task creates them first)
-    InnerTask *dependent = task->dependents.at(i);
-    if (dependent->is_data.load()) { continue; }
-    if (!check_valid_tasks(task->name)) { continue; }
-
-    if (dependent->get_state() < Task::State::COMPLETED) {
-      ++num_active_dependents;
-    }
-  }
-
-  // 3) Mega-Bytes of IN/INOUT/OUT data.
+  // 2) Total bytes of IN/INOUT/OUT PArrays.
+  // XXX(hc): This assumes a single device task; so PArrays are initialized at
+  // 0th device.
   double total_bytes{0};
-  for (DevID_t d = 0; d < num_devices; ++d) {
-    for (size_t pi = 0; pi < task->parray_list[d].size(); ++pi) {
-      InnerPArray *parray = task->parray_list[d][pi].first;
-      total_bytes += int64_t{parray->get_size()}; 
-    }
+  for (size_t pi = 0; pi < task->parray_list[0].size(); ++pi) {
+    InnerPArray *parray = task->parray_list[0][pi].first;
+    total_bytes += int64_t{parray->get_size()}; 
   }
 
-  if (accum) {
-    for (uint32_t i = 0; i < num_task_state_types; ++i) {
-      current_state[0][offset + i] += num_active_dependencies[i];
-    }
-    current_state[0][offset + num_task_state_types] += num_active_dependents;
-    current_state[0][offset + num_task_state_types + 1] += (total_bytes / double{1 << 30});
-
-#if PRINT_LOG
-    for (uint32_t i = 0; i <num_task_state_types; ++i) {
-      std::cout << "current state[" << offset + i << "] = " << current_state[0][offset + i] << "\n";
-    }
-    std::cout << "current state[" << offset + num_task_state_types << "] = " << current_state[0][offset + num_task_state_types] << "\n";
-    std::cout << "current state[" << offset + num_task_state_types + 1 << "] = " << current_state[0][offset + num_task_state_types + 1] << "\n";
-#endif
-  } else {
-    for (uint32_t i = 0; i < num_task_state_types; ++i) {
-      current_state[0][offset] = num_active_dependencies[i];
-    }
-    current_state[0][offset + num_task_state_types] = num_active_dependents;
-    current_state[0][offset + num_task_state_types + 1] = (total_bytes / double{1 << 30});
-    // 4) Task type.
-    double task_type = this->check_task_type_using_name(task);
-    //current_state[0][offset + num_task_state_types + 2] = task_type;
-
-#if PRINT_LOG
-    std::cout << "task types ~ next\n";
-    for (uint32_t i = 0; i <num_task_state_types; ++i) {
-      std::cout << "current state[" << offset + i << "] = " << current_state[0][offset + i] << "\n";
-    }
-    std::cout << "current state[" << offset + num_task_state_types << "] = " << current_state[0][offset + num_task_state_types] << "\n";
-    std::cout << "current state[" << offset + num_task_state_types + 1 << "] = " << current_state[0][offset + num_task_state_types + 1] << "\n";
-    std::cout << "current state[" << offset + num_task_state_types + 2 << "] = " << current_state[0][offset + num_task_state_types + 2] << "\n";
-    std::cout << "task types ~ next [done]\n";
-#endif
+  // TODO(hc): These states are not normalized yet.
+  // For now, rely on torch::normalize layers.
+  size_t offset{0};
+  for (uint32_t i = 0; i < num_considering_task_states; ++i, ++offset) {
+    current_state[0][i] = num_dependencies[i];
   }
+  current_state[0][offset++] = (total_bytes / double{1 << 20});
+  // 3) Task type.
+  double task_type = this->check_task_type(task);
+  current_state[0][offset] = task_type;
+#if PRINT_LOG
+  LOG_INFO("Debug", "Current Task State Print");
+  size_t print_offset{0};
+  for (uint32_t i = 0; i < num_considering_task_states; ++i, ++print_offset) {
+    LOG_INFO("Debug", "current state[{}]={}",
+        i, current_state[0][i].item<double>());
+  }
+  LOG_INFO("Debug", "current state[{}]={}",
+      print_offset, current_state[0][print_offset].item<double>());
+  ++print_offset;
+  LOG_INFO("Debug", "current state[{}]={}",
+      print_offset, current_state[0][print_offset].item<double>());
+  LOG_INFO("Debug", "Current Task State Print [done]");
+#endif
 }
 
 void RLEnvironment::make_current_device_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
+  // 1) The number of tasks for each state (TODO(hc): for now ignore CPU).
+  double tnmt = this->sched_->atomic_load_total_num_mapped_tasks();
+  size_t nmt_m = 0, nmt_rs = 0, nmt_rd = 0, nmt_rn = 0;
+  size_t num_considering_task_states{4};
+  size_t offset{DEVICE_FEATURE_OFFSET + NUM_DEVICE_FEATURES};
+  if (tnmt == 0) {
+    for (DevID_t d = 1; d < num_devices; ++d) {
+      current_state[0][offset] = 0;
+      current_state[0][offset+1] = 0;
+      current_state[0][offset+2] = 0;
+      current_state[0][offset+3] = 0;
+      offset += NUM_DEVICE_FEATURES;
+    }
+  } else {
+    for (DevID_t d = 1; d < num_devices; ++d) {
+      nmt_m = this->sched_->atomic_load_dev_num_tasks_mapped_states(d); 
+      nmt_rs = this->sched_->atomic_load_dev_num_tasks_resreserved_states(d);
+      nmt_rd = this->sched_->atomic_load_dev_num_ready_tasks(d);
+      nmt_rn = this->sched_->atomic_load_dev_num_running_tasks(d);
+      current_state[0][offset] = nmt_m / tnmt;
+      current_state[0][offset+1] = nmt_rs / tnmt;
+      current_state[0][offset+2] = nmt_rd / tnmt;
+      current_state[0][offset+3] = nmt_rn / tnmt;
+      offset += NUM_DEVICE_FEATURES;
+    }
+  }
+
+#if PRINT_LOG
+  size_t print_offset{DEVICE_FEATURE_OFFSET + NUM_DEVICE_FEATURES};
+  for (DevID_t d = 1; d < num_devices; ++d) {
+    for (uint32_t st = 0; st < num_considering_task_states; ++st) {
+      LOG_INFO("Debug", "current state[{}]={}", print_offset + st,
+          current_state[0][print_offset + st].item<double>());
+    }
+    print_offset += NUM_DEVICE_FEATURES;
+  }
+#endif
+
+  // 2) Data locality: Calculate the total IN/OUT/INOUT PArrays' bytes
   double total_bytes{0}, local_bytes{0};
-  // 0) Total IN/INOUT/OUT data bytes
+  // XXX(hc): This assumes a single device task; so PArrays are initialized at
+  // 0th device.
   for (size_t pi = 0; pi < task->parray_list[0].size(); ++pi) {
     InnerPArray *parray = task->parray_list[0][pi].first;
     total_bytes += double{parray->get_size()};
   }
 
-  /*
-  double total_idle_time{0}, total_nonidle_time{0};
-	TimePoint current_time_point = std::chrono::system_clock::now();
+  // TODO(hc): ignore CPU feature.
   for (DevID_t d = 1; d < num_devices; ++d) {
-    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
-    auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
-    total_idle_time += idle_time;
-    total_nonidle_time += nonidle_time;
-  }
-  */
-
-  // Exclude CPU
-  for (DevID_t d = 1; d < num_devices; ++d) {
-    ParlaDevice* device = this->device_manager_->get_device_by_global_id(d);
     double nonlocal_bytes{0};
-    // 1) # of tasks on queues.
-    double dev_mapped_tasks =
-        this->mapper_->atomic_load_dev_num_mapped_tasks_device(d);
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES] =
-        dev_mapped_tasks;
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] =
-        double{this->mapper_->atomic_load_dev_num_mapped_gemm1_device(d)};
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5] =
-        double{this->mapper_->atomic_load_dev_num_mapped_subcholesky_device(d)};
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6] =
-        double{this->mapper_->atomic_load_dev_num_mapped_gemm2_device(d)};
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7] =
-        double{this->mapper_->atomic_load_dev_num_mapped_solve_device(d)};
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8] =
-        double{this->mapper_->atomic_load_dev_num_mapped_others_device(d)};
-#if PRINT_LOG
-    std::cout << "gemm1 current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4]
-      << "\n";
-    std::cout << "subchol current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5]
-      << "\n";
-    std::cout << "gemm2 current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6]
-      << "\n";
-    std::cout << "solve current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7]
-      << "\n";
-    std::cout << "others current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 8]
-      << "\n";
-    std::cout << "current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES]
-      << "\n";
-#endif
-
-#if 0
-    if (dev_mapped_tasks > 0) {
-      //std::cout << "Device " << d << " remote bytes:" <<
-      //  device->get_remote_data_bytes() << ", num dependencies:" << device->get_num_dependencies() <<
-      //  ", num dependents:" << device->get_num_dependents() << "\n";
-      current_state[0][
-          DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 5] =
-              device->get_remote_data_bytes() / dev_mapped_tasks;
-      current_state[0][
-          DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 6] =
-              device->get_num_dependencies() / dev_mapped_tasks;
-      current_state[0][
-          DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 7] =
-              device->get_num_dependents() / dev_mapped_tasks;
-    }
-#endif
-    // 2) Data locality.
+    offset =
+      DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES +
+      num_considering_task_states;
     if (total_bytes > 0) {
       for (size_t pi = 0; pi < task->parray_list[0].size(); ++pi) {
         InnerPArray *parray = task->parray_list[0][pi].first;
@@ -215,91 +158,32 @@ void RLEnvironment::make_current_device_state(
           nonlocal_bytes += double{parray->get_size()};  
         }
       }
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 1] =
-          nonlocal_bytes / total_bytes;
+      current_state[0][offset] = nonlocal_bytes / total_bytes;
     } else {
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 1] = 0;
+      current_state[0][offset] = 0;
     }
+    ++offset;
 
 #if PRINT_LOG
-    std::cout << "current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 1
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 1]
-      << "\n";
+    LOG_INFO("Debug", "current state[{}]={}",
+        offset - 1, current_state[0][offset - 1].item<double>());
 #endif
 
     // 3) Reservable memory.
+    ParlaDevice* device =
+        this->device_manager_->get_device_by_global_id(d);
     const ResourcePool_t &device_pool = device->get_resource_pool();
     const ResourcePool_t &reserved_device_pool = device->get_reserved_pool();  
-    int64_t total_memory = device_pool.get(Resource::Memory);
-    int64_t remaining_memory = reserved_device_pool.get(Resource::Memory);
-    current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2] =
-      (total_memory > 0)? (remaining_memory / double{total_memory}) : 0;
-
+    int64_t total_device_memory = device_pool.get(Resource::Memory);
+    int64_t remaining_device_memory =
+        reserved_device_pool.get(Resource::Memory);
+    current_state[0][offset] =
+      (total_device_memory > 0)?
+          (remaining_device_memory / double{total_device_memory}) : 0;
 #if PRINT_LOG
-    std::cout << "current state[" << DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2
-      << "] = " << current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 2]
-      << "\n";
+    LOG_INFO("Debug", "current state[{}]={}",
+        offset, current_state[0][offset].item<double>());
 #endif
-
-    // 4) Relative idle/non-idle time.
-#if 0
-    XXX(hc): 0814
-    auto [idle_time, nonidle_time] = device->get_total_idle_time(current_time_point);
-    if (total_idle_time > 0) {
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 3] = idle_time / total_idle_time;
-      //std::cout << "device " << d << "'s idle time:" << idle_time << ", " << idle_time / total_idle_time << "\n";
-    }
-    
-    if (total_nonidle_time > 0) {
-      current_state[0][DEVICE_FEATURE_OFFSET + d * NUM_DEVICE_FEATURES + 4] = nonidle_time/ total_nonidle_time;
-      //std::cout << "device " << d << "'s nonidle time:" << nonidle_time << ", " << nonidle_time / total_nonidle_time << "\n";
-    }
-#endif
-  }
-}
-
-void RLEnvironment::make_current_active_deptask_state(
-    InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
-  int64_t num_active_dependencies{0};
-  // Iter 0: Dependencies
-  // Iter 1: Dependents
-  for (size_t t = 0; t < 2; ++t) {
-    auto& dep_task_list = (t == 0)? task->dependencies : task->dependents;
-    double num_active_tasks{0};
-    for (size_t i = 0; i < dep_task_list.size(); ++i) {
-      // Access each dependency/dependent of the compute task.
-      InnerTask *dep_task = dep_task_list.at(i);
-      if (dep_task->is_data.load()) { continue; }
-      if (!check_valid_tasks(task->name)) { continue; }
-      if (dep_task->get_state() < Task::State::COMPLETED) {
-        ++num_active_tasks;
-        this->make_current_task_state(
-            task, current_state, num_devices,
-            NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES, true);
-      }
-    }
-    if (num_active_tasks > 0) {
-      for (size_t i = 0; i < NUM_DEP_TASK_FEATURES; ++i) {
-        double old_value = current_state[0][
-            NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i].item<double>();
-        current_state[0][NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i]
-            = old_value / double{num_active_tasks};
-#if PRINT_LOG
-        std::cout << "current state[" << NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i
-          << "] = " << current_state[0][NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i]
-          << "\n";
-#endif
-      }
-    } else {
-      for (size_t i = 0; i < NUM_DEP_TASK_FEATURES; ++i) {
-        current_state[0][NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i] = 0;
-#if PRINT_LOG
-        std::cout << "current state[" << NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i
-          << "] = " << current_state[0][NUM_TASK_FEATURES + t * NUM_DEP_TASK_FEATURES + i]
-          << "\n";
-#endif
-      }
-    }
   }
 }
 
@@ -310,13 +194,7 @@ torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
       torch::zeros({1,
           NUM_TASK_FEATURES + (NUM_DEP_TASK_FEATURES * 2) +
           (num_devices * NUM_DEVICE_FEATURES)}, torch::kDouble);
-#if PRINT_LOG
-  std::cout << "Target task:" << task->name <<
-    " Current state dimension:" << NUM_TASK_FEATURES + (NUM_DEP_TASK_FEATURES * 2) +
-    (num_devices * NUM_DEVICE_FEATURES) << "\n";
-#endif
-  this->make_current_task_state(task, current_state, num_devices, 0, false);
-  //this->make_current_active_deptask_state(task, current_state, num_devices);
+  this->make_current_task_state(task, current_state, num_devices);
   this->make_current_device_state(task, current_state, num_devices);
 
   return current_state;
@@ -649,9 +527,9 @@ torch::Tensor RLEnvironment::calculate_reward_loadbalancing(
                                torch::Tensor current_state) {
   double score = 0;
   size_t total_running_planned_tasks =
-      this->mapper_->atomic_load_total_num_mapped_tasks();
+      this->sched_->atomic_load_total_num_mapped_tasks();
   size_t dev_running_planned_tasks =
-      this->mapper_->atomic_load_dev_num_mapped_tasks_device(
+      this->sched_->atomic_load_dev_num_mapped_tasks_device(
           chosen_device_id);
   if (dev_running_planned_tasks == 0) {
     // If the chosen device was idle, give a reward 1.
@@ -711,7 +589,7 @@ torch::Tensor RLEnvironment::calculate_reward_parla(
 #endif
   for (DevID_t i = 1 ; i < num_devices + 1; ++i) {
     size_t dev_running_planned_tasks =
-        this->mapper_->atomic_load_dev_num_mapped_tasks_device(i);
+        this->sched_->atomic_load_dev_num_mapped_tasks_device(i);
     double device_load =
         current_state[0][DEVICE_FEATURE_OFFSET + i * NUM_DEVICE_FEATURES].item<double>(); 
     double nonlocal_data = current_state[0][

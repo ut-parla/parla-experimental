@@ -126,17 +126,21 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
 
   torch::Tensor forward(torch::Tensor x) {
     x = x.to(device_);
-    //std::cout << "f1:" << x << "\n";
-    x = torch::leaky_relu(torch::nn::functional::normalize(fc1_(x.view({x.size(0), in_dim_}))));
+    x = torch::nn::functional::normalize(x.view({x.size(0), in_dim_}));
+    std::cout << "f0:" << x << "\n";
+    //x = torch::leaky_relu(torch::nn::functional::normalize(fc1_(x.view({x.size(0), in_dim_}))));
+    x = torch::leaky_relu(fc1_(x));
     //x = torch::leaky_relu(fc1_(x.view({x.size(0), in_dim_})));
-    //std::cout << "f2:" << x << "\n";
+    std::cout << "f1:" << x << "\n";
     //x = torch::leaky_relu(batch_norm2_(fc2_(x)));
-    x = torch::leaky_relu(torch::nn::functional::normalize(fc2_(x)));
-    //x = torch::leaky_relu(fc2_(x));
+    //x = torch::leaky_relu(torch::nn::functional::normalize(fc2_(x)));
+    x = torch::leaky_relu(fc2_(x));
+    std::cout << "f2:" << x << "\n";
     //std::cout << "f3:" << x << "\n";
     //x = out_(x);
-    x = torch::log_softmax(torch::nn::functional::normalize(out_(x)), 1);
-    //std::cout << "out:" << x << "\n";
+    //x = torch::log_softmax(torch::nn::functional::normalize(out_(x)), 1);
+    x = torch::log_softmax(out_(x), 1);
+    std::cout << "out:" << x << "\n";
     return x.squeeze(0);
   }
 
