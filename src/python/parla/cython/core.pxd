@@ -128,7 +128,6 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void record_task_begin_epochs()
         void record_task_completion_epochs()
-        void evaluate_completed_task()
 
     #ctypedef InnerWorker* InnerWorkerPtr_t
 

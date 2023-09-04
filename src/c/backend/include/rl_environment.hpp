@@ -30,20 +30,8 @@ public:
 
   torch::Tensor make_next_state(
         torch::Tensor current_state, DevID_t chosen_device_id, InnerTask *task);
-
-  torch::Tensor calculate_reward(DevID_t chosen_device_id,
-                                 InnerTask *task,
-                                 torch::Tensor current_state, double base_score);
-  torch::Tensor calculate_reward2(DevID_t chosen_device_id,
-                                  InnerTask* task,
-                                  torch::Tensor current_state);
-  torch::Tensor calculate_reward_loadbalancing(DevID_t chosen_device_id,
-                                 InnerTask *task,
-                                 torch::Tensor current_state);
-  torch::Tensor calculate_reward_parla(
-                               DevID_t chosen_device_id,
-                               InnerTask* task,
-                               torch::Tensor current_state);
+  torch::Tensor calculate_reward(
+        DevID_t chosen_device_id, InnerTask* task, torch::Tensor current_state);
 
   double check_task_type(InnerTask *task);
   double check_task_type_using_name(InnerTask *task);
@@ -58,7 +46,8 @@ protected:
   double reward_accumulation_{0};
 
   std::unordered_map<std::string, double> task_type_map_;
-  std::unordered_map<std::string, std::pair<double, size_t>> task_compltime_delta_map_;
+  std::unordered_map<std::string, std::pair<double, size_t>>
+      task_compltime_delta_map_;
 	double last_task_type{0};
   // Accumulated task completion time to keep track of
   // average of the completion time among tasks.

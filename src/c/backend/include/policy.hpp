@@ -101,7 +101,6 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) = 0;
 
-  virtual void evaluate_and_append_task_mapping(InnerTask*) = 0;
   virtual void evaluate_current_epoch(double exec_time_ms, double prev_exec_time_ms) = 0;
 
 protected:
@@ -145,7 +144,6 @@ public:
           &parray_list,
       std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec);
 
-  void evaluate_and_append_task_mapping(InnerTask*) override {}
   void evaluate_current_epoch(double exec_time_ms, double prev_exec_time_ms) override {}
 };
 

@@ -90,9 +90,6 @@ void InnerWorker::record_task_completion_epochs() {
   }
 }
 
-void InnerWorker::evaluate_completed_task() {
-  this->scheduler->evaluate_completed_task(this->task);
-}
 // WorkerPool Implementation
 
 template <typename AllWorkers_t, typename ActiveWorkers_t>
@@ -417,15 +414,3 @@ int InnerScheduler::get_num_ready_tasks() {
 }
 
 void InnerScheduler::spawn_wait() { this->workers.spawn_wait(); }
-
-void InnerScheduler::evaluate_completed_task(InnerTask *task) {
-  /*
-  XXX(hc): make no-op to use a different reward
-  if (dynamic_cast<RLTaskMappingPolicy*>(this->
-          mapper->get_policy_raw_pointer()) != nullptr) {
-    this->mapper->get_policy_raw_pointer()->
-        evaluate_and_append_task_mapping(task);
-  }
-  */
-}
-

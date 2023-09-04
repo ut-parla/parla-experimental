@@ -801,10 +801,6 @@ public:
 
   /* Set epochs at task completion from when the task graph begins */
   void record_task_completion_epochs();
-
-  /* In RL, evaluate task mapping; the evalution method is depending on
-     the RL policy. The current version is to use task completion time based */
-  void evaluate_completed_task();
 };
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -1086,9 +1082,6 @@ public:
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
 
-  /* In RL, evaluate task mapping; the evalution method is depending on
-     the RL policy. The current version is to use task completion time based */
-  void evaluate_completed_task(InnerTask *task);
   TimePoint get_initial_epoch() {
     return this->device_manager_->get_initial_epoch();
   }
