@@ -6,9 +6,10 @@ RLTaskMappingPolicy::RLTaskMappingPolicy(
     : MappingPolicy(device_manager, parray_tracker) {
   size_t num_devices = device_manager->get_num_devices();
   this->rl_agent_ = new RLAgent(NUM_TASK_FEATURES +
-      NUM_DEP_TASK_FEATURES * 2 + num_devices * NUM_DEVICE_FEATURES,
-      num_devices, num_devices, is_training_mode);
-  this->rl_env_ = new RLEnvironment(this->device_manager_, parray_tracker, scheduler);
+      num_devices * NUM_DEVICE_FEATURES, num_devices,
+      num_devices, is_training_mode);
+  this->rl_env_ = new RLEnvironment(
+      this->device_manager_, parray_tracker, scheduler);
 }
 
 RLTaskMappingPolicy::~RLTaskMappingPolicy() {
@@ -110,7 +111,7 @@ void RLTaskMappingPolicy::run_task_mapping(
             this->rl_current_state_, chosen_device_gid, task);
         torch::Tensor reward = this->rl_env_->calculate_reward(
             chosen_device_gid, task, this->rl_current_state_);
-        this->rl_agent_->append_mapped_task_info(
+        this->rl_agent_->append_task_mapping_info(
             task, this->rl_current_state_, this->rl_next_state_,
             torch::tensor({float{chosen_device_gid}}, torch::kInt64),
             reward);

@@ -12,34 +12,21 @@ using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 double RLEnvironment::check_task_type(InnerTask *task) {
   double task_type;
+  // Expected task type is a prefix of the first '-' in a task name.
   std::string task_type_str = task->name.substr(0, task->name.find("_"));
   auto found = this->task_type_map_.find(task_type_str);
   if (found == this->task_type_map_.end()) {
+    // If a task type for task does not exist, create new one.
+    // The new task type is assigned (last existed task type + 1).
     task_type = this->last_task_type;
-    //std::cout << task_type_str << "'s task type found \n";
     this->task_type_map_[task_type_str] = this->last_task_type++;
   } else {
     task_type = found->second;
   }
-  //std::cout << task_type_str << "'s task type:" << task_type << "\n";
   return task_type;
 }
 
-double RLEnvironment::check_task_type_using_name(InnerTask *task) {
-  double task_type;
-  auto found = this->task_type_map_.find(task->name);
-  if (found == this->task_type_map_.end()) {
-    task_type = this->last_task_type;
-    //std::cout << task_type_str << "'s task type found \n";
-    this->task_type_map_[task->name] = this->last_task_type++;
-  } else {
-    task_type = found->second;
-  }
-  //std::cout << task_type_str << "'s task type:" << task_type << "\n";
-  return task_type;
-}
-
-void RLEnvironment::make_current_task_state(
+void RLEnvironment::make_current_workload_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
   // 1) # of active dependencies:
   uint32_t num_considering_task_states{
@@ -80,8 +67,6 @@ void RLEnvironment::make_current_task_state(
     total_bytes += int64_t{parray->get_size()}; 
   }
 
-  // TODO(hc): These states are not normalized yet.
-  // For now, rely on torch::normalize layers.
   size_t offset{0};
   for (uint32_t i = 0; i < num_considering_task_states; ++i, ++offset) {
     current_state[0][i] = num_dependencies[i];
@@ -106,7 +91,7 @@ void RLEnvironment::make_current_task_state(
 #endif
 }
 
-void RLEnvironment::make_current_device_state(
+void RLEnvironment::make_current_device_specific_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
   // 1) The number of tasks for each state (TODO(hc): for now ignore CPU).
   double nmt_m = 0, nmt_rs = 0, nmt_rd = 0, nmt_rn = 0;
@@ -192,14 +177,13 @@ torch::Tensor RLEnvironment::make_current_state(InnerTask *task) {
   DevID_t num_devices =
       this->device_manager_->template get_num_devices(ParlaDeviceType::All);
   torch::Tensor current_state =
-      torch::zeros({1,
-          NUM_TASK_FEATURES + (NUM_DEP_TASK_FEATURES * 2) +
+      torch::zeros({1, NUM_TASK_FEATURES +
           (num_devices * NUM_DEVICE_FEATURES)}, torch::kDouble);
 #if PRINT_LOG
   LOG_INFO("Debug", "current state {}", task->name);
 #endif
-  this->make_current_task_state(task, current_state, num_devices);
-  this->make_current_device_state(task, current_state, num_devices);
+  this->make_current_workload_state(task, current_state, num_devices);
+  this->make_current_device_specific_state(task, current_state, num_devices);
 
   return current_state;
 }
@@ -234,9 +218,8 @@ torch::Tensor RLEnvironment::make_next_state(
   // Nonlocal PArrays are moved to the target device.
   int64_t remaining_device_memory =
       reserved_device_pool.get(Resource::Memory) - prev_nonlocal_bytes;
-  next_state[0][offset + 5] = (total_device_memory - remaining_device_memory) / double(1 << 20);
-      //(total_device_memory > 0)?
-      //    (remaining_device_memory / double{total_device_memory}) : 0;
+  next_state[0][offset + 5] =
+      (total_device_memory - remaining_device_memory) / double(1 << 20);
 
 #if PRINT_LOG
   LOG_INFO("Debug", "next state {}", task->name);

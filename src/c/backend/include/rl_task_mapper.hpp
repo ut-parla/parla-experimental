@@ -10,6 +10,9 @@
 #include <random>
 #include <torch/torch.h>
 
+/**
+ * @brief Experience replay memory for model optimization.
+ */
 class ExperienceReplay {
 public:
   using BufferTupleType =
@@ -67,6 +70,9 @@ public:
     return sz;
   }
 
+  /*
+   * Clear the experience replay memory.
+   */
   void clear() {
     this->mtx_.lock();
     this->buffer_.clear();
@@ -90,9 +96,16 @@ private:
   int64_t capacity_;
   /// Experience replay memory.
   BufferTy buffer_;
+  /// Mutex to guard the experience replay memory.
   std::mutex mtx_;
 };
 
+/**
+ * @brief Buffer before an experience is enqueued to
+ * replay memory and is used on optimization.
+ * (As a reward could be incomplete,
+ *  this also could be incomplete information)
+ */
 class RLStateTransition {
   public:
     std::string task_name;
@@ -102,6 +115,10 @@ class RLStateTransition {
     torch::Tensor reward;
 };
 
+/**
+ * @brief Neural network consisting of 3 FCN layers with.
+ * leakly Relus and softmax layers.
+ */
 struct FullyConnectedDQNImpl : public torch::nn::Module {
   FullyConnectedDQNImpl(size_t in_dim, size_t out_dim)
       : in_dim_(in_dim), out_dim_(out_dim), device_(torch::kCUDA) {
@@ -149,8 +166,6 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
   //torch::nn::BatchNorm1d batch_norm1_{nullptr}, batch_norm2_{nullptr};
   torch::Device device_;
 };
-
-//TORCH_MODULE(FullyConnectedDQN);
 
 class RLAgent {
 public:
@@ -204,6 +219,8 @@ public:
       input_archive.load_from("target_net.pt");
       this->target_net_.load(input_archive);
     } else {
+      // If a target network is not stored,
+      // copy and reuse policy network parameters.
       std::cout << "Update target net parameter..\n";
       torch::NoGradGuard no_grad;
       auto target_named_parameters = this->target_net_.named_parameters();
@@ -231,8 +248,18 @@ public:
     }
   }
 
-  /*
-   * Select a device from the current state.
+  /**
+   * @brief Sample mapping decision experiences (S, A, S',R) from
+   * the replay memory to optimize the RL model.
+   */
+  std::vector<std::tuple<torch::Tensor, torch::Tensor, torch::Tensor,
+                         torch::Tensor, uint64_t>>
+  sample(int64_t b) {
+    return this->replay_memory_.sample(b);
+  }
+
+  /**
+   * @brief Select a device from the current state.
    */
   DevID_t select_device(torch::Tensor state,
                         std::vector<ParlaDevice *> device_candidates,
@@ -282,6 +309,10 @@ public:
     }
   }
 
+  /**
+   * @brief Optimize the current RL model by using buffered
+   * task mapping information.
+   */
   void optimize_model() {
     if (!this->is_training_mode()) {
       return;
@@ -330,16 +361,6 @@ public:
     next_target_q_values = std::get<0>(next_target_q_values.max(1)).detach();
     torch::Tensor expected_q_values =
         this->gamma_ * next_target_q_values + rewards_tensor;
-#if 0
-    std::cout << "curr_states_tensor:" << curr_states_tensor << "\n";
-    std::cout << "rewards:" << rewards_tensor << "\n";
-    std::cout << "action:" << actions_tensor.squeeze(0) << "\n";
-    std::cout << " qvals:" << q_values << ", "
-              << " action_tensor:" << actions_tensor << ", "
-              << " action_tensor unsqueezed:" << actions_tensor.unsqueeze(1)
-              << ", reward tensor:" << rewards_tensor << ", "
-              << ", expected q values:" << expected_q_values << "\n";
-#endif
     torch::Tensor loss = torch::smooth_l1_loss(q_values, expected_q_values.unsqueeze(1));
     std::cout << "\n Loss:" << loss << "\n";
 
@@ -396,63 +417,90 @@ public:
                               this->episode_);
   }
 
-  void append_mapped_task_info(
+  /**
+   * @brief Append task mapping information temporarily; this is because
+   * the reward might be incomplete and could be evaluated at the end of
+   * the epoch.
+   */
+  void append_task_mapping_info(
       InnerTask *task, torch::Tensor current_state, torch::Tensor next_state,
       torch::Tensor chosen_device, torch::Tensor reward) {
     if (!check_valid_tasks(task->name)) {
       return;
     }
+    // Construct task mapping information buffer element.
     RLStateTransition *tinfo = new RLStateTransition();
     tinfo->task_name = task->name;
     tinfo->current_state = current_state;
     tinfo->next_state = next_state;
     tinfo->chosen_device = chosen_device;
     tinfo->reward = reward;
+    // Append the constructed element to the buffer with lock. 
     this->replay_mem_buffer_mtx_.lock();
+    // This is a sequential buffer, so the size before the element
+    // is the element's identifier in this buffer.
+    // When it is added to the replay memory, this identifier will be
+    // used.
     task->replay_mem_buffer_id_ = this->replay_memory_buffer_.size();
     this->replay_memory_buffer_.push_back(tinfo);
     this->replay_mem_buffer_mtx_.unlock();
   }
 
-  void evaluate_current_epoch(double exec_time_ms, double best_exec_time_ms_exec_time_ms) {
+  /**
+   * @brief Evaluate the current epoch's task mapping decisions in batch.
+   * We do like this to consider the current epoch's execution time.
+   */
+  void evaluate_current_epoch(
+      double exec_time_ms, double best_exec_time_ms_exec_time_ms) {
 #if 0
     std::cout << "Evaluate current epoch:" << exec_time_ms << " vs " <<
       best_exec_time_ms_exec_time_ms << "\n";
 #endif
     if (this->is_training_mode_) {
       bool is_worth = (exec_time_ms <= best_exec_time_ms_exec_time_ms);
-      this->replay_mem_buffer_mtx_.lock();
-      double positive_weight = (exec_time_ms == 0)? 0 : (best_exec_time_ms_exec_time_ms / exec_time_ms);
-      double negative_weight = (best_exec_time_ms_exec_time_ms == 0)? 0 : (exec_time_ms / best_exec_time_ms_exec_time_ms);
+      double positive_weight = (exec_time_ms == 0)?
+          0 : (best_exec_time_ms_exec_time_ms / exec_time_ms);
+      double negative_weight = (best_exec_time_ms_exec_time_ms == 0)?
+          0 : (exec_time_ms / best_exec_time_ms_exec_time_ms);
+      // If this is not the first episode and is not too slow compared to the
+      // past best execution time, give additional score.
       double constant =
         (exec_time_ms == 0 ||
         best_exec_time_ms_exec_time_ms == std::numeric_limits<double>::max())?
             0 : (best_exec_time_ms_exec_time_ms / exec_time_ms);
       if (constant < 0.8) {
+        // If the current episode's execution time is slower than
+        // about 80% more, do not give the additional score.
         constant = 0; 
       }
       for (size_t i = 0; i < this->replay_memory_buffer_.size(); ++i) {
+        // Now, we know the final reward.
+        // Move task mapping information in the buffer to the replay memory.
+        this->replay_mem_buffer_mtx_.lock();
         RLStateTransition *tinfo = this->replay_memory_buffer_[i];
-        // All (S, A, R)s get constant reward if the current episode 
-        // is fast.
+        this->replay_mem_buffer_mtx_.unlock();
         torch::Tensor final_reward =
-            torch::tensor({tinfo->reward.item<double>() + constant}, torch::kDouble);
+            torch::tensor(
+                {tinfo->reward.item<double>() + constant}, torch::kDouble);
         this->append_replay_memory(
             tinfo->current_state, tinfo->chosen_device, tinfo->next_state,
             final_reward);
       }
-      this->replay_mem_buffer_mtx_.unlock();
     }
     this->optimize_model();
   }
 
-  void print() { this->replay_memory_.print(); }
-
-  std::vector<std::tuple<torch::Tensor, torch::Tensor, torch::Tensor,
-                         torch::Tensor, uint64_t>>
-  sample(int64_t b) {
-    return this->replay_memory_.sample(b);
+  /**
+   * @brief Clear the replay memory buffer (not actual replay memory) at
+   * the end of the current epoch.
+   */
+  void clear_replay_memory_buffer() {
+    this->replay_mem_buffer_mtx_.lock();
+    this->replay_memory_buffer_.clear();
+    this->replay_mem_buffer_mtx_.unlock();
   }
+
+  void print() { this->replay_memory_.print(); }
 
   void incr_episode() {
     ++this->episode_;
@@ -470,29 +518,27 @@ public:
     return this->is_training_mode_;
   }
 
-  void clear_replay_memory_buffer() {
-    this->replay_mem_buffer_mtx_.lock();
-    this->replay_memory_buffer_.clear();
-    this->replay_mem_buffer_mtx_.unlock();
-  }
 
 private:
-  // TODO: replay memory
-
+  /// FCN policy and target networks
   FullyConnectedDQNImpl policy_net_;
   FullyConnectedDQNImpl target_net_;
+  /// RL model optimizer
+  torch::optim::RMSprop rms_optimizer_;
+  /// Target device to store the RL model and perform the phases
   torch::Device device_;
+  /// The number of actions
   uint32_t n_actions_;
+  /// Specifying if the current mode is training or testing
   bool is_training_mode_;
+  /// RL model parameters
   float eps_start_, eps_end_, eps_decay_;
   size_t batch_size_;
   float gamma_;
   uint64_t steps_;
   ExperienceReplay replay_memory_;
-  torch::optim::RMSprop rms_optimizer_;
   //torch::optim::Adam adam_optimizer_;
   size_t episode_;
-  size_t subepisode_{0};
   std::vector<RLStateTransition*> replay_memory_buffer_;
   std::mutex replay_mem_buffer_mtx_;
 };
