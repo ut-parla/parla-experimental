@@ -102,12 +102,12 @@ def free_sleep_gpu(duration: float, config: RunConfig = None):
     """
     Assumes all GPUs on the system are the same.
     """
-    context = get_current_context()
+    device = get_current_devices()[0]
     stream = get_current_stream()
 
     cycles_per_second = _GPUInfo.get_cycles()
     ticks = int(cycles_per_second * duration)
-    gpu_bsleep_nogil(context.device.index, ticks, stream)
+    gpu_bsleep_nogil(device.id, ticks, stream)
 
     if config.inner_sync:
         stream.synchronize()
@@ -121,12 +121,12 @@ def lock_sleep_gpu(duration: float, config: RunConfig = None):
     """
     Assumes all GPUs on the system are the same.
     """
-    context = get_current_context()
+    device = get_current_devices()[0]
     stream = get_current_stream()
 
     cycles_per_second = _GPUInfo.get_cycles()
     ticks = int(cycles_per_second * duration)
-    gpu_bsleep_gil(context.device.index, ticks, stream)
+    gpu_bsleep_gil(device.id, ticks, stream)
 
     if config.inner_sync:
         stream.synchronize()
@@ -198,13 +198,27 @@ def get_kernel_info(info: TaskRuntimeInfo, config: RunConfig = None) -> Tuple[fl
             if config.gil_fraction is not None:
                 gil_fraction = config.gil_fraction
 
-        kernel_time = task_time / gil_accesses
+        kernel_time = task_time / max(gil_accesses, 1)
         free_time = kernel_time * (1 - gil_fraction)
         gil_time = kernel_time * gil_fraction
 
         return (free_time, gil_time), gil_accesses
 
-def synthetic_kernel(runtime_info: Dict[Device | tuple[Device] , TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]], config: RunConfig):
+def convert_context_to_devices(context):
+    device_list = []
+    for device in context.devices:
+        if device.architecture.name == "CPU":
+            dev = Device(Architecture.CPU, device.id)
+        elif device.architecture.name == "GPU":
+            dev = Device(Architecture.GPU, device.id)
+        else:
+            raise ValueError(f"Invalid architecture: {device.architecture.name}")
+        device_list.append(dev)
+    return tuple(device_list)
+    
+
+
+def synthetic_kernel(runtime_info: TaskPlacementInfo,  config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
@@ -216,14 +230,19 @@ def synthetic_kernel(runtime_info: Dict[Device | tuple[Device] , TaskRuntimeInfo
 
     context = get_current_context()
     devices = convert_context_to_devices(context)
-    details = get_placement_info(devices, runtime_info)
+    details = runtime_info[devices]
+
+    if len(devices) == 0:
+        raise ValueError("No devices provided to busy sleep kernel.")
+    if len(devices) != len(details):
+        raise ValueError("Not enough TaskRuntimeInfo provided to busy sleep kernel. Must be equal to number of devices.")
 
     info = []
-    for device in devices:
+    for idx, device in enumerate(devices):
         if isinstance(details, TaskRuntimeInfo):
             info.append(details)
         else:
-            info.append(details[device])
+            info.append(details[idx])
         if info is None:
             raise ValueError(f"TaskRuntimeInfo cannot be None for {device}. Please check the runtime info passed to the task.")
         
@@ -262,8 +281,9 @@ def waste_time_gpu(info_list: List[TaskRuntimeInfo], config: RunConfig):
     if len(info_list) < len(context.devices):
         raise ValueError("Not enough TaskRuntimeInfo provided to busy sleep kernel. Must be equal to number of devices.")
     
-    for device in context.loop():
-        info = info_list[device.index]
+    for idx, device in enumerate(context.loop()):
+        print("Device: ", device)
+        info = info_list[idx]
         (free_time, gil_time), gil_accesses = get_kernel_info(info, config=config)
         if gil_accesses == 0:
             free_sleep(free_time, config=config)
@@ -274,73 +294,62 @@ def waste_time_gpu(info_list: List[TaskRuntimeInfo], config: RunConfig):
 
     if config.outer_sync:
         context.synchronize()
-    
+
 
 def build_parla_device(mapping: Device, runtime_info: TaskRuntimeInfo):
-    
+
     if mapping.architecture == Architecture.CPU:
         arch = cpu
     elif mapping.architecture == Architecture.GPU:
         arch = gpu
     elif mapping.architecture == Architecture.ANY:
-        arch = None
+        raise NotImplementedError("ANY architecture not supported for Parla devices.")
     else:
         raise ValueError(f"Invalid architecture: {mapping.architecture}")
-
-    if arch is None:
-        return None
     
-    device_constraints = get_placement_info(mapping, runtime_info)
-
-    if device_constraints is None:
-        raise ValueError(f"Device constraints cannot be None for {mapping}. Please check the runtime info passed to the task.")
-    
-    device_memory = device_constraints.memory
-    device_fraction = device_constraints.device_fraction
+    device_memory = runtime_info.memory
+    device_fraction = runtime_info.device_fraction
 
     #Instatiate the Parla device object (may require scheduler to be active)
-    device = arch(mapping.device_id)({'memory': device_memory, 'vcus': device_fraction})
+    if mapping.device_id != -1:
+        device = arch(mapping.device_id)[{'memory': device_memory, 'vcus': device_fraction}]
+    else:
+        device = arch[{'memory': device_memory, 'vcus': device_fraction}]
 
     return device
 
-def append_placement(device_set: Device | Tuple[Device], 
-                       task_runtime_info: Dict[Device | Tuple[Device], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]],
-                       placement_list: List):
-    """
-    Turn configuration objects into a list of Parla placement objects.
-    Runtime configuration is stored in a dictionary of dictionaries:
-        MultiDevicePlacementSet -> ParlaDevice -> TaskRuntimeInfo
-        SingleDevicePlacementSet -> TaskRuntimeInfo
-    This assumes Parla 
-    """
-    
-    if isinstance(device_set, Device):
-        parla_device, task_runtime_info = build_parla_device(
-            device_set, task_runtime_info)
-        placement_list.append(parla_device)
-    elif isinstance(device_set, tuple):
-        multi_device_set = []
-        for device in device_set:
-            parla_device = build_parla_device(device, task_runtime_info)
-            multi_device_set.append(parla_device)
-        multi_device_set = tuple(multi_device_set)
-        placement_list.append(multi_device_set)
-    else:
-        raise ValueError(f"Invalid device type: {device_set}")
+def build_parla_device_tuple(mapping: Device | Tuple[Device], runtime_info: TaskPlacementInfo):
 
-def build_parla_placement_list(mapping: Device | Tuple[Device] | None, 
-                         task_runtime_info: Dict[Device | Tuple[Device], TaskRuntimeInfo| Dict[Device, TaskRuntimeInfo]], 
-                         num_gpus: int):
-    placement_list = []
+    if isinstance(mapping, Device):
+        mapping = (mapping,)
+    
+    device_constraints = runtime_info[mapping]
+
+    if device_constraints is None:
+        raise ValueError(f"Device constraints cannot be None for {mapping}. Please check the runtime info passed to the task.")
+    if len(device_constraints) != len(mapping):
+        raise ValueError(f"Device constraints must be the same length as the mapping. Please check the runtime info passed to the task.")
+    
+    device_list = []
+
+    for idx, device in enumerate(mapping):
+        if device is None:
+            raise ValueError(f"Device cannot be None in mapping. Please check the runtime info passed to the task.")
+        
+        parla_device = build_parla_device(device, device_constraints[idx])
+        device_list.append(parla_device)
+    
+    return tuple(device_list)
+
+def build_parla_placement(mapping: Device | Tuple[Device] | None, task_placment_info: TaskPlacementInfo):
 
     if mapping is None:
-        for device_set in task_runtime_info.keys():
-            append_placement(device_set, task_runtime_info, placement_list)
-    else:
-        append_placement(mapping, task_runtime_info, placement_list)
-
-    return placement_list
-
+        mapping_list = task_placment_info.locations
+        mapping_list = [build_parla_device_tuple(mapping, task_placment_info) for mapping in mapping_list]
+        return mapping_list 
+    
+    return [build_parla_device_tuple(mapping, task_placment_info)]
+    
 
 def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: RunConfig, data_list: List):
     """
@@ -348,16 +357,16 @@ def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: Ru
     """
 
     # Task ID
-    task_idx = task.task_id.task_idx
-    taskspace = taskspaces[task.task_id.taskspace]
-    task_name = task.task_id 
+    task_idx = task.id.task_idx
+    taskspace = taskspaces[task.id.taskspace]
+    task_name = task.id 
 
     # Dependency Info (List of Parla Tasks)
-    dependencies = [taskspaces[dep.taskspace][dep.task_idx] for dep in task.task_dependencies]
+    dependencies = [taskspaces[dep.taskspace][dep.task_idx] for dep in task.dependencies]
 
     # Valid Placement Set
-    runtime_info = task.task_runtime
-    placement_set = build_parla_placement_list(task.mapping, runtime_info, config.num_gpus)
+    placement_info = task.runtime
+    placement_list = build_parla_placement(task.mapping, placement_info)
 
     #Data information
     data_information = task.data_dependencies
@@ -393,14 +402,14 @@ def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: Ru
             data_list[d] for d in write_data_list
         ]
     
-    return task_name, (task_idx, taskspace, dependencies, placement_set), (IN, OUT, INOUT), runtime_info
+    return task_name, (task_idx, taskspace, dependencies, placement_list), (IN, OUT, INOUT), placement_info
 
 def create_task(task_name, task_info, data_info, runtime_info, config: RunConfig):
     try:
         task_idx, T, dependencies, placement_set = task_info
         IN, OUT, INOUT = data_info
         
-        @spawn(T[task_idx], dependencies=dependencies, placement=placement_set, input=IN, out=OUT, inout=INOUT)
+        @spawn(T[task_idx], dependencies=dependencies, placement=placement_set, input=IN, inout=INOUT)
         async def task_func():
 
             if config.verbose:
@@ -432,7 +441,7 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
 def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
 
-    @spawn(vcus=0)
+    @spawn(vcus=0, placement=cpu)
     async def main_task():
 
         graph_times = []
@@ -445,7 +454,7 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             taskspaces = {}
 
             for task, details in tasks.items():
-                space_name = details.task_id.taskspace
+                space_name = details.id.taskspace
                 if space_name not in taskspaces:
                     taskspaces[space_name] = TaskSpace(space_name)
 
@@ -502,7 +511,7 @@ def verify_order(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Li
 
         details = truth_graph[task]
 
-        for dependency in details.task_dependencies:
+        for dependency in details.dependencies:
             if log_times[task].start_t < log_times[dependency].end_t:
                 print("Task {task} started before dependency {dependency}")
                 return False
@@ -519,7 +528,7 @@ def verify_dependencies(log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict
 
         details = truth_graph[task]
 
-        for dependency in details.task_dependencies:
+        for dependency in details.dependencies:
             if dependency not in log_graph:
                 print(
                     f"Dependency {dependency} of task {task} not in log graph")
@@ -551,7 +560,7 @@ def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Lis
 
         # TODO: This needs to be fixed for device support
         device_idx = (-1,)  # CPU
-        expected_time = details.task_runtime[device_idx].task_time
+        expected_time = details.runtime[device_idx].task_time
         observed_time = log_times[task].duration / 1000
 
         if observed_time > expected_time * factor:

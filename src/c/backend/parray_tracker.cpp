@@ -3,7 +3,7 @@
 PArrayTracker::PArrayTracker(DeviceManager *device_manager)
     : device_manager_(device_manager) {
   this->managed_parrays_.resize(
-      device_manager->template get_num_devices<DeviceType::All>());
+      device_manager->template get_num_devices<DeviceType::Any>());
 }
 
 void PArrayTracker::track_parray(const InnerPArray &parray, DevID_t dev_id) {

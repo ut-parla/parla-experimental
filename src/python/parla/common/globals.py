@@ -83,7 +83,7 @@ class DeviceType(IntEnum):
     INVALID = -2
     ANY = -1
     CPU = 0
-    CUDA = 1
+    GPU = 1
 
 
 class AccessMode(IntEnum):

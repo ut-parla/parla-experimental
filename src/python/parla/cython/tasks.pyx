@@ -15,7 +15,7 @@ from parla.cython import device
 
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import get_stream_pool, get_scheduler
-from parla.common.globals import DeviceType as PyDeviceType
+from parla.common.globals import DeviceType
 from parla.common.globals import AccessMode, Storage
 
 from parla.common.parray.core import PArray
@@ -26,8 +26,6 @@ PyCUDADevice = device.PyCUDADevice
 PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
 PyCUDAArchitecture = device.PyCUDAArchitecture
-
-DeviceType = PyDeviceType
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, Union
@@ -769,7 +767,7 @@ def create_device_env(device):
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
     elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
+        return GPUEnvironment(device), DeviceType.GPU
 
 def create_env(sources):
     """!
@@ -813,7 +811,7 @@ class TaskEnvironment:
         self.event_dict = {}
         self.event_dict['default'] = None
 
-        for env in environment_list:
+        for idx, env in enumerate(environment_list):
             for dev in env.devices:
                 self.device_list.append(dev)
                 self.device_dict[dev.architecture].append(dev)
@@ -834,14 +832,14 @@ class TaskEnvironment:
         """
         Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
         """
-        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.GPU]]
 
     @property
     def gpu_id(self):
         """
         Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
         """
-        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+        return self.device_dict[DeviceType.GPU][0].get_parla_device().id
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
@@ -886,7 +884,7 @@ class TaskEnvironment:
         if envlist is None:
             envlist = self.contexts
         
-        for env in envlist:
+        for idx, env in enumerate(envlist):
             env.__enter__()
             yield env
             env.__exit__(None, None, None)
@@ -914,7 +912,7 @@ class TaskEnvironment:
         return self.devices[0]
 
     def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+        return [dev.device for dev in self.get_devices(DeviceType.GPU)]
 
     def synchronize(self, events=False, tags=['default'], return_to_pool=True):
         #print(f"Synchronizing {self}..", flush=True)
@@ -1166,6 +1164,11 @@ class TerminalEnvironment(TaskEnvironment):
     @property
     def architecture(self):
         return self._arch_type
+
+    @property
+    def id(self):
+        return self._device.id
+
 
     def __eq__(self, other):
         if isinstance(other, int) or isinstance(other, PyDevice):

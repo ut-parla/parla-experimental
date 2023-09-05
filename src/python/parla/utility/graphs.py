@@ -4,14 +4,12 @@
 @brief Provides the core classes for representing and generating synthetic task graphs.
 """
 
-import pprint
-import os
-from ast import literal_eval as make_tuple
+
 from fractions import Fraction
 import numpy as np
-import subprocess
 import re
-from typing import NamedTuple, Union, List, Dict, Tuple
+
+from typing import NamedTuple, Union, List, Dict, Tuple, FrozenSet
 from dataclasses import dataclass, field
 import tempfile
 import time
@@ -19,308 +17,27 @@ from enum import IntEnum
 
 from collections import defaultdict
 
-try:
-    from rich import print
-    from rich.traceback import install
-    install(show_locals=True)
-except ImportError:
-    pass 
+from .types import *
+from .load import *
+
+# try:
+#     from rich import print
+#     from rich.traceback import install
+#     install(show_locals=False, max_frames=2)
+# except ImportError:
+#     pass
 
 # Synthetic Graphs ENUMS
 
-class LogState(IntEnum):
-    """
-    Specifies the meaning of a log line. Used for parsing the log file.
-    """
-    ADDING_DEPENDENCIES = 0
-    ADD_CONSTRAINT = 1
-    ASSIGNED_TASK = 2
-    START_TASK = 3
-    RUNAHEAD_TASK = 4
-    NOTIFY_DEPENDENTS = 6
-    COMPLETED_TASK = 6
-    UNKNOWN = 7
+graph_generators = []
 
-
-class MovementType(IntEnum):
-    """
-    Used to specify the type of data movement to be used in a synthetic task graph execution.
-    """
-    NO_MOVEMENT = 0
-    LAZY_MOVEMENT = 1
-    EAGER_MOVEMENT = 2
-
-
-class DataInitType(IntEnum):
-    """
-    Used to specify the data movement pattern and initialization in a synthetic task graph execution.
-    """
-    NO_DATA = 0
-    INDEPENDENT_DATA = 1
-    OVERLAPPED_DATA = 2
-
-class Architecture(IntEnum):
-    """
-    Used to specify the architecture of a device in a synthetic task graph.
-    """
-    ANY = -1
-    CPU = 0
-    GPU = 1
-
-    def __str__(self):
-        return self.name
-
-@dataclass(frozen=True, slots=True)
-class Device:
-    """
-    Identifies a device in a synthetic task graph.
-    """
-    # The architecture of the device
-    architecture: Architecture = Architecture.CPU
-    # The id of the device (-1 for any)
-    device_id: int = 0 
-
-    def __str__(self):
-        return f"{self.architecture.name}[{self.device_id}]"
-    
-    def __repr__(self):
-        return str(self)
-
-@dataclass(frozen=True, slots=True)
-class TaskID:
-    """
-    The identifier for a task in a synthetic task graph.
-    """
-    taskspace: str = "T"  # The task space the task belongs to
-    task_idx: Tuple[int] = (0,)  # The index of the task in the task space
-    # How many times the task has been spawned (continuation number)
-    instance: int = 0
-
-@dataclass(slots=True)
-class TaskRuntimeInfo:
-    """
-    The collection of important runtime information / constraints for a task in a synthetic task graph.
-    """
-    task_time: float
-    device_fraction: Union[float, Fraction]
-    gil_accesses: int
-    gil_fraction: Union[float, Fraction]
-    memory: int
-
-
-@dataclass(slots=True)
-class TaskDataInfo:
-    """
-    The data dependencies for a task in a synthetic task graph.
-    """
-    read: list[int]
-    write: list[int]
-    read_write: list[int]
-
-
-@dataclass(slots=True)
-class TaskInfo:
-    """
-    The collection of important information for a task in a synthetic task graph.
-    """
-    task_id: TaskID
-    task_runtime: Dict[Device, TaskRuntimeInfo]
-    task_dependencies: list[TaskID]
-    data_dependencies: TaskDataInfo
-    task_mapping: Device | Tuple[Device] | None = None
-    task_order: int = 0
-
-
-@dataclass(slots=True)
-class DataInfo:
-    """
-    The collection of important information for a data object in a synthetic task graph.
-    """
-    idx: int
-    size: int
-    location: Device
-
-
-@dataclass(slots=True)
-class TaskTime:
-    """
-    The parsed timing information from a task from an execution log.
-    """
-    assigned_t: float
-    start_t: float
-    end_t: float
-    duration: float
-
-
-@dataclass(slots=True)
-class TimeSample:
-    """
-    A collection of timing information.
-    """
-    mean: float
-    median: float
-    std: float
-    min: float
-    max: float
-    n: int
-
-
-@dataclass(slots=True)
-class TaskConfig:
-    """
-    Constraint configuration for a task on a device type in a synthetic task graph.
-    """
-    task_time: int = 1000
-    gil_accesses: int = 1
-    gil_fraction: float = 0
-    device_fraction: float = 0.25
-    memory: int = 0
-
-
-@dataclass
-class TaskConfigs:
-    """
-    Holds the map of devices to task configurations for a synthetic task graph.
-    """
-    configurations: Dict[Device | Tuple[Device], TaskConfig | Dict[Device, TaskConfig]] = field(default_factory=dict)
-
-    def add(self, device: Device | Tuple[Device] | List[Device], task_config: TaskConfig | Dict[Device, TaskConfig]):
-        """
-        Holds the map of devices to task configurations for a synthetic task graph.
-
-        Args:
-            device (Device | Tuple[Device]): The device or multi-device tuple to add the task configuration
-            TaskConfig (TaskConfig | Dict[Device, TaskConfig]): The task configuration to add to the device. If a dictionary is provided, then the dictionary is used to map multi-device setup to task configurations.
-        """
-
-        if isinstance(device, List):
-            device = tuple(device)
-
-        if isinstance(task_config, List):
-            subdict = dict()
-            for i, d  in enumerate(device):
-                subdict[d] = task_config[i]
-            task_config = subdict
-
-        self.configurations[device] = task_config
-
-
-
-    def remove(self, device: Device | Tuple[Device]):
-        """
-        Removes a device (or multi-device set) from the task configurations.
-        """
-        del self.configurations[device]
-
-
-@dataclass(slots=True)
-class DataGraphConfig:
-    pattern: int = DataInitType.NO_DATA
-    architecture = Architecture.CPU
-    total_width: int = 2**23
-    npartitions: int = 1
-
-
-@dataclass(slots=True)
-class GraphConfig:
-    """
-    Configures information about generating the synthetic task graph.
-    """
-    task_config: TaskConfigs = None
-    fixed_placement: bool = False
-    placement_arch = Architecture.GPU
-    n_devices: int = 4
-    data_config: DataGraphConfig = field(default_factory=DataGraphConfig)
-
-
-
-@dataclass(slots=True)
-class IndependentConfig(GraphConfig):
-    """
-    Used to configure the generation of an independent synthetic task graph.
-    """
-    task_count: int = 1
-
-
-@dataclass(slots=True)
-class SerialConfig(GraphConfig):
-    """
-    Used to configure the generation of a serial synthetic task graph.
-    """
-    steps: int = 1  # Number of steps in the serial graph chain
-    # Number of dependency backlinks per task (used for stress testing)
-    dependency_count: int = 1
-    chains: int = 1  # Number of chains to generate that can run in parallel
-
-
-@dataclass(slots=True)
-class ReductionConfig(GraphConfig):
-    """
-    Used to configure the generation of a reduction synthetic task graph.
-    """
-    levels: int = 8  # Number of levels in the tree
-    branch_factor: int = 2  # Number of children per node
-
-
-@dataclass(slots=True)
-class ReductionScatterConfig(GraphConfig):
-    """
-    Used to configure the generation of a reduction-scatter task graph.
-    """
-    # The total number of tasks.
-    # The number of tasks for each level is calculated based on this.
-    # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
-    #       with 2 bridge tasks.
-    task_count: int = 1
-    levels: int = 4  # Number of levels in the tree
-
-
-@dataclass(slots=True)
-class RunConfig:
-    """
-    Configuration object for executing a synthetic task graph.
-    """
-    outer_iterations: int = 1  # Number of times to launch the Parla runtime and execute the task graph
-    # Number of times to execute the task graph within the same Parla runtime
-    inner_iterations: int = 1
-    inner_sync: bool = False  # Whether to synchronize after each kernel launch
-    outer_sync: bool = False  # Whether to synchronize at the end of the task
-    verbose: bool = False  # Whether to print the task graph to the console
-    device_fraction: float = None  # VCUs
-    data_scale: float = None  # Scaling factor to increase the size of the data objects
-    threads: int = None  # Number of threads to use for the Parla runtime
-    # Total time for all tasks (this overrides the time in the graphs)
-    task_time: float = None
-    # Fraction of time spent in the GIL (this overrides the time in the graphs)
-    gil_fraction: float = None
-    # Number of kernel launches/GIL accesses per task (this overrides the time in the graphs)
-    gil_accesses: int = None
-    movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
-    logfile: str = "testing.blog"  # The log file location
-    do_check: bool = False  # If this is true, validate configuration/execution
-    num_gpus: int = 4 # The number of GPUs to use for the execution
-
-task_filter = re.compile(r'InnerTask\{ .*? \}')
-
-defined_graph_generators = []
 
 def register_graph_generator(func):
     """
     Registers a graph generator function to be used for generating synthetic task graphs.
     """
-    defined_graph_generators.append(func)
+    graph_generators.append(func)
     return func
-
-
-def convert_to_dictionary(task_list: List[TaskInfo]) -> Dict[TaskID, TaskInfo]:
-    """
-    Converts a task list to a task graph dictionary
-    """
-    task_dict = dict()
-    for task in task_list:
-        task_dict[task.task_id] = task
-
-    return task_dict
 
 
 def shuffle_tasks(tasks: Dict[TaskID, TaskInfo]) -> Dict[TaskID, TaskInfo]:
@@ -332,371 +49,221 @@ def shuffle_tasks(tasks: Dict[TaskID, TaskInfo]) -> Dict[TaskID, TaskInfo]:
     return convert_to_dictionary(task_list)
 
 
-def extract(string: str) -> Union[int, Fraction]:
+def get_data_placement(idx, config):
+    data_config = config.data_config
+
+    if data_config.architecture == Architecture.CPU:
+        return Device(Architecture.CPU, 0)
+    if data_config.architecture == Architecture.GPU:
+        return Device(Architecture.GPU, idx % config.n_devices)
+
+
+def check_config(config: GraphConfig):
     """
-    Extracts string as decimal or int
+    Raise warnings for invalid configuration specifications.
     """
-    if "." in string:
-        return Fraction(string)
+    if config is None:
+        raise ValueError(
+            f"Graph Configuration file must be specified: {config}")
+
+    if config.task_config is None:
+        raise ValueError(
+            f"Task Configuration file must be specified: {config}")
+
+    if config.data_config is None:
+        raise ValueError(
+            f"Data Configuration file must be specified: {config}")
+
+
+@register_graph_generator
+def make_independent_graph(config: IndependentConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    # Generate configuration for data initialization
+    if data_config.pattern == DataInitType.NO_DATA:
+        data_placement = Device(Architecture.CPU, 0)
+        data_dict[0] = DataInfo(0, 1, data_placement)
+        num_data_blocks = 1
     else:
-        return int(string)
+        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
+            num_data_blocks = config.task_count
+        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
+            num_data_blocks = data_config.npartitions
+        else:
+            raise NotImplementedError(
+                f"Data pattern {data_config.pattern} not implemented for independent task graph.")
+
+        data_size = data_config.total_width // num_data_blocks
+
+        for i in range(num_data_blocks):
+            data_placement = get_data_placement(i, config)
+            data_dict[i] = DataInfo(i, data_size, data_placement)
+
+    # Build task graph
+    task_placement_info = configurations
+    for i in range(config.task_count):
+
+        # Task ID
+        task_id = TaskID("T", (i,), 0)
+
+        # Task Dependencies
+        task_dependencies = []
+
+        # Task Data Dependencies
+        if data_config.pattern == DataInitType.NO_DATA:
+            data_dependencies = TaskDataInfo()
+        if data_config.pattern == DataInitType.INDEPENDENT_DATA or data_config.pattern == DataInitType.OVERLAPPED_DATA:
+            data_dependencies = TaskDataInfo(
+                read=[DataAccess(i % num_data_blocks)])
+
+        # Task Mapping
+        if config.fixed_placement:
+            if config.placement_arch == Architecture.GPU:
+                task_mapping = Device(Architecture.GPU, i % config.n_devices)
+            elif config.placement_arch == Architecture.CPU:
+                task_mapping = Device(Architecture.CPU, 0)
+        else:
+            task_mapping = None
+
+        task_dict[task_id] = TaskInfo(
+            task_id, task_placement_info, task_dependencies, data_dependencies, task_mapping)
+
+    return task_dict, data_dict
 
 
+@register_graph_generator
+def make_serial_graph(config: SerialConfig) -> Tuple[TaskMap, DataMap]:
 
+    check_config(config)
+    data_config = config.data_config
+    configurations = config.task_config
 
-def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskInfo]]:
-    """
-    Reads a pgraph file and returns:
-    1. A list of the nodes in the graph
-    2. The initial data configuration
-    """
+    task_dict = dict()
+    data_dict = dict()
 
-    task_list = []
-    data_config = dict()
-
-    with open(filename, 'r') as graph_file:
-
-        lines = graph_file.readlines()
-
-        # Read the initial data configuration
-        data_info = lines.pop(0)
-        data_info = data_info.split(',')
-        idx = 0
-        for data in data_info:
-            info = data.strip().strip("{}").strip().split(":")
-            size = int(info[0].strip())
-            location = int(info[1].strip())
-            data_config[idx] = DataInfo(idx, size, location)
-            idx += 1
-
-        # print("Data Config", data_config)
-        # Read the task graph
-        for line in lines:
-            print("Line", line)
-            task = line.split("|")
-            # Breaks into [task_id, task_runtime, task_dependencies, data_dependencies]
-
-            # Process task id (can't be empty)
-            ids = task[0].strip()
-            print(ids)
-            ids = make_tuple(ids)
-
-            if not isinstance(ids, tuple):
-                ids = (ids,)
-
-            if isinstance(ids[0], str) and ids[0].isalpha():
-                taskspace = ids[0]
-                idx = ids[1]
-
-                if not isinstance(idx, tuple):
-                    idx = (idx, )
-
-                task_ids = TaskID(taskspace, idx, 0)
-            else:
-                taskspace = "T"
-                task_ids = TaskID(taskspace, ids, 0)
-
-            # Process task runtime (can't be empty)
-            configurations = task[1].strip().split("},")
-            task_runtime = dict()
-            for config in configurations:
-                config = config.strip().strip("{}").strip()
-                config = config.split(":")
-
-                targets = config[0].strip().strip("()").strip().split(",")
-                targets = [int(target.strip())
-                           for target in targets if target.strip() != ""]
-                target = tuple(targets)
-
-                details = config[1].strip().split(",")
-
-                details = [extract(detail.strip()) for detail in details]
-                details = TaskRuntimeInfo(*details)
-
-                task_runtime[target] = details
-
-            # Process task dependencies (can be empty)
-            if len(task) > 2:
-                dependencies = task[2].split(":")
-                if (len(dependencies) > 0) and (not dependencies[0].isspace()):
-                    task_dependencies = []
-
-                    for i in range(len(dependencies)):
-                        if not dependencies[i].isspace():
-                            ids = dependencies[i].strip()
-
-                            print(ids)
-                            ids = make_tuple(ids)
-
-                            if not isinstance(ids, tuple):
-                                ids = (ids,)
-
-                            if isinstance(ids[0], str) and ids[0].isalpha():
-                                name, idx = ids[0], ids[1]
-
-                                if not isinstance(idx, tuple):
-                                    idx = (idx, )
-                                dep_id = TaskID(name, idx, 0)
-
-                            else:
-                                dep_id = TaskID(taskspace, ids, 0)
-
-                            task_dependencies.append(dep_id)
-                else:
-                    task_dependencies = []
-
-            else:
-                task_dependencies = []
-
-            task_dependencies = task_dependencies
-
-            # Process data dependencies (can be empty)
-            if len(task) > 3:
-                # Split into [read, write, read/write]
-                types = task[3].split(":")
-
-                check = [not t.isspace() for t in types]
-
-                if any(check):
-                    task_data = [[], [], []]
-
-                    for i in range(len(types)):
-                        if check[i]:
-                            data = types[i].strip().split(",")
-                            if not data[0].isspace():
-                                task_data[i] = [0 for _ in range(len(data))]
-
-                                for j in range(len(data)):
-                                    if not data[j].isspace():
-                                        task_data[i][j] = int(data[j])
-                else:
-                    task_data = [[], [], []]
-            else:
-                task_data = [[], [], []]
-
-            task_data = TaskDataInfo(*task_data)
-
-            task_tuple = TaskInfo(task_ids, task_runtime,
-                                  task_dependencies, task_data)
-
-            task_list.append(task_tuple)
-
-    task_graph = convert_to_dictionary(task_list)
-
-    return data_config, task_graph
-
-
-def get_time(line: str) -> int:
-    logged_time = line.split('>>')[0].strip().strip("\`").strip('[]')
-    return int(logged_time)
-
-
-def check_log_line(line: str) -> int:
-    if "Running task" in line:
-        return LogState.START_TASK
-    elif "Notified dependents" in line:
-        return LogState.NOTIFY_DEPENDENTS
-    elif "Assigned " in line:
-        return LogState.ASSIGNED_TASK
-    elif "Runahead task" in line:
-        return LogState.RUNAHEAD_TASK
-    elif "Completed task" in line:
-        return LogState.COMPLETED_TASK
-    elif "Adding dependencies" in line:
-        return LogState.ADDING_DEPENDENCIES
-    elif "has constraints" in line:
-        return LogState.ADD_CONSTRAINT
+    # Generate configuration for data initialization
+    if data_config.pattern == DataInitType.NO_DATA:
+        data_placement = Device(Architecture.CPU, 0)
+        data_dict[0] = DataInfo(0, 1, data_placement)
+        num_data_blocks = 1
     else:
-        return LogState.UNKNOWN
+        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
+            num_data_blocks = config.steps * config.chains
 
+        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
+            num_data_blocks = config.chains
+        else:
+            raise NotImplementedError(
+                f"Data pattern {data_config.pattern} not implemented for serial task graph.")
 
-def convert_task_id(task_id: str, instance: int = 0) -> TaskID:
-    id = task_id.strip().split('_')
-    taskspace = id[0]
-    task_idx = tuple([int(i) for i in id[1:]])
-    return TaskID(taskspace, task_idx, int(instance))
+        data_size = data_config.total_width // num_data_blocks
 
+        for i in range(num_data_blocks):
+            data_placement = get_data_placement(i, config)
+            data_dict[i] = DataInfo(i, data_size, data_placement)
 
-def get_task_properties(line: str):
-    message = line.split('>>')[1].strip()
-    tasks = re.findall(task_filter, message)
-    tprops = []
-    for task in tasks:
-        properties = {}
-        task = task.strip('InnerTask{').strip('}').strip()
-        task_properties = task.split(',')
-        for prop in task_properties:
-            prop_name, prop_value = prop.strip().split(':')
-            properties[prop_name] = prop_value.strip()
+    # Build task graph
+    task_placement_info = configurations
+    for i in range(config.steps):
+        for j in range(config.chains):
 
-        # If ".dm." is in the task name, ignore it since
-        # this is a data movement task.
-        # TODO(hc): we may need to verify data movemnt task too.
-        if ".dm." in properties['name']:
-            continue
+            # Task ID:
+            task_id = TaskID("T", (i, j), 0)
 
-        properties['name'] = convert_task_id(
-            properties['name'], properties['instance'])
+            # Task Dependencies
+            dependency_list = []
+            dependency_limit = min(i, config.dependency_count)
+            for k in range(1, dependency_limit+1):
+                assert (i-k >= 0)
+                dependency = TaskID("T", (i-k, j), 0)
+                dependency_list.append(dependency)
 
-        tprops.append(properties)
-
-    return tprops
-
-
-def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  Dict[TaskID, List[TaskID]]]:
-
-    try:
-        result = subprocess.run(
-            ['bread', '-s', r"-f `[%r] >> %m`", filename], stdout=subprocess.PIPE)
-
-        output = result.stdout.decode('utf-8')
-    except subprocess.CalledProcessError as e:
-        raise Exception(e.output)
-
-    output = output.splitlines()
-
-    task_start_times = {}
-    task_runahead_times = {}
-    task_notify_times = {}
-    task_end_times = {}
-    task_assigned_times = {}
-
-    task_start_order = []
-    task_end_order = []
-    task_runahead_order = []
-
-    task_times = {}
-    task_states = defaultdict(list)
-
-    task_dependencies = {}
-
-    final_instance_map = {}
-
-    for line in output:
-        line_type = check_log_line(line)
-        if line_type == LogState.START_TASK:
-            start_time = get_time(line)
-            task_properties = get_task_properties(line)
-
-            if task_properties[0]["is_data_task"] == "1":
-                continue
-
-            task_properties = task_properties[0]
-
-            task_start_times[task_properties['name']] = start_time
-            task_start_order.append(task_properties['name'])
-
-            current_name = task_properties['name']
-
-            base_name = TaskID(current_name.taskspace,
-                               current_name.task_idx,
-                               0)
-
-            if base_name in final_instance_map:
-                if current_name.instance > final_instance_map[base_name].instance:
-                    final_instance_map[base_name] = current_name
+            # Task Data Dependencies
+            if data_config.pattern == DataInitType.NO_DATA:
+                data_dependencies = TaskDataInfo()
             else:
-                # if current_name.instance > 0:
-                #    raise RuntimeError(
-                #        "Instance number is not 0 for first instance of task")
-                final_instance_map[base_name] = base_name
+                if data_config.pattern == DataInitType.INDEPENDENT_DATA:
+                    inout_data_index = i * config.chains + j
+                elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
+                    inout_data_index = j
+                data_dependencies = TaskDataInfo(
+                    read_write=[DataAccess(inout_data_index)])
 
-        elif line_type == LogState.RUNAHEAD_TASK:
-            runahead_time = get_time(line)
-            task_properties = get_task_properties(line)
+            # Task Mapping
+            if config.fixed_placement:
+                if config.placement_arch == Architecture.GPU:
+                    task_mapping = Device(
+                        Architecture.GPU, j % config.n_devices)
+                elif config.placement_arch == Architecture.CPU:
+                    task_mapping = Device(Architecture.CPU, 0)
+            else:
+                task_mapping = None
 
-            if task_properties[0]["is_data_task"] == "1":
-                continue
+            task_dict[task_id] = TaskInfo(
+                task_id, task_placement_info, dependency_list, data_dependencies, task_mapping)
 
-            task_properties = task_properties[0]
+    return task_dict, data_dict
 
-            current_name = task_properties['name']
-            base_name = TaskID(current_name.taskspace,
-                               current_name.task_idx,
-                               0)
 
-            task_runahead_times[base_name] = runahead_time
-            task_runahead_order.append(base_name)
+def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
 
-        elif line_type == LogState.COMPLETED_TASK:
-            end_time = get_time(line)
-            task_properties = get_task_properties(line)
+    data_config = config.data_config
+    configurations = config.task_config
 
-            if task_properties[0]["is_data_task"] == "1":
-                continue
+    task_dict = dict()
+    data_dict = dict()
 
-            task_properties = task_properties[0]
+    # Generate configuration for data initialization
 
-            current_name = task_properties['name']
-            base_name = TaskID(current_name.taskspace,
-                               current_name.task_idx,
-                               0)
+    # Build Task Graph
+    task_placement_info = configurations
 
-            task_end_times[base_name] = end_time
-            task_end_order.append(base_name)
+    for level in range(config.levels, -1, -1):
+        tasks_in_level = config.branch_factor ** level
+        subtree_segment = tasks_in_level / config.num_gpus
 
-        elif line_type == LogState.NOTIFY_DEPENDENTS:
-            notify_time = get_time(line)
-            task_properties = get_task_properties(line)
+        for j in range(tasks_in_level):
+            # Task ID:
+            task_id = TaskID("T", (level, j), 0)
 
-            if task_properties[0]["is_data_task"] == "1":
-                continue
+            # Task Dependencies
+            dependency_list = []
+            if level < config.levels:
+                for k in range(config.branch_factor):
+                    dependency = TaskID(
+                        "T", (level-1, config.branch_factor*j + k), 0)
+                    dependency_list.append(dependency)
 
-            notifying_task = task_properties[0]
-            current_name = notifying_task['name']
-            current_state = notifying_task['get_state']
-            instance = notifying_task['instance']
+            # Task Data Dependencies
+            if data_config.pattern == DataInitType.NO_DATA:
+                data_dependencies = TaskDataInfo([], [], [])
+            else:
+                if data_config.pattern == DataInitType.INDEPENDENT_DATA:
+                    inout_data_index = level * config.branch_factor + j
+                elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
+                    inout_data_index = j
+                data_dependencies = TaskDataInfo([], [], [inout_data_index])
 
-            if int(instance) > 0:
-                base_name = TaskID(current_name.taskspace,
-                                   current_name.task_idx,
-                                   0)
-                task_states[base_name] += [current_state]
+            # Task Mapping
+            if config.fixed_placement:
+                if config.placement_arch == Architecture.GPU:
+                    task_mapping = Device(
+                        Architecture.GPU, j // subtree_segment)
+                elif config.placement_arch == Architecture.CPU:
+                    task_mapping = Device(Architecture.CPU, 0)
+            else:
+                task_mapping = None
 
-            task_states[current_name] += [current_state]
+            task_dict[task_id] = TaskInfo(
+                task_id, task_placement_info, dependency_list, data_dependencies, task_mapping)
 
-        elif line_type == LogState.ASSIGNED_TASK:
-            assigned_time = get_time(line)
-            task_properties = get_task_properties(line)
 
-            if task_properties[0]["is_data_task"] == "1":
-                continue
-
-            task_properties = task_properties[0]
-
-            current_name = task_properties['name']
-            base_name = TaskID(current_name.taskspace,
-                               current_name.task_idx,
-                               0)
-
-            task_assigned_times[base_name] = assigned_time
-
-        elif line_type == LogState.ADDING_DEPENDENCIES:
-            task_properties = get_task_properties(line)
-
-            if task_properties[0]["is_data_task"] == "1":
-                continue
-
-            current_task = task_properties[0]['name']
-            current_dependencies = []
-
-            for d in task_properties[1:]:
-                dependency = d['name']
-                current_dependencies.append(dependency)
-
-            task_dependencies[current_task] = current_dependencies
-
-    for task in task_end_times:
-        assigned_t = task_assigned_times[task]
-        start_t = task_start_times[task]
-        # end_t = task_end_times[task]
-        end_t = task_end_times[task]
-        duration = end_t - start_t
-        task_times[task] = TaskTime(assigned_t, start_t, end_t, duration)
-
-    return task_times, task_dependencies, task_states
-
-#TODO(wlr): Refactor this. It is terribly hard to read
 def generate_reduction_graph(config: ReductionConfig) -> str:
     task_config = config.task_config
     num_gpus = config.num_gpus
@@ -727,7 +294,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
     #           but for now, we only consider a single device placement and so,
     #           follow the old generator's graph generation rule.
 
-    device_id = DeviceType.ANY_GPU_DEVICE
+    device_id = Architecture.GPU
     for config_device_id, task_config in configurations.items():
         last_flag = 1 if config_device_id == list(
             configurations.keys())[-1] else 0
@@ -770,229 +337,15 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
                 write_dependency = f"{global_idx}"
             if config.fixed_placement:
                 # USER_CHOSEN_DEVICE acts as an offset.
-                device_id = int(DeviceType.USER_CHOSEN_DEVICE + j // segment)
+                device_id = int(2 + j // segment)
             else:
-                assert device_id == DeviceType.CPU_DEVICE or device_id == DeviceType.ANY_GPU_DEVICE
+                assert device_id == Architecture.CPU_DEVICE or device_id == Architecture.ANY_GPU_DEVICE
             pre_configuration_string = f"{{ {device_id} : "
             configuration_string = pre_configuration_string + post_configuration_string
             graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
             global_idx += 1
         reverse_level += 1
     return graph
-
-def get_data_placement(idx, config):
-    data_config = config.data_config
-
-    if data_config.architecture == Architecture.CPU:
-        return Device(Architecture.CPU, 0)
-    if data_config.architecture == Architecture.GPU:
-        return Device(Architecture.GPU, idx % config.n_devices)
-    
-def convert_config_to_placement(configurations) -> Dict[Device | Tuple[Device], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]]:
-    task_runtime_info = dict()
-    for device, configuration in configurations.items():
-        if isinstance(device, tuple) and isinstance(configuration, dict):
-            task_runtime_info[device] = convert_config_to_placement(configuration)
-        elif isinstance(device, tuple) and isinstance(configuration, TaskConfig):
-            #subdict = dict()
-            #for dev in device:
-            #    task_runtime = TaskRuntimeInfo(configuration.task_time, configuration.gil_accesses, configuration.gil_fraction, configuration.device_fraction, configuration.memory)
-            #    subdict[dev] = task_runtime
-            #task_runtime_info[device] = subdict
-            task_runtime = TaskRuntimeInfo(configuration.task_time, configuration.gil_accesses,
-                                           configuration.gil_fraction, configuration.device_fraction, configuration.memory)
-            task_runtime_info[device] = task_runtime
-        elif isinstance(device, Device) and isinstance(configuration, TaskConfig):
-            task_runtime = TaskRuntimeInfo(configuration.task_time, configuration.gil_accesses, configuration.gil_fraction, configuration.device_fraction, configuration.memory)
-            task_runtime_info[device] = task_runtime
-        else:
-            raise ValueError(f"Invalid configuration: {device}, {configuration}. Must be a tuple of devices and a dictionary of task configurations, or a single device and a single task configuration.")
-    return task_runtime_info
-
-def check_config(config: GraphConfig):
-    """
-    Raise warnings for invalid configuration specifications.
-    """
-    if config is None:
-        raise ValueError(f"Graph Configuration file must be specified: {config}")
-
-    if config.task_config is None:
-        raise ValueError(f"Task Configuration file must be specified: {config}")
-    
-    if config.data_config is None:
-        raise ValueError(f"Data Configuration file must be specified: {config}")
-    
-def check_placement(task_mapping: Device | Tuple[Device], configurations: Dict[Device | Tuple[Device], TaskConfig | Dict[Device, TaskConfig]]):
-    """
-    Verify that the chosen mapping is in the valid specified configurations
-    """
-    if task_mapping not in configurations:
-
-        #Check any option of the same architecture
-        any_architecture = Device(task_mapping.architecture, -1)
-        if any_architecture in configurations:
-            return
-        
-        #Check any option of any architecture
-        any_device = Device(Architecture.ANY, -1)
-        if any_device in configurations:
-            return
-
-        raise ValueError(f"Invalid mapping: {task_mapping}. Must be defined TaskConfigs")
-
-
-def get_placement_info(task_mapping: Device | Tuple[Device], placement_info: Dict[Device | Tuple[Device], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]]) -> TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]:
-    """
-    Retrieve the chosen runtime configuration for the specified mapping choice.
-    """
-    if task_mapping not in placement_info:
-
-        # Check any option of the same architecture
-        any_architecture = Device(task_mapping.architecture, -1)
-        if any_architecture in placement_info:
-            return placement_info[any_architecture]
-
-        # Check any option of any architecture
-        any_device = Device(Architecture.ANY, -1)
-        if any_device in placement_info:
-            return placement_info[any_device]
-
-        raise ValueError(
-            f"Invalid mapping: {task_mapping}. Must be defined TaskConfigs")
-    else:
-        return placement_info[task_mapping]
-
-
-@register_graph_generator
-def generate_single_device_independent(config: IndependentConfig) -> Tuple[Dict[TaskID, TaskInfo], Dict[int, DataInfo]]:
-    check_config(config)
-    data_config = config.data_config
-    configurations = config.task_config.configurations
-
-    task_dict = dict()
-    data_dict = dict()
-
-    # Generate configuration for data initialization
-    if data_config.pattern == DataInitType.NO_DATA:
-        data_placement = Device(Architecture.CPU, 0)
-        data_dict[0] = DataInfo(0, 1, data_placement)
-        num_data_blocks = 1
-    else:
-        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-            num_data_blocks = config.task_count
-        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-            num_data_blocks = data_config.npartitions
-        else:
-            raise NotImplementedError(f"Data pattern {data_config.pattern} not implemented for independent task graph.")
-        
-        data_size = data_config.total_width // num_data_blocks
-
-        for i in range(num_data_blocks):
-            data_placement = get_data_placement(i, config)
-            data_dict[i] = DataInfo(i, data_size, data_placement)
-    
-
-    #Build task graph
-    task_placement_info = convert_config_to_placement(configurations)
-    for i in range(config.task_count):
-
-        #Task ID
-        task_id = TaskID("T", (i,), 0)
-
-        #Task Dependencies
-        task_dependencies = []
-
-        #Task Data Dependencies
-        if data_config.pattern == DataInitType.NO_DATA:
-            data_dependencies = TaskDataInfo([], [], [])
-        if data_config.pattern == DataInitType.INDEPENDENT_DATA or data_config.pattern == DataInitType.OVERLAPPED_DATA:
-            data_dependencies = TaskDataInfo([i % num_data_blocks], [], [])
-
-        #Task Mapping
-        if config.fixed_placement:
-            if config.placement_arch == Architecture.GPU:
-                task_mapping = Device(Architecture.GPU, i % config.n_devices)
-            elif config.placement_arch == Architecture.CPU:
-                task_mapping = Device(Architecture.CPU, 0)
-            check_placement(task_mapping, configurations)
-        else:
-            task_mapping = None
-
-        task_dict[task_id] = TaskInfo(task_id, task_placement_info, task_dependencies, data_dependencies, task_mapping)
-
-    return task_dict, data_dict
-
-@register_graph_generator
-def generate_single_device_serial(config: SerialConfig) -> Tuple[Dict[TaskID, TaskInfo], Dict[int, DataInfo]]:
-
-    check_config(config)
-    data_config = config.data_config
-    configurations = config.task_config.configurations
-
-    task_dict = dict()
-    data_dict = dict()
-
-    #Generate configuration for data initialization
-    if data_config.pattern == DataInitType.NO_DATA:
-        data_placement = Device(Architecture.CPU, 0)
-        data_dict[0] = DataInfo(0, 1, data_placement)
-        num_data_blocks = 1
-    else:
-        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-            num_data_blocks = config.steps * config.chains
-
-        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-            num_data_blocks = config.chains
-        else:
-            raise NotImplementedError(f"Data pattern {data_config.pattern} not implemented for serial task graph.")
-        
-        data_size = data_config.total_width // num_data_blocks
-
-        for i in range(num_data_blocks):
-            data_placement = get_data_placement(i, config)
-            data_dict[i] = DataInfo(i, data_size, data_placement)
-
-    #Build task graph
-    task_placement_info = convert_config_to_placement(configurations)
-    for i in range(config.steps):
-        for j in range(config.chains):
-            
-            #Task ID:
-            task_id = TaskID("T", (i, j), 0)
-
-            #Task Dependencies
-            dependency_list = []
-            dependency_limit = min(i, config.dependency_count)
-            for k in range(1, dependency_limit+1):
-                assert(i-k >= 0)
-                dependency = TaskID("T", (i-k, j), 0)
-                dependency_list.append(dependency)
-            print(dependency_limit)
-            print(dependency_list)
-
-            #Task Data Dependencies
-            if data_config.pattern == DataInitType.NO_DATA:
-                data_dependencies = TaskDataInfo([], [], [])
-            else:
-                if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-                    inout_data_index = i * config.chains + j
-                elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-                    inout_data_index = j
-                data_dependencies = TaskDataInfo([], [], [inout_data_index])
-
-            #Task Mapping
-            if config.fixed_placement:
-                if config.placement_arch == Architecture.GPU:
-                    task_mapping = Device(Architecture.GPU, j % config.n_devices)
-                elif config.placement_arch == Architecture.CPU:
-                    task_mapping = Device(Architecture.CPU, 0)
-            else:
-                task_mapping = None
-
-            task_dict[task_id] = TaskInfo(task_id, task_placement_info, dependency_list, data_dependencies, task_mapping)
-
-    print(task_dict)
-    return task_dict, data_dict
 
 
 def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> str:
@@ -1126,11 +479,3 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
                             bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
                 task_id += 1
     return graph
-
-
-__all__ = [Device, Architecture, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,\
-           TaskDataInfo, TaskInfo, DataInfo, DataGraphConfig, TaskTime, TimeSample, read_pgraph,\
-           parse_blog, TaskConfigs, RunConfig, shuffle_tasks,\
-           generate_reduction_graph, \
-           generate_reduction_scatter_graph\
-           ] + defined_graph_generators
