@@ -152,19 +152,61 @@ public:
                                                    std::memory_order_relaxed);
   }
 
+  /// Increase the number of the data tasks mapped to a device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The number of the data tasks mapped to a device
+  size_t atomic_incr_num_mapped_data_tasks_device(DevID_t dev_id,
+                                                  size_t weight = 1) {
+    // Increase the number of the total mapped data tasks to the whole devices.
+    // We do not get the old total number of mapped data tasks.
+    total_num_mapped_data_tasks_.fetch_add(weight, std::memory_order_relaxed);
+    return dev_num_mapped_data_tasks_[dev_id].fetch_add(
+        weight, std::memory_order_relaxed);
+  }
+
+  /// Decrease the number of the data tasks mapped to a device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The number of the data tasks mapped to a device
+  size_t atomic_decr_num_mapped_data_tasks_device(DevID_t dev_id,
+                                                  size_t weight = 1) {
+    // Decrease the number of the total mapped data tasks to the whole devices.
+    // We do not get the old total number of mapped data tasks.
+    total_num_mapped_data_tasks_.fetch_sub(weight, std::memory_order_relaxed);
+    return dev_num_mapped_data_tasks_[dev_id].fetch_sub(
+        weight, std::memory_order_relaxed);
+  }
+
   /// Return the number of total mapped tasks to the whole devices.
   ///
-  /// @return The old number of total mapped tasks
+  /// @return The old number of total mapped compute tasks
   const size_t atomic_load_total_num_mapped_tasks() const {
     return total_num_mapped_tasks_.load(std::memory_order_relaxed);
   }
 
-  /// Return the number of mapped tasks to a single device.
+  /// Return the number of mapped compute tasks to a single device.
   ///
   /// @param dev_id Device global ID where a task is mapped
   /// @return The old number of the tasks mapped to a device
   const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
     return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
+  }
+
+  /// Return the number of total mapped data tasks to the whole devices.
+  ///
+  /// @return The old number of total mapped data tasks
+  const size_t atomic_load_total_num_mapped_data_tasks() const {
+    return total_num_mapped_data_tasks_.load(std::memory_order_relaxed);
+  }
+
+  /// Return the number of mapped data tasks to a single device.
+  ///
+  /// @param dev_id Device global ID where a task is mapped
+  /// @return The old number of the data tasks mapped to a device
+  const size_t
+  atomic_load_dev_num_mapped_data_tasks_device(DevID_t dev_id) const {
+    return dev_num_mapped_data_tasks_[dev_id].load(std::memory_order_relaxed);
   }
 
 protected:

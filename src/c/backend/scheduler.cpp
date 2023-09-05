@@ -365,7 +365,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
     if (task->is_data_task()) {
       // Decrease the number of mapped data tasks on the device
       // TODO(@dialecticDolt) Add this
-
+      this->mapper->atomic_decr_num_mapped_data_tasks_device(dev_id);
     } else {
       // Decrease the number of mapped compute tasks on the device
       this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);

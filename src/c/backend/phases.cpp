@@ -79,10 +79,10 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
 
     auto &parray_access_list = parray_list[local_device_idx];
 
-    // TODO(@dialecticDolt): Split into two counters
-    // (one for data, and one for compute).
-    int weight = 1; // + parray_access_list.size();
-    this->atomic_incr_num_mapped_tasks_device(global_dev_id, weight);
+    int num_data_tasks = parray_access_list.size();
+    this->atomic_incr_num_mapped_tasks_device(global_dev_id);
+    this->atomic_incr_num_mapped_data_tasks_device(global_dev_id,
+                                                   num_data_tasks);
 
     mapped_pool.increase(task_pool);
 
