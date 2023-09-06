@@ -157,7 +157,7 @@ struct FullyConnectedDQNImpl : public torch::nn::Module {
     //x = out_(x);
     //x = torch::log_softmax(torch::nn::functional::normalize(out_(x)), 1);
     x = torch::log_softmax(out_(x), 1);
-    std::cout << "out:" << x << "\n";
+    //std::cout << "out:" << x << "\n";
     return x.squeeze(0);
   }
 
@@ -298,13 +298,20 @@ public:
       std::uniform_real_distribution<> devid_distribution(
           0.f, static_cast<float>(this->n_actions_));
       DevID_t randomly_chosen_device{1};
-      for (size_t a = 0; a < this->n_actions_; ++a) {
-        randomly_chosen_device =
-            static_cast<DevID_t>(devid_distribution(mt));
-        if (mask == nullptr || (mask != nullptr && (*mask)[randomly_chosen_device])) {
-          return randomly_chosen_device;
+      randomly_chosen_device =
+          static_cast<DevID_t>(devid_distribution(mt));
+      size_t num_attempts{0};
+      while (mask != nullptr && !(*mask)[randomly_chosen_device]) {
+        if (num_attempts == this->n_actions_) {
+          std::cerr << "Failed to find a device on a random policy\n";
+          exit(0);
         }
-      }
+        randomly_chosen_device += 1;
+        if (randomly_chosen_device == this->n_actions_) {
+          randomly_chosen_device = 0;
+        }
+        num_attempts++;
+      };
       return randomly_chosen_device;
     }
   }

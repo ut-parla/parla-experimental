@@ -109,6 +109,14 @@ class Parla:
             self.release()
             del self._sched
             del self._device_manager
+            # TODO(hc):This should not be necessary but without this,
+            # cpu/gpu are not initialized even though Parla context
+            # is completed and destroyed, and so if an outer loop
+            # iterates more than 1 iterations, these are not initialized,
+            # append devices while the device manager is initialized,
+            # and finally, doubles the cpu/gpu devices.
+            device_manager.cpu = device.PyCPUArchitecture()
+            device_manager.gpu = device.PyCUDAArchitecture()
             core.py_write_log(self.logfile)
 
     def release(self):
