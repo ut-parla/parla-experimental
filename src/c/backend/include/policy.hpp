@@ -1,3 +1,7 @@
+/*! @file policy.hpp
+ *  @brief Interface for mapping policies.
+ */
+
 #ifndef PARLA_POLICY_HPP
 #define PARLA_POLICY_HPP
 
@@ -7,17 +11,21 @@
 
 #include <memory>
 
+/// The type of a suitability score of a device
 using Score_t = double;
 
 class Mapper;
 
+/*!
+ * @brief Interface for mapping (task to device assignment) policies.
+ */
 class MappingPolicy {
 public:
   MappingPolicy(DeviceManager *device_manager, PArrayTracker *parray_tracker)
       : device_manager_(device_manager), parray_tracker_(parray_tracker) {}
 
-  /// Calculate a score of the device placement requirement.
-  /// This function calculates a score of a device based on the current
+  /// @brief Calculate a score of the device placement requirement.
+  /// @details This function calculates a score of a device based on the current
   /// states of the device (e.g., available memory and the number of vcus).
   /// It returns a device giving the best score and its score.
   /// Note that it does not choose a device for a task, but
@@ -37,9 +45,9 @@ public:
       const std::vector<std::pair<parray::InnerPArray *, AccessMode>>
           &parray_list) = 0;
 
-  /// Calculate a score of the architecture placement requirement.
-  /// This function first iterates devices of the architecture, and calculates
-  /// a score for each device based on the current states of the
+  /// @brief Calculate a score of the architecture placement requirement.
+  /// @details This function first iterates devices of the architecture, and
+  /// calculates a score for each device based on the current states of the
   /// device (e.g., available memory and the number of vcus).
   /// It returns a device giving the best score and its score.
   /// Note that it does not choose a device for a task, but
@@ -67,8 +75,8 @@ public:
           &parray_list,
       std::vector<bool> *is_dev_assigned = nullptr) = 0;
 
-  /// Calculate a score of the multi-device placement that users passed.
-  /// The placement requirement could contain multiple device or/and
+  /// @brief Calculate a score of the multi-device placement that users passed.
+  /// @details The placement requirement could contain multiple device or/and
   /// architecture requirements.
   /// This function calculates a score for each placement requirement by
   /// recursively calling a device or an architecture score calculation
@@ -109,6 +117,9 @@ protected:
   int rrcount = 0;
 };
 
+/*!
+ *
+ */
 class LocalityLoadBalancingMappingPolicy : public MappingPolicy {
 public:
   using MappingPolicy::MappingPolicy;
@@ -136,6 +147,7 @@ public:
       const std::vector<
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list) override;
+
 
   void run_task_mapping(
       InnerTask *task, const Mapper &mapper,

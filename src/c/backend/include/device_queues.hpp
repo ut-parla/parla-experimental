@@ -1,3 +1,8 @@
+/*! @file device_queues.hpp
+ *  @brief Provides interface for task queues and collections of task queues for
+ * multidevice tasks.
+ */
+
 #ifndef PARLA_DEVICE_QUEUES_HPP
 #define PARLA_DEVICE_QUEUES_HPP
 

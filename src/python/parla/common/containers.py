@@ -1,3 +1,8 @@
+"""!
+@file dataflow.py
+@brief Provides (legacy) Parla task containers.
+"""
+
 from typing import Awaitable, Collection, Iterable
 from parla.cython import tasks
 

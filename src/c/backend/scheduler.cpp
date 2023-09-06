@@ -194,32 +194,32 @@ void InnerScheduler::spawn_task(InnerTask *task) {
 
   auto status = task->process_dependencies();
   this->increase_num_active_tasks();
-  task->set_state(Task::SPAWNED);
+  task->set_state(TaskState::SPAWNED);
   this->enqueue_task(task, status);
 }
 
-void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
+void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
-  if (status.mappable && (task->get_state() < Task::MAPPED)) {
+  if (status.mappable && (task->get_state() < TaskState::MAPPED)) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
-    task->set_status(Task::MAPPABLE);
+    task->set_status(TaskStatus::MAPPABLE);
     this->mapper->enqueue(task);
-  } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
-    task->set_status(Task::RESERVABLE);
+  } else if (status.reservable && (task->get_state() == TaskState::MAPPED)) {
+    task->set_status(TaskStatus::RESERVABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
     this->memory_reserver->enqueue(task);
-  } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
-    task->set_status(Task::RUNNABLE);
+  } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
+    task->set_status(TaskStatus::RUNNABLE);
     // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
 }
 
-void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
+void InnerScheduler::enqueue_tasks(TaskStatusList &tasks) {
   // LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  for (auto task_status : tasks) {
+  for (TaskStatusPair task_status : tasks) {
     this->enqueue_task(task_status.first, task_status.second);
   }
 }
@@ -235,19 +235,21 @@ void InnerScheduler::enqueue_worker(InnerWorker *worker) {
 }
 
 void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
-                                          int state) {
+                                          int state_int) {
   NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
+
+  TaskState state = static_cast<TaskState>(state_int);
 
   // std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
   //           << std::endl;
 
   // std::cout << "Task state: " << state << std::endl;
-  if (state == Task::RUNAHEAD) {
+  if (state == TaskState::RUNAHEAD) {
 
     // Notify dependents that they can be scheduled
     auto &enqueue_buffer = worker->enqueue_buffer;
-    task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
+    task->notify_dependents(enqueue_buffer, TaskState::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {
       this->enqueue_tasks(enqueue_buffer);
       enqueue_buffer.clear();
@@ -321,14 +323,16 @@ bool InnerScheduler::get_reserved_parray_state(DevID_t global_dev_idx,
 }
 
 void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
-                                           int state) {
+                                           int state_int) {
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
+
+  TaskState state = static_cast<TaskState>(state_int);
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
 
   DeviceManager *device_manager = this->device_manager_;
 
-  if (state == Task::RUNAHEAD) {
+  if (state == TaskState::RUNAHEAD) {
     this->decrease_num_active_tasks();
     task->notify_dependents_completed();
   }
@@ -377,7 +381,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
   this->launcher->num_running_tasks--;
   worker->remove_task();
 
-  if (state == Task::RUNNING) {
+  if (state == TaskState::RUNNING) {
     task->reset();
     auto status = task->process_dependencies();
     this->enqueue_task(task, status);

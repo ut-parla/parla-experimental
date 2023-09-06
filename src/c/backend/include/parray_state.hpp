@@ -1,3 +1,7 @@
+/*! @file parray_state.hpp
+ *  @brief Provides C++ interface to parray coherency.
+ */
+
 #pragma once
 #include "device.hpp"
 #include <cstdint>

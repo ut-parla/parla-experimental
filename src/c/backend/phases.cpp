@@ -124,6 +124,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   bool has_task = true;
 
   has_task = this->get_count() > 0;
+
   // In order to overlap scheduler phases and task execution,
   // use threshold of the number of tasks to be mapped.
   size_t num_task_mapping_attempt{0};
@@ -166,7 +167,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
   } // while there are mappable tasks
 
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
-    mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
+    mapped_task->notify_dependents(this->enqueue_buffer, TaskState::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
 
@@ -174,7 +175,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         (mapped_task->num_unreserved_dependencies.fetch_sub(1) == 1);
 
     if (enqueue_flag) {
-      mapped_task->set_status(Task::RESERVABLE);
+      mapped_task->set_status(TaskStatus::RESERVABLE);
       memory_reserver->enqueue(mapped_task);
     }
   }
@@ -427,7 +428,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
               std::initializer_list<Resource_t>({0, 0, copy_engines})));
 
       // Add the created data movement task to a reserved task queue.
-      datamove_task->set_state(Task::RESERVED);
+      datamove_task->set_state(TaskState::RESERVED);
       this->scheduler->increase_num_active_tasks();
       this->reserved_tasks_buffer.push_back(datamove_task);
 
@@ -499,7 +500,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
   }
 
   for (InnerTask *reserved_task : this->reserved_tasks_buffer) {
-    reserved_task->notify_dependents(this->enqueue_buffer, Task::RESERVED);
+    reserved_task->notify_dependents(this->enqueue_buffer, TaskState::RESERVED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
 
@@ -513,7 +514,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     //           << " Enqueue Flag: " << enqueue_flag << std::endl;
 
     if (enqueue_flag) {
-      reserved_task->set_status(Task::RUNNABLE);
+      reserved_task->set_status(TaskStatus::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
     }
   }
@@ -705,7 +706,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // std::cout << "Launcher::enqueue" << std::endl;
 
   // Immediately launch task
-  task->set_state(Task::RUNNING);
+  task->set_state(TaskState::RUNNING);
   this->num_running_tasks++;
 
   // Assign task to thread and notify via c++ condition variable.

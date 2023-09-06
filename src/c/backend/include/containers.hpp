@@ -1,3 +1,9 @@
+/*! @file containers.hpp
+ *  @brief Provides interface for thread-safe containers.
+ *
+ *
+ */
+
 #pragma once
 #ifndef PARLA_CONTAINERS_HPP
 #define PARLA_CONTAINERS_HPP

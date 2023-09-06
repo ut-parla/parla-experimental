@@ -1,3 +1,7 @@
+/*! @file parray_tracker.hpp
+ *  @brief Provides interface to scheduler tracking of parray data objects.
+ */
+
 #ifndef PARLA_PARRAY_TRACKER_HPP
 #define PARLA_PARRAY_TRACKER_HPP
 

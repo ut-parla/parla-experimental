@@ -33,7 +33,7 @@ cdef extern from "include/runtime.hpp" nogil:
     #ctypedef void* Ptr_t
     #ctypedef InnerTask* InnerTaskPtr_t
 
-    cdef cppclass _StatusFlags "Task::StatusFlags":
+    cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
         bool mappable
         bool reservable
