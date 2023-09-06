@@ -1,8 +1,11 @@
+#include "include/device.hpp"
+#include "include/parray.hpp"
 #include "include/phases.hpp"
 #include "include/policy.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 
+#include <cstdint>
 #include <new>
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -124,26 +127,15 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 // Scheduler Implementation
 
 InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager), parray_tracker_(device_manager) {
-
-  // A dummy task count is used to keep the scheduler alive.
-  // NOTE: At least one task must be added to the scheduler by the main thread,
-  // otherwise the runtime will finish immediately
-  // this->increase_num_active_tasks();
+    : device_manager_(device_manager) {
 
   this->workers.set_num_workers(1);
 
-  // Mapping policy
-  std::shared_ptr<LocalityLoadBalancingMappingPolicy> mapping_policy =
-      std::make_shared<LocalityLoadBalancingMappingPolicy>(
-          device_manager, &this->parray_tracker_);
-
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
+  this->mapper = new Mapper(this, device_manager);
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
-  // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
 }
 
 InnerScheduler::~InnerScheduler() {
@@ -265,6 +257,71 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
   }
 }
 
+void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
+
+  PArrayAccess_t parray_access = std::make_pair(parray, AccessMode::NEW);
+
+  auto device_manager = this->device_manager_;
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  PArrayTracker *reserved_tracker = this->memory_reserver->get_parray_tracker();
+
+  DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
+
+  std::cout << "Updating trackers" << std::endl;
+  size_t to_map = mapped_tracker->do_log(global_dev_id, parray_access);
+  size_t to_reserve = reserved_tracker->do_log(global_dev_id, parray_access);
+  std::cout << "Updating trackers done" << std::endl;
+
+  add_unmapped_created_parray(parray, global_dev_id, to_map);
+  add_unreserved_created_parray(parray, global_dev_id, to_reserve);
+}
+
+void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_id);
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  PArrayTracker *reserved_tracker = this->memory_reserver->get_parray_tracker();
+
+  // TODO: Decide policy for removal.
+  // Simplest is just to call remove_parray on both trackers
+  // Could also be to call DELETED or REMOVED status on do_log
+}
+
+size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  auto &mapped_memory_pool = device->get_mapped_pool();
+  return device->query_mapped<Resource::Memory>();
+}
+
+size_t InnerScheduler::get_reserved_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  return device->query_reserved<Resource::Memory>();
+}
+
+size_t InnerScheduler::get_max_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  return device->query_max<Resource::Memory>();
+}
+
+bool InnerScheduler::get_mapped_parray_state(DevID_t global_dev_idx,
+                                             uint64_t parray_parent_id) {
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  return mapped_tracker->get_parray_state(global_dev_idx, parray_parent_id);
+}
+
+bool InnerScheduler::get_reserved_parray_state(DevID_t global_dev_idx,
+                                               uint64_t parray_parent_id) {
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  return mapped_tracker->get_parray_state(global_dev_idx, parray_parent_id);
+}
+
 void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
                                            int state_int) {
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
@@ -273,35 +330,50 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
 
+  DeviceManager *device_manager = this->device_manager_;
+
   if (state == TaskState::RUNAHEAD) {
     this->decrease_num_active_tasks();
     task->notify_dependents_completed();
   }
 
   // Release all resources for this task on all devices
-  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-    Device *device = task->assigned_devices[i];
-    DevID_t dev_id = device->get_global_id();
-    ResourcePool_t &device_pool = device->get_reserved_pool();
-    ResourcePool_t &task_pool =
-        task->device_constraints[device->get_global_id()];
+  for (size_t local_device_idx = 0;
+       local_device_idx < task->assigned_devices.size(); ++local_device_idx) {
 
-    // TODO(wlr): This needs to be changed to not release PARRAY resources
-    device_pool.increase<ResourceCategory::All>(task_pool);
+    Device *device = task->assigned_devices[local_device_idx];
+    DevID_t dev_id = device->get_global_id();
+
+    auto &device_reserved_pool = device->get_reserved_pool();
+    auto &device_mapped_pool = device->get_mapped_pool();
+
+    auto &task_pool = task->device_constraints[device->get_global_id()];
+
+    device_reserved_pool.increase(task_pool);
+    device_mapped_pool.decrease(task_pool);
+
+    auto &parray_access_list = task->parray_list[local_device_idx];
 
     // PArrays could be evicted even during task barrier continuation.
     // However, these PArrays will be allocated and tracked
     // again after the task restarts.
+
     if (!task->is_data_task()) {
-      for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
-        parray::InnerPArray *parray = task->parray_list[i][j].first;
+      for (size_t j = 0; j < parray_access_list.size(); ++j) {
+        auto &parray_access = parray_access_list[j];
+        InnerPArray *parray = parray_access.first;
         parray->decr_num_active_tasks(dev_id);
-        // This PArray is not released from the PArray tracker here,
-        // but when it is EVICTED, it will check the number of referneces
-        // and will be released if that is 0.
       }
     }
-    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+
+    if (task->is_data_task()) {
+      // Decrease the number of mapped data tasks on the device
+      // TODO(@dialecticDolt) Add this
+      this->mapper->atomic_decr_num_mapped_data_tasks_device(dev_id);
+    } else {
+      // Decrease the number of mapped compute tasks on the device
+      this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+    }
   }
 
   // Clear all assigned streams from the task
@@ -342,6 +414,7 @@ void InnerScheduler::decrease_num_active_tasks() {
   // std::cout << "Decreasing num active tasks: " << count << std::endl;
 
   if (count == 0) {
+    // No more active tasks, stop the scheduler
     this->stop();
   }
 }
