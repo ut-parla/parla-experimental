@@ -358,8 +358,6 @@ class Coherence:
         """
         operations = []
 
-        print("Device ID: ", device_id, slices_hash)
-
         if slices_hash is not None:  # move a subarray
             # use existing complete data at this device
             if self._is_complete[device_id] is True:

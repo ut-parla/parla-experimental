@@ -475,8 +475,8 @@ class PArray:
                 # decrement the reference counter, relying on GC to free the memory
                 to_free = self._array.clear(op.src)
 
-                print(
-                    f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
+                # print(
+                #     f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
 
                 scheduler = get_scheduler()
                 if (to_free > 0) and (scheduler is not None):
