@@ -73,10 +73,10 @@ public:
    */
   bool contains_unsafe(DevID_t global_dev_idx,
                        uint64_t parray_parent_id) const {
-    std::cout << "Checking if " << parray_parent_id << " is in Device"
-              << global_dev_idx << std::endl;
-    std::cout << "Size of managed_parrays_: " << managed_parrays_.size()
-              << std::endl;
+    // std::cout << "Checking if " << parray_parent_id << " is in Device"
+    //           << global_dev_idx << std::endl;
+    // std::cout << "Size of managed_parrays_: " << managed_parrays_.size()
+    //           << std::endl;
 
     return (this->managed_parrays_[global_dev_idx].find(parray_parent_id) !=
             this->managed_parrays_[global_dev_idx].end());

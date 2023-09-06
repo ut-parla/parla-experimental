@@ -257,9 +257,9 @@ void InnerTask::create_parray(InnerPArray *parray, int parray_device_id) {
     Resource_t current_memory = task_pool.get<Resource::Memory>();
     if (current_memory < to_move_mapped) {
 
-      std::cout << "Task " << this->name << " has " << current_memory
-                << " memory on device " << global_dev_id
-                << " but needs to allocate " << to_move_mapped << std::endl;
+      // std::cout << "Task " << this->name << " has " << current_memory
+      //           << " memory on device " << global_dev_id
+      //           << " but needs to allocate " << to_move_mapped << std::endl;
 
       Resource_t required_memory = to_move_mapped - current_memory;
 

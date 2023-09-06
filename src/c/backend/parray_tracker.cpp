@@ -15,11 +15,11 @@ size_t PArrayTracker::do_parray_creation_(AccessMode access_mode,
 
     size_t to_move = parray->get_size();
 
-    std::cout << "PArrayTracker::do_parray_creation " << std::endl;
+    // std::cout << "PArrayTracker::do_parray_creation " << std::endl;
 
     this->set_parray_unsafe(dev_id, parray->get_id(), true);
 
-    std::cout << "PArrayTracker::do_parray_creation set state" << std::endl;
+    // std::cout << "PArrayTracker::do_parray_creation set state" << std::endl;
 
     if (is_slice) {
 
@@ -54,7 +54,7 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
                                          bool is_tracked, bool is_slice,
                                          InnerPArray *parray) {
 
-  std::cout << "PArrayTracker::do_parray_removal " << std::endl;
+  // std::cout << "PArrayTracker::do_parray_removal " << std::endl;
 
   if (access_mode >= AccessMode::INOUT && access_mode != AccessMode::DELETED) {
 
@@ -128,15 +128,15 @@ size_t PArrayTracker::do_log(const DevID_t dev_id,
 
   const auto &[parray, access_mode] = parray_access;
 
-  std::cout << "PArrayTracker::do_log unpacked" << std::endl;
+  // std::cout << "PArrayTracker::do_log unpacked" << std::endl;
 
   bool is_valid = this->is_valid_unsafe(dev_id, parray->get_id());
 
-  std::cout << "Checked if tracked " << is_valid << std::endl;
+  // std::cout << "Checked if tracked " << is_valid << std::endl;
 
   bool is_slice = parray->is_subarray();
 
-  std::cout << "Checked if slice: " << is_slice << std::endl;
+  // std::cout << "Checked if slice: " << is_slice << std::endl;
 
   size_t to_move = this->do_parray_creation_(access_mode, dev_id, is_valid,
                                              is_slice, parray);
@@ -192,29 +192,29 @@ size_t PArrayTracker::check_log(const DevID_t dev_id,
   // This should be refactored to be per device with this data structure.
   std::lock_guard<std::mutex> guard(this->mtx);
 
-  std::cout << "PArrayTracker::check_log" << std::endl;
+  // std::cout << "PArrayTracker::check_log" << std::endl;
 
   const auto &[parray, access_mode] = parray_access;
 
-  std::cout << "PArrayTracker::check_log unpacked" << std::endl;
+  // std::cout << "PArrayTracker::check_log unpacked" << std::endl;
 
   bool is_tracked = this->is_valid_unsafe(dev_id, parray->get_id());
 
-  std::cout << "Checked if tracked " << is_tracked << std::endl;
+  // std::cout << "Checked if tracked " << is_tracked << std::endl;
 
   bool is_slice = parray->is_subarray();
 
-  std::cout << "Checked if slice: " << is_slice << std::endl;
+  // std::cout << "Checked if slice: " << is_slice << std::endl;
 
   size_t to_move = this->check_parray_creation_(access_mode, dev_id, is_tracked,
                                                 is_slice, parray);
 
-  std::cout << "Checked parray creation: " << to_move << std::endl;
+  // std::cout << "Checked parray creation: " << to_move << std::endl;
 
   to_move += this->check_parray_removal_(access_mode, dev_id, is_tracked,
                                          is_slice, parray);
 
-  std::cout << "Checked parray removal: " << to_move << std::endl;
+  // std::cout << "Checked parray removal: " << to_move << std::endl;
 
   return to_move;
 }

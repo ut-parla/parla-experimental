@@ -117,15 +117,15 @@ class PArray:
 
         # record the size in Cython PArray
 
-        #Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
-        #FIXME
+        # Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
+        # FIXME
 
         scheduler = get_scheduler()
         if scheduler is None:
-            print("WARNING: PArray created outside of a scheduler context. This is not supported.", flush=True)
+            raise NotImplementedError(
+                "PArrays cannot be created outside of a scheduler context")
 
-
-        print("Creating PArray with size: ", self.subarray_nbytes, flush=True)
+        # print("Creating PArray with size: ", self.subarray_nbytes, flush=True)
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(
             self, self.ID, self.parent_ID, self.parent, self._cyparray_state, num_devices)
@@ -137,20 +137,14 @@ class PArray:
         if scheduler is not None:
             task = get_current_task()
             if task is not None:
-                print("Creating PArray within task: ", task, flush=True)
                 task.create_parray(self._cy_parray, target_dev_id)
             else:
-                print("Creating parray in scheduler context", flush=True)
                 scheduler.create_parray(self._cy_parray, target_dev_id)
         else:
-            #TODO(wlr): Allow PArrays to be created outside of a task 
-            #create_parray(self._cy_parray, target_dev_id)
-            raise NotImplementedError("PArrays cannot be created outside of a scheduler context")
-            
-
-        print("Completed PArray creation", flush=True)
-        
-
+            # TODO(wlr): Allow PArrays to be created outside of a task
+            # create_parray(self._cy_parray, target_dev_id)
+            raise NotImplementedError(
+                "PArrays cannot be created outside of a scheduler context")
 
     # Properties:
 
@@ -481,15 +475,14 @@ class PArray:
                 # decrement the reference counter, relying on GC to free the memory
                 to_free = self._array.clear(op.src)
 
-                print(f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
+                print(
+                    f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
 
                 scheduler = get_scheduler()
                 if (to_free > 0) and (scheduler is not None):
-                    #This frees the memory on the device in the mapped and reserved pools
+                    # This frees the memory on the device in the mapped and reserved pools
                     scheduler.device_manager.free_memory(op.src, to_free)
-                    #TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
-                    
-                
+                    # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
 
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError(

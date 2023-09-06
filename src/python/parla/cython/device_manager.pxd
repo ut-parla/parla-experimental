@@ -8,8 +8,8 @@ from libcpp.vector cimport vector
 
 cdef extern from "include/device_manager.hpp" nogil:
 
-    unsigned int g2p "globalid_to_parrayid" (int) 
-    int p2g "parrayid_to_globalid" (unsigned int)
+    int g2p "globalid_to_parrayid" (int) 
+    unsigned int p2g "parrayid_to_globalid" (int)
 
     cdef cppclass DeviceManager:
         DeviceManager() 

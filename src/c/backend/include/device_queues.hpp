@@ -34,9 +34,10 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    std::cout << "DeviceQueue::enqueue() - " << task->get_name() << std::endl;
+    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
+    // std::endl;
 
-    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push_back(task);
     num_tasks++;
   };
@@ -59,10 +60,10 @@ public:
   */
   InnerTask *front() {
 
-    std::cout << "DeviceQueue::front()" << std::endl;
-    std::cout << "Waiting Queue size: " << waiting_queue.size() << std::endl;
-    std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
-    std::cout << "Num Tasks: " << num_tasks << std::endl;
+    // std::cout << "DeviceQueue::front()" << std::endl;
+    // std::cout << "Waiting Queue size: " << waiting_queue.size() << std::endl;
+    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
+    // std::cout << "Num Tasks: " << num_tasks << std::endl;
 
     // First, check any waiting multi-device tasks
     if (!waiting_queue.empty()) {
@@ -94,10 +95,10 @@ public:
       int prev_waiting_count =
           head->decrement_num_instances<ResourceCategory>();
 
-      std::cout << "Mixed Head: " << head->get_name()
-                << " Instances: " << prev_waiting_count
-                << " Removed: " << head->get_removed<ResourceCategory>()
-                << std::endl;
+      // std::cout << "Mixed Head: " << head->get_name()
+      //           << " Instances: " << prev_waiting_count
+      //           << " Removed: " << head->get_removed<ResourceCategory>()
+      //           << std::endl;
 
       // Check if the task is waiting for other instances
       if (prev_waiting_count <= 1) {
@@ -205,8 +206,8 @@ public:
     // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     // std::cout << "ndevices: " << this->ndevices << std::endl;
     // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
-    std::cout << "Enqueuing task to phase manager: " << task->get_name()
-              << std::endl;
+    // std::cout << "Enqueuing task to phase manager: " << task->get_name()
+    //           << std::endl;
     task->set_num_instances<ResourceCategory>();
     for (auto device : task->assigned_devices) {
       this->device_queues[device->get_global_id()]->enqueue(task);
