@@ -308,6 +308,8 @@ class Task:
 
         self.runahead = SyncType.BLOCKING
 
+        self.py_state = None
+
         if isinstance(self.taskspace, TaskSpace):
             self.name = self.unpack_name()
         elif name is None:
