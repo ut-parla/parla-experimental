@@ -70,9 +70,7 @@ def spawn(task=None,
           runahead: SynchronizationType = default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
-    print("In spawn")
     scheduler = get_scheduler_context().scheduler
-
     if not isinstance(task, tasks.Task):
         taskspace = scheduler.default_taskspace
 
@@ -82,12 +80,10 @@ def spawn(task=None,
             idx = task
             
         task = taskspace[idx]
-
     lock = threading.Lock()
     lock.acquire()
-    #print(task.status)
-    if(task.status != tasks.Task.TaskSpawned()):
-       task.status = tasks.Task.TaskSpawned()
+    if(task.py_state != "SPAWNED"):
+       task.py_state = "SPAWNED"
     else:
         raise Exception("Duplicate task ID spawned. This will cause runtime to hang. Aborting...")
     lock.release()
