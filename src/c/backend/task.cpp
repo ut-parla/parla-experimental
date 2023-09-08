@@ -381,10 +381,18 @@ void InnerTask::add_assigned_device(Device *device) {
 TaskState InnerTask::set_state(TaskState state) {
   TaskState new_state = state;
   TaskState old_state;
+  bool success = true;
 
   do {
     old_state = this->state.load();
+    if (old_state > new_state) {
+      success = false;
+    }
   } while (!this->state.compare_exchange_weak(old_state, new_state));
+
+  if (!success) {
+    throw std::runtime_error("Task States must always be increasing.");
+  }
 
   return old_state;
 }

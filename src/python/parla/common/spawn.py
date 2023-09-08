@@ -80,13 +80,6 @@ def spawn(task=None,
             idx = task
             
         task = taskspace[idx]
-    lock = threading.Lock()
-    lock.acquire()
-    if(task.py_state != "SPAWNED"):
-       task.py_state = "SPAWNED"
-    else:
-        raise Exception("Duplicate task ID spawned. This will cause runtime to hang. Aborting...")
-    lock.release()
 
     # @profile
     def decorator(body):
