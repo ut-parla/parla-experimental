@@ -671,9 +671,9 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.task_cleanup_postsync(c_worker, c_task, state)
 
-    cpdef get_num_active_tasks(self):
+    cpdef get_num_referring_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_num_active_tasks()
+        return c_self.get_num_referring_tasks()
 
     cpdef increase_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler

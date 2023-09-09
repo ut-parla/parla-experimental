@@ -316,10 +316,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
-<<<<<<< HEAD
-
-=======
->>>>>>> memory-manager
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
@@ -491,14 +487,14 @@ class Scheduler(ControllableThread, SchedulerContext):
             pass
             #print("Runtime Stopped", flush=True)
 
-    def eviction(self):
+    def parray_eviction(self):
         py_mm = self.memory_manager
         print("Eviction policy is activated")
         for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
             global_id = cuda_device.get_global_id()
             parray_id = self.device_manager.globalid_to_parrayid(global_id)
-            # Get target memory size to get from the device through eviction.
-            memory_size_for_eviction = \
+            # Get target memory size to evict from this device
+            memory_size_to_evict = \
                 self.inner_scheduler.get_memory_size_to_evict(global_id)
             # Get the number of PArray candidates that are allowed to be evicted
             # from Python eviction manager.
@@ -526,9 +522,9 @@ class Scheduler(ControllableThread, SchedulerContext):
                                 print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
 
                         # Repeat eviction until it gets enough memory.
-                        memory_size_for_eviction -= \
+                        memory_size_to_evict -= \
                             evictable_parray.nbytes_at(parray_id)
-                        if memory_size_for_eviction <= 0:
+                        if memory_size_to_evict <= 0:
                             break
                 except Exception as e:
                     print("Failed to find parray evictable", flush=True)
@@ -554,10 +550,9 @@ class Scheduler(ControllableThread, SchedulerContext):
                     should_run = self.inner_scheduler.get_should_run()
                     if should_run == False:
                         break
-                    # If C++ scheduler loop was exited not because of
-                    # task execution completion, it should be the case that
-                    # eviction mechanism was invoked.
-                    self.eviction() 
+                    # This case is executed if PArray eviction
+                    # mechanism was invoked by C++ scheduler.
+                    self.parray_eviction() 
             self.stop_callback()
 
     def stop(self):
@@ -589,12 +584,7 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
         
-
-<<<<<<< HEAD
     def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
-=======
-    def reserve_parray_to_tracker(self, cy_parray: CyPArray, global_dev_id: int):
->>>>>>> memory-manager
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
@@ -621,22 +611,15 @@ class Scheduler(ControllableThread, SchedulerContext):
         :param global_dev_id: global logical device id that
                               this function interests
         """
-<<<<<<< HEAD
         return self.inner_scheduler.get_reserved_memory(global_dev_id)
 
     def get_max_memory(self, global_dev_id: int):
-=======
-        self.inner_scheduler.reserve_parray_to_tracker(cy_parray, global_dev_id)
-
-    def release_parray_from_tracker(self, cy_parray: CyPArray, global_dev_id: int):
->>>>>>> memory-manager
         """
         Return the total amount of memory on a device.
 
         :param global_dev_id: global logical device id that
                               this function interests
         """
-<<<<<<< HEAD
         return self.inner_scheduler.get_max_memory(global_dev_id)
 
     def get_mapped_parray_state(\
@@ -651,9 +634,6 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_mapped_parray_state( \
             global_dev_id, parray_parent_id)
-=======
-        self.inner_scheduler.release_parray_from_tracker(cy_parray, global_dev_id)
->>>>>>> memory-manager
 
     def get_reserved_parray_state(\
         self, global_dev_id: int, parray_parent_id):
@@ -667,6 +647,17 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_reserved_parray_state( \
             global_dev_id, parray_parent_id)
+
+    def remove_parray_from_tracker(\
+        self, cy_parray: CyPArray, did: int):
+        """
+        Remove the evicted PArray instance on device `global_dev_id`
+        from the PArray tracker's table
+
+        :param cy_parray: Cython PArray instance to be removed 
+        :param did: global logical device id where the PArray is evicted
+        """
+        self.inner_scheduler.remove_parray_from_tracker(cy_parray, did)
 
     def invoke_all_cparrays_clear(self):
         self.inner_scheduler.invoke_all_cparrays_clear()

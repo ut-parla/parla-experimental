@@ -93,7 +93,7 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
       mapped_pool.increase<Resource::Memory>(mapped_size);
 
       InnerPArray *parray = parray_access.first;
-      parray->incr_num_active_tasks(global_dev_id);
+      parray->incr_num_referring_tasks(global_dev_id);
     }
   }
 
@@ -166,64 +166,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
       this->enqueue(task);
     } else {
       this->map_task(task, chosen_devices);
-#if 0
-      XXX(hc): revisit this..
-      std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-          *parray_list = &(task->parray_list);
-      for (size_t i = 0; i < chosen_devices.size(); ++i) {
-        assert(chosen_devices[i] != nullptr);
-        Device *chosen_device = chosen_devices[i]->device();
-        DevID_t global_dev_id = chosen_device->get_global_id();
-        task->assigned_devices.push_back(chosen_device);
-        task->device_constraints.insert(
-            {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
-        // Increase the number of mapped tasks as the number of PArrays
-        // since the corresponding data movement tasks will be created.
-        this->atomic_incr_num_mapped_tasks_device(global_dev_id, 1);
-        // TODO(hc): measure the total number of necessary bytes for each device.
-        for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
-          parray::InnerPArray *parray = (*parray_list)[i][j].first;
-          this->scheduler->reserve_parray_to_tracker(parray, global_dev_id);
-          this->scheduler->task_acquire_parray(parray, global_dev_id);
-          parray->incr_num_active_tasks(global_dev_id);
-          accum_necessary_memory[global_dev_id] += parray->get_size();
-        }
-
-        // Check if memory consumption on the target device is high.
-        // If it is, invoke memory eviction.
-        // Memory eviction should happen on Python side.
-        // To do this, it sets an eviction flag first, and break the
-        // infinite loop of the scheduler.
-        ResourcePool_t &dev_reserved_pool = chosen_device->get_reserved_pool();
-        ResourcePool_t parray_resource;
-        // TODO(hc): This is heuristic threshold.
-        //           This could be improved.
-        size_t necessary_memory = accum_necessary_memory[global_dev_id] * 10; 
-        parray_resource.set(Resource::Memory, necessary_memory);
-        if (!dev_reserved_pool.check_greater<ResourceCategory::Persistent>(
-            parray_resource)) {
-          // Set necessary memory size and let PArray eviction manager
-          // evicts evictable PArrays as much of that.
-          this->scheduler->set_memory_size_to_eviction(
-              necessary_memory, chosen_device->get_global_id());
-          this->scheduler->break_for_eviction = true;
-        }
-      }
-
-      std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
-                << "\n";
-      for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-        std::cout << "\t [" << i << "] "
-                  << task->assigned_devices[i]->get_name() << "\n";
-        /*
-        auto res = task->device_constraints[task->assigned_devices[i]
-                                                ->get_global_id()];
-        std::cout << "\t memory:" << res.get(Resource::Memory)
-                  << ", vcu:" << res.get(Resource::VCU) << "\n";
-        */
-      }
-#endif
-
       this->mapped_tasks_buffer.push_back(task);
     }
 
@@ -343,6 +285,9 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
 
+      // Register this PArray to eviction manager's table
+      this->scheduler->grab_parray_reference(parray, local_device_idx);
+
       // If the PArray is not an input, then we don't need to check size
       // Note(@dialecticDolt):
       // There is literally no such thing as an out type in our syntax why do we
@@ -371,6 +316,10 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
 
     status = status && device_status;
     if (!status) {
+      // If a device has not enough memory, activate eviction manager
+      this->scheduler->set_memory_size_to_evict(
+          size_on_device * 2, local_device_idx);
+      this->scheduler->break_for_eviction = true;
       break;
     }
   }

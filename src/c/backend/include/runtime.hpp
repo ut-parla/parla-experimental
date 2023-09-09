@@ -995,13 +995,14 @@ public:
   Mapper *mapper;
 
   /* If it is set, break an infinite loop in InnerScheduler::run()
-     and invoke PArray eviction to PythonScheduler */
+     and invoke PArray eviction from PythonScheduler */
   bool break_for_eviction = false;
   /* Memory size to evict for each device */
-  std::vector<size_t> memory_size_to_eviction{0};
+  std::vector<size_t> memory_size_to_evict{0};
 
-  /* Set memory size to evict for each device */
-  void set_memory_size_to_eviction(size_t, DevID_t);
+  /* Set necessary memory size getting from eviction manager
+     on each device */
+  void set_memory_size_to_evict(size_t, DevID_t);
   /* Get memory size to evict for each device */
   size_t get_memory_size_to_evict(DevID_t);
 
@@ -1107,12 +1108,23 @@ public:
   /* Release a PArray in a device */
   void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
 
-  void task_acquire_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    this->mm_->acquire_data(parray, global_dev_id);
+  void remove_parray_from_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    parray::AccessMode access_mode = AccessMode::FREED;
+    this->mapper->get_parray_tracker()->do_log(global_dev_id,
+        std::make_pair(parray, access_mode));
+    this->memory_reserver->get_parray_tracker()->do_log(global_dev_id,
+        std::make_pair(parray, access_mode));
   }
 
-  void task_release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    this->mm_->release_data(parray, global_dev_id);
+  void grab_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->grab_parray_reference(parray, global_dev_id);
+  }
+
+  void release_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->release_parray_reference(parray, global_dev_id);
   }
 
   /* Get mapped memory on device */

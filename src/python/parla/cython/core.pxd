@@ -155,7 +155,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
 
-        int get_num_active_tasks()
+        int get_num_referring_tasks()
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
@@ -174,6 +174,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void spawn_wait()
 
         void create_parray(InnerPArray* parray, int parray_dev_id)
+        void remove_parray_from_tracker(InnerPArray* parray, int dev_id)
         
         void invoke_all_cparrays_clear()
         bool get_all_pyparrays_clear_flag()

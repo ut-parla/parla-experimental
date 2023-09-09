@@ -130,8 +130,9 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
                                DeviceManager *device_manager)
     : device_manager_(device_manager), mm_(memory_manager) {
 
-  this->memory_size_to_eviction.resize(
-      device_manager->template get_num_devices<DeviceType::CUDA>());
+  // For now, it does not evict PArrays on CPU memory.
+  this->memory_size_to_evict.resize(
+      device_manager->template get_num_devices<DeviceType::All>());
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -174,12 +175,13 @@ bool InnerScheduler::get_all_pyparrays_clear_flag() {
   return this->clear_all_pyparrays.load();
 }
 
-void InnerScheduler::set_memory_size_to_eviction(size_t size, DevID_t dev_id) {
-  this->memory_size_to_eviction[dev_id] = size;
+void InnerScheduler::set_memory_size_to_evict(
+    size_t size, DevID_t dev_id) {
+  this->memory_size_to_evict[dev_id] = size;
 }
 
 size_t InnerScheduler::get_memory_size_to_evict(DevID_t dev_id) {
-  return this->memory_size_to_eviction[dev_id];
+  return this->memory_size_to_evict[dev_id];
 }
 
 void InnerScheduler::run() {
@@ -194,7 +196,7 @@ void InnerScheduler::run() {
     }
     if (this->break_for_eviction) {
       // Yield a control to a Python scheduler to evict PArrays since
-      // PArray coherency protocol is managed in there.
+      // PArray coherency protocol is managed at there.
       break;
     }
     if (this->clear_all_cparrays.load()) {
@@ -409,12 +411,12 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
       for (size_t j = 0; j < parray_access_list.size(); ++j) {
         auto &parray_access = parray_access_list[j];
         InnerPArray *parray = parray_access.first;
-        parray->decr_num_active_tasks(dev_id);
-        // This PArray is not released from the PArray tracker here,
-        // but when it is EVICTED, it will check the number of referneces
-        // and will be released if that is 0.
-        // TODO(hc): revisited this again
-        // this->task_release_parray(parray, dev_id);
+        parray->decr_num_referring_tasks(dev_id);
+        // Decrease this PArray's reference count.
+        // If this becomes 0, this instance will be release
+        // when the PArray coherency protocol updates it
+        // to eviction state.
+        this->release_parray_reference(parray, dev_id);
       }
     }
 

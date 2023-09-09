@@ -37,8 +37,8 @@ cdef class CyPArray:
     cdef InnerPArray* get_cpp_parray(self):
         return self.cpp_parray
 
-    cpdef get_num_active_tasks(self, int global_dev_id):
-        return self.cpp_parray.get_num_active_tasks(global_dev_id)
+    cpdef get_num_referring_tasks(self, int global_dev_id):
+        return self.cpp_parray.get_num_referring_tasks(global_dev_id)
 
     cpdef get_parray_parentid(self):
         return self.cpp_parray.get_parent_id()

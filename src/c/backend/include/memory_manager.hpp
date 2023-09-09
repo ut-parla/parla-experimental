@@ -224,7 +224,7 @@ public:
    *
    * @param parray pointer to a parray to be referred by a task
    */
-  void acquire_data(parray::InnerPArray *parray) {
+  void grab_parray_reference(parray::InnerPArray *parray) {
     this->mtx_.lock();
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
@@ -235,7 +235,7 @@ public:
           PArrayMetaInfo{parray_node, 1};
     } else {
       // If `parray` is already in a zr list, removes it
-      // from the list and decreases its reference count.
+      // from the list and increases its reference count.
       found->second.ref_count++; 
       this->zr_parray_list_.remove(found->second.parray_node_ptr);
     }
@@ -245,14 +245,14 @@ public:
   /**
    * @brief A task is finished and releases `parray` in the device.
    * @detail This function is called by a worker thread when a task
-   * assigned to that completes. So, the thread also releases a
-   * `parray`, and decreases a reference count of that in the device.
+   * assigned to that thread is completed. The thread releases the
+   * `parray` instance, and decreases its reference count in the device.
    * If the reference count becomes 0, the `parray` is added to
-   * its zero-referenced list.
+   * the zero-referenced list.
    *
    * @param parray pointer to a parray to be released by a task
    */
-  void release_data(parray::InnerPArray *parray) {
+  void release_parray_reference(parray::InnerPArray *parray) {
     this->mtx_.lock();
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
@@ -358,8 +358,8 @@ public:
    * @param parray pointer to a parray to be referred by a task
    * @param dev_id device id of a device to access its information
    */
-  void acquire_data(parray::InnerPArray *parray, DevID_t dev_id) {
-    this->device_mm_[dev_id]->acquire_data(parray);
+  void grab_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
+    this->device_mm_[dev_id]->grab_parray_reference(parray);
   }
 
   /**
@@ -373,8 +373,8 @@ public:
    * @param parray pointer to a parray to be released by a task
    * @param dev_id device id of a device to access its information
    */
-  void release_data(parray::InnerPArray *parray, DevID_t dev_id) {
-    this->device_mm_[dev_id]->release_data(parray);
+  void release_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
+    this->device_mm_[dev_id]->release_parray_reference(parray);
   }
 
   /**

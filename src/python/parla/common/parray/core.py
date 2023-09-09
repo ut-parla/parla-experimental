@@ -120,7 +120,7 @@ class PArray:
         # Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
         # FIXME
 
-        # XXX(hc): Register this PArray to tracker and make a link between
+        # Register this PArray to tracker and make a link between
         # C PArray instance.
         scheduler = get_scheduler()
         if scheduler is None:
@@ -482,23 +482,21 @@ class PArray:
                 #     f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
 
                 scheduler = get_scheduler()
-                if (to_free > 0) and (scheduler is not None):
-                    # This frees the memory on the device in the mapped and reserved pools
-                    scheduler.device_manager.free_memory(op.src, to_free)
-                    # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
-
-                """
-                XXX(hc): should be revisited..
-                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
-                    op.src)
-                if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
-                    # If none of visible tasks will refer this PArray, release
-                    # this PArray instance of the source device from the PArray tracker.
-                    scheduler.release_parray_from_tracker(
-                        self._cy_parray, src_global_dev_id)
+                if scheduler is not None:
+                    if to_free > 0:
+                        # This frees the memory on the device in the mapped and reserved pools
+                        scheduler.device_manager.free_memory(op.src, to_free)
+                        # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
+                    src_global_dev_id =
+                        scheduler.device_manager.parrayid_to_globalid(op.src)
+                    if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
+                        # If none of active tasks refers this PArray,
+                        # remove this PArray on the src device from
+                        # the PArray tracker's table.
+                        scheduler.remove_parray_from_tracker(
+                            self._cy_parray, src_global_dev_id)
                 # decrement the reference counter, relying on GC to free the memor
                 self._array.clear(op.src)
-                """
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError(
                     "PArray gets an error from coherence protocol")
@@ -921,8 +919,8 @@ class PArray:
     def get_parray_parentid_from_cpp(self):
         return self._cy_parray.get_parray_parentid()
 
-    def get_num_active_tasks(self, global_dev_id):
-        return self._cy_parray.get_num_active_tasks(global_dev_id)
+    def get_num_referring_tasks(self, global_dev_id):
+        return self._cy_parray.get_num_referring_tasks(global_dev_id)
 
     def __del__(self):
         # Users can explicitly call `del` over a Python PArray.

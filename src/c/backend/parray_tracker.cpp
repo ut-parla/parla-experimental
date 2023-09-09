@@ -64,8 +64,8 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
       this->set_parray_unsafe(i, parray_id, false);
     }
 
-    if (access_mode != AccessMode::REMOVED) {
-      this->set_parray_unsafe(dev_id, parray_id, false);
+    if (access_mode != AccessMode::FREED) {
+      this->set_parray_unsafe(dev_id, parray_id, true);
     }
 
     if (is_slice) {
@@ -102,7 +102,7 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
           this->set_parray_unsafe(i, child_id, false);
         }
 
-        if (access_mode != AccessMode::REMOVED) {
+        if (access_mode != AccessMode::FREED) {
           this->set_parray_unsafe(dev_id, child_id, false);
         }
       }
