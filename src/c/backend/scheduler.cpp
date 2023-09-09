@@ -1,8 +1,11 @@
+#include "include/device.hpp"
+#include "include/parray.hpp"
 #include "include/phases.hpp"
 #include "include/policy.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 
+#include <cstdint>
 #include <new>
 
 #ifdef PARLA_ENABLE_LOGGING
@@ -125,8 +128,7 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
                                DeviceManager *device_manager)
-    : device_manager_(device_manager), parray_tracker_(device_manager),
-      mm_(memory_manager) {
+    : device_manager_(device_manager), mm_(memory_manager) {
 
   this->memory_size_to_eviction.resize(
       device_manager->template get_num_devices<DeviceType::CUDA>());
@@ -138,17 +140,11 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
 
   this->workers.set_num_workers(1);
 
-  // Mapping policy
-  std::shared_ptr<LocalityLoadBalancingMappingPolicy> mapping_policy =
-      std::make_shared<LocalityLoadBalancingMappingPolicy>(
-          device_manager, &this->parray_tracker_);
-
   // Initialize the phases
-  this->mapper = new Mapper(this, device_manager, std::move(mapping_policy));
+  this->mapper = new Mapper(this, device_manager);
   this->memory_reserver = new MemoryReserver(this, device_manager);
   this->runtime_reserver = new RuntimeReserver(this, device_manager);
   this->launcher = new Launcher(this, device_manager);
-  // this->resources = std::make_shared < ResourcePool<std::atomic<int64_t>>();
 }
 
 InnerScheduler::~InnerScheduler() {
@@ -245,32 +241,32 @@ void InnerScheduler::spawn_task(InnerTask *task) {
 
   auto status = task->process_dependencies();
   this->increase_num_active_tasks();
-  task->set_state(Task::SPAWNED);
+  task->set_state(TaskState::SPAWNED);
   this->enqueue_task(task, status);
 }
 
-void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
+void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
-  if (status.mappable && (task->get_state() < Task::MAPPED)) {
+  if (status.mappable && (task->get_state() < TaskState::MAPPED)) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
-    task->set_status(Task::MAPPABLE);
+    task->set_status(TaskStatus::MAPPABLE);
     this->mapper->enqueue(task);
-  } else if (status.reservable && (task->get_state() == Task::MAPPED)) {
-    task->set_status(Task::RESERVABLE);
+  } else if (status.reservable && (task->get_state() == TaskState::MAPPED)) {
+    task->set_status(TaskStatus::RESERVABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
     this->memory_reserver->enqueue(task);
-  } else if (status.runnable && (task->get_state() == Task::RESERVED)) {
-    task->set_status(Task::RUNNABLE);
+  } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
+    task->set_status(TaskStatus::RUNNABLE);
     // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
 }
 
-void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
+void InnerScheduler::enqueue_tasks(TaskStatusList &tasks) {
   // LOG_INFO(SCHEDULER, "Enqueing tasks: {}", tasks);
-  for (auto task_status : tasks) {
+  for (TaskStatusPair task_status : tasks) {
     this->enqueue_task(task_status.first, task_status.second);
   }
 }
@@ -286,19 +282,21 @@ void InnerScheduler::enqueue_worker(InnerWorker *worker) {
 }
 
 void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
-                                          int state) {
+                                          int state_int) {
   NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
+
+  TaskState state = static_cast<TaskState>(state_int);
 
   // std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
   //           << std::endl;
 
   // std::cout << "Task state: " << state << std::endl;
-  if (state == Task::RUNAHEAD) {
+  if (state == TaskState::RUNAHEAD) {
 
     // Notify dependents that they can be scheduled
     auto &enqueue_buffer = worker->enqueue_buffer;
-    task->notify_dependents(enqueue_buffer, Task::RUNAHEAD);
+    task->notify_dependents(enqueue_buffer, TaskState::RUNAHEAD);
     if (enqueue_buffer.size() > 0) {
       this->enqueue_tasks(enqueue_buffer);
       enqueue_buffer.clear();
@@ -306,42 +304,128 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
   }
 }
 
+void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
+
+  PArrayAccess_t parray_access = std::make_pair(parray, AccessMode::NEW);
+
+  auto device_manager = this->device_manager_;
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  PArrayTracker *reserved_tracker = this->memory_reserver->get_parray_tracker();
+
+  DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
+
+  std::cout << "Updating trackers" << std::endl;
+  size_t to_map = mapped_tracker->do_log(global_dev_id, parray_access);
+  size_t to_reserve = reserved_tracker->do_log(global_dev_id, parray_access);
+  std::cout << "Updating trackers done" << std::endl;
+
+  add_unmapped_created_parray(parray, global_dev_id, to_map);
+  add_unreserved_created_parray(parray, global_dev_id, to_reserve);
+}
+
+void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_id);
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  PArrayTracker *reserved_tracker = this->memory_reserver->get_parray_tracker();
+
+  // TODO: Decide policy for removal.
+  // Simplest is just to call remove_parray on both trackers
+  // Could also be to call DELETED or REMOVED status on do_log
+}
+
+size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  auto &mapped_memory_pool = device->get_mapped_pool();
+  return device->query_mapped<Resource::Memory>();
+}
+
+size_t InnerScheduler::get_reserved_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  return device->query_reserved<Resource::Memory>();
+}
+
+size_t InnerScheduler::get_max_memory(DevID_t global_dev_idx) {
+  Device *device =
+      this->device_manager_->get_device_by_global_id(global_dev_idx);
+  return device->query_max<Resource::Memory>();
+}
+
+bool InnerScheduler::get_mapped_parray_state(DevID_t global_dev_idx,
+                                             uint64_t parray_parent_id) {
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  return mapped_tracker->get_parray_state(global_dev_idx, parray_parent_id);
+}
+
+bool InnerScheduler::get_reserved_parray_state(DevID_t global_dev_idx,
+                                               uint64_t parray_parent_id) {
+
+  PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
+  return mapped_tracker->get_parray_state(global_dev_idx, parray_parent_id);
+}
+
 void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
-                                           int state) {
+                                           int state_int) {
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
+
+  TaskState state = static_cast<TaskState>(state_int);
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
 
-  if (state == Task::RUNAHEAD) {
+  DeviceManager *device_manager = this->device_manager_;
+
+  if (state == TaskState::RUNAHEAD) {
     this->decrease_num_active_tasks();
     task->notify_dependents_completed();
   }
 
   // Release all resources for this task on all devices
-  for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-    Device *device = task->assigned_devices[i];
-    DevID_t dev_id = device->get_global_id();
-    ResourcePool_t &device_pool = device->get_reserved_pool();
-    ResourcePool_t &task_pool =
-        task->device_constraints[device->get_global_id()];
+  for (size_t local_device_idx = 0;
+       local_device_idx < task->assigned_devices.size(); ++local_device_idx) {
 
-    // TODO(wlr): This needs to be changed to not release PARRAY resources
-    device_pool.increase<ResourceCategory::All>(task_pool);
+    Device *device = task->assigned_devices[local_device_idx];
+    DevID_t dev_id = device->get_global_id();
+
+    auto &device_reserved_pool = device->get_reserved_pool();
+    auto &device_mapped_pool = device->get_mapped_pool();
+
+    auto &task_pool = task->device_constraints[device->get_global_id()];
+
+    device_reserved_pool.increase(task_pool);
+    device_mapped_pool.decrease(task_pool);
+
+    auto &parray_access_list = task->parray_list[local_device_idx];
 
     // PArrays could be evicted even during task barrier continuation.
     // However, these PArrays will be allocated and tracked
     // again after the task restarts.
+
     if (!task->is_data_task()) {
-      for (size_t j = 0; j < task->parray_list[i].size(); ++j) {
-        parray::InnerPArray *parray = task->parray_list[i][j].first;
+      for (size_t j = 0; j < parray_access_list.size(); ++j) {
+        auto &parray_access = parray_access_list[j];
+        InnerPArray *parray = parray_access.first;
         parray->decr_num_active_tasks(dev_id);
         // This PArray is not released from the PArray tracker here,
         // but when it is EVICTED, it will check the number of referneces
         // and will be released if that is 0.
-        this->task_release_parray(parray, dev_id);
+        // TODO(hc): revisited this again
+        // this->task_release_parray(parray, dev_id);
       }
     }
-    this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+
+    if (task->is_data_task()) {
+      // Decrease the number of mapped data tasks on the device
+      // TODO(@dialecticDolt) Add this
+      this->mapper->atomic_decr_num_mapped_data_tasks_device(dev_id);
+    } else {
+      // Decrease the number of mapped compute tasks on the device
+      this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+    }
   }
 
   // Clear all assigned streams from the task
@@ -349,7 +433,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
   this->launcher->num_running_tasks--;
   worker->remove_task();
 
-  if (state == Task::RUNNING) {
+  if (state == TaskState::RUNNING) {
     task->reset();
     auto status = task->process_dependencies();
     this->enqueue_task(task, status);
@@ -382,6 +466,7 @@ void InnerScheduler::decrease_num_active_tasks() {
   // std::cout << "Decreasing num active tasks: " << count << std::endl;
 
   if (count == 0) {
+    // No more active tasks, stop the scheduler
     this->stop();
   }
 }

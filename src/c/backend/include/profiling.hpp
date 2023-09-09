@@ -1,3 +1,7 @@
+/*! @file profiling.hpp
+ *  @brief Provides macros for NVTX profiling and BINLOG tracing.
+ */
+
 // #pragma once
 #ifndef PARLA_PROFILING_HPP
 #define PARLA_PROFILING_HPP
@@ -160,6 +164,11 @@ inline int write_log(std::string filename) { return 0; }
 #define SCHEDULER 'Scheduler'
 #define TASK 'Task'
 
+/*!
+ * @brief Python interface to log a string in the 'task' message category
+ * @param type The log level.
+ * @param msg The message to log.
+ */
 inline void log_task_msg(const int type, std::string msg) {
   // const char* _msg = msg.c_str();
   switch (type) {
@@ -184,6 +193,11 @@ inline void log_task_msg(const int type, std::string msg) {
   }
 }
 
+/*!
+ * @brief Python interface to log a string in the 'worker' message category
+ * @param type The log level.
+ * @param msg The message to log.
+ */
 inline void log_worker_msg(const int type, std::string msg) {
   // const char* _msg = msg.c_str();
   switch (type) {
@@ -208,6 +222,11 @@ inline void log_worker_msg(const int type, std::string msg) {
   }
 }
 
+/*!
+ * @brief Python interface to log a string in the 'scheduler' message category.
+ * @param type The log level.
+ * @param msg The message to log.
+ */
 inline void log_scheduler_msg(const int type, std::string msg) {
   // const char* _msg = msg.c_str();
   switch (type) {
@@ -232,6 +251,15 @@ inline void log_scheduler_msg(const int type, std::string msg) {
   }
 }
 
+/*!
+ * @brief Python interface to log class instance and message in the 'task'
+ * message category.
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T Class type
+ * @param type Log level
+ * @param msg String message to log
+ * @param class_ptr Pointer to class instance
+ */
 template <typename T>
 inline void log_task_1(const int type, std::string msg, T *class_ptr) {
   // const char* _msg = msg.c_str();
@@ -257,6 +285,15 @@ inline void log_task_1(const int type, std::string msg, T *class_ptr) {
   }
 }
 
+/*!
+ * @brief Python interface to log class instance and message in the 'worker'
+ * category
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T Class type
+ * @param type Log level
+ * @param msg String message to log
+ * @param class_ptr Pointer to class instance
+ */
 template <typename T>
 inline void log_worker_1(const int type, std::string msg, T *class_ptr) {
   // const char* _msg = msg.c_str();
@@ -282,6 +319,15 @@ inline void log_worker_1(const int type, std::string msg, T *class_ptr) {
   }
 }
 
+/*!
+ * @brief Python interface to log class instance and message in the 'scheduler'
+ * category
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T Class type
+ * @param type Log level
+ * @param msg String message to log
+ * @param class_ptr Pointer to class instance
+ */
 template <typename T>
 inline void log_scheduler_1(const int type, std::string msg, T *class_ptr) {
   // const char* _msg = msg.c_str();
@@ -307,6 +353,18 @@ inline void log_scheduler_1(const int type, std::string msg, T *class_ptr) {
   }
 }
 
+/*!
+ * @brief Python interface to log 2 class instances and message in the 'task'
+ * category. Prints as msg1 + class1 + msg2 + class2.
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T The first class type
+ * @tparam G The second class type
+ * @param type Log level
+ * @param msg1 First string message to log
+ * @param class_ptr1 Pointer to first class instance
+ * @param msg2 Second string message to log
+ * @param class_ptr2 Pointer to second class instance
+ */
 template <typename T, typename G>
 inline void log_task_2(const int type, std::string msg1, T *class_ptr1,
                        std::string msg2, G *class_ptr2) {
@@ -333,6 +391,18 @@ inline void log_task_2(const int type, std::string msg1, T *class_ptr1,
   }
 }
 
+/*!
+ * @brief Python interface to log 2 class instances and message in the 'worker'
+ * category. Prints as msg1 + class1 + msg2 + class2.
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T The first class type
+ * @tparam G The second class type
+ * @param type Log level
+ * @param msg1 First string message to log
+ * @param class_ptr1 Pointer to first class instance
+ * @param msg2 Second string message to log
+ * @param class_ptr2 Pointer to second class instance
+ */
 template <typename T, typename G>
 inline void log_worker_2(const int type, std::string msg1, T *class_ptr1,
                          std::string msg2, G *class_ptr2) {
@@ -359,6 +429,18 @@ inline void log_worker_2(const int type, std::string msg1, T *class_ptr1,
   }
 }
 
+/*!
+ * @brief Python interface to log 2 class instances and message in the
+ * 'scheduler' category. Prints as msg1 + class1 + msg2 + class2.
+ * @details The class instance must be configured to be printable with binlog.
+ * @tparam T The first class type
+ * @tparam G The second class type
+ * @param type Log level
+ * @param msg1 First string message to log
+ * @param class_ptr1 Pointer to first class instance
+ * @param msg2 Second string message to log
+ * @param class_ptr2 Pointer to second class instance
+ */
 template <typename T, typename G>
 inline void log_scheduler_2(const int type, std::string msg1, T *class_ptr1,
                             std::string msg2, G *class_ptr2) {

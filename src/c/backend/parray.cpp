@@ -1,4 +1,4 @@
-#include "parray.hpp"
+#include "include/parray.hpp"
 #include <cstdint>
 #include <unordered_map>
 
@@ -63,7 +63,13 @@ TaskList &InnerPArray::get_task_list_ref() { return this->_task_lists; }
 
 void *InnerPArray::get_py_parray() { return this->_py_parray; }
 
-uint64_t InnerPArray::get_parray_parentid() { return this->parent_id; }
+const uint64_t InnerPArray::get_id() const { return this->id; }
+
+const uint64_t InnerPArray::get_parent_id() const { return this->parent_id; }
+
+const bool InnerPArray::is_subarray() const {
+  return this->parent_id != this->id;
+}
 
 InnerPArray *InnerPArray::get_parent_parray() {
   if (this->_parent_parray == nullptr) {

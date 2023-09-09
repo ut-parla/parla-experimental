@@ -1,3 +1,9 @@
+
+"""!
+@file execute.py
+@brief Provides mechanisms to launch and log synthetic task graphs.
+"""
+
 import functools
 import threading
 from typing import Dict, Tuple, Union, List
@@ -20,27 +26,27 @@ from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
 from parla.common.array import clone_here
-from parla.common.globals import get_current_devices, get_current_stream
+from parla.common.globals import get_current_devices, get_current_stream, cupy, CUPY_ENABLED, get_current_context
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla import gpu_sleep_nogil
-from parla.cython.core import gpu_bsleep_nogil
-from parla.cython.scheduler import get_scheduler_context
+from parla.cython.core import gpu_bsleep_nogil, gpu_bsleep_gil
 import numpy as np
 
 from fractions import Fraction
 
 PArray = parray.core.PArray
 
+
 def make_parrays(data_list):
-    l = list()
+    parray_list = list()
     for i, data in enumerate(data_list):
-        l.append(asarray(data))
-    return l
+        parray_list.append( asarray(data, name="data"+str(i)) )
+    return parray_list
 
 
-def estimate_frequency(n_samples= 10, ticks=1900000000):
+def estimate_frequency(n_samples=10, ticks=1900000000):
     import cupy as cp
     stream = cp.cuda.get_current_stream()
     cycles = ticks
@@ -64,23 +70,31 @@ def estimate_frequency(n_samples= 10, ticks=1900000000):
     median_speed = cycles/np.median(times)
 
     print("Finished Benchmark.")
-    print("Estimated GPU Frequency: Mean: ", estimated_speed, ", Median: ", median_speed, flush=True)
+    print("Estimated GPU Frequency: Mean: ", estimated_speed,
+          ", Median: ", median_speed, flush=True)
+    
     return estimated_speed
 
 
 class GPUInfo():
 
-    #approximate average on frontera RTX
-    #cycles_per_second = 1919820866.3481758
-    #cycles_per_second = 875649327.7713356
-    #cycles_per_second = 47994628114801.04
+    # approximate average on frontera RTX
+    # cycles_per_second = 1919820866.3481758
+    # cycles_per_second = 867404498.3008006
+    # cycles_per_second = 47994628114801.04
     cycles_per_second = 1949802881.4819772
 
-    def update(self, cycles):
+    def update_cycles(self, cycles=None):
+
+        if cycles is None:
+            cycles = estimate_frequency()
+        
         self.cycles_per_second = cycles
 
-    def get(self):
+    def get_cycles_per_second(self):
         return self.cycles_per_second
+    
+_GPUInfo = GPUInfo()
 
 
 def get_placement_set_from(ps_str_set, num_gpus):
@@ -108,35 +122,58 @@ def get_placement_set_from(ps_str_set, num_gpus):
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
 
+
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
     value = 0
     data_list = []
     # If data does not exist, this loop will not be iterated.
     for data_idx in data_config:
-        data_location = data_config[data_idx].location
-        data_size = data_config[data_idx].size
+
+        data_info = data_config[data_idx]
+
+        data_location = data_info.location
+        data_size = data_info.size
+
         if data_location == DeviceType.CPU_DEVICE:
-            data = np.zeros([data_size, data_scale], dtype=np.float32) + value + 1
+            data = np.zeros([data_size, data_scale],
+                            dtype=np.float32) + value + 1
             data_list.append(data)
+
         elif data_location > DeviceType.ANY_GPU_DEVICE:
             import cupy as cp
             with cp.cuda.Device(data_location - 1) as device:
-                data = cp.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
+                data = cp.zeros([data_size, data_scale],
+                                dtyp=np.float32) + value + 1
                 device.synchronize()
                 data_list.append(data)
         else:
             raise NotImplementedError("This device is not supported for data")
-        value += 1 
+        value += 1
+
+        
+    return data_list
+
+
+#TODO(wlr): Rewrite this supporting multiple device placement.
+def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
+
+    if data_movement_type == MovementType.NO_MOVEMENT:
+        return None
+    
+    elif data_movement_type == MovementType.LAZY_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
+            
     if data_movement_type == MovementType.EAGER_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
         data_list = make_parrays(data_list)
         if len(data_list) > 0:
             assert isinstance(data_list[0], PArray)
-
     '''
     if len(data_list) > 0:
         print("[validation] Generated data type:", type(data_list[0]))
     '''
     return data_list
+
 
 @specialize
 def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
@@ -153,12 +190,8 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    gpu_info = GPUInfo()
-    cycles_per_second = gpu_info.get()
-    dev_id = get_current_devices()[0]
-    stream = get_current_stream()
+    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}", flush=True)
 
-    print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         free_sleep(free_time)
         lock_sleep(gil_time)
@@ -171,7 +204,7 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     return None
 
 
-@synthetic_kernel.variant(gpu)
+@synthetic_kernel.variant(architecture=gpu)
 def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
@@ -181,26 +214,40 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     if config.verbose:
         task_internal_start_t = time.perf_counter()
 
-    task_internal_start_t = time.perf_counter()
     # Simulate task work
+    cycles_per_second = _GPUInfo.get_cycles_per_second()
     kernel_time = total_time / gil_accesses
+
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    gpu_info = GPUInfo()
-    cycles_per_second = gpu_info.get()
-    dev_id = get_current_devices()[0]
-    parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
+    free_ticks = int((free_time/(10**6))*cycles_per_second)
+    gil_ticks = int((gil_time/(10**6))*cycles_per_second)
 
-    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
-
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
+    # print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
-        gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
+        gpu_bsleep_nogil(dev_id[0]().device_id, int(
+            ticks), parla_cuda_stream.stream)
         parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
+
+    context = get_current_context()
+
+    for device in context.loop():
+        device_idx = device.gpu_id
+        stream = device.cupy_stream 
+
+        for i in range(gil_accesses):
+
+            gpu_bsleep_nogil(device_idx, free_ticks, stream)
+            gpu_bsleep_gil(device_idx, gil_ticks, stream)
+
+            if config.inner_sync:
+                stream.synchronize()
+    
+    if config.outer_sync:
+        context.synchronize()
 
     if config.verbose:
         task_internal_end_t = time.perf_counter()
@@ -209,7 +256,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     task_internal_end_t = time.perf_counter()
     task_internal_duration = task_internal_end_t - task_internal_start_t
-    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
+    # print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
 
     return None
 
@@ -232,9 +279,13 @@ def create_task_no_data(task, taskspaces, config, ts_postfix=None, data_list=Non
         placement_set_str = list(placement_key)
         placement_set = get_placement_set_from(placement_set_str, num_gpus)
 
+        print("placement key: ", placement_key)
+        print("placement set str: ", placement_set_str)
+        print("placement set: ", placement_set)
+
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options. 
+        #           and does not have multiple placement options.
         runtime_info = task.task_runtime[placement_set_str[0]]
 
         # Task Constraints
@@ -256,7 +307,7 @@ def create_task_no_data(task, taskspaces, config, ts_postfix=None, data_list=Non
         if config.gil_fraction is not None:
             gil_fraction = config.gil_fraction
 
-        #print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
+        # print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #      " placement:", placement_set, " placement key:", placement_set_str)
 
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
@@ -303,9 +354,11 @@ def create_task_eager_data(task, taskspaces, config=None, ts_postfix=None, data_
 
         # Remove duplicated data blocks between in/out and inout
         if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(set(read_data_list).difference(set(rw_data_list)))
+            read_data_list = list(
+                set(read_data_list).difference(set(rw_data_list)))
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
+            write_data_list = list(
+                set(write_data_list).difference(set(rw_data_list)))
 
         """
         print("RW data list:", rw_data_list)
@@ -315,13 +368,16 @@ def create_task_eager_data(task, taskspaces, config=None, ts_postfix=None, data_
         """
 
         # Construct data blocks.
-        INOUT = [] if len(rw_data_list) == 0 else [(data_list[d], 0) for d in rw_data_list]
-        IN = [] if len(read_data_list) == 0 else [(data_list[d], 0) for d in read_data_list]
-        OUT = [] if len(write_data_list) == 0 else [(data_list[d], 0) for d in write_data_list]
+        INOUT = [] if len(rw_data_list) == 0 else [
+            (data_list[d], 0) for d in rw_data_list]
+        IN = [] if len(read_data_list) == 0 else [(data_list[d], 0)
+                                                  for d in read_data_list]
+        OUT = [] if len(write_data_list) == 0 else [(data_list[d], 0)
+                                                    for d in write_data_list]
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options. 
+        #           and does not have multiple placement options.
         runtime_info = task.task_runtime[placement_set_str[0]]
 
         # Task Constraints
@@ -395,9 +451,11 @@ def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_l
 
         # Remove duplicated data blocks between in/out and inout
         if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(set(read_data_list).difference(set(rw_data_list)))
+            read_data_list = list(
+                set(read_data_list).difference(set(rw_data_list)))
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
+            write_data_list = list(
+                set(write_data_list).difference(set(rw_data_list)))
 
         """
         print("RW data list:", rw_data_list)
@@ -408,7 +466,7 @@ def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_l
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options. 
+        #           and does not have multiple placement options.
         runtime_info = task.task_runtime[placement_set_str[0]]
 
         # Task Constraints
@@ -431,8 +489,10 @@ def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_l
             gil_fraction = config.gil_fraction
         """
         print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-            " placement:", placement_set)
+              " placement:", placement_set)
+        
         """
+
         @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
         async def task_func():
             if config.verbose:
@@ -446,10 +506,11 @@ def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_l
                 local_data[d] = clone_here(data)
                 old = None
                 if config.do_check:
-                    old = np.copy(data[0,1])
-                    local_data[d][0,1] = -old
+                    old = np.copy(data[0, 1])
+                    local_data[d][0, 1] = -old
                 if config.verbose:
-                    print(f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>", flush=True)
+                    print(
+                        f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>", flush=True)
 
             elapsed = synthetic_kernel(total_time, gil_fraction,
                                        gil_accesses, config=config)
@@ -472,13 +533,25 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
     # Spawn tasks
     for task, details in tasks.items():
+        # print("task:", task, ", details:", details)
         if run_config.movement_type == MovementType.NO_MOVEMENT:
-            create_task_no_data(details, taskspaces, config=run_config, ts_postfix=ts_postfix, data_list=data_list)
+            # print("No data movement")
+            create_task_no_data(details, taskspaces,
+                                config=run_config,
+                                ts_postfix=ts_postfix,
+                                data_list=data_list)
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
-            create_task_eager_data(details, taskspaces, config=run_config, ts_postfix=ts_postfix, data_list=data_list)
+            # print("Eager data movement")
+            create_task_eager_data(details, taskspaces,
+                                   config=run_config,
+                                   ts_postfix=ts_postfix,
+                                   data_list=data_list)
         elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
-            create_task_lazy_data(details, taskspaces, config=run_config, ts_postfix=ts_postfix, data_list=data_list)
-
+            # print("Lazy data movement")
+            create_task_lazy_data(details, taskspaces,
+                                  config=run_config,
+                                  ts_postfix=ts_postfix,
+                                  data_list=data_list)
     spawn_end_t = time.perf_counter()
 
     return taskspaces
@@ -490,8 +563,10 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
         graph_times = []
         # Generate data once for multiple iterations.
-        data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
-        for i in range(0, run_config.inner_iterations):
+        data_list = generate_data(
+            data_config, run_config.data_scale, run_config.movement_type)
+
+        for i in range(run_config.inner_iterations):
             # Initialize task spaces
             taskspaces = {}
 
@@ -755,7 +830,7 @@ def timeout(seconds_before_timeout):
 
 class GraphContext(object):
 
-    def __init__(self, config: GraphConfig, name: str, graph_path = None):
+    def __init__(self, config: GraphConfig, name: str, graph_path=None):
         self.config = config
         self.graph = None
         self.data_config = None
@@ -791,7 +866,7 @@ class GraphContext(object):
         print("Graph Path:", self.tmpfilepath)
         with open(self.tmpfilepath, 'w') as tmpfile:
             graph = self.graph_function(self.config)
-            #print(graph)
+            # print(graph)
             tmpfile.write(graph)
 
         self.data_config, self.graph = read_pgraph(self.tmpfilepath)

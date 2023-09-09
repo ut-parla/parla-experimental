@@ -1,18 +1,26 @@
+
+"""!
+@file variants.pyx
+@brief Provides decorators for dispatching functions based on the active TaskEnvironment.
+"""
+
 import functools 
 from parla.common.globals import _Locals as Locals 
 from parla.cython.device import PyArchitecture
 
 class VariantDefinitionError(ValueError):
-    """
-    A function variant definition is invalid.
-    :see: `specialized`
+    """!
+    @brief Error for an invalid function variant definition.
     """
     pass
 
 class _VariantFunction(object):
-    """
-    A function that can be specialized to different targets.
-    We only support specialization on the architecture level, not on the level of specific devices.
+    """!
+    @brief Function wrapper that dispatches to different architecture targets
+    
+
+    Specialization is only supported on the architecture level.
+    Specifying specifications for specific devices (e.g. gpu(0) )is not supported.
     """
 
     def __init__(self, func):
@@ -21,7 +29,15 @@ class _VariantFunction(object):
         functools.update_wrapper(self, func)
 
 
-    def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
+    def variant(self, spec_list, override=False, architecture=None, max_amount=8):
+        """!
+        @brief Decorator to declare a variant of this function for a specific architecture.
+
+        @param spec_list A list of architectures to specialize this function for. Can be a single architecture, or a list of architectures. Each architecture can be a tuple of architectures to specialize for a multidevice configuration.
+        @param override If true, allow overriding an existing variant for one of the given architectures.
+        @param architecture The type of device that the variant is defined on (used to specify a range of valid configurations)
+        @param max_amount If using architecture this will specify the configurations as valid for (1, max_amount) architecture devices
+        """
 
         if architecture is not None:
             if spec_list is not None:
@@ -45,12 +61,18 @@ class _VariantFunction(object):
         return variant
 
     def get_variant(self, spec_key):
+        """!
+        @brief Get the variant for a given specialization key.
+        """
         return self._variants.get(spec_key, self._default)
     
     def __repr__(self):
         return "{f} specialized to {targets}>".format(f=repr(self._default)[:-1], targets=tuple(self._variants.keys()))
 
     def __call__(self, *args, **kwargs):
+        """!
+        @brief Call the function, dispatching to the appropriate variant.
+        """
         local_context = Locals.context 
         local_devices = local_context.get_all_devices()
 
@@ -68,14 +90,16 @@ class _VariantFunction(object):
 
 
 def specialize(func):
-    """
+    """!
+    @brief Decorator to create a function with specialized variants for different architectures. The default implementation is the decorated function.
+
     A decorator to declare that this function has specialized variants for specific architectures.
     The decorated function is the default implemention, used when no specialized implementation is available.
     The default can just be `raise NotImplementedError()` in cases where no default implementation is possible.
     To provide a specialized variant use the `variant` member of the main function:
     .. testsetup::
         from parla.function_decorators import *
-    >>> @specialized
+    >>> @specialize
     ... def f():
     ...     raise NotImplementedError()
     >>> @f.variant(architecture)

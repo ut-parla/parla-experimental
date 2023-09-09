@@ -1,8 +1,13 @@
 # distutils: language=c++
 
+"""!
+@file cyparray.pyx
+@brief Contains the core intermediate cython wrapper classes for PArray.
+"""
+
 from .cyparray cimport InnerPArray
 from .cyparray_state cimport CyPArrayState
-from parla.common.parray.core import PArray
+#from parla.common.parray.core import PArray
 
 # a Cython wrapper class around C++ PArray
 cdef class CyPArray:
@@ -36,4 +41,4 @@ cdef class CyPArray:
         return self.cpp_parray.get_num_active_tasks(global_dev_id)
 
     cpdef get_parray_parentid(self):
-        return self.cpp_parray.get_parray_parentid()
+        return self.cpp_parray.get_parent_id()

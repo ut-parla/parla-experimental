@@ -1,9 +1,14 @@
+"""!
+@file threads.py
+@brief Helper classes for managing threads in testing applications
+"""
 import threading
 
 
 class Propagate(threading.Thread):
-    """
-    A wrapper of threading.Thread that propagates exceptions to the main thread. 
+    """!
+    @brief threading.Thread wrapper that propagates caught exceptions back to the main thread. 
+
     Useful for testing race conditions and timeouts in pytest.
     """
 

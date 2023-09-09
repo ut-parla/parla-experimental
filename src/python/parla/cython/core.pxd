@@ -26,15 +26,16 @@ cdef extern from "include/gpu_utility.hpp" nogil:
 
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
-    ctypedef void (*stopfunc_t)(void* scheduler)
+    ctypedef void (*stopfunc_t)(void*)
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
     void stop_callback(stopfunc_t func, void* scheduler)
 
+    void create_parray(InnerPArray* parray, int parray_dev_id)
     #ctypedef void* Ptr_t
     #ctypedef InnerTask* InnerTaskPtr_t
 
-    cdef cppclass _StatusFlags "Task::StatusFlags":
+    cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
         bool mappable
         bool reservable
@@ -83,6 +84,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void reset_events_streams() except +
         void handle_runahead_dependencies(int sync_type) except +
         void synchronize_events()   except +
+
+        void create_parray(InnerPArray* parray, int parray_dev_id)
 
 
     cdef cppclass InnerDataTask(InnerTask):
@@ -160,13 +163,18 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()
-        bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void spawn_wait() except +
+        bool get_mapped_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
+        bool get_reserved_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void reserve_parray_to_tracker(InnerPArray* parray, int dev_id) except +
-        void release_parray_from_tracker(InnerPArray* parray, int dev_id) except +
+        size_t get_mapped_memory(uint32_t global_dev_idx)
+        size_t get_reserved_memory(uint32_t global_dev_idx)
+        size_t get_max_memory(uint32_t global_dev_idx)
 
+        void spawn_wait()
+
+        void create_parray(InnerPArray* parray, int parray_dev_id)
+        
         void invoke_all_cparrays_clear()
         bool get_all_pyparrays_clear_flag()
 

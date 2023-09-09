@@ -1,3 +1,8 @@
+"""!
+@file scheduler.pyx
+@brief Contains the core Python logic to manage workers and launch tasks.
+"""
+
 from abc import abstractmethod, ABCMeta
 from typing import Collection, Optional, Union, List, Dict
 import threading
@@ -26,6 +31,7 @@ Task = tasks.Task
 ComputeTask = tasks.ComputeTask
 DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
+AtomicTaskSpace = tasks.AtomicTaskSpace
 create_env = tasks.create_env
 
 from parla.utility.tracer import NVTXTracer
@@ -310,10 +316,15 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
+<<<<<<< HEAD
+
+=======
+>>>>>>> memory-manager
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
+                        self.task = None
 
                         self.task = None
                         nvtx.pop_range(domain="Python Runtime")
@@ -354,7 +365,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         self.exception_stack = []
 
-        self.default_taskspace = TaskSpace("global")
+        self.default_taskspace = AtomicTaskSpace("global")
 
         #TODO: Handle resources better
         resources = 1.0
@@ -577,8 +588,13 @@ class Scheduler(ControllableThread, SchedulerContext):
 
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
+        
 
+<<<<<<< HEAD
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
+=======
     def reserve_parray_to_tracker(self, cy_parray: CyPArray, global_dev_id: int):
+>>>>>>> memory-manager
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
@@ -586,22 +602,44 @@ class Scheduler(ControllableThread, SchedulerContext):
         during initialization if its internal array type is PArray.
 
         :param parray: Created Cython PArray instance
-        :param global_dev_id: global logical device id that
-                              the PArray will be placed
         """
+        self.inner_scheduler.create_parray(cy_parray, parray_dev_id)
+
+    def get_mapped_memory(self, global_dev_id: int):
+        """
+        Return the total amount of mapped memory on a device.
+
+        :param global_dev_id: global logical device id that
+                              this function interests
+        """
+        return self.inner_scheduler.get_mapped_memory(global_dev_id)
+
+    def get_reserved_memory(self, global_dev_id: int):
+        """
+        Return the total amount of reserved memory on a device.
+
+        :param global_dev_id: global logical device id that
+                              this function interests
+        """
+<<<<<<< HEAD
+        return self.inner_scheduler.get_reserved_memory(global_dev_id)
+
+    def get_max_memory(self, global_dev_id: int):
+=======
         self.inner_scheduler.reserve_parray_to_tracker(cy_parray, global_dev_id)
 
     def release_parray_from_tracker(self, cy_parray: CyPArray, global_dev_id: int):
+>>>>>>> memory-manager
         """
-        Release PArray instances that are evicted.
+        Return the total amount of memory on a device.
 
-        :param parray: Cython PArray instance to be evicted
         :param global_dev_id: global logical device id that
-                              the PArray will be evicted
+                              this function interests
         """
-        self.inner_scheduler.release_parray_from_tracker(cy_parray, global_dev_id)
+<<<<<<< HEAD
+        return self.inner_scheduler.get_max_memory(global_dev_id)
 
-    def get_parray_state(\
+    def get_mapped_parray_state(\
         self, global_dev_id: int, parray_parent_id):
         """
         Return True if a parent PArray of the passed PArray exists on a
@@ -611,7 +649,23 @@ class Scheduler(ControllableThread, SchedulerContext):
                               this function interests 
         :param parray_parent_id: parent PArray ID
         """
-        return self.inner_scheduler.get_parray_state( \
+        return self.inner_scheduler.get_mapped_parray_state( \
+            global_dev_id, parray_parent_id)
+=======
+        self.inner_scheduler.release_parray_from_tracker(cy_parray, global_dev_id)
+>>>>>>> memory-manager
+
+    def get_reserved_parray_state(\
+        self, global_dev_id: int, parray_parent_id):
+        """
+        Return True if a parent PArray of the passed PArray exists on a
+        device.
+
+        :param global_dev_id: global logical device id that 
+                              this function interests 
+        :param parray_parent_id: parent PArray ID
+        """
+        return self.inner_scheduler.get_reserved_parray_state( \
             global_dev_id, parray_parent_id)
 
     def invoke_all_cparrays_clear(self):

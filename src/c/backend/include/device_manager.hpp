@@ -1,13 +1,39 @@
+/*! @file device_manager.hpp
+ *  @brief Provides interface for device initialization and management.
+ */
+
 #pragma once
 #ifndef PARLA_DEVICE_MANAGER_HPP
 #define PARLA_DEVICE_MANAGER_HPP
 
 #include "device.hpp"
-
+#include "resources.hpp"
 #include <iostream>
 #include <vector>
 
 using DevID_t = uint32_t;
+
+inline const DevID_t parrayid_to_globalid(int parray_dev_id) {
+  if (parray_dev_id == -1) {
+    // XXX: This assumes that a CPU device is always single and
+    //      is added at first.
+    //      Otherwise, we need a loop iterating all devices and
+    //      comparing device ids.
+    return 0;
+  } else {
+    return parray_dev_id + 1;
+  }
+}
+
+inline const int globalid_to_parrayid(DevID_t global_dev_id) {
+  if (global_dev_id == 0) {
+    // XXX: This assumes that a CPU device is always single and
+    //      is added at first.
+    return -1;
+  } else {
+    return static_cast<int>(global_dev_id) - 1;
+  }
+}
 
 /// `DeviceManager` registers/provides devices and their
 /// information on the current system to the Parla runtime.
@@ -70,8 +96,8 @@ public:
     }
   }
 
-  Device *get_device_by_parray_id(DevID_t parray_dev_id) const {
-    DevID_t global_dev_id = this->parrayid_to_globalid(parray_dev_id);
+  Device *get_device_by_parray_id(int parray_dev_id) const {
+    DevID_t global_dev_id = parrayid_to_globalid(parray_dev_id);
     return all_devices_[global_dev_id];
   }
 
@@ -92,27 +118,32 @@ public:
 
   size_t get_num_devices() { return all_devices_.size(); }
 
-  // TODO(hc): use a customized type for device id.
+  /**
+   * @brief Free both the mapped and reserved memory on the device by global
+   * device id.
+   */
+  void free_memory(DevID_t global_dev_id, Resource_t memory_size) {
 
-  const DevID_t globalid_to_parrayid(DevID_t global_dev_id) const {
-    Device *dev = all_devices_[global_dev_id];
-    if (dev->get_type() == DeviceType::CPU) {
-      return -1;
-    } else {
-      return dev->get_id();
-    }
+    Device *dev = get_device_by_global_id(global_dev_id);
+    auto &mapped_memory_pool = dev->get_mapped_pool();
+    auto &reserved_memory_pool = dev->get_reserved_pool();
+
+    // Mapped memory counts how much memory is currently mapped to the device.
+    // Freeing memory decreases the mapped memory pool.
+    mapped_memory_pool.decrease<Resource::Memory>(memory_size);
+
+    // Reserved memory counts how much memory is left on the device.
+    // Freeing memory increases the reserved memory pool.
+    reserved_memory_pool.increase<Resource::Memory>(memory_size);
   }
 
-  const int parrayid_to_globalid(DevID_t parray_dev_id) const {
-    if (parray_dev_id == -1) {
-      // XXX: This assumes that a CPU device is always single and
-      //      is added at first.
-      //      Otherwise, we need a loop iterating all devices and
-      //      comparing device ids.
-      return 0;
-    } else {
-      return parray_dev_id + 1;
-    }
+  /**
+   * @brief Free both the mapped and reserved memory on the device by parray
+   * device id. Called by a PArray eviction event.
+   */
+  void free_memory_by_parray_id(int parray_dev_id, Resource_t memory_size) {
+    DevID_t global_dev_id = parrayid_to_globalid(parray_dev_id);
+    this->free_memory(global_dev_id, memory_size);
   }
 
 protected:

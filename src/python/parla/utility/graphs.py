@@ -1,3 +1,9 @@
+
+"""!
+@file graphs.py
+@brief Provides the core classes for representing and generating synthetic task graphs.
+"""
+
 import pprint
 import os
 from ast import literal_eval as make_tuple
@@ -219,7 +225,7 @@ class ReductionScatterConfig(GraphConfig):
     # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
     #       with 2 bridge tasks.
     task_count: int = 1
-    levels: int = 4 # Number of levels in the tree
+    levels: int = 4  # Number of levels in the tree
 
 
 @dataclass
@@ -245,7 +251,10 @@ class RunConfig:
     movement_type: int = MovementType.NO_MOVEMENT  # The data movement pattern to use
     logfile: str = "testing.blog"  # The log file location
     do_check: bool = False  # If this is true, validate configuration/execution
-    num_gpus: int = 4  # TODO(hc): it is duplicated with GrpahConfig.
+    num_gpus: int = 4 
+    
+    # TODO(hc): it is duplicated with GraphConfig.
+    #Comment(wlr): No it's not. This represents the number of GPUs to run on. GraphConfig is the number of GPUs to define in the graph.
 
 
 task_filter = re.compile(r'InnerTask\{ .*? \}')
@@ -297,10 +306,10 @@ def read_pgraph(filename: str) -> Tuple[Dict[int, DataInfo], Dict[TaskID, TaskIn
 
         # Read the initial data configuration
         data_info = lines.pop(0)
-        data_info = data_info.split('|')
+        data_info = data_info.split(',')
         idx = 0
         for data in data_info:
-            info = data.strip().strip("()").strip().split(",")
+            info = data.strip().strip("{}").strip().split(":")
             size = int(info[0].strip())
             location = int(info[1].strip())
             data_config[idx] = DataInfo(idx, size, location)
@@ -512,11 +521,10 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         if line_type == LogState.START_TASK:
             start_time = get_time(line)
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
+
             task_properties = task_properties[0]
 
             task_start_times[task_properties['name']] = start_time
@@ -540,10 +548,8 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.RUNAHEAD_TASK:
             runahead_time = get_time(line)
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
 
             task_properties = task_properties[0]
@@ -559,10 +565,8 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.COMPLETED_TASK:
             end_time = get_time(line)
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
 
             task_properties = task_properties[0]
@@ -578,10 +582,8 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.NOTIFY_DEPENDENTS:
             notify_time = get_time(line)
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
 
             notifying_task = task_properties[0]
@@ -600,10 +602,8 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
         elif line_type == LogState.ASSIGNED_TASK:
             assigned_time = get_time(line)
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
 
             task_properties = task_properties[0]
@@ -617,10 +617,8 @@ def parse_blog(filename: str = 'parla.blog') -> Tuple[Dict[TaskID, TaskTime],  D
 
         elif line_type == LogState.ADDING_DEPENDENCIES:
             task_properties = get_task_properties(line)
-            if len(task_properties) == 0:
-                # If the length of the task properties is 0,
-                # it implies that this task is data movement task.
-                # Ignore it.
+
+            if task_properties[0]["is_data_task"] == "1":
                 continue
 
             current_task = task_properties[0]['name']
@@ -651,15 +649,15 @@ def generate_serial_graph(config: SerialConfig) -> str:
 
     data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 , -1}\n"
+        data_config_string = "{1 : -1}\n"
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
         config.data_partitions = 1
         single_data_block_size = (
             config.total_data_width // config.data_partitions)
         for i in range(config.data_partitions):
-            data_config_string += f"{single_data_block_size , -1}"
+            data_config_string += f"{{ {single_data_block_size} : -1}}"
             if i+1 < config.data_partitions:
-                data_config_string += f" | "
+                data_config_string += f" , "
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError("[Serial] Data patterns not implemented")
     else:
@@ -688,7 +686,6 @@ def generate_serial_graph(config: SerialConfig) -> str:
         if config.data_pattern == DataInitType.OVERLAPPED_DATA:
             inout_data_index = 0
         for j in range(config.chains): # width
-            # TODO(hc): for now, do not support chain
             dependency_string = ""
             dependency_limit = min(i, config.dependency_count)
             for k in range(1, dependency_limit+1):
@@ -698,12 +695,11 @@ def generate_serial_graph(config: SerialConfig) -> str:
                 if k < dependency_limit:
                     dependency_string += " : "
 
-            # TODO(hc): for now, do not support chain
-            graph += f"{i, 0} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
+            graph += f"{i, j} |  {configuration_string} | {dependency_string} | : : {inout_data_index} \n"
 
     return graph
 
-
+#TODO(wlr): Refactor this. It is terribly hard to read
 def generate_reduction_graph(config: ReductionConfig) -> str:
     task_config = config.task_config
     num_gpus = config.num_gpus
@@ -716,15 +712,15 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
 
     data_config_string = ""
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{1 : -1}\n"
+        data_config_string = "{{1 : -1}}\n"
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError("[Reduction] Data patterns not implemented")
     else:
         single_data_block_size = config.total_data_width
         for i in range(config.branch_factor**config.levels):
             if i > 0:
-                data_config_string += " | "
-            data_config_string += f"{single_data_block_size, -1}"
+                data_config_string += ", "
+            data_config_string += f"{{ {single_data_block_size} : -1}}"
     data_config_string += "\n"
     graph += data_config_string
 
@@ -770,7 +766,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
                     read_dependency += f"{(config.branch_factor**(reverse_level))*j+k}"
                     l += 1
                     if l < len(targets):
-                        read_dependency += " , "
+                        read_dependency += ", "
                 write_dependency = f"{config.branch_factor**(reverse_level)*j}"
             else:
                 read_dependency = " "
@@ -798,14 +794,14 @@ def generate_independent_graph(config: IndependentConfig) -> str:
     data_config_string = ""
     # TODO(hc): for now, assume that data allocation starts from cpu.
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = f"{1 , -1}"
+        data_config_string = f"{{1 : -1}}"
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         single_data_block_size = config.total_data_width
         config.data_partitions = 64
         for i in range(config.data_partitions):
-            data_config_string += f"{single_data_block_size , -1}"
+            data_config_string += f"{{{single_data_block_size} : -1}}"
             if i+1 < config.data_partitions:
-                data_config_string += f" | "
+                data_config_string += f", "
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
         raise NotImplementedError(
             "[Independent] Data patterns not implemented")
@@ -852,15 +848,16 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     levels = tgraph_config.levels
     # Calcualte the number of bridge tasks in the graph.
     num_bridge_tasks = levels // 2
-    num_bridge_tasks += 1 if (levels % 2 > 0) else  0
+    num_bridge_tasks += 1 if (levels % 2 > 0) else 0
     # Calculate the number of bulk tasks in the graph.
     num_bulk_tasks = (num_tasks - num_bridge_tasks)
     # Calculate the number of bulk tasks per level.
     num_levels_for_bulk_tasks = levels // 2 + 1
     num_bulk_tasks_per_level = num_bulk_tasks // num_levels_for_bulk_tasks
     # All the remaining bulk tasks are added to the last level.
-    num_bulk_tasks_last_level = (num_bulk_tasks % num_levels_for_bulk_tasks) + num_bulk_tasks_per_level
-    # Calculate the number of tasks per gpu per level. 
+    num_bulk_tasks_last_level = (
+        num_bulk_tasks % num_levels_for_bulk_tasks) + num_bulk_tasks_per_level
+    # Calculate the number of tasks per gpu per level.
     num_bulk_tasks_per_gpu = (num_bulk_tasks_per_level) // num_gpus
     """
     for l in range(levels + 1):
@@ -878,15 +875,15 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     data_config_string = ""
     # TODO(hc): for now, assume that data allocation starts from cpu.
     if tgraph_config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = f"{1, -1}"
+        data_config_string = f"{{1 : -1}}"
     elif tgraph_config.data_pattern == DataInitType.OVERLAPPED_DATA:
         # Each bulk task takes an individual (non-overlapped) data block.
         # A bridge task reduces all data blocks from the bulk tasks in the previous level.
         single_data_block_size = tgraph_config.total_data_width
         for d in range(num_bulk_tasks_last_level):
             if d > 0:
-                data_config_string += " | "
-            data_config_string += f"{single_data_block_size, -1}"
+                data_config_string += ", "
+            data_config_string += f"{{{single_data_block_size} : -1}}"
     elif tgraph_config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError(
             "[Independent] Data patterns not implemented")
@@ -900,17 +897,18 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     # Construct task graphs.
     task_id = 0
     bridge_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
-                         DeviceType.ANY_GPU_DEVICE
+        DeviceType.ANY_GPU_DEVICE
     last_bridge_task_id_str = ""
-    last_bridge_task_id = 0 
+    last_bridge_task_id = 0
     for l in range(levels + 1):
         # If the last level has a bridge task, the previous level should take all remaining bulk
         # tasks.
         if levels % 2 > 0:
-            l_num_bulk_tasks = num_bulk_tasks_per_level if l < (levels - 1) else num_bulk_tasks_last_level
+            l_num_bulk_tasks = num_bulk_tasks_per_level if l < (
+                levels - 1) else num_bulk_tasks_last_level
         else:
             l_num_bulk_tasks = num_bulk_tasks_per_level if l < levels else num_bulk_tasks_last_level
-        if l % 2 > 0: # Bridge task condition
+        if l % 2 > 0:  # Bridge task condition
             dependency_block = ""
             inout_data_block = ""
             for d in range(l_num_bulk_tasks):
@@ -936,10 +934,10 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
             last_bridge_task_id_str = f"{task_id}"
             last_bridge_task_id = int(task_id)
             task_id += 1
-        else: # Bulk tasks condition
+        else:  # Bulk tasks condition
             bulk_task_id_per_gpu = 0
             bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE if tgraph_config.fixed_placement else \
-                               DeviceType.ANY_GPU_DEVICE
+                DeviceType.ANY_GPU_DEVICE
             for bulk_task_id in range(l_num_bulk_tasks):
                 inout_data_block = f"{bulk_task_id}"
                 # TODO(hc): assume a single device task.
@@ -962,8 +960,10 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
                 task_id += 1
     return graph
 
+
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read_pgraph,
            parse_blog, TaskConfigs, RunConfig, shuffle_tasks,
+           generate_independent_graph, generate_serial_graph, generate_reduction_graph]
            generate_independent_graph, generate_serial_graph,
            generate_reduction_scatter_graph]
