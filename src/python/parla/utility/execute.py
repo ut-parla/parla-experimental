@@ -156,18 +156,29 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
 
 #TODO(wlr): Rewrite this supporting multiple device placement.
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
-
-    if data_movement_type == MovementType.NO_MOVEMENT:
-        return None
-    
-    elif data_movement_type == MovementType.LAZY_MOVEMENT:
-        data_list = create_arrays(data_config, data_scale)
-            
+    value = 0
+    data_list = []
+    # If data does not exist, this loop will not be iterated.
+    for data_idx in data_config:
+        data_location = data_config[data_idx].location
+        data_size = data_config[data_idx].size
+        if data_location == DeviceType.CPU_DEVICE:
+            data = np.zeros([data_size, data_scale], dtype=np.float32) + value + 1
+            data_list.append(data)
+        elif data_location > DeviceType.ANY_GPU_DEVICE:
+            import cupy as cp
+            with cp.cuda.Device(data_location - 1) as device:
+                data = cp.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
+                device.synchronize()
+                data_list.append(data)
+        else:
+            raise NotImplementedError("This device is not supported for data")
+        value += 1
     if data_movement_type == MovementType.EAGER_MOVEMENT:
-        data_list = create_arrays(data_config, data_scale)
         data_list = make_parrays(data_list)
         if len(data_list) > 0:
             assert isinstance(data_list[0], PArray)
+
     '''
     if len(data_list) > 0:
         print("[validation] Generated data type:", type(data_list[0]))
@@ -204,7 +215,7 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     return None
 
 
-@synthetic_kernel.variant(architecture=gpu)
+@synthetic_kernel.variant(spec_list=None, architecture=gpu)
 def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
@@ -674,7 +685,7 @@ def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, 
 
         with Parla(logfile=run_config.logfile):
             internal_start_t = time.perf_counter()
-            execute_graph_memory2(data_config, tasks, run_config, timing)
+            execute_graph(data_config, tasks, run_config, timing)
             internal_end_t = time.perf_counter()
 
         outer_end_t = time.perf_counter()

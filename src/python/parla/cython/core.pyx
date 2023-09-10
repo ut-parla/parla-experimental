@@ -30,9 +30,6 @@ LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
 
-cpdef create_global_parray(CyPArray cy_parray, int parray_dev_id):
-    create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
-
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
     write_log(fname)
@@ -649,6 +646,10 @@ cdef class PyInnerScheduler:
         cdef InnerWorker* c_worker = worker.inner_worker
         c_self.enqueue_worker(c_worker)
 
+    cpdef remove_parray_from_tracker(self, CyPArray cy_parray, int dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.remove_parray_from_tracker(cy_parray.get_cpp_parray(), dev_id)
+
     #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -690,6 +691,10 @@ cdef class PyInnerScheduler:
     cpdef get_num_running_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_running_tasks()
+
+    cpdef get_num_active_tasks(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_num_active_tasks()
 
     cpdef get_num_notified_workers(self):
         cdef InnerScheduler* c_self = self.inner_scheduler

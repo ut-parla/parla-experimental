@@ -8,7 +8,6 @@ from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
 from parla.cython.cyparray_state import CyPArrayState
 from parla.cython.cyparray import CyPArray
-from parla.cython.core import create_global_parray
 
 import threading
 import numpy
@@ -487,14 +486,14 @@ class PArray:
                         # This frees the memory on the device in the mapped and reserved pools
                         scheduler.device_manager.free_memory(op.src, to_free)
                         # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
-                    src_global_dev_id =
+                    src_global_dev_id = \
                         scheduler.device_manager.parrayid_to_globalid(op.src)
-                    if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
+                    #if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
                         # If none of active tasks refers this PArray,
                         # remove this PArray on the src device from
                         # the PArray tracker's table.
-                        scheduler.remove_parray_from_tracker(
-                            self._cy_parray, src_global_dev_id)
+                        #scheduler.remove_parray_from_tracker(
+                        #    self._cy_parray, src_global_dev_id)
                 # decrement the reference counter, relying on GC to free the memor
                 self._array.clear(op.src)
             elif op.inst == MemoryOperation.ERROR:

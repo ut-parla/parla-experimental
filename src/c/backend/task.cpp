@@ -211,6 +211,7 @@ TaskState InnerTask::add_dependent_task(InnerTask *task) {
   this->dependents.lock();
 
   TaskState state = this->get_state();     // s1
+  std::cout << this->name << " adds " << task->name << " as dependents\n" << std::flush;
   this->dependents.push_back_unsafe(task); // s3
 
   this->dependents.unlock();
@@ -327,9 +328,9 @@ void InnerTask::notify_dependents(TaskStatusList &buffer, TaskState new_state) {
     auto task = this->dependents.get_unsafe(i);
     TaskStatusFlags status = task->notify(new_state, this->is_data.load());
 
-    // std::cout << "Dependent Task is notified: " << task->name << std::endl;
+    std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
-      // std::cout << "Dependent Task Ready: " << task->name << std::endl;
+      std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
     }
   }
@@ -362,19 +363,26 @@ TaskStatusFlags InnerTask::notify(TaskState dependency_state, bool is_data) {
     if (dependency_state == TaskState::RUNAHEAD) {
       // A data task never notifies for the other stages
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << runnable << " 6\n" << std::flush;
     }
   } else {
     if (dependency_state == TaskState::RUNAHEAD) {
       compute_runnable =
           (this->num_blocking_compute_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << compute_runnable << " 1\n" << std::flush;
       runnable = (this->num_blocking_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << runnable << " 2\n" << std::flush;
     } else if (dependency_state >= TaskState::RESERVED) {
       reservable = (this->num_unreserved_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << reservable << " 3\n" << std::flush;
     } else if (dependency_state >= TaskState::MAPPED) {
       mappable = (this->num_unmapped_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << mappable << " 4\n" << std::flush;
     } else if (dependency_state >= TaskState::SPAWNED) {
       spawnable = (this->num_unspawned_dependencies.fetch_sub(1) == 1);
+      std::cout << this->name << ", " << spawnable << " 5\n" << std::flush;
     }
+    std::cout << this->name << ", state:" << int(dependency_state) << "\n" << std::flush;
   }
 
   TaskStatusFlags status;

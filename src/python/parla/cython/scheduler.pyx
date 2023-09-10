@@ -684,6 +684,11 @@ def _task_callback(task, body):
                     raise TypeError(
                         "Parla coroutine tasks must yield a TaskAwaitTasks")
                 dependencies = new_task_info.dependencies
+                # TODO(hc): This is hack for tasklist dependencies which is dict_value types.
+                # This should be corrected.
+                if not isinstance(dependencies, list):
+                    dependencies = list(dependencies)
+                    print(dependencies)
                 value_task = new_task_info.value_task
                 if value_task:
                     assert isinstance(value_task, Task)

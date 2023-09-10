@@ -216,6 +216,10 @@ public:
 
   LRUDeviceEvictionManager(DevID_t dev_id) : dev_id_(dev_id) {}
 
+  void print() {
+    this->zr_parray_list_.print();
+  }
+
   /**
    * @brief A task refers `parray` in the device.
    * @detail This function is called when a task being mapped
@@ -360,6 +364,8 @@ public:
    */
   void grab_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
     this->device_mm_[dev_id]->grab_parray_reference(parray);
+    std::cout << parray->id << " is acquired on " << dev_id << "\n";
+    this->device_mm_[dev_id]->print();
   }
 
   /**
@@ -375,6 +381,8 @@ public:
    */
   void release_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
     this->device_mm_[dev_id]->release_parray_reference(parray);
+    std::cout << parray->id << " is released from " << dev_id << "\n";
+    this->device_mm_[dev_id]->print();
   }
 
   /**

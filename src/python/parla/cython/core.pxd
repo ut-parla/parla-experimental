@@ -159,6 +159,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void decrease_num_active_tasks()
 
         #int get_num_active_workers()
+        int get_num_active_tasks()
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()

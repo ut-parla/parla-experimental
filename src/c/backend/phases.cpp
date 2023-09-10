@@ -167,6 +167,19 @@ void Mapper::run(SchedulerPhase *next_phase) {
     } else {
       this->map_task(task, chosen_devices);
       this->mapped_tasks_buffer.push_back(task);
+      std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
+                << "\n";
+      for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+        std::cout << "\t [" << i << "] "
+                  << task->assigned_devices[i]->get_name() << "\n";
+        /*
+        auto res = task->device_constraints[task->assigned_devices[i]
+                                                ->get_global_id()];
+        std::cout << "\t memory:" << res.get(Resource::Memory)
+                  << ", vcu:" << res.get(Resource::VCU) << "\n";
+        */
+      }
+
     }
 
     // unmapped_created_parrays.unlock();
@@ -285,9 +298,6 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
 
-      // Register this PArray to eviction manager's table
-      this->scheduler->grab_parray_reference(parray, local_device_idx);
-
       // If the PArray is not an input, then we don't need to check size
       // Note(@dialecticDolt):
       // There is literally no such thing as an out type in our syntax why do we
@@ -317,9 +327,9 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
     status = status && device_status;
     if (!status) {
       // If a device has not enough memory, activate eviction manager
-      this->scheduler->set_memory_size_to_evict(
-          size_on_device * 2, local_device_idx);
-      this->scheduler->break_for_eviction = true;
+      //this->scheduler->set_memory_size_to_evict(
+      //    size_on_device * 2, local_device_idx);
+      //this->scheduler->break_for_eviction = true;
       break;
     }
   }
@@ -357,6 +367,11 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
       auto &parray_access = parray_access_list[i];
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
+
+      // Register this PArray to eviction manager's table
+      // OUT also should be added to the table since
+      // it will be created.
+      //this->scheduler->grab_parray_reference(parray, device->get_global_id());
 
       if (access_mode == AccessMode::OUT) {
         continue;
@@ -525,8 +540,8 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     bool enqueue_flag =
         (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
 
-    // std::cout << "[Reserver] Task name:" << reserved_task->get_name() << ", "
-    //           << " Enqueue Flag: " << enqueue_flag << std::endl;
+    std::cout << "[Reserver] Task name:" << reserved_task->get_name() << ", "
+              << " Enqueue Flag: " << enqueue_flag << std::endl;
 
     if (enqueue_flag) {
       reserved_task->set_status(TaskStatus::RUNNABLE);
@@ -647,8 +662,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
       bool has_resources = check_resources(task);
-      // std::cout << "RuntimeReserver::run: has_resources: " << has_resources
-      //           << std::endl;
+      //std::cout << "RuntimeReserver::run: has_resources: " << has_resources
+      //          << " for task:" << task->name << std::endl;
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
@@ -656,6 +671,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           InnerWorker *worker = scheduler->workers.dequeue_worker();
           // Decrease Resources
           this->reserve_resources(task);
+          std::cout << task->name << " is enqueued to launcher\n" << std::flush;
           launcher->enqueue(task, worker);
           this->status.increase(RuntimeReserverState::Success);
         } else {
@@ -693,6 +709,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         if (has_thread) {
           InnerTask *task = this->movement_tasks->pop();
           InnerWorker *worker = scheduler->workers.dequeue_worker();
+          std::cout << task->name << " is enqueued to launcher\n" << std::flush;
           // Decrease Resources
           this->reserve_data_resources(task);
           launcher->enqueue(task, worker);
@@ -728,8 +745,8 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  // std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-  //          << std::endl;
+  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
+           << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
