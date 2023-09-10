@@ -1108,14 +1108,9 @@ public:
   /* Release a PArray in a device */
   void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
 
+  /* Reflect a PArray removal to PArray trackers */
   void remove_parray_from_tracker(
-      parray::InnerPArray *parray, DevID_t global_dev_id) {
-    parray::AccessMode access_mode = AccessMode::FREED;
-    this->mapper->get_parray_tracker()->do_log(global_dev_id,
-        std::make_pair(parray, access_mode));
-    this->memory_reserver->get_parray_tracker()->do_log(global_dev_id,
-        std::make_pair(parray, access_mode));
-  }
+      parray::InnerPArray *parray, DevID_t global_dev_id);
 
   void grab_parray_reference(
       parray::InnerPArray *parray, DevID_t global_dev_id) {

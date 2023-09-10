@@ -338,6 +338,15 @@ void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
   // Could also be to call DELETED or REMOVED status on do_log
 }
 
+void InnerScheduler::remove_parray_from_tracker(
+    parray::InnerPArray *parray, DevID_t global_dev_id) {
+  AccessMode access_mode = AccessMode::FREED;
+  this->mapper->get_parray_tracker()->do_log(global_dev_id,
+      std::make_pair(parray, access_mode));
+  this->memory_reserver->get_parray_tracker()->do_log(global_dev_id,
+      std::make_pair(parray, access_mode));
+}
+
 size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
   Device *device =
       this->device_manager_->get_device_by_global_id(global_dev_idx);
