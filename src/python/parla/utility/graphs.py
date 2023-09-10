@@ -964,6 +964,5 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read_pgraph,
            parse_blog, TaskConfigs, RunConfig, shuffle_tasks,
-           generate_independent_graph, generate_serial_graph, generate_reduction_graph]
-           generate_independent_graph, generate_serial_graph,
+           generate_independent_graph, generate_serial_graph, generate_reduction_graph,
            generate_reduction_scatter_graph]
