@@ -28,8 +28,6 @@ size_t Mapper::get_count() {
 void Mapper::drain_parray_buffer() {
 
   while (unmapped_created_parrays.size() > 0) {
-    // std::cout << "Mapper::drain_parray_buffer: "
-    //           << unmapped_created_parrays.size() << std::endl;
 
     auto parray_location_size = unmapped_created_parrays.front();
 
@@ -37,24 +35,16 @@ void Mapper::drain_parray_buffer() {
     DevID_t dev_id = std::get<1>(parray_location_size);
     size_t size = std::get<2>(parray_location_size);
 
-    // std::cout << "Mapper::drain_parray_buffer unpacked" << std::endl;
-
     // Get the device mapped memory pool
     Device *device = this->device_manager->get_device_by_global_id(dev_id);
     auto &mapped_pool = device->get_mapped_pool();
-
-    // std::cout << "Mapper::drain_parray_buffer got pool" << std::endl;
 
     // Note(@dialecticDolt): We do not throw a warning for mapped memory usage
 
     // Increase the mapped pool by the size of the parray
     mapped_pool.increase<Resource::Memory>(size);
 
-    // std::cout << "Mapper::drain_parray_buffer increased pool" << std::endl;
-
     unmapped_created_parrays.pop_front();
-
-    // std::cout << "Mapper::drain_parray_buffer popped front" << std::endl;
   }
 }
 
@@ -103,8 +93,6 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
 void Mapper::run(SchedulerPhase *next_phase) {
 
   NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
-
-  // std::cout << "Mapper::run" << std::endl;
 
   MemoryReserver *memory_reserver = dynamic_cast<MemoryReserver *>(next_phase);
 
@@ -275,14 +263,9 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
   const auto &assigned_devices = task->assigned_devices;
   auto parray_tracker = this->parray_tracker;
 
-  // std::cout << "MemoryReserver::check_data_resources" << std::endl;
-
   // Iterate through all PArray inputs
   for (DevID_t local_device_idx = 0; local_device_idx < assigned_devices.size();
        ++local_device_idx) {
-
-    // std::cout << "MemoryReserver::check_data_resources: local_device_idx: "
-    //           << local_device_idx << std::endl;
 
     const auto &parray_access_list = parray_list[local_device_idx];
 
@@ -292,8 +275,7 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
     auto &reserved_pool = device->get_reserved_pool();
 
     for (int i = 0; i < parray_access_list.size(); ++i) {
-      // std::cout << "MemoryReserver::check_data_resources: PArray i: " << i
-      //           << std::endl;
+
       auto &parray_access = parray_access_list[i];
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
@@ -310,19 +292,12 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       size_t size =
           parray_tracker->check_log(device->get_global_id(), parray_access);
 
-      // std::cout << "MemoryReserver::check_data_resources: size: " << size
-      //           << std::endl;
-
       size_on_device += size;
     }
 
     // Check if the device has enough memory to store all PArray inputs
     bool device_status =
         reserved_pool.check_greater<Resource::Memory>(size_on_device);
-
-    // std::cout << "MemoryReserver::check_data_resources: device_status: "
-    //           << device_status << " on device" << device->get_global_id()
-    //           << std::endl;
 
     status = status && device_status;
     if (!status) {
@@ -383,10 +358,6 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
 
       size_on_device += size;
     }
-
-    // std::cout << "MemoryReserver::reserve_data_resources: size_on_device: "
-    //           << size_on_device << " on device " << device->get_global_id()
-    //           << std::endl;
 
     // Reserve the memory for all PArray inputs on the device
     reserved_pool.decrease<Resource::Memory>(size_on_device);
@@ -473,13 +444,10 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "MemoryReserver::run" << std::endl;
-
   RuntimeReserver *runtime_reserver =
       dynamic_cast<RuntimeReserver *>(next_phase);
 
   // Only one thread can reserve memory at a time.
-  // std::cout << "MemoryReserver::run: " << this->get_count() << std::endl;
 
   this->drain_parray_buffer();
 
@@ -505,17 +473,13 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     // (parray resources)
     bool can_reserve_data = this->check_data_resources(task);
 
-    // std::cout << "MemoryReserver::run: can_reserve: " << can_reserve << " "
-    //           << can_reserve_data << std::endl;
-
     if (can_reserve && can_reserve_data) {
       this->reserve_resources(task);
       this->reserve_data_resources(task);
-      // std::cout << "MemoryReserver::run: reserved resources" << std::endl;
+
       this->reservable_tasks->pop();
       this->create_datamove_tasks(task);
       this->reserved_tasks_buffer.push_back(task);
-      // std::cout << "MemoryReserver::run: reserved task" << std::endl;
     } else {
       // TODO:(wlr) we need some break condition to allow the scheduler to
       // continue if not enough resources are available Hochan, do you
@@ -540,9 +504,6 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     bool enqueue_flag =
         (reserved_task->num_blocking_dependencies.fetch_sub(1) == 1);
 
-    std::cout << "[Reserver] Task name:" << reserved_task->get_name() << ", "
-              << " Enqueue Flag: " << enqueue_flag << std::endl;
-
     if (enqueue_flag) {
       reserved_task->set_status(TaskStatus::RUNNABLE);
       runtime_reserver->enqueue(reserved_task);
@@ -558,10 +519,8 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
 void RuntimeReserver::enqueue(InnerTask *task) {
   bool is_data_task = task->is_data_task();
   if (!is_data_task) {
-    // std::cout << "RuntimeReserver::enqueue: compute task" << std::endl;
     this->runnable_tasks->enqueue(task);
   } else {
-    // std::cout << "RuntimeReserver::enqueue: data task" << std::endl;
     this->movement_tasks->enqueue(task);
   }
 }
@@ -594,8 +553,7 @@ bool RuntimeReserver::check_resources(InnerTask *task) {
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
 
-    status =
-        device_pool.check_greater<Resource::NonPersistentResources>(task_pool);
+    status = device_pool.check_greater<Resources<Resource::VCU>>(task_pool);
 
     if (!status) {
       break;
@@ -657,13 +615,10 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   while (has_task && (fail_count < max_fail)) {
     num_tasks = this->get_compute_count();
     has_task = num_tasks > 0;
-    // std::cout << "RuntimeReserver::run: num_tasks: " << num_tasks <<
-    // std::endl;
+
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
       bool has_resources = check_resources(task);
-      //std::cout << "RuntimeReserver::run: has_resources: " << has_resources
-      //          << " for task:" << task->name << std::endl;
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
@@ -696,14 +651,12 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   num_tasks = 0;
   while (has_task) {
     num_tasks = this->get_movement_count();
-    // std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
-    //           << std::endl;
+
     has_task = num_tasks > 0;
     if (has_task) {
       InnerTask *task = this->movement_tasks->front();
       bool has_resources = check_data_resources(task);
-      // std::cout << "RuntimeReserver::run: has_resources: " << has_resources
-      //           << std::endl;
+
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
@@ -735,8 +688,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
-  // std::cout << "Launcher::enqueue" << std::endl;
-
   // Immediately launch task
   task->set_state(TaskState::RUNNING);
   this->num_running_tasks++;
@@ -745,8 +696,6 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // No GIL needed until worker wakes.
   worker->assign_task(task);
 
-  std::cout << "Assigned " << task->name << " to " << worker->thread_idx
-           << std::endl;
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

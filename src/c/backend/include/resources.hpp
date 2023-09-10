@@ -58,7 +58,6 @@ using namespace std::literals::string_view_literals; // Enables sv suffix only
 using Resource_t = int64_t;
 
 namespace Resource {
-
 namespace Category {
 inline constexpr std::array names = {"persistent"sv, "non-persistent"sv,
                                      "movement"sv};
@@ -71,8 +70,8 @@ struct Persistent {
   explicit operator int() const { return value; }
 };
 
-/// @brief All the resource types that are managed by the RuntimeReserver phase
-/// (having interactions equal to the lifetime of a task)
+/// @brief All the resource types that are managed by the RuntimeReserver
+/// phase (having interactions equal to the lifetime of a task)
 struct NonPersistent {
   static const int value = 1;
   constexpr static const std::string_view name = names[1];
@@ -145,7 +144,7 @@ public:
   };
 
   template <typename T> static constexpr inline bool contained_in_input() {
-    return std::disjunction_v<std::is_same<T, InputTypes>...>;
+    return std::disjunction_v<std::is_same<T, IntermediateTypes>...>;
   };
 
   template <typename T>
@@ -164,7 +163,7 @@ public:
 
   template <typename T> static constexpr inline int index_in_source() {
     if constexpr (contained_in_input<T>()) {
-      return index_of_t<T, InputTypes...>::value;
+      return index_of_t<T, IntermediateTypes...>::value;
     } else {
       // The Resource type is not in the reference list
       return -1;
