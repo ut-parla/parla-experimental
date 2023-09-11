@@ -697,7 +697,6 @@ class ComputeTask(Task):
         """!
         @brief Run the task body with the saved arguments. If the body is a continuation, run the continuation.
         """
-        print(self.name, " starts\n", flush=True)
         return self.func(self, *self.args)
 
     def cleanup(self):
@@ -764,10 +763,9 @@ class DataMovementTask(Task):
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
-        print(self, " tries to move parray", flush=True)
         self.parray._auto_move(parray_id, write_flag)
-        print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
-        print(self, "STATUS: ", self.parray.print_overview())
+        #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
+        #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
 
     def cleanup(self):

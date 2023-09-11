@@ -499,6 +499,8 @@ class Scheduler(ControllableThread, SchedulerContext):
             # Get the number of PArray candidates that are allowed to be evicted
             # from Python eviction manager.
             num_evictable_parray = py_mm.size(global_id)
+            print("num eivctable parrays:", num_evictable_parray, flush=True)
+            print("memory size to evict:", memory_size_to_evict, flush=True)
             # TODO(hc): remove this. this is for test.
             import cupy
             for i in range(0, num_evictable_parray):
@@ -524,7 +526,9 @@ class Scheduler(ControllableThread, SchedulerContext):
                         # Repeat eviction until it gets enough memory.
                         memory_size_to_evict -= \
                             evictable_parray.nbytes_at(parray_id)
+                        print("\t Remaining size to evict:", memory_size_to_evict, flush=True)
                         if memory_size_to_evict <= 0:
+                            print(">> Done <<", flush=True)
                             break
                 except Exception as e:
                     print("Failed to find parray evictable", flush=True)

@@ -425,7 +425,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
         // If this becomes 0, this instance will be release
         // when the PArray coherency protocol updates it
         // to eviction state.
-        //this->release_parray_reference(parray, dev_id);
+        this->release_parray_reference(parray, dev_id);
       }
     }
 

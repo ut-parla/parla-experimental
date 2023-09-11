@@ -239,7 +239,6 @@ public:
     if constexpr (index != -1) {
       return r.resources[index].load() >= value;
     } else {
-      std::cout << "index is always -1\n" << std::flush;
       raise_error();
       return false;
     }
@@ -307,8 +306,6 @@ public:
     const int source_index = index_in_source<T>();
 
     if constexpr (target_index != -1 && source_index != -1) {
-      std::cout << "r1:" << r1.resources[target_index].load() << " vs" <<
-        " r2:" << r2.resources[source_index].load() << "\n" << std::flush;
       return r1.resources[target_index].load() >=
              r2.resources[source_index].load();
     } else {
@@ -660,7 +657,6 @@ public:
                      const std::vector<Resource_t> &il) const {
     for (size_t i = 0; i < target.size(); i++) {
       if (this->resources[i].load() >= il[i]) {
-        std::cout << this->resources[i].load() << " vs " << il[i] << "\n";
         return false;
       }
     }

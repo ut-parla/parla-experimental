@@ -478,7 +478,7 @@ class PArray:
                 to_free = self._array.clear(op.src)
 
                 # print(
-                #     f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
+                #    f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
 
                 scheduler = get_scheduler()
                 if scheduler is not None:
@@ -488,12 +488,12 @@ class PArray:
                         # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
                     src_global_dev_id = \
                         scheduler.device_manager.parrayid_to_globalid(op.src)
-                    #if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
+                    if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
                         # If none of active tasks refers this PArray,
                         # remove this PArray on the src device from
                         # the PArray tracker's table.
-                        #scheduler.remove_parray_from_tracker(
-                        #    self._cy_parray, src_global_dev_id)
+                        scheduler.remove_parray_from_tracker(
+                            self._cy_parray, src_global_dev_id)
                 # decrement the reference counter, relying on GC to free the memor
                 self._array.clear(op.src)
             elif op.inst == MemoryOperation.ERROR:
