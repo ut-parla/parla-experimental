@@ -769,7 +769,6 @@ class DataMovementTask(Task):
         return TaskRunahead(0)
 
     def cleanup(self):
-        _global_data_tasks[id(self)] = None
         self.parray = None
 
 ######

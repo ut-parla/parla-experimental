@@ -376,7 +376,7 @@ class Scheduler(ControllableThread, SchedulerContext):
                                                 resources, self)
         # This holds PArray references.
         # Through this, it makes a scheduler control a PArray's life cycle.
-        # For example, this holds the last reference of a PArray and so,
+        # For example, this holds the last reference to a PArray and so,
         # scheduler (or memory manager) can have the control of thats
         # deallocation.
         # TODO(hc): However, for now, we only support reset this dictionary

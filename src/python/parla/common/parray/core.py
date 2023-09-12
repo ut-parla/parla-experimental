@@ -492,6 +492,10 @@ class PArray:
                         # If none of active tasks refers this PArray,
                         # remove this PArray on the src device from
                         # the PArray tracker's table.
+                        # XXX(hc): Note that this remove PArray "instance" on a specific
+                        # device. For example, a PArray instance on a different device
+                        # from the device being evicted can still be on the eviction
+                        # manager table.
                         scheduler.remove_parray_from_tracker(
                             self._cy_parray, src_global_dev_id)
                 # decrement the reference counter, relying on GC to free the memor

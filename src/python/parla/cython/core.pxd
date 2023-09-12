@@ -132,6 +132,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
+        # TODO(hc): Refactor this eviction manager parameter to hide its policy
         InnerScheduler(LRUGlobalEvictionManager* cpp_memory_manager,  DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
