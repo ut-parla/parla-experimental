@@ -385,7 +385,7 @@ TaskState InnerTask::set_state(TaskState state) {
 
   do {
     old_state = this->state.load();
-    if (old_state > new_state) {
+    if (old_state >= new_state) {
       success = false;
     }
   } while (!this->state.compare_exchange_weak(old_state, new_state));

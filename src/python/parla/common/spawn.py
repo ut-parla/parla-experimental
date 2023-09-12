@@ -14,7 +14,6 @@ from parla.utility.tracer import NVTXTracer
 from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType, crosspy, CROSSPY_ENABLED
 from crosspy import CrossPyArray
 import inspect
-import threading
 from parla.cython import tasks
 
 from typing import Collection, Any, Union, List, Tuple
@@ -144,8 +143,10 @@ def spawn(task=None,
                          dataflow=dataflow,
                          runahead=runahead
                          )
-
-        scheduler.spawn_task(task)
+        try:
+            scheduler.spawn_task(task)
+        except RuntimeError:
+            raise RuntimeError("Task IDs can only be increasing. Possibly duplicate task ID present: " + str(task))
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
