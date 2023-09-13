@@ -25,7 +25,7 @@ from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
 from parla.common.array import clone_here
-from parla.common.globals import get_current_devices, get_current_stream
+from parla.common.globals import get_current_devices, get_current_stream, get_current_context
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
@@ -191,6 +191,7 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
 
+    dev_id = get_current_devices()[0]
     #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
         #print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
@@ -198,23 +199,6 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
             ticks), parla_cuda_stream.stream)
         parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
-
-    context = get_current_context()
-
-    for device in context.loop():
-        device_idx = device.gpu_id
-        stream = device.cupy_stream
-
-        for i in range(gil_accesses):
-
-            gpu_bsleep_nogil(device_idx, free_ticks, stream)
-            gpu_bsleep_gil(device_idx, gil_ticks, stream)
-
-            if config.inner_sync:
-                stream.synchronize()
-
-    if config.outer_sync:
-        context.synchronize()
 
     if config.verbose:
         task_internal_end_t = time.perf_counter()
@@ -228,16 +212,15 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
     return None
 
 
-def create_task_no_data(task, taskspaces, config, ts_postfix=None, data_list=None):
+def create_task_no_data(task, taskspaces, config, data_list=None):
 
     try:
         # Task ID
         task_idx = task.task_id.task_idx
-        ts_postfix_str = "" if ts_postfix is None else ts_postfix
-        taskspace = taskspaces[task.task_id.taskspace + ts_postfix_str]
+        taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace + ts_postfix_str][dep.task_idx]
+        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
@@ -290,16 +273,15 @@ def create_task_no_data(task, taskspaces, config, ts_postfix=None, data_list=Non
         return
 
 
-def create_task_eager_data(task, taskspaces, config=None, ts_postfix=None, data_list=None):
+def create_task_eager_data(task, taskspaces, config=None, data_list=None):
 
     try:
         # Task ID
         task_idx = task.task_id.task_idx
-        ts_postfix_str = "" if ts_postfix is None else ts_postfix
-        taskspace = taskspaces[task.task_id.taskspace + ts_postfix_str]
+        taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace + ts_postfix_str][dep.task_idx]
+        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
@@ -385,16 +367,15 @@ def create_task_eager_data(task, taskspaces, config=None, ts_postfix=None, data_
         return
 
 
-def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_list=None):
+def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
     try:
         # Task ID
         task_idx = task.task_id.task_idx
-        ts_postfix_str = "" if ts_postfix is None else ts_postfix
-        taskspace = taskspaces[task.task_id.taskspace + ts_postfix_str]
+        taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace + ts_postfix_str][dep.task_idx]
+        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
                         for dep in task.task_dependencies]
 
         # Valid Placement Set
@@ -486,7 +467,7 @@ def create_task_lazy_data(task, taskspaces, config=None, ts_postfix=None, data_l
         return
 
 
-def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, ts_postfix=None, data_list=None):
+def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
     spawn_start_t = time.perf_counter()
 
@@ -494,13 +475,13 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
     for task, details in tasks.items():
         if run_config.movement_type == MovementType.NO_MOVEMENT:
             create_task_no_data(details, taskspaces,
-                                config=run_config, ts_postfix=ts_postfix, data_list=data_list)
+                                config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
             create_task_eager_data(details, taskspaces,
-                                   config=run_config, ts_postfix=ts_postfix, data_list=data_list)
+                                   config=run_config, data_list=data_list)
         elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
             create_task_lazy_data(details, taskspaces,
-                                  config=run_config, ts_postfix=ts_postfix, data_list=data_list)
+                                  config=run_config, data_list=data_list)
 
     spawn_end_t = time.perf_counter()
 
@@ -572,11 +553,9 @@ def execute_eviction_manager_benchmark(
             # Initialize task spaces
             taskspaces = {}
 
-            ts_postfix = "-"+str(i)
             # Create a task space with the postfix of the current iteration.
             for task, details in tasks.items():
                 space_name = details.task_id.taskspace
-                space_name += ts_postfix
                 if space_name not in taskspaces:
                     taskspaces[space_name] = TaskSpace(space_name)
             """
@@ -587,7 +566,7 @@ def execute_eviction_manager_benchmark(
             """
             graph_start_t = time.perf_counter()
 
-            execute_tasks(taskspaces, tasks, run_config, ts_postfix, data_list=data_list[data_id])
+            execute_tasks(taskspaces, tasks, run_config, data_list=data_list[data_id])
             data_id += 1
             if data_id == num_data:
                 data_id = 0
