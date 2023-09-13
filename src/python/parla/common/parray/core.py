@@ -476,7 +476,6 @@ class PArray:
 
                 # decrement the reference counter, relying on GC to free the memory
                 to_free = self._array.clear(op.src)
-
                 # print(
                 #    f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
 
@@ -484,6 +483,7 @@ class PArray:
                 if scheduler is not None:
                     if to_free > 0:
                         # This frees the memory on the device in the mapped and reserved pools
+                        print("free:", to_free, " is freed\n", flush=True)
                         scheduler.device_manager.free_memory(op.src, to_free)
                         # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
                     src_global_dev_id = \
@@ -498,8 +498,6 @@ class PArray:
                         # manager table.
                         scheduler.remove_parray_from_tracker(
                             self._cy_parray, src_global_dev_id)
-                # decrement the reference counter, relying on GC to free the memor
-                self._array.clear(op.src)
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError(
                     "PArray gets an error from coherence protocol")

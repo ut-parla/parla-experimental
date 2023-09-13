@@ -233,7 +233,8 @@ public:
    *
    * @param parray pointer to a parray to be referred by a task
    */
-  void grab_parray_reference(parray::InnerPArray *parray) {
+  void grab_parray_reference(parray::InnerPArray *parray,
+      size_t& accumulated_used_parray_bytes) {
     std::lock_guard guard(this->mtx_);
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
@@ -242,11 +243,18 @@ public:
       PArrayNode *parray_node = new PArrayNode(parray);
       this->parray_reference_counts_[parray_id] =
           ParrayRefInfo{parray_node, 1};
+      // This PArray would be used for the first time, so accumulate
+      // its bytes.
+      accumulated_used_parray_bytes += parray->get_size();
     } else {
       // If `parray` is already in the zr list, removes it
       // from the list and increases its reference count.
       found->second.ref_count++; 
-      this->zr_parray_list_.remove(found->second.parray_node_ptr);
+      if (this->zr_parray_list_.remove(found->second.parray_node_ptr)) {
+        // If this PArray was in the zero-referenced list, it implies
+        // new allocation will be performed.
+        accumulated_used_parray_bytes += parray->get_size();
+      }
     }
   }
 
@@ -260,7 +268,8 @@ public:
    *
    * @param parray pointer to a parray to be released by a task
    */
-  void release_parray_reference(parray::InnerPArray *parray) {
+  void release_parray_reference(parray::InnerPArray *parray,
+      size_t& evictable_parray_bytes) {
     std::lock_guard guard(this->mtx_);
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
@@ -270,10 +279,12 @@ public:
         // If none of the tasks referes to `parray`, add it to
         // the zr list.
         this->zr_parray_list_.append(found->second.parray_node_ptr);
+        // PArrays in the zero-referenced list are evictable, and so track
+        // its bytes.
+        evictable_parray_bytes += parray->get_size();
       }
     }
   }
-
 
   /**
    * @brief Return a size of a list.
@@ -290,9 +301,14 @@ public:
    * Note that this function is not thread safe since it assumes that only
    * the scheduler thread calls into this function during eviction. 
    */
-  PArrayNode *remove_and_return_head_from_zrlist() {
+  PArrayNode *remove_and_return_head_from_zrlist(
+      size_t& accumulated_released_parray_bytes, size_t& evictable_parray_bytes) {
     std::lock_guard guard(this->mtx_);
-    return this->zr_parray_list_.remove_head();
+    PArrayNode* head = this->zr_parray_list_.remove_head();
+    // This function is called when this head is evicted.
+    accumulated_released_parray_bytes += head->parray->get_size();
+    evictable_parray_bytes -= head->parray->get_size();
+    return head;
   }
 
   /**
@@ -343,11 +359,23 @@ class LRUGlobalEvictionManager {
 public:
   LRUGlobalEvictionManager(DeviceManager *device_manager) :
     device_manager_(device_manager) {
-    this->device_mm_.resize(
-        device_manager->template get_num_devices<DeviceType::All>());
+    DevID_t num_devices = device_manager->template get_num_devices<DeviceType::All>();
+    this->device_mm_.resize(num_devices);
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
       this->device_mm_[i] = new LRUDeviceEvictionManager(i);
     }
+    this->evictable_parray_bytes_.resize(num_devices);
+  }
+
+  void print_stats() {
+    size_t total_evictable_bytes{0};
+    for (DevID_t d = 0; d < this->evictable_parray_bytes_.size(); ++d) {
+      total_evictable_bytes += this->evictable_parray_bytes_[d];
+    }
+    std::cout << "Total accumulated used parray bytes:" <<
+      this->accumulated_used_parray_bytes_ << ", total accumulated" <<
+      " released parray bytes:" << this->accumulated_released_parray_bytes_ <<
+      ", evictable parray bytes:" << total_evictable_bytes << "\n";
   }
 
   /**
@@ -360,7 +388,8 @@ public:
    * @param dev_id device id of a device to access its information
    */
   void grab_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
-    this->device_mm_[dev_id]->grab_parray_reference(parray);
+    this->device_mm_[dev_id]->grab_parray_reference(
+        parray, this->accumulated_used_parray_bytes_);
   }
 
   /**
@@ -375,7 +404,8 @@ public:
    * @param dev_id device id of a device to access its information
    */
   void release_parray_reference(parray::InnerPArray *parray, DevID_t dev_id) {
-    this->device_mm_[dev_id]->release_parray_reference(parray);
+    this->device_mm_[dev_id]->release_parray_reference(
+        parray, this->evictable_parray_bytes_[dev_id]);
   }
 
   /**
@@ -397,7 +427,9 @@ public:
    */
   void *remove_and_return_head_from_zrlist(DevID_t dev_id) {
     PArrayNode *old_head =
-        this->device_mm_[dev_id]->remove_and_return_head_from_zrlist();
+        this->device_mm_[dev_id]->remove_and_return_head_from_zrlist(
+            this->accumulated_released_parray_bytes_,
+            this->evictable_parray_bytes_[dev_id]);
     void *py_parray{nullptr};
     if (old_head != nullptr) {
       // TODO(hc): check if this case can happen.
@@ -414,11 +446,21 @@ public:
     }
   }
 
+  size_t get_evictable_bytes(DevID_t dev_id) {
+    return this->evictable_parray_bytes_[dev_id];
+  }
+
 private:
   /// Device manager managing system environment
   DeviceManager *device_manager_;
   /// A list of LRU-based eviction manager for each device
   std::vector<LRUDeviceEvictionManager *> device_mm_;
+  /// Accumulation of the total bytes to allocate PArrays
+  size_t accumulated_used_parray_bytes_{0};
+  /// Accumulation of the total bytes released by the eviction manager 
+  size_t accumulated_released_parray_bytes_{0};
+  /// The total bytes of the evictable PArrays in the zr list
+  std::vector<size_t> evictable_parray_bytes_{0};
 };
 
 #endif

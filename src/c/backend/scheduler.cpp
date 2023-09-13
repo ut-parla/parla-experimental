@@ -194,6 +194,7 @@ void InnerScheduler::run() {
 void InnerScheduler::stop() {
   LOG_INFO(SCHEDULER, "Stopping scheduler");
   this->should_run = false;
+  this->mm_->print_stats();
   // XXX(hc): To process PArray eviction on Python,
   // Python scheduler now has an while loop that iterates until there is
   // no more task, and it wraps C scheduler's loop.

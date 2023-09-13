@@ -1121,6 +1121,10 @@ public:
     this->mm_->release_parray_reference(parray, global_dev_id);
   }
 
+  size_t get_mm_evictable_bytes(DevID_t dev_id) {
+    return this->mm_->get_evictable_bytes(dev_id);
+  }
+
   /* Get mapped memory on device */
   size_t get_mapped_memory(DevID_t global_dev_id);
 

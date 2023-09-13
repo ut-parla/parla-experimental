@@ -275,7 +275,6 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       // Get the expected additional size of the PArray on the device
       size_t size =
           parray_tracker->check_log(device->get_global_id(), parray_access);
-
       size_on_device += size;
     }
 
@@ -283,11 +282,16 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
     bool device_status =
         reserved_pool.check_greater<Resource::Memory>(size_on_device);
 
-    if (!reserved_pool.check_greater<Resource::Memory>(size_on_device * 5)) {
-      // If a device has not enough memory, activate eviction manager
-      this->scheduler->set_memory_size_to_evict(
-          size_on_device * 10, device->get_global_id());
-      this->scheduler->break_for_eviction = true;
+    size_t necessary_free_bytes = size_on_device * 5;
+    if (!reserved_pool.check_greater<Resource::Memory>(necessary_free_bytes)) {
+      if (this->scheduler->get_mm_evictable_bytes(device->get_global_id())
+          > size_on_device) {
+        std::cout << "Eviction manager is invoked\n" << std::flush;
+        // If a device has not enough memory, activate eviction manager
+        this->scheduler->set_memory_size_to_evict(
+            necessary_free_bytes, device->get_global_id());
+        this->scheduler->break_for_eviction = true;
+      }
     }
 
     status = status && device_status;
