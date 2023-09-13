@@ -83,6 +83,12 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
       mapped_pool.increase<Resource::Memory>(mapped_size);
 
       InnerPArray *parray = parray_access.first;
+      // XXX(hc): We increase this count at here, not memory reservation.
+      // There is tradeoff.
+      // If this count is increased at here, the eviction manager can avoid
+      // evicting this PArray, and avoid data thrashing.
+      // However, more active locking contention could possibly exist.
+      // As the current performance looks fine, let me keep this at here.
       parray->incr_num_referring_tasks(global_dev_id);
     }
   }
