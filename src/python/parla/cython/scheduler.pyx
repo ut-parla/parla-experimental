@@ -372,17 +372,6 @@ class Scheduler(ControllableThread, SchedulerContext):
                                                 cy_device_manager,
                                                 n_threads,
                                                 resources, self)
-        # This holds PArray references.
-        # Through this, it makes a scheduler control a PArray's life cycle.
-        # For example, this holds the last reference to a PArray and so,
-        # scheduler (or memory manager) can have the control of thats
-        # deallocation.
-        # TODO(hc): However, for now, we only support reset this dictionary
-        #           not deallocating a single PArray.
-        #           For now, instead we deallocate PArray instance by
-        #           removing the internal array reference through evict().
-        #           In the future, we will have better design for this.
-        self.active_parrays = {}
         # Worker threads and a scheduler both can access the active_parrays
         # and so we need a lock to guard that.
         self.active_parrays_monitor = threading.Condition(threading.Lock())
@@ -400,22 +389,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     @property
     def scheduler(self):
         return self
-
-    def append_active_parray(self, parray: PArray):
-        """ Append a PArray reference.
-
-            :param parray: PArray to be appended
-        """
-        with self.active_parrays_monitor:
-            self.active_parrays[parray.ID] = parray
-
-    def remove_active_parray(self, parray: PArray):
-        """ Remove a PArray reference.
-
-            :param parray: PArray to be removed 
-        """
-        with self.active_parrays_monitor:
-            self.active_parrays[parray.ID] = None
 
     def get_device_reqs_from_placement(self, placement, vcus, memory):
         return self.device_manager.get_device_reqs_from_placement(placement, vcus, memory)

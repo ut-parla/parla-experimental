@@ -555,27 +555,18 @@ class Task:
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.IN, in_parray_devid)
-                # Add a PArray reference to a dictionary in the scheduler.
-                # The scheduler manages its life cycle from here.
-                self.scheduler.append_active_parray(in_parray)
             for out_parray_tpl in dataflow.output:
                 out_parray = out_parray_tpl[0]
                 out_parray_devid = out_parray_tpl[1]
                 cy_parray = out_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.OUT, out_parray_devid)
-                # Add a PArray reference to a dictionary in the scheduler.
-                # The scheduler manages its life cycle from here.
-                self.scheduler.append_active_parray(out_parray)
             for inout_parray_tpl in dataflow.inout:
                 inout_parray = inout_parray_tpl[0]
                 inout_parray_devid = inout_parray_tpl[1]
                 cy_parray = inout_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.INOUT, inout_parray_devid)
-                # Add a PArray reference to a dictionary in the scheduler.
-                # The scheduler manages its life cycle from here.
-                self.scheduler.append_active_parray(inout_parray)
 
     def notify_dependents_wrapper(self):
         """!
