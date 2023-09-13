@@ -237,7 +237,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
     task->set_status(TaskStatus::RUNNABLE);
-    std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
+    //std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
