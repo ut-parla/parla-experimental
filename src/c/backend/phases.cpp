@@ -119,15 +119,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   this->drain_parray_buffer();
 
-  // TODO Fix Issue #108
-  /** XXX(hc): revisit this
-  // Accumulate necessary memory size for PArrays being mapped.
-  std::vector<size_t> accum_necessary_memory;
-  // Eviction manager does not evict CPU instances; In the future,
-  // this also might be evicted to other devices. But to simplify indexing,
-  // allocate as the number of total devices.
-  accum_necessary_memory.resize(this->device_manager->get_num_devices(DeviceType::All));
-  ***/
   while (has_task && num_task_mapping_attempt < 20) {
 
     this->drain_parray_buffer();
@@ -333,9 +324,9 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
 
-      // Register this PArray to eviction manager's table
+      // Register this PArray to eviction manager's table.
       // OUT also should be added to the table since
-      // it will be created.
+      // it will be created and use memory.
       this->scheduler->grab_parray_reference(parray, device->get_global_id());
 
       if (access_mode == AccessMode::OUT) {

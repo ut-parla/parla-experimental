@@ -15,7 +15,6 @@ using namespace parray;
 
 /**
  * @brief PArray tracker that tracks PArray mapping state.
- * Note that this does not track slice PArrays, but a complete PArray.
  */
 class PArrayTracker {
 public:

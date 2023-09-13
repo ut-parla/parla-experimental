@@ -986,11 +986,6 @@ public:
   /* Should Run, Stop Condition */
   std::atomic<bool> should_run = true;
 
-  /* Clear all Python PArray references if users request */ 
-  std::atomic<bool> clear_all_pyparrays = false;
-  /* Clear all C PArray objects if users request in eviction manager */ 
-  std::atomic<bool> clear_all_cparrays = false;
-
   /* Phase: maps tasks to devices */
   Mapper *mapper;
 
@@ -1112,11 +1107,15 @@ public:
   void remove_parray_from_tracker(
       parray::InnerPArray *parray, DevID_t global_dev_id);
 
+  /* A task started to refer to the PArray, and so, reflect that to
+   * the eviction manager (mm) */
   void grab_parray_reference(
       parray::InnerPArray *parray, DevID_t global_dev_id) {
     this->mm_->grab_parray_reference(parray, global_dev_id);
   }
 
+  /* A task released the PArray, and so, reflect that to the eviction
+   * manager (mm) */
   void release_parray_reference(
       parray::InnerPArray *parray, DevID_t global_dev_id) {
     this->mm_->release_parray_reference(parray, global_dev_id);
@@ -1142,12 +1141,7 @@ public:
   void spawn_wait();
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
-
-  /* Invoke clearing all C PArray instances from a PArray eviction manager. */
-  void invoke_all_cparrays_clear();
   
-  /* Get a flag that represents whether Python PArrays should be cleared */
-  bool get_all_pyparrays_clear_flag();
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.

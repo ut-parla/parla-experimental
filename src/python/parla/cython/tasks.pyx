@@ -555,8 +555,8 @@ class Task:
                 cy_parray = in_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.IN, in_parray_devid)
-                # Add a PArray reference to a dictionary in a scheduler
-                # to pass its lifecycle.
+                # Add a PArray reference to a dictionary in the scheduler.
+                # The scheduler manages its life cycle from here.
                 self.scheduler.append_active_parray(in_parray)
             for out_parray_tpl in dataflow.output:
                 out_parray = out_parray_tpl[0]
@@ -564,6 +564,8 @@ class Task:
                 cy_parray = out_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.OUT, out_parray_devid)
+                # Add a PArray reference to a dictionary in the scheduler.
+                # The scheduler manages its life cycle from here.
                 self.scheduler.append_active_parray(out_parray)
             for inout_parray_tpl in dataflow.inout:
                 inout_parray = inout_parray_tpl[0]
@@ -571,8 +573,8 @@ class Task:
                 cy_parray = inout_parray.cy_parray
                 self.inner_task.add_parray(cy_parray,
                     AccessMode.INOUT, inout_parray_devid)
-                # TODO(hc): Maybe we can pass dataflow to reduce
-                #           lock conflicts.
+                # Add a PArray reference to a dictionary in the scheduler.
+                # The scheduler manages its life cycle from here.
                 self.scheduler.append_active_parray(inout_parray)
 
     def notify_dependents_wrapper(self):
@@ -741,9 +743,7 @@ class DataMovementTask(Task):
         self.inner_task.set_py_task(self)
         self.dev_id = attrs.dev_id
         self.runahead = runahead
-        print("dependency assignment.", flush=True)
         self.dependencies = self.get_dependencies()
-        print("dependency assignment done:", self.dependencies, flush=True)
 
     def _execute_task(self):
         """!

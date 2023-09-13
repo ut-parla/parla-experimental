@@ -92,13 +92,13 @@ public:
   /// Add a pointer of the task that will use this PArray to the task list
   void add_task(InnerTask *task);
 
-  /// Increase the number of the tasks referring this PArray.
+  /// Increase the number of the tasks referring to this PArray.
   void incr_num_referring_tasks(DevID_t global_dev_id);
 
-  /// Decrease the number of the tasks referring this PArray.
+  /// Decrease the number of the tasks referring to this PArray.
   void decr_num_referring_tasks(DevID_t global_dev_id);
 
-  /// Get the number of the tasks referring this PArray.
+  /// Get the number of the tasks referring to this PArray.
   size_t get_num_referring_tasks(DevID_t global_dev_id);
 
   // TODO(hc): I will replace this list with a concurrent map.

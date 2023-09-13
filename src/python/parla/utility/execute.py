@@ -511,9 +511,6 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
                 await taskspace
             graph_end_t = time.perf_counter()
 
-            #worker_thread = get_scheduler_context()
-            #worker_thread.scheduler.invoke_all_cparrays_clear()
-
             graph_elapsed = graph_end_t - graph_start_t
             graph_times.append(graph_elapsed)
 

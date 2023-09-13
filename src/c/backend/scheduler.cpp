@@ -134,11 +134,6 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
   this->memory_size_to_evict.resize(
       device_manager->template get_num_devices<DeviceType::All>());
 
-  // A dummy task count is used to keep the scheduler alive.
-  // NOTE: At least one task must be added to the scheduler by the main thread,
-  // otherwise the runtime will finish immediately
-  // this->increase_num_active_tasks();
-
   this->workers.set_num_workers(1);
 
   // Initialize the phases
@@ -171,10 +166,6 @@ bool InnerScheduler::get_should_run() {
   return this->should_run.load();
 }
 
-bool InnerScheduler::get_all_pyparrays_clear_flag() {
-  return this->clear_all_pyparrays.load();
-}
-
 void InnerScheduler::set_memory_size_to_evict(
     size_t size, DevID_t dev_id) {
   this->memory_size_to_evict[dev_id] = size;
@@ -186,8 +177,6 @@ size_t InnerScheduler::get_memory_size_to_evict(DevID_t dev_id) {
 
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
-  this->clear_all_cparrays = false;
-  this->clear_all_pyparrays = false;
   while (this->should_run.load()) {
     this->break_for_eviction = false;
     auto status = this->activate();
@@ -197,14 +186,6 @@ void InnerScheduler::run() {
     if (this->break_for_eviction) {
       // Yield a control to a Python scheduler to evict PArrays since
       // PArray coherency protocol is managed at there.
-      break;
-    }
-    if (this->clear_all_cparrays.load()) {
-      // TODO(hc): This should be more generalized and refined.
-      // Temporarily use it as experimental puprose.
-      std::cout << "Clear all C/Python parrays..\n";
-      this->mm_->clear_all_instances();
-      this->clear_all_pyparrays = true;
       break;
     }
   }
@@ -220,10 +201,6 @@ void InnerScheduler::stop() {
   // this callback at here. Python scheduler knows when it needs to stop.
   //launch_stop_callback(this->stop_callback, this->py_scheduler);
   LOG_INFO(SCHEDULER, "Stopped scheduler");
-}
-
-void InnerScheduler::invoke_all_cparrays_clear() {
-  this->clear_all_cparrays = true; 
 }
 
 Scheduler::Status InnerScheduler::activate() {

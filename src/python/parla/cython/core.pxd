@@ -177,9 +177,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void create_parray(InnerPArray* parray, int parray_dev_id)
         void remove_parray_from_tracker(InnerPArray* parray, int dev_id)
         
-        void invoke_all_cparrays_clear()
-        bool get_all_pyparrays_clear_flag()
-
 
 cdef extern from "include/profiling.hpp" nogil:
     void initialize_log(string filename)
