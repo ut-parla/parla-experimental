@@ -995,6 +995,9 @@ public:
   /* Memory size to evict for each device */
   std::vector<size_t> memory_size_to_evict{0};
 
+  /* Track the number of eviction manager invocation */
+  size_t num_eviction_invocation{0};
+
   /* Set necessary memory size getting from eviction manager
      on each device */
   void set_memory_size_to_evict(size_t, DevID_t);

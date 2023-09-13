@@ -144,6 +144,8 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
 }
 
 InnerScheduler::~InnerScheduler() {
+  std::cout << " Number of eviction invocation:" <<
+      this->num_eviction_invocation << "\n";
   delete this->mapper;
   delete this->memory_reserver;
   delete this->runtime_reserver;
@@ -184,6 +186,7 @@ void InnerScheduler::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
     }
     if (this->break_for_eviction) {
+      ++this->num_eviction_invocation;
       // Yield a control to a Python scheduler to evict PArrays since
       // PArray coherency protocol is managed at there.
       break;
@@ -295,10 +298,8 @@ void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
 
   DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
 
-  std::cout << "Updating trackers" << std::endl;
   size_t to_map = mapped_tracker->do_log(global_dev_id, parray_access);
   size_t to_reserve = reserved_tracker->do_log(global_dev_id, parray_access);
-  std::cout << "Updating trackers done" << std::endl;
 
   add_unmapped_created_parray(parray, global_dev_id, to_map);
   add_unreserved_created_parray(parray, global_dev_id, to_reserve);
