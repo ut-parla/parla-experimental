@@ -146,7 +146,7 @@ def spawn(task=None,
         try:
             scheduler.spawn_task(task)
         except RuntimeError:
-            raise RuntimeError("Task IDs can only be increasing. Possibly duplicate task ID present: " + str(task))
+            raise RuntimeError("Conflicting task state while spawning task. Possible duplicate TaskID: " + str(task))
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 
