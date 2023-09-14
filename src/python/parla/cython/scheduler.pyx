@@ -192,16 +192,19 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.scheduler.start_monitor.notify_all()
 
                 while self._should_run:
-                    self.status = "Waiting"
-                    #print("WAITING", flush=True)
-
-                    #with self._monitor:
-                    #    if not self.task:
-                    #        self._monitor.wait()
-                    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
-                    self.inner_worker.wait_for_task()
-
                     self.task = self.inner_worker.get_task()
+                    print(self.task, flush=True)
+                    if(self.task is None):
+                        self.status = "Waiting"
+                        #print("WAITING", flush=True)
+
+                        #with self._monitor:
+                        #    if not self.task:
+                        #        self._monitor.wait()
+                        nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        self.inner_worker.wait_for_task() # GIL Release
+                        self.task = self.inner_worker.get_task()
+                    # self.task = self.inner_worker.get_task()
                     if isinstance(self.task, core.DataMovementTaskAttributes):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
@@ -322,6 +325,11 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         self.task = None
 
                         nvtx.pop_range(domain="Python Runtime")
+
+                        self.status = "Waiting"
+                        nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        self.inner_worker.wait_for_task() # GIL Release
+
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:
