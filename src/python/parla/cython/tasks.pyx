@@ -21,6 +21,8 @@ from parla.common.globals import AccessMode, Storage
 from parla.cython.cyparray import CyPArray
 from parla.common.parray.core import PArray
 from parla.common.globals import SynchronizationType as SyncType 
+from parla.common.globals import _global_data_tasks
+
 
 PyDevice = device.PyDevice
 PyCUDADevice = device.PyCUDADevice
@@ -155,7 +157,7 @@ class TaskRunning(TaskState):
 
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[List] = None):
+    def __init__(self, func, args, dependencies: Optional[Iterable] = None):
         #print("TaskRunning init", flush=True)
         if dependencies is not None:
             # d could be one of four types: Task, DataMovementTask, TaskID or other types.
@@ -493,7 +495,6 @@ class Task:
         task_state = None
         self.state = TaskRunning(self.func, self.args)
         try:
-
             task_state = self._execute_task()
 
             task_state = task_state or TaskRunahead(None)
@@ -713,6 +714,7 @@ class DataMovementTask(Task):
         idx=0, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
+
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
@@ -732,6 +734,7 @@ class DataMovementTask(Task):
         self.inner_task.set_py_task(self)
         self.dev_id = attrs.dev_id
         self.runahead = runahead
+        self.dependencies = self.get_dependencies()
 
     def _execute_task(self):
         """!
@@ -748,7 +751,6 @@ class DataMovementTask(Task):
             self.parray._auto_move(device_manager.get_parray_id(global_device_id),
                                    write_flag)
         """
-#self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
@@ -758,7 +760,7 @@ class DataMovementTask(Task):
         return TaskRunahead(0)
 
     def cleanup(self):
-        pass
+        self.parray = None
 
 ######
 # Task Environment
@@ -1828,9 +1830,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
-
-
-
-    
-    

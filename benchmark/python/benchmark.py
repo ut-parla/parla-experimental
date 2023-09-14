@@ -110,7 +110,7 @@ def reduction_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=iter,
             verbose=verbose,
             logfile=logpath,
             num_gpus=num_gpus,
@@ -160,7 +160,7 @@ def independent_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,  \
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=iter,
             verbose=verbose,
             logfile=logpath,
             num_gpus=num_gpus,
@@ -209,7 +209,7 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=iter,
             verbose=verbose,
             num_gpus=num_gpus,
             logfile=logpath,
@@ -263,7 +263,7 @@ def reduction_scatter_scalinum_gpus(fD_array_bytes, sD_array_bytes, \
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=iter,
             verbose=verbose,
             logfile=logpath,
             num_gpus=num_gpus,

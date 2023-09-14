@@ -38,6 +38,7 @@ print("CUPY_ENABLED: ", CUPY_ENABLED)
 print("CROSSPY_ENABLED: ", CROSSPY_ENABLED)
 print("PREINIT_THREADS: ", PREINIT_THREADS)
 
+# TODO(hc): This will be removed during runahead refactoring.
 _global_data_tasks = {}
 
 

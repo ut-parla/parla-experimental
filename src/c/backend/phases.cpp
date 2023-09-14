@@ -81,9 +81,6 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
       size_t mapped_size = parray_tracker->do_log(global_dev_id, parray_access);
 
       mapped_pool.increase<Resource::Memory>(mapped_size);
-
-      InnerPArray *parray = parray_access.first;
-      parray->incr_num_active_tasks(global_dev_id);
     }
   }
 
@@ -259,6 +256,8 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
 
+      parray->incr_num_referring_tasks(device->get_global_id());
+
       // If the PArray is not an input, then we don't need to check size
       // Note(@dialecticDolt):
       // There is literally no such thing as an out type in our syntax why do we
@@ -270,13 +269,24 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
       // Get the expected additional size of the PArray on the device
       size_t size =
           parray_tracker->check_log(device->get_global_id(), parray_access);
-
       size_on_device += size;
     }
 
     // Check if the device has enough memory to store all PArray inputs
     bool device_status =
         reserved_pool.check_greater<Resource::Memory>(size_on_device);
+
+    size_t necessary_free_bytes = size_on_device * 10;
+    if (!reserved_pool.check_greater<Resource::Memory>(necessary_free_bytes)) {
+      if (this->scheduler->get_mm_evictable_bytes(device->get_global_id())
+          > size_on_device) {
+        std::cout << "Eviction manager is invoked\n" << std::flush;
+        // If a device has not enough memory, activate eviction manager
+        this->scheduler->set_memory_size_to_evict(
+            necessary_free_bytes, device->get_global_id());
+        this->scheduler->break_for_eviction = true;
+      }
+    }
 
     status = status && device_status;
     if (!status) {
@@ -318,6 +328,10 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
       InnerPArray *parray = parray_access.first;
       AccessMode access_mode = parray_access.second;
 
+      // Register this PArray to eviction manager's table.
+      // OUT also should be added to the table since
+      // it will be created and use memory.
+      this->scheduler->grab_parray_reference(parray, device->get_global_id());
       if (access_mode == AccessMode::OUT) {
         continue;
       }
@@ -325,7 +339,6 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
       // Get the expected additional size of the PArray on the device
       size_t size =
           parray_tracker->do_log(device->get_global_id(), parray_access);
-
       size_on_device += size;
     }
 

@@ -30,8 +30,8 @@ enum AccessMode {
   INOUT = 2,
   /// Output of a task.
   OUT = 3,
-  /// Removed PArray (false everywhere).
-  REMOVED = 4,
+  /// Freed PArray (false everywhere).
+  FREED = 4,
   /// Deleted PArray (removed from table).
   DELETED = 5,
 };
@@ -59,7 +59,7 @@ public:
   /// compared to restructuring overheads), but this counter is decreased.
   /// This is used to provide more accurate PArray placement information
   /// to the task mapping step.
-  std::vector<CopyableAtomic<size_t>> num_active_tasks;
+  std::vector<CopyableAtomic<size_t>> num_referring_tasks;
 
   InnerPArray() = delete;
   InnerPArray(void *, uint64_t, uint64_t, InnerPArray *, PArrayState *,
@@ -92,14 +92,14 @@ public:
   /// Add a pointer of the task that will use this PArray to the task list
   void add_task(InnerTask *task);
 
-  /// Increase the counter for the active tasks that use this PArray.
-  void incr_num_active_tasks(DevID_t global_dev_id);
+  /// Increase the number of the tasks referring to this PArray.
+  void incr_num_referring_tasks(DevID_t global_dev_id);
 
-  /// Decrease the counter for the active tasks that use this PArray.
-  void decr_num_active_tasks(DevID_t global_dev_id);
+  /// Decrease the number of the tasks referring to this PArray.
+  void decr_num_referring_tasks(DevID_t global_dev_id);
 
-  /// Get the number of counter for the active tasks that use this PArray.
-  size_t get_num_active_tasks(DevID_t global_dev_id);
+  /// Get the number of the tasks referring to this PArray.
+  size_t get_num_referring_tasks(DevID_t global_dev_id);
 
   // TODO(hc): I will replace this list with a concurrent map.
   /// Get a reference to a list of tasks who are using this PArray
@@ -136,7 +136,7 @@ private:
   //           I will use this map: https://github.com/greg7mdp/parallel-hashmap
   //           I have used this for a while and it is good.
   TaskList _task_lists;
-
+  /// Python PArray address
   void *_py_parray;
 };
 

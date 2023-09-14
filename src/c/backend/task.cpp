@@ -327,9 +327,9 @@ void InnerTask::notify_dependents(TaskStatusList &buffer, TaskState new_state) {
     auto task = this->dependents.get_unsafe(i);
     TaskStatusFlags status = task->notify(new_state, this->is_data.load());
 
-    // std::cout << "Dependent Task is notified: " << task->name << std::endl;
+    //std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
-      // std::cout << "Dependent Task Ready: " << task->name << std::endl;
+      //std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
     }
   }
@@ -478,8 +478,6 @@ bool InnerTask::get_complete() {
 void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
-  std::cout << "Adding device requirement for task " << this->name << std::endl;
-  std::cout << "Memory size: " << mem_sz << " VCUS: " << num_vcus << std::endl;
   res_req.set<Resources<Resource::Memory, Resource::VCU, Resource::Copy>>(
       {mem_sz, num_vcus, 0});
 

@@ -21,6 +21,7 @@ from parla.cython import tasks
 cimport core
 from parla.cython import core
 from parla.cython.cyparray import CyPArray
+from parla.cython.mm import PyMM
 
 from parla.common.globals import _Locals as Locals 
 from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
@@ -41,6 +42,9 @@ PyInnerTask = core.PyInnerTask
 
 nvtx = NVTXTracer
 nvtx.initialize()
+
+from rich.traceback import install
+install(show_locals=True)
 
 class TaskBodyException(RuntimeError):
     pass
@@ -231,11 +235,11 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #print("Setting environment for task", active_task, flush=True)
                         active_task.environment = device_context
 
-
                         #Writes all 'default' streams and event pointers to c++ task
                         #This allows their synchronization without the GIL and faster iteration over them
                         #(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
                         device_context.write_to_task(active_task)
+
                         #print("Wrote enviornment to task", active_task, flush=True)
 
                         #handle event wait in python 
@@ -294,6 +298,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
+                        #TODO(wlr): Add better exception handling
                         #print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
@@ -314,13 +319,11 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
-
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
                         self.task = None
-
                         nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
@@ -350,7 +353,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 class Scheduler(ControllableThread, SchedulerContext):
 
-    def __init__(self, device_manager, n_threads=6, period=0.001):
+    def __init__(self, memory_manager, device_manager, n_threads=6, period=0.001):
         super().__init__()
 
         self.start_monitor = threading.Condition(threading.Lock())
@@ -364,9 +367,17 @@ class Scheduler(ControllableThread, SchedulerContext):
         #TODO: Handle resources better
         resources = 1.0
 
+        self.memory_manager = memory_manager
         self.device_manager = device_manager
+        cy_memory_manager = self.memory_manager.get_cy_memory_manager()
         cy_device_manager = self.device_manager.get_cy_device_manager()
-        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
+        self.inner_scheduler = PyInnerScheduler(cy_memory_manager,
+                                                cy_device_manager,
+                                                n_threads,
+                                                resources, self)
+        # Worker threads and a scheduler both can access the active_parrays
+        # and so we need a lock to guard that.
+        self.active_parrays_monitor = threading.Condition(threading.Lock())
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
@@ -414,10 +425,62 @@ class Scheduler(ControllableThread, SchedulerContext):
             pass
             #print("Runtime Stopped", flush=True)
 
+    def parray_eviction(self):
+        py_mm = self.memory_manager
+        print("Eviction policy is activated")
+        for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
+            global_id = cuda_device.get_global_id()
+            parray_id = self.device_manager.globalid_to_parrayid(global_id)
+            # Get target memory size to evict from this device
+            memory_size_to_evict = \
+                self.inner_scheduler.get_memory_size_to_evict(global_id)
+            # Get the number of PArray candidates that are allowed to be evicted
+            # from Python eviction manager.
+            num_evictable_parray = py_mm.size(global_id)
+            # TODO(hc): remove this. this is for test.
+            #import cupy
+            for i in range(0, num_evictable_parray):
+                try:
+                    # Get a PArray from a memory manager to evict.
+                    evictable_parray = \
+                        py_mm.remove_and_return_head_from_zrlist(global_id)
+                    if evictable_parray is not None:
+                        # TODO(hc): remove this. this is for test.
+                        #for k in range(0, 4):
+                        #    with cupy.cuda.Device(k):
+                        #        mempool = cupy.get_default_memory_pool()
+                        #        print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
+
+                        evictable_parray.evict(parray_id)
+
+                        # TODO(hc): remove this. this is for test.
+                        #for k in range(0, 4):
+                        #    with cupy.cuda.Device(k):
+                        #        mempool = cupy.get_default_memory_pool()
+                        #        print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
+
+                        # Repeat eviction until it gets enough memory.
+                        memory_size_to_evict -= \
+                            evictable_parray.nbytes_at(parray_id)
+                        #print("\t Remaining size to evict:", memory_size_to_evict, flush=True)
+                        if memory_size_to_evict <= 0:
+                            break
+                except Exception as e:
+                    print("Failed to find parray evictable", flush=True)
+        return
+
     def run(self):
-        #print("Scheduler: Running", flush=True)
-        self.inner_scheduler.run()
-        #print("Scheduler: Stopped Loop", flush=True)
+        with self:
+            while True:
+                print("Scheduler: Running", flush=True)
+                self.inner_scheduler.run()
+                should_run = self.inner_scheduler.get_should_run()
+                if should_run == False:
+                    break
+                # This case is executed if PArray eviction
+                # mechanism was invoked by C++ scheduler.
+                self.parray_eviction() 
+            self.stop_callback()
 
     def stop(self):
         #print("Scheduler: Stopping (Called from Python)", flush=True)
@@ -437,7 +500,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_task(self, task):
         #print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
-
     
     def assign_task(self, task, worker):
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)
@@ -449,7 +511,6 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
         
-
     def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
         """
         Reserve PArray instances that are created through
@@ -514,6 +575,17 @@ class Scheduler(ControllableThread, SchedulerContext):
         return self.inner_scheduler.get_reserved_parray_state( \
             global_dev_id, parray_parent_id)
 
+    def remove_parray_from_tracker(\
+        self, cy_parray: CyPArray, did: int):
+        """
+        Remove the evicted PArray instance on device `global_dev_id`
+        from the PArray tracker's table
+
+        :param cy_parray: Cython PArray instance to be removed 
+        :param did: global logical device id where the PArray is evicted
+        """
+        self.inner_scheduler.remove_parray_from_tracker(cy_parray, did)
+
 
 def _task_callback(task, body):
     """
@@ -537,6 +609,7 @@ def _task_callback(task, body):
                         "Parla coroutine tasks must yield a TaskAwaitTasks")
                 dependencies = new_task_info.dependencies
                 value_task = new_task_info.value_task
+
                 if value_task:
                     assert isinstance(value_task, Task)
                     task.value_task = value_task

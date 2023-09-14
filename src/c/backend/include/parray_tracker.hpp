@@ -13,6 +13,9 @@
 
 using namespace parray;
 
+/**
+ * @brief PArray tracker that tracks PArray mapping state.
+ */
 class PArrayTracker {
 public:
   PArrayTracker(size_t num_devices) : num_devices_(num_devices) {
@@ -204,7 +207,7 @@ protected:
 
   /// Any worker thread can update states of PArrays.
   /// Guard operations by this lock.
-  /// TODO(hc): This will be replaced with parallel hash map.
+  /// TODO(hc): This will be replaced with parallel hash map (phmap).
   std::mutex mtx;
 };
 

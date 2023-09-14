@@ -306,7 +306,6 @@ public:
     const int source_index = index_in_source<T>();
 
     if constexpr (target_index != -1 && source_index != -1) {
-
       return r1.resources[target_index].load() >=
              r2.resources[source_index].load();
     } else {

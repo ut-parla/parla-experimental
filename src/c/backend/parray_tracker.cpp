@@ -12,11 +12,10 @@ size_t PArrayTracker::do_parray_creation_(AccessMode access_mode,
   if (access_mode >= AccessMode::OUT || is_tracked) {
     return 0;
   } else {
-
     size_t to_move = parray->get_size();
 
     // std::cout << "PArrayTracker::do_parray_creation " << std::endl;
-
+    
     this->set_parray_unsafe(dev_id, parray->get_id(), true);
 
     // std::cout << "PArrayTracker::do_parray_creation set state" << std::endl;
@@ -65,8 +64,8 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
       this->set_parray_unsafe(i, parray_id, false);
     }
 
-    if (access_mode != AccessMode::REMOVED) {
-      this->set_parray_unsafe(dev_id, parray_id, false);
+    if (access_mode != AccessMode::FREED) {
+      this->set_parray_unsafe(dev_id, parray_id, true);
     }
 
     if (is_slice) {
@@ -92,7 +91,6 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
         }
       }
       */
-
     } else {
       // If the PArray is not a slice, it is a parent
       // invalidate all its children on all devices except the target
@@ -104,7 +102,7 @@ size_t PArrayTracker::do_parray_removal_(AccessMode access_mode, DevID_t dev_id,
           this->set_parray_unsafe(i, child_id, false);
         }
 
-        if (access_mode != AccessMode::REMOVED) {
+        if (access_mode != AccessMode::FREED) {
           this->set_parray_unsafe(dev_id, child_id, false);
         }
       }

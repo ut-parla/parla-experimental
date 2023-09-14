@@ -75,10 +75,12 @@ public:
       InnerTask *head = waiting_queue.front();
       int waiting_count = head->get_num_instances<ResourceCategory>();
 
+      /*
       std::cout << "MD Head: " << head->get_name()
                 << " Instances: " << waiting_count
                 << " Removed: " << head->get_removed<ResourceCategory>()
                 << std::endl;
+       */
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {

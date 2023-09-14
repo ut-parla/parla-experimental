@@ -12,6 +12,7 @@ from parla.common.globals import AccessMode
 from parla.cython.device cimport Device
 from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
+from parla.cython.mm cimport CyMM
 import threading
 from enum import IntEnum, auto
 from parla.common.globals import cupy
@@ -29,8 +30,6 @@ LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
 
-cpdef create_global_parray(CyPArray cy_parray, int parray_dev_id):
-    create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
@@ -585,14 +584,15 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
-    def __cinit__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __cinit__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         cdef DeviceManager* _cpp_device_manager = <DeviceManager*> cy_device_manager.get_cpp_device_manager()
+        cdef LRUGlobalEvictionManager* _cpp_memory_manager = <LRUGlobalEvictionManager*> cy_memory_manager.get_cpp_memory_manager()
 
-        _inner_scheduler = new InnerScheduler(_cpp_device_manager)
+        _inner_scheduler = new InnerScheduler(_cpp_memory_manager, _cpp_device_manager)
         self.inner_scheduler = _inner_scheduler
 
-    def __init__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+    def __init__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 
@@ -609,6 +609,14 @@ cdef class PyInnerScheduler:
 
     def __dealloc__(self):
         del self.inner_scheduler
+
+    cpdef get_should_run(self):
+        """
+        This function checks whether there are remaining tasks
+        in C scheduler queues.
+        """
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_should_run()
 
     cpdef run(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -639,6 +647,10 @@ cdef class PyInnerScheduler:
         cdef InnerWorker* c_worker = worker.inner_worker
         c_self.enqueue_worker(c_worker)
 
+    cpdef remove_parray_from_tracker(self, CyPArray cy_parray, int dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.remove_parray_from_tracker(cy_parray.get_cpp_parray(), dev_id)
+
     #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -661,10 +673,6 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.task_cleanup_postsync(c_worker, c_task, state)
 
-    cpdef get_num_active_tasks(self):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_num_active_tasks()
-
     cpdef increase_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.increase_num_active_tasks()
@@ -684,6 +692,10 @@ cdef class PyInnerScheduler:
     cpdef get_num_running_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_running_tasks()
+
+    cpdef get_num_active_tasks(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_num_active_tasks()
 
     cpdef get_num_notified_workers(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -719,6 +731,10 @@ cdef class PyInnerScheduler:
     cpdef get_reserved_memory(self, int global_dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_reserved_memory(global_dev_id)
+
+    cpdef get_memory_size_to_evict(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_memory_size_to_evict(global_dev_id)
 
 
 class Resources:

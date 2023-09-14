@@ -216,8 +216,13 @@ class PyCUDADevice(PyDevice):
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.CUDA, "CUDA", dev_id)
-        #TODO(wlr): If we ever support VECs, we might need to move this device initialization
-        self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
+        #TODO(wlr): If we ever support VECs, we might need to move this device
+        #initialization
+        #In Parla, we assume 80% of the actual device memory as the full 
+        #memory size.
+        #We assume that 1~20% of the device memory is used by external
+        #libraries including CuPy.
+        self._cy_device = CyCUDADevice(dev_id, mem_sz * 0.8, num_vcus, self)
 
     @property
     def device(self):

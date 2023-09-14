@@ -44,6 +44,7 @@
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+#include "memory_manager.hpp"
 
 using namespace std::chrono_literals;
 using namespace parray;
@@ -988,6 +989,21 @@ public:
   /* Phase: maps tasks to devices */
   Mapper *mapper;
 
+  /* If it is set, break an infinite loop in InnerScheduler::run()
+     and invoke PArray eviction from PythonScheduler */
+  bool break_for_eviction = false;
+  /* Memory size to evict for each device */
+  std::vector<size_t> memory_size_to_evict{0};
+
+  /* Track the number of eviction manager invocation */
+  size_t num_eviction_invocation{0};
+
+  /* Set necessary memory size getting from eviction manager
+     on each device */
+  void set_memory_size_to_evict(size_t, DevID_t);
+  /* Get memory size to evict for each device */
+  size_t get_memory_size_to_evict(DevID_t);
+
   /* Phase reserves resources to limit/plan task execution*/
   MemoryReserver *memory_reserver;
   RuntimeReserver *runtime_reserver;
@@ -995,7 +1011,7 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(DeviceManager *device_manager);
+  InnerScheduler(LRUGlobalEvictionManager *memory_manager, DeviceManager *device_manager);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
@@ -1016,6 +1032,9 @@ public:
 
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
+
+  /* Get a flag that represents if there is still a task to be executed */
+  bool get_should_run();
 
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
   void run();
@@ -1087,6 +1106,28 @@ public:
   /* Release a PArray in a device */
   void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
 
+  /* Reflect a PArray removal to PArray trackers */
+  void remove_parray_from_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id);
+
+  /* A task started to refer to the PArray, and so, reflect that to
+   * the eviction manager (mm) */
+  void grab_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->grab_parray_reference(parray, global_dev_id);
+  }
+
+  /* A task released the PArray, and so, reflect that to the eviction
+   * manager (mm) */
+  void release_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->release_parray_reference(parray, global_dev_id);
+  }
+
+  size_t get_mm_evictable_bytes(DevID_t dev_id) {
+    return this->mm_->get_evictable_bytes(dev_id);
+  }
+
   /* Get mapped memory on device */
   size_t get_mapped_memory(DevID_t global_dev_id);
 
@@ -1107,11 +1148,12 @@ public:
   void spawn_wait();
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
-
+  
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
+  LRUGlobalEvictionManager *mm_;
 };
 
 #endif // PARLA_BACKEND_HPP

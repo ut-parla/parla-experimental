@@ -126,8 +126,13 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(DeviceManager *device_manager)
-    : device_manager_(device_manager) {
+InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
+                               DeviceManager *device_manager)
+    : device_manager_(device_manager), mm_(memory_manager) {
+
+  // For now, it does not evict PArrays on CPU memory.
+  this->memory_size_to_evict.resize(
+      device_manager->template get_num_devices<DeviceType::All>());
 
   this->workers.set_num_workers(1);
 
@@ -139,6 +144,8 @@ InnerScheduler::InnerScheduler(DeviceManager *device_manager)
 }
 
 InnerScheduler::~InnerScheduler() {
+  std::cout << " Number of eviction invocation:" <<
+      this->num_eviction_invocation << "\n";
   delete this->mapper;
   delete this->memory_reserver;
   delete this->runtime_reserver;
@@ -157,13 +164,32 @@ void InnerScheduler::set_stop_callback(stopfunc_t stop_callback) {
   this->stop_callback = stop_callback;
 }
 
+bool InnerScheduler::get_should_run() {
+  return this->should_run.load();
+}
+
+void InnerScheduler::set_memory_size_to_evict(
+    size_t size, DevID_t dev_id) {
+  this->memory_size_to_evict[dev_id] = size;
+}
+
+size_t InnerScheduler::get_memory_size_to_evict(DevID_t dev_id) {
+  return this->memory_size_to_evict[dev_id];
+}
+
 void InnerScheduler::run() {
   NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
-  unsigned long long iteration_count = 0;
   while (this->should_run.load()) {
+    this->break_for_eviction = false;
     auto status = this->activate();
     if (this->sleep_flag) {
       std::this_thread::sleep_for(std::chrono::milliseconds(this->sleep_time));
+    }
+    if (this->break_for_eviction) {
+      ++this->num_eviction_invocation;
+      // Yield a control to a Python scheduler to evict PArrays since
+      // PArray coherency protocol is managed at there.
+      break;
     }
   }
 }
@@ -171,17 +197,21 @@ void InnerScheduler::run() {
 void InnerScheduler::stop() {
   LOG_INFO(SCHEDULER, "Stopping scheduler");
   this->should_run = false;
-  launch_stop_callback(this->stop_callback, this->py_scheduler);
+  this->mm_->print_stats();
+  // XXX(hc): To process PArray eviction on Python,
+  // Python scheduler now has an while loop that iterates until there is
+  // no more task, and it wraps C scheduler's loop.
+  // Therefore, there is no point for C++ scheduler to explicitly invoke
+  // this callback at here. Python scheduler knows when it needs to stop.
+  //launch_stop_callback(this->stop_callback, this->py_scheduler);
   LOG_INFO(SCHEDULER, "Stopped scheduler");
 }
 
 Scheduler::Status InnerScheduler::activate() {
   // std::cout<< "Scheduler Activated" << std::endl;
-
   this->mapper->run(this->memory_reserver);
   this->memory_reserver->run(this->runtime_reserver);
   this->runtime_reserver->run(this->launcher);
-
   // LOG_TRACE(SCHEDULER, "ReadyPhase Status: {}", this->runtime_reserver);
   return this->status;
 }
@@ -211,7 +241,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
     task->set_status(TaskStatus::RUNNABLE);
-    // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
+    //std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
@@ -268,11 +298,8 @@ void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
 
   DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
 
-  std::cout << "Updating trackers" << std::endl;
   size_t to_map = mapped_tracker->do_log(global_dev_id, parray_access);
   size_t to_reserve = reserved_tracker->do_log(global_dev_id, parray_access);
-  std::cout << "Updating trackers done" << std::endl;
-
   add_unmapped_created_parray(parray, global_dev_id, to_map);
   add_unreserved_created_parray(parray, global_dev_id, to_reserve);
 }
@@ -287,6 +314,15 @@ void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
   // TODO: Decide policy for removal.
   // Simplest is just to call remove_parray on both trackers
   // Could also be to call DELETED or REMOVED status on do_log
+}
+
+void InnerScheduler::remove_parray_from_tracker(
+    parray::InnerPArray *parray, DevID_t global_dev_id) {
+  AccessMode access_mode = AccessMode::FREED;
+  this->mapper->get_parray_tracker()->do_log(global_dev_id,
+      std::make_pair(parray, access_mode));
+  this->memory_reserver->get_parray_tracker()->do_log(global_dev_id,
+      std::make_pair(parray, access_mode));
 }
 
 size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
@@ -362,7 +398,12 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
       for (size_t j = 0; j < parray_access_list.size(); ++j) {
         auto &parray_access = parray_access_list[j];
         InnerPArray *parray = parray_access.first;
-        parray->decr_num_active_tasks(dev_id);
+        parray->decr_num_referring_tasks(dev_id);
+        // Decrease this PArray's reference count.
+        // If this becomes 0, this instance will be release
+        // when the PArray coherency protocol updates it
+        // to eviction state.
+        this->release_parray_reference(parray, dev_id);
       }
     }
 
