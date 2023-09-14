@@ -30,6 +30,9 @@ LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
 
+cpdef create_global_parray(CyPArray cy_parray, int parray_dev_id):
+    create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
+
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
     write_log(fname)

@@ -1153,7 +1153,6 @@ protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
-
   LRUGlobalEvictionManager *mm_;
 };
 

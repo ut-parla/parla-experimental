@@ -300,7 +300,6 @@ void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
 
   size_t to_map = mapped_tracker->do_log(global_dev_id, parray_access);
   size_t to_reserve = reserved_tracker->do_log(global_dev_id, parray_access);
-
   add_unmapped_created_parray(parray, global_dev_id, to_map);
   add_unreserved_created_parray(parray, global_dev_id, to_reserve);
 }

@@ -80,7 +80,7 @@ public:
                 << " Instances: " << waiting_count
                 << " Removed: " << head->get_removed<ResourceCategory>()
                 << std::endl;
-                */
+       */
 
       // Any MD task that is no longer waiting should be blocking
       if (waiting_count < 1) {

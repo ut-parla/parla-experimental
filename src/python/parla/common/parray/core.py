@@ -8,6 +8,7 @@ from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
 from parla.cython.cyparray_state import CyPArrayState
 from parla.cython.cyparray import CyPArray
+from parla.cython.core import create_global_parray
 
 import threading
 import numpy
@@ -119,8 +120,6 @@ class PArray:
         # Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
         # FIXME
 
-        # Register this PArray to tracker and make a link between
-        # C PArray instance.
         scheduler = get_scheduler()
         if scheduler is None:
             raise NotImplementedError(

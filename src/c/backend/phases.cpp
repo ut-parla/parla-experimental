@@ -116,6 +116,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
 
   this->drain_parray_buffer();
 
+  // TODO Fix Issue #108
   while (has_task && num_task_mapping_attempt < 20) {
 
     this->drain_parray_buffer();
@@ -296,6 +297,57 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
   return status;
 }
 
+bool MemoryReserver::check_data_resources(InnerTask *task) {
+  bool status = true;
+  const auto &parray_list = task->parray_list;
+  const auto &assigned_devices = task->assigned_devices;
+  auto parray_tracker = this->parray_tracker;
+
+  // Iterate through all PArray inputs
+  for (DevID_t local_device_idx = 0; local_device_idx < assigned_devices.size();
+       ++local_device_idx) {
+
+    const auto &parray_access_list = parray_list[local_device_idx];
+
+    // Get the device reserved memory pool
+    Device *device = task->assigned_devices[local_device_idx];
+    size_t size_on_device = 0;
+    auto &reserved_pool = device->get_reserved_pool();
+
+    for (int i = 0; i < parray_access_list.size(); ++i) {
+
+      auto &parray_access = parray_access_list[i];
+      InnerPArray *parray = parray_access.first;
+      AccessMode access_mode = parray_access.second;
+
+      // If the PArray is not an input, then we don't need to check size
+      // Note(@dialecticDolt):
+      // There is literally no such thing as an out type in our syntax why do we
+      // keep it around.
+      if (access_mode == AccessMode::OUT) {
+        continue;
+      }
+
+      // Get the expected additional size of the PArray on the device
+      size_t size =
+          parray_tracker->check_log(device->get_global_id(), parray_access);
+
+      size_on_device += size;
+    }
+
+    // Check if the device has enough memory to store all PArray inputs
+    bool device_status =
+        reserved_pool.check_greater<Resource::Memory>(size_on_device);
+
+    status = status && device_status;
+    if (!status) {
+      break;
+    }
+  }
+
+  return status;
+}
+
 void MemoryReserver::reserve_resources(InnerTask *task) {
   // TODO(wlr): Add runtime error check if resource failure
 
@@ -331,7 +383,6 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
       // OUT also should be added to the table since
       // it will be created and use memory.
       this->scheduler->grab_parray_reference(parray, device->get_global_id());
-
       if (access_mode == AccessMode::OUT) {
         continue;
       }
@@ -602,6 +653,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
     if (has_task) {
       InnerTask *task = this->runnable_tasks->front();
       bool has_resources = check_resources(task);
+
       if (has_resources) {
         bool has_thread = scheduler->workers.get_num_available_workers() > 0;
         if (has_thread) {
