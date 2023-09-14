@@ -10,7 +10,6 @@
 #include <initializer_list>
 #include <random>
 #include <utility>
-#include <cuda_runtime.h>
 
 /**************************/
 // Mapper Implementation
@@ -283,16 +282,7 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
     bool device_status =
         reserved_pool.check_greater<Resource::Memory>(size_on_device);
 
-    size_t free_memory{0}, used_memory{0};
-    cudaMemGetInfo(&free_memory, &used_memory);
-    // The device reserved memory counter does not contain the external library
-    // overheads. We consider 20% of the total device memory as that overhead.
-    size_t necessary_free_bytes = size_on_device + (free_memory + used_memory) * 0.2;
-    /*
-    std::cout << "necessary free bytes:" << necessary_free_bytes << "\n";
-    std::cout << "full devic bytes:" << free_memory + used_memory << "\n";
-    std::cout << "available device memory:" << reserved_pool.get<Resource::Memory>() << "\n";
-    */
+    size_t necessary_free_bytes = size_on_device * 10;
     if (!reserved_pool.check_greater<Resource::Memory>(necessary_free_bytes)) {
       if (this->scheduler->get_mm_evictable_bytes(device->get_global_id())
           > size_on_device) {

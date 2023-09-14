@@ -205,8 +205,8 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
 
-    task_internal_end_t = time.perf_counter()
-    task_internal_duration = task_internal_end_t - task_internal_start_t
+    #task_internal_end_t = time.perf_counter()
+    #task_internal_duration = task_internal_end_t - task_internal_start_t
     #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
 
     return None
