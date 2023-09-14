@@ -157,7 +157,7 @@ class TaskRunning(TaskState):
 
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[List] = None):
+    def __init__(self, func, args, dependencies: Optional[Iterable] = None):
         #print("TaskRunning init", flush=True)
         if dependencies is not None:
             # d could be one of four types: Task, DataMovementTask, TaskID or other types.
