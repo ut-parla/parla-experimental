@@ -8,7 +8,6 @@ from .coherence import MemoryOperation, Coherence, CPU_INDEX
 from .memory import MultiDeviceBuffer
 from parla.cython.cyparray_state import CyPArrayState
 from parla.cython.cyparray import CyPArray
-from parla.cython.core import create_global_parray
 
 import threading
 import numpy
