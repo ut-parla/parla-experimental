@@ -938,6 +938,7 @@ public:
   uint32_t task_launching_log_mode{0};
   bool task_mapping_log_registered{false};
   bool task_launching_log_registered{false};
+  bool end_task_graph_is_last{false};
   std::vector<std::pair<std::string, DevID_t>> task_mapping_log;
   std::vector<std::string> task_launching_log;
   ProtectedUnorderedMap<std::string, InnerTask*> task_name_to_task;
@@ -1299,7 +1300,6 @@ public:
   }
   void register_task_mapping_log(InnerTask* task) {
     if (task_mapping_log_register_counter.load() == 1) {
-      std::cout << task->name << " is appended to log\n" << std::flush;
       this->task_mapping_log.push_back({
           task->name, task->assigned_devices[0]->get_global_id()});
     }
