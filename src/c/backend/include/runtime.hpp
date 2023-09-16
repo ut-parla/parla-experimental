@@ -930,7 +930,18 @@ public:
 class InnerScheduler {
 
 public:
-  std::vector<InnerTask *> tasks_mapping_order;
+  size_t task_mapping_log_ptr{0};
+  /// 0 = disabled, 1 = replay decision (homogeneous tasks),
+  /// 2 = replay decision and order.
+  uint32_t task_mapping_log_mode{1};
+  /// 0 = dsiabled, 1 = replay order.
+  uint32_t task_launching_log_mode{0};
+  bool task_mapping_log_registered{false};
+  bool task_launching_log_registered{false};
+  std::vector<std::pair<std::string, DevID_t>> task_mapping_log;
+  std::vector<std::string> task_launching_log;
+  ProtectedUnorderedMap<std::string, InnerTask*> task_name_to_task;
+  std::atomic<int> task_mapping_log_register_counter{0};
 
   uint64_t task_mapping_order_{0};
   uint64_t task_launching_order_{0};
@@ -1108,6 +1119,12 @@ public:
     this->task_launching_order_ = 0;
   }
 
+  void reset_task_name_to_task() {
+    //InnerTask* global_task_instance = this->task_name_to_task.find("global_task_0")->second; 
+    this->task_name_to_task.clear();
+    //this->task_name_to_task.emplace("global_task_0", global_task_instance);
+  }
+
   /// Increase the total number of tasks mapped to any device and
   /// to device did.
   ///
@@ -1251,6 +1268,46 @@ public:
     return dev_num_running_tasks_[did].load(std::memory_order_relaxed);
   }
 
+  /// Reset task mapping log pointer to 0.
+  void reset_task_mapping_log_pointer() {
+    this->task_mapping_log_ptr = 0;
+  }
+
+  void complete_task_mapping_log() {
+    std::lock_guard<std::mutex> guard(this->task_mapping_log_mtx_);
+    this->task_mapping_log_registered = true;
+  }
+  bool is_task_mapping_log_registered() {
+    std::lock_guard<std::mutex> guard(this->task_mapping_log_mtx_);
+    return this->task_mapping_log_registered;
+  }
+  void remove_task_mapping_log() {
+    std::lock_guard<std::mutex> guard(this->task_mapping_log_mtx_);
+    this->task_mapping_log_registered = false;
+  }
+  void complete_task_launching_log() {
+    std::lock_guard<std::mutex> guard(this->task_launching_log_mtx_);
+    this->task_launching_log_registered = true;
+  }
+  bool is_task_launching_log_registered() {
+    std::lock_guard<std::mutex> guard(this->task_launching_log_mtx_);
+    return this->task_launching_log_registered;
+  }
+  void remove_task_launching_log() {
+    std::lock_guard<std::mutex> guard(this->task_launching_log_mtx_);
+    this->task_launching_log_registered = false;
+  }
+  void register_task_mapping_log(InnerTask* task) {
+    if (task_mapping_log_register_counter.load() == 1) {
+      std::cout << task->name << " is appended to log\n" << std::flush;
+      this->task_mapping_log.push_back({
+          task->name, task->assigned_devices[0]->get_global_id()});
+    }
+  }
+  void register_task_launching_log(InnerTask* task) {
+    this->task_launching_log.push_back(task->name);
+  }
+
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
@@ -1268,6 +1325,8 @@ protected:
   std::vector<CopyableAtomic<size_t>> dev_num_tasks_resreserved_states_;
   std::vector<CopyableAtomic<size_t>> dev_num_ready_tasks_;
   std::vector<CopyableAtomic<size_t>> dev_num_running_tasks_;
+  std::mutex task_mapping_log_mtx_;
+  std::mutex task_launching_log_mtx_;
 };
 
 #endif // PARLA_BACKEND_HPP

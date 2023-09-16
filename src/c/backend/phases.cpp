@@ -67,92 +67,153 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // Scheduler maps a task to a device.
   // Scheduler does not reserve any resource at this phase.
 
-  bool has_task = true;
+  bool has_task = this->get_count() > 0;
 
-  has_task = this->get_count() > 0;
-  size_t num_task_mapping_attempt{0};
-  while (has_task && num_task_mapping_attempt < 3) {
-    // Comment(wlr): this assumes the task is always able to be mapped.
-    InnerTask *task = this->mappable_tasks.front_and_pop();
-    PlacementRequirementCollections &placement_req_options =
-        task->get_placement_req_options();
-    std::vector<std::shared_ptr<PlacementRequirementBase>>
-        placement_req_options_vec =
-            placement_req_options.get_placement_req_opts_ref();
-    const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-        &parray_list = task->parray_list;
-    std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
-    policy_->run_task_mapping(task, this->scheduler, &chosen_devices, parray_list,
-        &placement_req_options_vec);
+  if (!has_task) {
+    return;
+  }
 
-    if (chosen_devices.empty()) {
-      // It means that none of the devices is available for this task.
-      // If it is, re-enqueue the task to the mappable task queue.
-      this->enqueue(task);
-    } else {
-      std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-          *parray_list = &(task->parray_list);
-      task->device_constraints.clear();
-      for (size_t i = 0; i < chosen_devices.size(); ++i) {
-        assert(chosen_devices[i] != nullptr);
-        ParlaDevice *chosen_device = chosen_devices[i]->device();
-        DevID_t global_dev_id = chosen_device->get_global_id();
-        task->assigned_devices.push_back(chosen_device);
-        task->device_constraints.insert(
-            {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
-        task->mapping_time_epochs =
-            this->scheduler->get_device_manager()->current_timepoint_count_from_beginning();
-        this->scheduler->assign_task_mapping_id(task);
-        // Increase the number of mapped tasks as the number of PArrays
-        // since the corresponding data movement tasks will be created.
-        this->scheduler->atomic_incr_num_mapped_tasks_device(global_dev_id);
-        this->scheduler->atomic_incr_num_tasks_mapped_states(global_dev_id);
-
-        LOG_INFO("Debug",
-            "Mapping {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
-            task->name, global_dev_id,
-            this->scheduler->
-                atomic_load_dev_num_tasks_mapped_states(global_dev_id),
-            this->scheduler->
-                atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
-            this->scheduler->
-                atomic_load_dev_num_ready_tasks(global_dev_id),
-            this->scheduler->
-                atomic_load_dev_num_running_tasks(global_dev_id),
-            this->scheduler->
-                atomic_load_dev_num_mapped_tasks_device(global_dev_id));
-
-        for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
-          parray::InnerPArray *parray = (*parray_list)[i][j].first;
-          this->scheduler->get_parray_tracker()->reserve_parray(*parray,
-                                                                chosen_device);
-          parray->incr_num_active_tasks(global_dev_id);
+  if (this->scheduler->is_task_mapping_log_registered()) {
+    bool attemptable{true};
+    while (has_task &&
+        this->scheduler->task_mapping_log.size() >
+        this->scheduler->task_mapping_log_ptr && attemptable) {
+      auto [task_name, device_id] =
+          this->scheduler->task_mapping_log[
+              this->scheduler->task_mapping_log_ptr];
+      auto found = this->scheduler->task_name_to_task.find(task_name);
+      if (found != this->scheduler->task_name_to_task.end()) {
+        InnerTask* found_task = found->second;
+        PlacementRequirementCollections &placement_req_options =
+            found_task->get_placement_req_options();
+        std::vector<std::shared_ptr<PlacementRequirementBase>>
+            placement_req_options_vec =
+                placement_req_options.get_placement_req_opts_ref();
+        ParlaDevice *chosen_device{nullptr};
+        std::shared_ptr<DeviceRequirement> chosen_device_req;
+        if (placement_req_options_vec[0]->is_dev_req()) {
+          chosen_device_req =
+              std::dynamic_pointer_cast<DeviceRequirement>(
+                  placement_req_options_vec[0]);
+          chosen_device = chosen_device_req->device();
+        } else {
+          // XXX(hc): Assume that only single architecture requirement is in.
+          ArchitectureRequirement *arch_req =
+              dynamic_cast<ArchitectureRequirement*>(
+                  placement_req_options_vec[0].get());
+          auto placement_options = arch_req->GetDeviceRequirementOptions();
+          // TODO(hc): placement_options is not sorted.
+          for (size_t k = 0; k < placement_options.size(); ++k) {
+            if (device_id == placement_options[k]->device()->get_global_id()) {
+              chosen_device_req = placement_options[k];
+              chosen_device = chosen_device_req->device();
+              break;
+            }
+          }
         }
+        DevID_t global_dev_id = chosen_device->get_global_id();
+        found_task->assigned_devices.push_back(chosen_device);
+        found_task->device_constraints.insert(
+            {global_dev_id, chosen_device_req->res_req()});
+        this->scheduler->task_mapping_log_ptr++;
+        // This is a dummy pop and hack.
+        // So if this size becomes 0, task mapping can be skipped.
+        this->mappable_tasks.front_and_pop();
+        this->mapped_tasks_buffer.push_back(found_task);
+        has_task = this->get_count() > 0;
+      } else {
+        attemptable = false;
       }
+    };
+  } else {
+    size_t num_task_mapping_attempt{0};
+    while (has_task && num_task_mapping_attempt < 3) {
+      InnerTask *task = this->mappable_tasks.front_and_pop();
+      PlacementRequirementCollections &placement_req_options =
+          task->get_placement_req_options();
+      std::vector<std::shared_ptr<PlacementRequirementBase>>
+          placement_req_options_vec =
+              placement_req_options.get_placement_req_opts_ref();
+      const std::vector<std::vector<std::pair<parray::InnerPArray*, AccessMode>>>
+          &parray_list = task->parray_list;
+      std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
+      policy_->run_task_mapping(task, this->scheduler, &chosen_devices,
+          parray_list, &placement_req_options_vec);
+      if (chosen_devices.empty()) {
+        // It means that none of the devices is available for this task.
+        // If it is, reenqueue the task to the mappable task queue.
+        this->enqueue(task);
+      } else {
+        std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+            *parray_list = &(task->parray_list);
+        task->device_constraints.clear();
+        for (size_t i = 0; i < chosen_devices.size(); ++i) {
+          assert(chosen_devices[i] != nullptr);
+          ParlaDevice *chosen_device = chosen_devices[i]->device();
+          DevID_t global_dev_id = chosen_device->get_global_id();
+          task->assigned_devices.push_back(chosen_device);
+          task->device_constraints.insert(
+              {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
+          task->mapping_time_epochs =
+              this->scheduler->get_device_manager()->current_timepoint_count_from_beginning();
+          this->scheduler->assign_task_mapping_id(task);
+          // Increase the number of mapped tasks as the number of PArrays
+          // since the corresponding data movement tasks will be created.
+          this->scheduler->atomic_incr_num_mapped_tasks_device(global_dev_id);
+          this->scheduler->atomic_incr_num_tasks_mapped_states(global_dev_id);
 
+          LOG_INFO("Debug",
+              "Mapping {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+              task->name, global_dev_id,
+              this->scheduler->
+                  atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+              this->scheduler->
+                  atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+              this->scheduler->
+                  atomic_load_dev_num_ready_tasks(global_dev_id),
+              this->scheduler->
+                  atomic_load_dev_num_running_tasks(global_dev_id),
+              this->scheduler->
+                  atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+
+          for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
+            parray::InnerPArray *parray = (*parray_list)[i][j].first;
+            this->scheduler->get_parray_tracker()->reserve_parray(*parray,
+                                                                  chosen_device);
+            parray->incr_num_active_tasks(global_dev_id);
+          }
+        }
 #if 0
-      std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
-                << "\n";
-      for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
-        std::cout << "\t [" << i << "] " << ", " << task->assigned_devices[i]->get_global_id() <<
-          ", "
-                  << task->assigned_devices[i]->get_name() << "\n";
-        auto res = task->device_constraints[task->assigned_devices[i]
-                                                ->get_global_id()];
-        std::cout << "\t memory:" << res.get(Resource::Memory)
-                  << ", vcu:" << res.get(Resource::VCU) << "\n";
-      }
-#endif
-      this->mapped_tasks_buffer.push_back(task);
-    }
-    has_task = this->get_count() > 0;
-    num_task_mapping_attempt ++;
-  } // while there are mappable tasks
+        std::cout << "chosen device size:" << chosen_devices.size() << "[done] \n" <<
+          std::flush;
 
+        std::cout << "[Mapper] Task name:" << task->get_name() << ", " << task
+                  << "\n" << std::flush;
+        for (size_t i = 0; i < task->assigned_devices.size(); ++i) {
+          std::cout << "\t [" << i << "] " << ", " << task->assigned_devices[i]->get_global_id() <<
+            ", "
+                    << task->assigned_devices[i]->get_name() << "\n" << std::flush;
+          auto res = task->device_constraints[task->assigned_devices[i]
+                                                  ->get_global_id()];
+          std::cout << "\t memory:" << res.get(Resource::Memory)
+                    << ", vcu:" << res.get(Resource::VCU) << "\n" << std::flush;
+        }
+#endif
+        this->mapped_tasks_buffer.push_back(task);
+        this->scheduler->register_task_mapping_log(task);
+      }
+      has_task = this->get_count() > 0;
+      num_task_mapping_attempt ++;
+    } // while there are mappable tasks
+  }
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
     mapped_task->notify_dependents(this->enqueue_buffer, Task::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
     this->enqueue_buffer.clear();
+
+    if (this->scheduler->is_task_mapping_log_registered()) {
+      mapped_task->num_unreserved_dependencies.store(1);
+    }
 
     bool enqueue_flag =
         (mapped_task->num_unreserved_dependencies.fetch_sub(1) == 1);
@@ -575,7 +636,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   }
 
   this->scheduler->assign_task_launching_id(task);
-  if (task->name.find("end_rl_task") != std::string::npos) {
+  if (task->name.find("end_task_graph") != std::string::npos) {
     TimePoint now = std::chrono::system_clock::now();
     TimePoint initial_time_epoch = this->scheduler->get_initial_epoch();
     this->scheduler->epoch_end_epochs =
@@ -596,13 +657,25 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
         std::min(this->scheduler->previous_exec_time, exec_time_ms);
     this->scheduler->reset_task_mapping_id();
     this->scheduler->reset_task_launching_id();
+
+    this->scheduler->reset_task_mapping_log_pointer();
+    this->scheduler->reset_task_name_to_task();
+
+    for (size_t i = 0; i < this->scheduler->task_mapping_log.size(); ++i) {
+      std::cout << i << ", " << this->scheduler->task_mapping_log[i].first <<
+        ", " << this->scheduler->task_mapping_log[i].second << "\n";
+    }
+    std::cout << "Task mapping log size:" << this->scheduler->task_mapping_log.size() << "\n" <<
+      std::flush;
   }
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);
+  //std::cout << task->name << " assigns to " << worker << "\n";
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 
 void Launcher::run() {
   throw std::runtime_error("Launcher::run() not implemented.");
 }
+

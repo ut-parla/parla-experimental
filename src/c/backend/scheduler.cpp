@@ -26,8 +26,8 @@ void InnerWorker::wait() {
 
 void InnerWorker::assign_task(InnerTask *task) {
   NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
-  // std::cout << "Assigning task (C++) " << this->thread_idx << " "
-  //           << this->ready << std::endl;
+  //std::cout << "Assigning task (C++) " << this->thread_idx << " "
+  //          << this->ready << ", " << task->name << std::endl;
   assert(ready == false);
   std::unique_lock<std::mutex> lck(mtx);
   this->task = task;
@@ -255,6 +255,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
+  this->task_name_to_task.emplace(task->name, task);
 }
 
 void InnerScheduler::enqueue_tasks(TaskStateList &tasks) {
@@ -300,6 +301,22 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
+
+  if (task->name.find("end_task_graph") != std::string::npos) {
+    if (!this->is_task_launching_log_registered()) {
+      this->complete_task_launching_log();
+    }
+
+    if (!this->is_task_mapping_log_registered()) {
+      // The first iteration might not omit some tasks
+      // that run after the first iteration.
+      // e.g., Cholesky's Reset tasks
+      this->task_mapping_log_register_counter.fetch_add(1);
+      if (this->task_mapping_log_register_counter.load() == 2) {
+        this->complete_task_mapping_log();
+      }
+    }
+  }
 
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();

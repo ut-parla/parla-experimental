@@ -7,6 +7,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <queue>
@@ -473,5 +474,63 @@ public:
 
   inline bool empty_unsafe() { return this->q.empty(); }
 };
+
+template <typename K, typename V> class ProtectedUnorderedMap {
+
+private:
+  std::unordered_map<K, V> um{};
+  std::mutex mtx;
+  std::string name;
+
+public:
+  ProtectedUnorderedMap() = default;
+
+  ProtectedUnorderedMap(std::string name) {
+    this->mtx.lock();
+    this->name = name;
+    this->mtx.unlock();
+  }
+
+  ProtectedUnorderedMap(std::string name, std::unordered_map<K, V> um) {
+    this->mtx.lock();
+    this->name = name;
+    this->um = um;
+    this->mtx.unlock();
+  }
+
+  void lock() { this->mtx.lock(); }
+
+  void unlock() { this->mtx.unlock(); }
+
+  void emplace(K k, V v) {
+    this->mtx.lock();
+    this->um.emplace(k, v);
+    this->mtx.unlock();
+  }
+
+  void clear_unsafe() {
+    this->um = {};
+  }
+
+  void clear() {
+    this->mtx.lock();
+    clear_unsafe();
+    this->mtx.unlock();
+  }
+
+  typename std::unordered_map<K, V>::iterator begin() {
+    std::lock_guard<std::mutex> guard(this->mtx);
+    return um.begin();
+  }
+  typename std::unordered_map<K, V>::iterator end() {
+    std::lock_guard<std::mutex> guard(this->mtx);
+    return um.end();
+  }
+  typename std::unordered_map<K, V>::iterator find(K k) {
+    std::lock_guard<std::mutex> guard(this->mtx);
+    return um.find(k);
+  }
+};
+
 
 #endif // PARLA_CONTAINERS_HPP
