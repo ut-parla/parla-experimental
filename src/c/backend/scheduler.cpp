@@ -255,6 +255,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, Task::StatusFlags status) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
+
   this->task_name_to_task.emplace(task->name, task);
 }
 
@@ -279,10 +280,8 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
                                           int state) {
   NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
-
   // std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
   //           << std::endl;
-
   // std::cout << "Task state: " << state << std::endl;
   if (state == Task::RUNAHEAD) {
 
@@ -301,23 +300,6 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
   NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
-
-  if (task->name.find("end_task_graph") != std::string::npos) {
-    if (!this->is_task_launching_log_registered()) {
-      this->complete_task_launching_log();
-    }
-
-    if (!this->is_task_mapping_log_registered()) {
-      // The first iteration might not omit some tasks
-      // that run after the first iteration.
-      // e.g., Cholesky's Reset tasks
-      this->task_mapping_log_register_counter.fetch_add(1);
-      if (this->task_mapping_log_register_counter.load() == 2) {
-        this->complete_task_mapping_log();
-      }
-    }
-  }
-
   if (state == Task::RUNAHEAD) {
     this->decrease_num_active_tasks();
     task->notify_dependents_completed();
@@ -394,6 +376,28 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
             now - initial_time_epoch).count();
   }
   task_cleanup_postsync(worker, task, state);
+}
+
+void InnerScheduler::complete_task_order_logs(InnerTask* task) {
+  // after this update from end_task_graph, the next iteration would wake up.
+  // so, the correct ordering is guaranteed.
+  if (task->name.find("end_task_graph") != std::string::npos) {
+    if (!this->is_task_mapping_log_registered()) {
+      // The first iteration might not omit some tasks
+      // that run after the first iteration.
+      // e.g., Cholesky's Reset tasks
+      this->task_mapping_log_register_counter.fetch_add(1);
+      if (this->task_mapping_log_register_counter.load() == 2) {
+        this->complete_task_mapping_log();
+      }
+    }
+    if (!this->is_task_launching_log_registered()) {
+      // TODO(hc): change this counter name
+      if (this->task_mapping_log_register_counter.load() == 2) {
+        this->complete_task_launching_log();
+      }
+    }
+  }
 }
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }

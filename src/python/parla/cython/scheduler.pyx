@@ -233,6 +233,11 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         device_context.write_to_task(active_task)
                         #print("Wrote enviornment to task", active_task, flush=True)
 
+                        """
+                        if "end_task_graph" in str(active_task.get_name()):
+                            self.scheduler.inner_scheduler.complete_task_order_logs(active_task.inner_task)
+                        """
+
                         #handle event wait in python 
                         if USE_PYTHON_RUNAHEAD:
                             active_task.py_handle_runahead_dependencies() 

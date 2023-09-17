@@ -508,6 +508,11 @@ public:
     this->mtx.unlock();
   }
 
+  void erase(K k) {
+    std::lock_guard guard(this->mtx);
+    this->um.erase(k);
+  }
+
   void clear_unsafe() {
     this->um = {};
   }

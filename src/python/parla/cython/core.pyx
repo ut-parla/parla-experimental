@@ -714,6 +714,11 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
 
+    cpdef complete_task_order_logs(self, PyInnerTask task):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        cdef InnerTask* c_task = task.c_task
+        with nogil:
+            c_self.complete_task_order_logs(c_task)
 
 class Resources:
 

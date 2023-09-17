@@ -283,7 +283,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
       AccessMode access_mode = parray_list[i][j].second;
       InnerDataTask *datamove_task = new InnerDataTask(
           // TODO(hc): id should be updated!
-          task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
+          task_base_name + ".dm." + std::to_string(i) + "-" +
+          std::to_string(j), 0, parray, access_mode,
           i);
       auto &parray_task_list = parray->get_parent_parray()->get_task_list_ref();
       // Find dependency intersection between compute and data movement tasks.
@@ -321,6 +322,9 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
           std::forward_as_tuple(0, 0, 1));
 
       data_tasks.push_back(datamove_task);
+      // Data movement tasks should be registered at here;
+      // these are not enqeueued through scheduler::enqueue_task().
+      this->scheduler->task_name_to_task.emplace(datamove_task->name, datamove_task);
       // Add the created data movement task to a reserved task queue.
       this->scheduler->increase_num_active_tasks();
       this->reserved_tasks_buffer.push_back(datamove_task);
@@ -513,88 +517,143 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   int max_fail = this->runnable_tasks->get_num_devices() * 2;
   bool has_task = true;
   int num_tasks = 0;
-  while (has_task && (fail_count < max_fail)) {
-    num_tasks = this->get_compute_count();
-    has_task = num_tasks > 0;
-    if (has_task) {
-      InnerTask *task = this->runnable_tasks->front();
-      bool has_resources = check_resources(task);
-      if (has_resources) {
-        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-        if (has_thread) {
-          InnerTask *task = this->runnable_tasks->pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
-          // Decrease Resources
-          this->reserve_resources(task);
-          // A task in this scope is only a computation task.
-          for (ParlaDevice *device : task->assigned_devices) {
-            DevID_t global_dev_id = device->get_global_id();
-            this->scheduler->atomic_decr_num_tasks_resreserved_states(global_dev_id);
-            this->scheduler->atomic_incr_num_ready_tasks(global_dev_id);
-            LOG_INFO("Debug",
-                "Ready {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
-                task->name, global_dev_id,
-                this->scheduler->
-                    atomic_load_dev_num_tasks_mapped_states(global_dev_id),
-                this->scheduler->
-                    atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
-                this->scheduler->
-                    atomic_load_dev_num_ready_tasks(global_dev_id),
-                this->scheduler->
-                    atomic_load_dev_num_running_tasks(global_dev_id),
-                this->scheduler->
-                    atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+  if (this->scheduler->is_task_launching_log_registered()) {
+    // If task launching order is registered,
+    // follow that instead of getting a task from the queue.
+    while (has_task &&
+        this->scheduler->task_launching_log.size() >
+        this->scheduler->task_launching_log_ptr) {
+      std::string task_name =
+          this->scheduler->task_launching_log[
+              this->scheduler->task_launching_log_ptr];
+      auto found = this->scheduler->task_name_to_task.find(task_name);
+      if (found != this->scheduler->task_name_to_task.end()) {
+        InnerTask* found_task = found->second;
+        if (found_task->get_status() != Task::RUNNABLE) {
+          // If task is not ready, break this loop.
+          break;
+        }
+        InnerWorker *worker = scheduler->workers.dequeue_worker();
+        bool has_resources = check_resources(found_task);
+        if (!has_resources) {
+          // If resource is not ready, break this loop.
+          break;
+        }
+        bool has_thread =
+            this->scheduler->workers.get_num_available_workers() > 0;
+        if (!has_thread) {
+          // If thread is not ready, break this loop.
+          break;
+        }
+        // Pop a single task from the queue; since launching replay mode 
+        // only needs information about if there is remaining task or not.
+        for (ParlaDevice *device : found_task->assigned_devices) {
+          DevID_t global_dev_id = device->get_global_id();
+          this->scheduler->atomic_decr_num_tasks_resreserved_states(
+              global_dev_id);
+          this->scheduler->atomic_incr_num_ready_tasks(global_dev_id);
+        }
+        launcher->enqueue(found_task, worker);
+        this->scheduler->task_launching_log_ptr++;
+        // To consider global_0 which can be run multiple times.
+        // In this case, the launcher could run the old object instead of waiting
+        // for the new object.
+        this->scheduler->task_name_to_task.erase(task_name);
+        this->status.increase(RuntimeReserverState::Success);
+        if (found_task->is_data_task()) {
+          this->movement_tasks->pop();
+        } else {
+          this->runnable_tasks->pop();
+        }
+        has_task = this->get_compute_count() > 0 ||
+                   this->get_movement_count() > 0;
+      } else {
+        break;
+      }
+    };
+  } else {
+    while (has_task && (fail_count < max_fail)) {
+      num_tasks = this->get_compute_count();
+      has_task = num_tasks > 0;
+      if (has_task) {
+        InnerTask *task = this->runnable_tasks->front();
+        bool has_resources = check_resources(task);
+        if (has_resources) {
+          bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+          if (has_thread) {
+            InnerTask *task = this->runnable_tasks->pop();
+            InnerWorker *worker = scheduler->workers.dequeue_worker();
+            // Decrease Resources
+            this->reserve_resources(task);
+            // A task in this scope is only a computation task.
+            for (ParlaDevice *device : task->assigned_devices) {
+              DevID_t global_dev_id = device->get_global_id();
+              this->scheduler->atomic_decr_num_tasks_resreserved_states(global_dev_id);
+              this->scheduler->atomic_incr_num_ready_tasks(global_dev_id);
+              LOG_INFO("Debug",
+                  "Ready {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
+                  task->name, global_dev_id,
+                  this->scheduler->
+                      atomic_load_dev_num_tasks_mapped_states(global_dev_id),
+                  this->scheduler->
+                      atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
+                  this->scheduler->
+                      atomic_load_dev_num_ready_tasks(global_dev_id),
+                  this->scheduler->
+                      atomic_load_dev_num_running_tasks(global_dev_id),
+                  this->scheduler->
+                      atomic_load_dev_num_mapped_tasks_device(global_dev_id));
+            }
+            launcher->enqueue(task, worker);
+            this->status.increase(RuntimeReserverState::Success);
+          } else {
+            this->status.increase(RuntimeReserverState::NoWorker);
+            fail_count++; // += max_fail;
+            // break;        // No more workers available
           }
-          launcher->enqueue(task, worker);
-          this->status.increase(RuntimeReserverState::Success);
         } else {
-          this->status.increase(RuntimeReserverState::NoWorker);
-          fail_count++; // += max_fail;
-          // break;        // No more workers available
+          this->status.increase(RuntimeReserverState::NoResource);
+          fail_count++;
+          // break; // No more resources available
         }
       } else {
-        this->status.increase(RuntimeReserverState::NoResource);
-        fail_count++;
-        // break; // No more resources available
+        this->status.increase(RuntimeReserverState::NoTask);
+        fail_count++; //+= max_fail;
+        // break;        // No more tasks available
       }
-    } else {
-      this->status.increase(RuntimeReserverState::NoTask);
-      fail_count++; //+= max_fail;
-      // break;        // No more tasks available
     }
-  }
-
-  // Try to launch as many data movement tasks as possible
-  has_task = true;
-  num_tasks = 0;
-  while (has_task) {
-    num_tasks = this->get_movement_count();
-    // std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
-    //           << std::endl;
-    has_task = num_tasks > 0;
-    if (has_task) {
-      InnerTask *task = this->movement_tasks->front();
-      bool has_resources = check_data_resources(task);
-      if (has_resources) {
-        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-        if (has_thread) {
-          InnerTask *task = this->movement_tasks->pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
-          // Decrease Resources
-          this->reserve_data_resources(task);
-          launcher->enqueue(task, worker);
-          this->status.increase(RuntimeReserverState::Success);
+    // Try to launch as many data movement tasks as possible
+    has_task = true;
+    num_tasks = 0;
+    while (has_task) {
+      num_tasks = this->get_movement_count();
+      // std::cout << "RuntimeReserver::run: num movement tasks: " << num_tasks
+      //           << std::endl;
+      has_task = num_tasks > 0;
+      if (has_task) {
+        InnerTask *task = this->movement_tasks->front();
+        bool has_resources = check_data_resources(task);
+        if (has_resources) {
+          bool has_thread = scheduler->workers.get_num_available_workers() > 0;
+          if (has_thread) {
+            InnerTask *task = this->movement_tasks->pop();
+            InnerWorker *worker = scheduler->workers.dequeue_worker();
+            // Decrease Resources
+            this->reserve_data_resources(task);
+            launcher->enqueue(task, worker);
+            this->status.increase(RuntimeReserverState::Success);
+          } else {
+            this->status.increase(RuntimeReserverState::NoWorker);
+            break; // No more workers available
+          }
         } else {
-          this->status.increase(RuntimeReserverState::NoWorker);
-          break; // No more workers available
+          this->status.increase(RuntimeReserverState::NoResource);
+          break; // No more resources available
         }
       } else {
-        this->status.increase(RuntimeReserverState::NoResource);
-        break; // No more resources available
+        this->status.increase(RuntimeReserverState::NoTask);
+        break; // No more tasks available
       }
-    } else {
-      this->status.increase(RuntimeReserverState::NoTask);
-      break; // No more tasks available
     }
   }
 }
@@ -636,6 +695,17 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   }
 
   this->scheduler->assign_task_launching_id(task);
+
+  // Log launching task order.
+  if (!this->scheduler->is_task_launching_log_registered()) {
+    if (this->scheduler->task_mapping_log_register_counter.load() == 1) {
+      // Only register the second iteration; this is because it is possible
+      // that there are tasks spawned from the second iteration like
+      // Reset in Cholesky.
+      this->scheduler->register_task_launching_log(task);
+    }
+  }
+
   if (task->name.find("end_task_graph") != std::string::npos) {
     TimePoint now = std::chrono::system_clock::now();
     TimePoint initial_time_epoch = this->scheduler->get_initial_epoch();
@@ -653,21 +723,43 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
           evaluate_current_epoch(
               exec_time_ms, this->scheduler->previous_exec_time);
     }
+    this->scheduler->end_task_graph_is_last = true;
     this->scheduler->previous_exec_time =
         std::min(this->scheduler->previous_exec_time, exec_time_ms);
+  }
+  // We need one more condition check since Parla awaitness
+  // spawns the parent task when awaitness on the last task
+  // is done.
+  else if (this->scheduler->end_task_graph_is_last) {
+    this->scheduler->end_task_graph_is_last = false;
     this->scheduler->reset_task_mapping_id();
     this->scheduler->reset_task_launching_id();
 
+    this->scheduler->reset_task_launching_log_pointer();
     this->scheduler->reset_task_mapping_log_pointer();
     this->scheduler->reset_task_name_to_task();
 
-    for (size_t i = 0; i < this->scheduler->task_mapping_log.size(); ++i) {
-      std::cout << i << ", " << this->scheduler->task_mapping_log[i].first <<
-        ", " << this->scheduler->task_mapping_log[i].second << "\n";
+    this->scheduler->complete_task_order_logs(task);
+
+    // global_0 after the last task will be here.
+    // so this should be also skipped.
+    //this->scheduler->task_launching_log_ptr++;
+
+    if (!this->scheduler->is_task_mapping_log_registered()) {
+      std::cout << "task mapping order:\n";
+      for (size_t i = 0; i < this->scheduler->task_mapping_log.size(); ++i) {
+        std::cout << i << ", " << this->scheduler->task_mapping_log[i].first <<
+          ", " << this->scheduler->task_mapping_log[i].second << "\n";
+      }
     }
-    std::cout << "Task mapping log size:" << this->scheduler->task_mapping_log.size() << "\n" <<
-      std::flush;
+    if (!this->scheduler->is_task_launching_log_registered()) {
+      std::cout << "task launching order:\n";
+      for (size_t i = 0; i < this->scheduler->task_launching_log.size(); ++i) {
+        std::cout << i << ", " << this->scheduler->task_launching_log[i] << "\n";
+      }
+    }
   }
+
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);

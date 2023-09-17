@@ -292,7 +292,7 @@ def main():
                             asarray(ap_list[i][j], name=f"ap_{i}_{j}"))
 
             else:
-                rs = TaskSpace("Reset-" + str(k))
+                rs = TaskSpace("Reset")
                 for i in range(n//block_size):
                     for j in range(n//block_size):
                         @spawn(rs[i, j], placement=gpu(i % n_gpus), inout=[(ap_parray[i][j], 0)])
@@ -309,7 +309,7 @@ def main():
             print("------------", flush=True)
             start = time.perf_counter()
 
-            @spawn(begin_rl_ts[0])
+            @spawn(begin_rl_ts[0], placement=cpu)
             def begin_rl_task():
                 pass
 
@@ -319,7 +319,7 @@ def main():
             await cholesky_blocked_inplace(ap_parray, block_size, str(k))
             # print(ap_parray)
 
-            @spawn(end_rl_ts[0])
+            @spawn(end_rl_ts[0], placement=cpu)
             def end_rl_task():
                 pass
 
@@ -329,7 +329,7 @@ def main():
             # print(ap)
             end = time.perf_counter()
 
-            ts = TaskSpace("CopyBack-" + str(k))
+            ts = TaskSpace("CopyBack")
             plist = flatten(ap_parray)
             plist = [(p, 0) for p in plist]
 
@@ -365,6 +365,12 @@ def main():
                 print(computed_L)
                 error = np.max(np.absolute(a - computed_L @ computed_L.T))
                 print("Error", error)
+            end_app_ts = TaskSpace("end_task_graph")
+            @spawn(end_app_ts[0], placement=cpu(0))
+            def end_app_task():
+                pass
+            await end_app_ts[0]
+
 
 if __name__ == '__main__':
     np.random.seed(10)

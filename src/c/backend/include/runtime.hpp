@@ -931,6 +931,8 @@ class InnerScheduler {
 
 public:
   size_t task_mapping_log_ptr{0};
+  size_t task_launching_log_ptr{0};
+  // TODO(hc): not yet using these modes.
   /// 0 = disabled, 1 = replay decision (homogeneous tasks),
   /// 2 = replay decision and order.
   uint32_t task_mapping_log_mode{1};
@@ -1273,7 +1275,9 @@ public:
   void reset_task_mapping_log_pointer() {
     this->task_mapping_log_ptr = 0;
   }
-
+  void reset_task_launching_log_pointer() {
+    this->task_launching_log_ptr = 0;
+  }
   void complete_task_mapping_log() {
     std::lock_guard<std::mutex> guard(this->task_mapping_log_mtx_);
     this->task_mapping_log_registered = true;
@@ -1307,6 +1311,8 @@ public:
   void register_task_launching_log(InnerTask* task) {
     this->task_launching_log.push_back(task->name);
   }
+
+  void complete_task_order_logs(InnerTask* task);
 
 protected:
   /// It manages all device instances in C++.
