@@ -192,9 +192,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.scheduler.start_monitor.notify_all()
 
                 while self._should_run:
-                    self.task = self.inner_worker.get_task()
-                    print(self.task, flush=True)
+                    # self.task = self.inner_worker.get_task()
+                    # print(self.task, flush=True)
                     if(self.task is None):
+                        print("In waiting", flush=True)
                         self.status = "Waiting"
                         #print("WAITING", flush=True)
 
@@ -222,6 +223,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
                     self.status = "Running"
+                    print("Running", flush=True)
 
                     if isinstance(self.task, Task):
                         active_task = self.task 
@@ -249,6 +251,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.handle_runahead_dependencies()
 
                         nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
+                        print("worker::run", flush=True)
 
                         # print("Running Task", active_task, flush=True)
 
@@ -272,6 +275,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
 
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
+                        print("worker::run", flush=True)
 
                         final_state  = active_task.state
 
@@ -319,16 +323,19 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             active_task.cleanup()
 
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                            print("Completed", flush=True)
 
                         # print("Finished Task", active_task, flush=True)
                         active_task.state = final_state
                         self.task = None
 
                         nvtx.pop_range(domain="Python Runtime")
+                        print("Waiting 2", flush=True)
 
                         self.status = "Waiting"
                         nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
                         self.inner_worker.wait_for_task() # GIL Release
+                        self.task = self.inner_worker.get_task()
 
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
