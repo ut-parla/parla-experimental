@@ -642,7 +642,7 @@ class TaskEnvironment:
 
     def __init__(self, environment_list, blocking=False):
 
-        self._store = Storage()
+        #self._store = Storage()
 
         self.device_dict = defaultdict(list)
 
@@ -760,7 +760,7 @@ class TaskEnvironment:
     def get_cupy_devices(self):
         return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
 
-    def synchronize(self, events=False, tags=['default'], return_to_pool=True):
+    def synchronize(self, events=False, tags=['default'], return_to_pool=False):
         #print(f"Synchronizing {self}..", flush=True)
 
         if self.is_terminal:
@@ -815,15 +815,15 @@ class TaskEnvironment:
         return create_env(self.env_list[index])
 
 
-    def store(self, key, value):
-        self._store.store(key, value)
+    # def store(self, key, value):
+    #     self._store.store(key, value)
 
-    def retrieve(self, key):
-        return self._store.retrieve(key)
+    # def retrieve(self, key):
+    #     return self._store.retrieve(key)
 
-    @property
-    def storage(self):
-        return self._store
+    # @property
+    # def storage(self):
+    #     return self._store
 
     def __len__(self):
         return len(self.env_list)
@@ -839,8 +839,9 @@ class TaskEnvironment:
     def finalize(self):
         stream_pool = get_stream_pool()
 
-        for env in self.env_list:
-            env.finalize()
+        #NOTE: Streams for subenvs must be populated to the toplevel env?
+        #for env in self.env_list:
+        #    env.finalize()
         
         for stream in self.stream_list:
             stream.synchronize()
@@ -976,8 +977,10 @@ class TaskEnvironment:
 class TerminalEnvironment(TaskEnvironment):
     def  __init__(self,  device, blocking=False):
         super(TerminalEnvironment, self).__init__([], blocking=blocking)
+
         self.device_dict[device.architecture].append(self)
         self.device_list.append(self)
+
         self._device = device
         self._arch_type = device.architecture
         self.is_terminal = True

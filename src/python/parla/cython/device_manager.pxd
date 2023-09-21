@@ -8,11 +8,11 @@ from libcpp.vector cimport vector
 
 cdef extern from "include/device_manager.hpp" nogil:
     cdef cppclass DeviceManager:
-        DeviceManager() except +
-        void register_device(Device*) except +
-        void print_registered_devices() except +
-        int globalid_to_parrayid(int) except +
-        int parrayid_to_globalid(int) except +
+        DeviceManager()
+        void register_device(Device*)
+        void print_registered_devices()
+        int globalid_to_parrayid(int)
+        int parrayid_to_globalid(int)
 
 
 cdef class CyDeviceManager:

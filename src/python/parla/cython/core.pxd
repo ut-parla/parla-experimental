@@ -19,6 +19,7 @@ cdef extern from "include/resources.hpp" nogil:
 
 cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds)
+    void cpu_busy_sleep2(unsigned int microseconds)
     void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr)
 
@@ -75,12 +76,12 @@ cdef extern from "include/runtime.hpp" nogil:
         void begin_multidev_req_addition()
         void end_multidev_req_addition()
 
-        void add_event(uintptr_t event) except + 
-        void add_stream(uintptr_t stream) except +
+        void add_event(uintptr_t event)
+        void add_stream(uintptr_t stream)
 
-        void reset_events_streams() except +
-        void handle_runahead_dependencies(int sync_type) except +
-        void synchronize_events()   except +
+        void reset_events_streams()
+        void handle_runahead_dependencies(int sync_type)
+        void synchronize_events()
 
 
     cdef cppclass InnerDataTask(InnerTask):
@@ -89,17 +90,17 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_device_id()
 
     cdef cppclass TaskBarrier:
-        TaskBarrier() except +
-        void add_tasks(vector[InnerTask*] tasks) except +
-        void wait() except +
-        void set_id(int64_t i) except +
+        TaskBarrier()
+        void add_tasks(vector[InnerTask*] tasks)
+        void wait()
+        void set_id(int64_t i)
 
     cdef cppclass InnerTaskSpace:
-        InnerTaskSpace() except +
-        void add_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
-        void wait() except +
-        void set_id(int64_t i) except +
-        void get_tasks(vector[int64_t] keys, vector[InnerTask*] tasks) except +
+        InnerTaskSpace()
+        void add_tasks(vector[int64_t] keys, vector[InnerTask*] tasks)
+        void wait()
+        void set_id(int64_t i)
+        void get_tasks(vector[int64_t] keys, vector[InnerTask*] tasks)
 
     cdef cppclass InnerWorker:
         void* py_worker
@@ -116,7 +117,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
         void get_task(InnerTask** task, bool* is_data_task)
-        void remove_task() except +
+        void remove_task()
 
         void wait()
         void stop()
@@ -133,7 +134,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
 
-        void run() except +
+        void run()
         void stop()
 
         void activate_wrapper()
@@ -142,9 +143,9 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)
-        void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
-        void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
-        void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup(InnerWorker* worker, InnerTask* task, int state)
+        void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state)
+        void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state)
 
         int get_num_active_tasks()
         void increase_num_active_tasks()
@@ -156,10 +157,10 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_notified_workers()
         bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void spawn_wait() except +
+        void spawn_wait()
 
-        void reserve_parray(InnerPArray* parray, int dev_id) except +
-        void release_parray(InnerPArray* parray, int dev_id) except +
+        void reserve_parray(InnerPArray* parray, int dev_id)
+        void release_parray(InnerPArray* parray, int dev_id)
 
 
 cdef extern from "include/profiling.hpp" nogil:

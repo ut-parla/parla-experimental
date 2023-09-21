@@ -14,7 +14,7 @@ int global_reset_count = 0;
 // Worker Implementation
 
 void InnerWorker::wait() {
-  NVTX_RANGE("worker:wait", NVTX_COLOR_CYAN)
+  NVTX_RANGE("Parla::cpp::wait_for_task", NVTX_COLOR_CYAN)
   LOG_INFO(WORKER, "Worker waiting: {}", this->thread_idx);
   std::unique_lock<std::mutex> lck(mtx);
   // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
@@ -25,7 +25,7 @@ void InnerWorker::wait() {
 }
 
 void InnerWorker::assign_task(InnerTask *task) {
-  NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
+  //NVTX_RANGE("worker:assign_task", NVTX_COLOR_CYAN)
   // std::cout << "Assigning task (C++) " << this->thread_idx << " "
   //           << this->ready << std::endl;
   assert(ready == false);
@@ -166,7 +166,7 @@ void InnerScheduler::set_stop_callback(stopfunc_t stop_callback) {
 }
 
 void InnerScheduler::run() {
-  NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
+  //NVTX_RANGE("Scheduler::run", NVTX_COLOR_RED)
   unsigned long long iteration_count = 0;
   while (this->should_run.load()) {
     auto status = this->activate();
@@ -198,7 +198,7 @@ void InnerScheduler::activate_wrapper() { this->activate(); }
 
 void InnerScheduler::spawn_task(InnerTask *task) {
   LOG_INFO(SCHEDULER, "Spawning task: {}", task);
-  NVTX_RANGE("Scheduler::spawn_task", NVTX_COLOR_RED)
+  NVTX_RANGE("Parla::cpp::spawn_task", NVTX_COLOR_RED)
 
   auto status = task->process_dependencies();
   this->increase_num_active_tasks();
@@ -244,7 +244,7 @@ void InnerScheduler::enqueue_worker(InnerWorker *worker) {
 
 void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
                                           int state) {
-  NVTX_RANGE("Scheduler::task_cleanup_presync", NVTX_COLOR_MAGENTA)
+  NVTX_RANGE("Parla::cpp::task_cleanup_presync", NVTX_COLOR_MAGENTA)
   LOG_INFO(WORKER, "Cleaning up: {} on  {}", task, worker);
 
   // std::cout << "CLEANUP PRE SYNC: " << state << " " << Task::RUNAHEAD
@@ -265,7 +265,7 @@ void InnerScheduler::task_cleanup_presync(InnerWorker *worker, InnerTask *task,
 
 void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
                                            int state) {
-  NVTX_RANGE("Scheduler::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
+  NVTX_RANGE("Parla::cpp::task_cleanup_postsync", NVTX_COLOR_MAGENTA)
 
   // std::cout << "Task Cleanup Post Sync" << std::endl;
 
@@ -316,7 +316,7 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
 
 void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
                                   int state) {
-  NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+  NVTX_RANGE("Parla::cpp::task_cleanup", NVTX_COLOR_MAGENTA)
 
   task_cleanup_presync(worker, task, state);
   // synchronize task enviornment

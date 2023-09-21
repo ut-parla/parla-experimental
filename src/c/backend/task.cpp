@@ -55,7 +55,7 @@ void InnerTask::queue_dependency(InnerTask *task) {
 }
 
 Task::StatusFlags InnerTask::process_dependencies() {
-  NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
+  // NVTX_RANGE("InnerTask::process_dependencies", NVTX_COLOR_MAGENTA)
   Task::StatusFlags status = this->add_dependencies(this->dependency_buffer);
   this->dependency_buffer.clear();
   this->dependency_buffer.reserve(DEPENDENCY_BUFFER_SIZE);
@@ -232,7 +232,7 @@ void InnerTask::add_parray(parray::InnerPArray *parray, int am, int dev_id) {
 
 void InnerTask::notify_dependents_completed() {
   LOG_INFO(TASK, "Notifying dependents of {}.", this);
-  NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
+  // NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
 
   this->dependents.lock();
   this->spaces.lock();
@@ -253,7 +253,7 @@ void InnerTask::notify_dependents_completed() {
 void InnerTask::notify_dependents(TaskStateList &buffer,
                                   Task::State new_state) {
   LOG_INFO(TASK, "Notifying dependents of {}: {}", this, buffer);
-  NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
+  // NVTX_RANGE("InnerTask::notify_dependents", NVTX_COLOR_MAGENTA)
 
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
   // at a time

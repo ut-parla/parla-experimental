@@ -12,6 +12,11 @@ from enum import IntEnum, auto
 from parla.common.globals import cupy
 from libc.stdint cimport uintptr_t
 
+from parla.utility.tracer import NVTXTracer
+
+nvtx = NVTXTracer
+nvtx.initialize()
+
 #Resource Types
 #TODO: Python ENUM
 
@@ -104,12 +109,14 @@ cpdef binlog_2(category, message1, inner_type1 obj1, message2, inner_type2 obj2,
 
 cpdef cpu_bsleep_gil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but don't release the GIL"""
-    cpu_busy_sleep(microseconds)
+    cpu_busy_sleep2(microseconds)
 
 cpdef cpu_bsleep_nogil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but release the GIL"""
+    nvtx.push_range(message="Parla::python::cpu_busy_sleep", domain="parla", color="red")
     with nogil:
         cpu_busy_sleep(microseconds)
+    nvtx.pop_range(domain="parla")
 
 cpdef gpu_bsleep_gil(dev, t, stream):
     cdef int c_dev = dev
@@ -521,9 +528,10 @@ cdef class PyInnerWorker:
     cpdef wait_for_task(self):
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
-
+        nvtx.push_range(message="Parla::python::wait_for_task", domain="parla", color="blue")
         with nogil:
             _inner_worker.wait()
+        nvtx.pop_range(domain="parla")
 
     cpdef get_task(self):
         cdef InnerWorker* _inner_worker
@@ -625,8 +633,7 @@ cdef class PyInnerScheduler:
 
     cpdef spawn_task(self, PyInnerTask task):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        cdef InnerTask* c_task = task.c_task
-
+        cdef InnerTask* c_task = task.c_task 
         c_self.spawn_task(c_task)
 
     cpdef add_worker(self, PyInnerWorker worker):
@@ -644,22 +651,26 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
+        nvtx.push_range(message="Parla::python::task_cleanup", domain="parla", color="yellow")
         with nogil:
             c_self.task_cleanup(c_worker, c_task, state)
+        nvtx.pop_range(domain="parla")
 
     cpdef task_cleanup_presync(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
-        with nogil:
-            c_self.task_cleanup_presync(c_worker, c_task, state)
+        #TODO(wlr): Maybe release GIL here? Keeping it might be prefered, who knows?
+        c_self.task_cleanup_presync(c_worker, c_task, state)
 
     cpdef task_cleanup_postsync(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
+        nvtx.push_range(message="Parla::python::task_cleanup_postsync", domain="parla", color="yellow")
         with nogil:
             c_self.task_cleanup_postsync(c_worker, c_task, state)
+        nvtx.pop_range(domain="parla")
 
     cpdef get_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler

@@ -26,7 +26,7 @@ size_t Mapper::get_count() {
 
 void Mapper::run(SchedulerPhase *next_phase) {
 
-  NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
+  // NVTX_RANGE("Mapper::run", NVTX_COLOR_LIGHT_GREEN)
 
   // std::cout << "Mapper::run" << std::endl;
 
@@ -236,7 +236,7 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 }
 
 void MemoryReserver::run(SchedulerPhase *next_phase) {
-  NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
+  // NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
   // std::cout << "MemoryReserver::run" << std::endl;
 
@@ -382,7 +382,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
 }
 
 void RuntimeReserver::run(SchedulerPhase *next_phase) {
-  NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
+  // NVTX_RANGE("RuntimeReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
   // std::cout << "RuntimeReserver::run" << std::endl;
 
@@ -468,7 +468,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
 // Launcher Phase implementation
 
 void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
-  NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
+  // NVTX_RANGE("Launcher::enqueue", NVTX_COLOR_LIGHT_GREEN)
 
   // std::cout << "Launcher::enqueue" << std::endl;
 

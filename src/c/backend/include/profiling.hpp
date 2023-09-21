@@ -12,7 +12,7 @@
 #include <nvtx3/nvtx3.hpp>
 
 struct my_domain {
-  static constexpr char const *name{"Parla Runtime"};
+  static constexpr char const *name{"parla"};
 };
 
 using my_scoped_range = nvtx3::scoped_range_in<my_domain>;

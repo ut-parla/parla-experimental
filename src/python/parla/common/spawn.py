@@ -64,7 +64,7 @@ def spawn(task=None,
           memory: int =None,
           runahead: SynchronizationType = default_sync
           ):
-    nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
+    nvtx.push_range(message="Parla::python::spawn_task", domain="parla", color="blue")
 
     scheduler = get_scheduler_context().scheduler
 
@@ -143,7 +143,7 @@ def spawn(task=None,
 
         scheduler.spawn_task(task)
         # scheduler.run_scheduler()
-        nvtx.pop_range(domain="launch")
+        nvtx.pop_range(domain="parla")
 
         # This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
         # TODO: Make this an optional flag.

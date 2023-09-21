@@ -17,25 +17,25 @@ cdef extern from "include/device.hpp" nogil:
         # like for AMD
         
     cdef cppclass Device:
-        Device(string, int, long, long, void*) except +
-        int get_id() except +
-        int get_global_id() except +
-        string get_name() except +
-        long get_memory_size() except +
-        long get_num_vcus() except +
-        void *get_py_device() except +
-        long long int query_resource(Resource) except +
-        long long int query_reserved_resource(Resource) except +
-        long long int query_mapped_resource(Resource) except +
+        Device(string, int, long, long, void*)
+        int get_id()
+        int get_global_id()
+        string get_name()
+        long get_memory_size()
+        long get_num_vcus()
+        void *get_py_device()
+        long long int query_resource(Resource)
+        long long int query_reserved_resource(Resource)
+        long long int query_mapped_resource(Resource)
 
     cdef cppclass CUDADevice(Device):
-        CUDADevice(int, long, long, void*) except +
+        CUDADevice(int, long, long, void*)
 
     cdef cppclass CPUDevice(Device):
-        CPUDevice(int, long, long, void*) except +
+        CPUDevice(int, long, long, void*)
 
     cdef cppclass DeviceSet:
-        vector[void*] get_py_devices() except +  
+        vector[void*] get_py_devices()
 
 
 cdef class CyDevice:
