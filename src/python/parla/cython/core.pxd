@@ -145,6 +145,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup_and_wait_for_task(InnerWorker* worker, InnerTask* task, int state) except +
 
         int get_num_active_tasks()
         void increase_num_active_tasks()

@@ -192,6 +192,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.scheduler.start_monitor.notify_all()
 
                 while self._should_run:
+                    self.task = self.inner_worker.get_task()
                     if(self.task is None):
                         self.status = "Waiting"
                         #print("WAITING", flush=True)
@@ -304,7 +305,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
                             #Handle synchronization in C++
-                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            # Adding wait here to reduce context switch between GIL
+                            if self._should_run:
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            else:
+                                self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
 
                         #print("Finished Cleaning up Task", active_task, flush=True)
 
@@ -323,12 +331,13 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         nvtx.pop_range(domain="Python Runtime")
 
+
                         # Adding wait here to reduce context switch between GIL
-                        if self._should_run:
-                            self.status = "Waiting"
-                            nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
-                            self.inner_worker.wait_for_task() # GIL Release
-                            self.task = self.inner_worker.get_task()
+                        # if self._should_run:
+                        #    self.status = "Waiting"
+                        #    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        #    self.inner_worker.wait_for_task() # GIL Release
+                        #    self.task = self.inner_worker.get_task()
 
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
