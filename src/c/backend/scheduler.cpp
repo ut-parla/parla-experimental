@@ -334,7 +334,8 @@ void InnerScheduler::task_cleanup_and_wait_for_task(InnerWorker *worker, InnerTa
 
   task_cleanup(worker, task, state);
   // wait for task
-  worker->wait();
+  if(this->should_run)
+    worker->wait();
   
 }
 

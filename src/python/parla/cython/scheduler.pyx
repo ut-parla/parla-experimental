@@ -307,18 +307,20 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             #Handle synchronization in C++
                             # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                             # Adding wait here to reduce context switch between GIL
+                            print("Should run before cleanup_and_wait", self._should_run, task, flush=True)
                             if self._should_run:
                                 self.status = "Waiting"
                                 nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
                                 self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                #self.task = self.inner_worker.get_task()
                             else:
                                 self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
 
                         #print("Finished Cleaning up Task", active_task, flush=True)
-
+                        print("Should run before device_context", self._should_run, task, flush=True)
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
-
+                        print("Should run before final_state cleanup", self._should_run, task, flush=True)
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
@@ -326,6 +328,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
+                        print("Should run before reassigning active_task", self._should_run, task, flush=True)
                         active_task.state = final_state
                         self.task = None
 
