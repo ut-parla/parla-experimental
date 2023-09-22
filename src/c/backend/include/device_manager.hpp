@@ -111,7 +111,7 @@ public:
   }
 
   ParlaDevice *get_device_by_parray_id(DevID_t parray_dev_id) const {
-    DevID_t global_dev_id = this->parrayid_to_globalid(parray_dev_id);
+    DevID_t global_dev_id = parrayid_to_globalid(parray_dev_id);
     return all_devices_[global_dev_id];
   }
 
@@ -137,8 +137,6 @@ public:
    * device id.
    */
   void free_memory(DevID_t global_dev_id, Resource_t memory_size) {
-
-  const DevID_t globalid_to_parrayid(DevID_t global_dev_id) const {
     ParlaDevice *dev = get_device_by_global_id(global_dev_id);
     auto &mapped_memory_pool = dev->get_mapped_pool();
     auto &reserved_memory_pool = dev->get_reserved_pool();

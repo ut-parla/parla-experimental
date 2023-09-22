@@ -359,7 +359,8 @@ class LRUGlobalEvictionManager {
 public:
   LRUGlobalEvictionManager(DeviceManager *device_manager) :
     device_manager_(device_manager) {
-    DevID_t num_devices = device_manager->template get_num_devices<DeviceType::All>();
+    DevID_t num_devices =
+        device_manager->template get_num_devices<ParlaDeviceType::All>();
     this->device_mm_.resize(num_devices);
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
       this->device_mm_[i] = new LRUDeviceEvictionManager(i);

@@ -38,13 +38,13 @@ void Mapper::drain_parray_buffer() {
     size_t size = std::get<2>(parray_location_size);
 
     // Get the device mapped memory pool
-    Device *device = this->device_manager->get_device_by_global_id(dev_id);
+    ParlaDevice *device = this->device_manager->get_device_by_global_id(dev_id);
     auto &mapped_pool = device->get_mapped_pool();
 
     // Note(@dialecticDolt): We do not throw a warning for mapped memory usage
 
     // Increase the mapped pool by the size of the parray
-    mapped_pool.increase<Resource::Memory>(size);
+    mapped_pool.template increase<Resource::Memory>(size);
 
     unmapped_created_parrays.pop_front();
   }
@@ -58,7 +58,7 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
        ++local_device_idx) {
 
     auto chosen_device_requirements = chosen_devices[local_device_idx];
-    Device *chosen_device = chosen_device_requirements->device();
+    ParlaDevice *chosen_device = chosen_device_requirements->device();
     DevID_t global_dev_id = chosen_device->get_global_id();
 
     auto &mapped_pool = chosen_device->get_mapped_pool();
@@ -68,13 +68,15 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
 
     task->device_constraints.insert(
         {chosen_device->get_global_id(), task_pool});
+    task->mapping_time_epochs =
+        this->scheduler->get_device_manager()->current_timepoint_count_from_beginning();
+    this->scheduler->assign_task_launching_id(task);
 
     auto &parray_access_list = parray_list[local_device_idx];
 
     int num_data_tasks = parray_access_list.size();
-    this->atomic_incr_num_mapped_tasks_device(global_dev_id);
-    this->atomic_incr_num_mapped_data_tasks_device(global_dev_id,
-                                                   num_data_tasks);
+    this->scheduler->atomic_incr_num_mapped_tasks_device(global_dev_id);
+    this->scheduler->atomic_incr_num_tasks_mapped_states(global_dev_id);
 
     mapped_pool.increase(task_pool);
 
@@ -82,7 +84,7 @@ void Mapper::map_task(InnerTask *task, DeviceRequirementList &chosen_devices) {
       auto &parray_access = parray_access_list[i];
       size_t mapped_size = parray_tracker->do_log(global_dev_id, parray_access);
 
-      mapped_pool.increase<Resource::Memory>(mapped_size);
+      mapped_pool.template increase<Resource::Memory>(mapped_size);
     }
   }
 
@@ -109,8 +111,6 @@ void Mapper::run(SchedulerPhase *next_phase) {
   // Scheduler does not reserve any resource at this phase.
 
   bool has_task = this->get_count() > 0;
-
-<<<<<<< HEAD
   if (!has_task) {
     return;
   }
@@ -120,6 +120,8 @@ void Mapper::run(SchedulerPhase *next_phase) {
     while (has_task &&
         this->scheduler->task_mapping_log.size() >
         this->scheduler->task_mapping_log_ptr && attemptable) {
+      this->drain_parray_buffer();
+
       auto [task_name, device_id] =
           this->scheduler->task_mapping_log[
               this->scheduler->task_mapping_log_ptr];
@@ -128,8 +130,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
         InnerTask* found_task = found->second;
         PlacementRequirementCollections &placement_req_options =
             found_task->get_placement_req_options();
-        std::vector<std::shared_ptr<PlacementRequirementBase>>
-            placement_req_options_vec =
+        PlacementRequirementList placement_req_options_vec =
                 placement_req_options.get_placement_req_opts_ref();
         ParlaDevice *chosen_device{nullptr};
         std::shared_ptr<DeviceRequirement> chosen_device_req;
@@ -168,63 +169,40 @@ void Mapper::run(SchedulerPhase *next_phase) {
       }
     };
   } else {
+    // In order to overlap scheduler phases and task execution,
+    // use threshold of the number of tasks to be mapped.
     size_t num_task_mapping_attempt{0};
-    while (has_task && num_task_mapping_attempt < 3) {
+
+    this->drain_parray_buffer();
+
+    // TODO Fix Issue #108
+    while (has_task && num_task_mapping_attempt < 20) {
+
+      this->drain_parray_buffer();
+
+      // unmapped_created_parrays.lock();
+
+      // Comment(wlr): this assumes the task is always able to be mapped.
       InnerTask *task = this->mappable_tasks.front_and_pop();
+
       PlacementRequirementCollections &placement_req_options =
           task->get_placement_req_options();
-      std::vector<std::shared_ptr<PlacementRequirementBase>>
-          placement_req_options_vec =
-              placement_req_options.get_placement_req_opts_ref();
-      const std::vector<std::vector<std::pair<parray::InnerPArray*, AccessMode>>>
-          &parray_list = task->parray_list;
-      std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
+      PlacementRequirementList placement_req_options_vec =
+          placement_req_options.get_placement_req_opts_ref();
+
+      DeviceRequirementList chosen_devices;
+      const auto &parray_list = task->parray_list;
+
       policy_->run_task_mapping(task, this->scheduler, &chosen_devices,
           parray_list, &placement_req_options_vec);
+
       if (chosen_devices.empty()) {
-        // It means that none of the devices is available for this task.
-        // If it is, reenqueue the task to the mappable task queue.
+        // No devices are available for this task.
+        // Reenqueue the task to the mappable task queue to try again.
         this->enqueue(task);
       } else {
-        std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-            *parray_list = &(task->parray_list);
-        task->device_constraints.clear();
-        for (size_t i = 0; i < chosen_devices.size(); ++i) {
-          assert(chosen_devices[i] != nullptr);
-          ParlaDevice *chosen_device = chosen_devices[i]->device();
-          DevID_t global_dev_id = chosen_device->get_global_id();
-          task->assigned_devices.push_back(chosen_device);
-          task->device_constraints.insert(
-              {chosen_device->get_global_id(), chosen_devices[i]->res_req()});
-          task->mapping_time_epochs =
-              this->scheduler->get_device_manager()->current_timepoint_count_from_beginning();
-          this->scheduler->assign_task_mapping_id(task);
-          // Increase the number of mapped tasks as the number of PArrays
-          // since the corresponding data movement tasks will be created.
-          this->scheduler->atomic_incr_num_mapped_tasks_device(global_dev_id);
-          this->scheduler->atomic_incr_num_tasks_mapped_states(global_dev_id);
-
-          LOG_INFO("Debug",
-              "Mapping {} (Dev. {}): mapped {} res-reserved {} ready {} running {} total {}",
-              task->name, global_dev_id,
-              this->scheduler->
-                  atomic_load_dev_num_tasks_mapped_states(global_dev_id),
-              this->scheduler->
-                  atomic_load_dev_num_tasks_resreserved_states(global_dev_id),
-              this->scheduler->
-                  atomic_load_dev_num_ready_tasks(global_dev_id),
-              this->scheduler->
-                  atomic_load_dev_num_running_tasks(global_dev_id),
-              this->scheduler->
-                  atomic_load_dev_num_mapped_tasks_device(global_dev_id));
-
-          for (size_t j = 0; j < (*parray_list)[i].size(); ++j) {
-            parray::InnerPArray *parray = (*parray_list)[i][j].first;
-            this->scheduler->get_parray_tracker()->reserve_parray(*parray,
-                                                                  chosen_device);
-            parray->incr_num_active_tasks(global_dev_id);
-          }
-        }
+        this->map_task(task, chosen_devices);
+        this->mapped_tasks_buffer.push_back(task);
 #if 0
         std::cout << "chosen device size:" << chosen_devices.size() << "[done] \n" <<
           std::flush;
@@ -241,58 +219,14 @@ void Mapper::run(SchedulerPhase *next_phase) {
                     << ", vcu:" << res.get(Resource::VCU) << "\n" << std::flush;
         }
 #endif
-        this->mapped_tasks_buffer.push_back(task);
-        this->scheduler->register_task_mapping_log(task);
       }
+
+      // unmapped_created_parrays.unlock();
       has_task = this->get_count() > 0;
-      num_task_mapping_attempt ++;
+      ++num_task_mapping_attempt;
     } // while there are mappable tasks
   }
-=======
-  has_task = this->get_count() > 0;
 
-  // In order to overlap scheduler phases and task execution,
-  // use threshold of the number of tasks to be mapped.
-  size_t num_task_mapping_attempt{0};
-
-  this->drain_parray_buffer();
-
-  // TODO Fix Issue #108
-  while (has_task && num_task_mapping_attempt < 20) {
-
-    this->drain_parray_buffer();
-
-    // unmapped_created_parrays.lock();
-
-    // Comment(wlr): this assumes the task is always able to be mapped.
-    InnerTask *task = this->mappable_tasks.front_and_pop();
-
-    PlacementRequirementCollections &placement_req_options =
-        task->get_placement_req_options();
-    PlacementRequirementList placement_req_options_vec =
-        placement_req_options.get_placement_req_opts_ref();
-
-    DeviceRequirementList chosen_devices;
-    const auto &parray_list = task->parray_list;
-
-    policy_->run_task_mapping(task, *this, &chosen_devices, parray_list,
-                              &placement_req_options_vec);
-
-    if (chosen_devices.empty()) {
-      // No devices are available for this task.
-      // Reenqueue the task to the mappable task queue to try again.
-      this->enqueue(task);
-    } else {
-      this->map_task(task, chosen_devices);
-      this->mapped_tasks_buffer.push_back(task);
-    }
-
-    // unmapped_created_parrays.unlock();
-    has_task = this->get_count() > 0;
-    ++num_task_mapping_attempt;
-  } // while there are mappable tasks
-
->>>>>>> dev
   for (InnerTask *mapped_task : this->mapped_tasks_buffer) {
     mapped_task->notify_dependents(this->enqueue_buffer, TaskState::MAPPED);
     this->scheduler->enqueue_tasks(this->enqueue_buffer);
@@ -325,22 +259,22 @@ void MemoryReserver::drain_parray_buffer() {
     size_t size = std::get<2>(parray_location_size);
 
     // Get the device mapped memory pool
-    Device *device = this->device_manager->get_device_by_global_id(dev_id);
+    ParlaDevice *device = this->device_manager->get_device_by_global_id(dev_id);
     auto &reserved_pool = device->get_reserved_pool();
 
-    bool status = reserved_pool.check_greater<Resource::Memory>(size);
+    bool status = reserved_pool.template check_greater<Resource::Memory>(size);
     if (!status) {
       std::cout
           << "WARNING: MemoryReserver::drain_parray_buffer: not enough memory"
           << std::endl;
       std::cout << "MemoryReserver::drain_parray_buffer: size: " << size
                 << std::endl;
-      std::cout << "Free memory: " << reserved_pool.get<Resource::Memory>()
+      std::cout << "Free memory: " << reserved_pool.template get<Resource::Memory>()
                 << std::endl;
     }
 
     // Increase the mapped pool by the size of the parray
-    reserved_pool.decrease<Resource::Memory>(size);
+    reserved_pool.template decrease<Resource::Memory>(size);
 
     unreserved_created_parrays.pop_front();
   }
@@ -367,14 +301,8 @@ bool MemoryReserver::check_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-<<<<<<< HEAD
-    status = device_pool.check_greater<ResourceCategory::Persistent>(task_pool);
-=======
-
     status =
         device_pool.check_greater<Resource::PersistentResources>(task_pool);
-
->>>>>>> dev
     if (!status) {
       break;
     }
@@ -395,7 +323,7 @@ bool MemoryReserver::check_data_resources(InnerTask *task) {
     const auto &parray_access_list = parray_list[local_device_idx];
 
     // Get the device reserved memory pool
-    Device *device = task->assigned_devices[local_device_idx];
+    ParlaDevice *device = task->assigned_devices[local_device_idx];
     size_t size_on_device = 0;
     auto &reserved_pool = device->get_reserved_pool();
 
@@ -453,7 +381,7 @@ void MemoryReserver::reserve_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-    device_pool.decrease<Resource::PersistentResources>(task_pool);
+    device_pool.template decrease<Resource::PersistentResources>(task_pool);
   }
 }
 
@@ -468,7 +396,7 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
     const auto &parray_access_list = parray_list[local_device_idx];
 
     // Get the device reserved memory pool
-    Device *device = assigned_devices[local_device_idx];
+    ParlaDevice *device = assigned_devices[local_device_idx];
     size_t size_on_device = 0;
     auto &reserved_pool = device->get_reserved_pool();
 
@@ -492,7 +420,7 @@ void MemoryReserver::reserve_data_resources(InnerTask *task) {
     }
 
     // Reserve the memory for all PArray inputs on the device
-    reserved_pool.decrease<Resource::Memory>(size_on_device);
+    reserved_pool.template decrease<Resource::Memory>(size_on_device);
   }
 }
 
@@ -517,18 +445,12 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 
       // Create a data movement task for each PArray.
       // TODO(hc): id should be updated!
-      std::string task_name = task_base_name + ".dm." + std::to_string(j);
+      std::string task_name = task_base_name + ".dm." +
+        std::to_string(local_device_idx) + "-" + std::to_string(j);
 
       InnerDataTask *datamove_task = new InnerDataTask(
-<<<<<<< HEAD
-          // TODO(hc): id should be updated!
-          task_base_name + ".dm." + std::to_string(i) + "-" +
-          std::to_string(j), 0, parray, access_mode,
-          i);
-=======
           task_name, 0, parray, access_mode, local_device_idx);
 
->>>>>>> dev
       auto &parray_task_list = parray->get_parent_parray()->get_task_list_ref();
       // Find dependency intersection between compute and data movement tasks.
 
@@ -567,13 +489,10 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
           std::forward_as_tuple(
               std::initializer_list<Resource_t>({0, 0, copy_engines})));
 
-<<<<<<< HEAD
-      data_tasks.push_back(datamove_task);
       // Data movement tasks should be registered at here;
       // these are not enqeueued through scheduler::enqueue_task().
       this->scheduler->task_name_to_task.emplace(datamove_task->name, datamove_task);
-=======
->>>>>>> dev
+
       // Add the created data movement task to a reserved task queue.
       datamove_task->set_state(TaskState::RESERVED);
       this->scheduler->increase_num_active_tasks();
@@ -750,7 +669,7 @@ void RuntimeReserver::reserve_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-    device_pool.decrease<Resource::NonPersistentResources>(task_pool);
+    device_pool.template decrease<Resource::NonPersistentResources>(task_pool);
   }
 }
 
@@ -760,7 +679,7 @@ void RuntimeReserver::reserve_data_resources(InnerTask *task) {
     ResourcePool_t &task_pool =
         task->device_constraints[device->get_global_id()];
     ResourcePool_t &device_pool = device->get_reserved_pool();
-    device_pool.decrease<Resource::MovementResources>(task_pool);
+    device_pool.template decrease<Resource::MovementResources>(task_pool);
   }
 }
 
@@ -779,7 +698,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   bool has_task = this->get_compute_count() > 0 ||
                   this->get_movement_count() > 0;
   int num_tasks = 0;
-<<<<<<< HEAD
   if (this->scheduler->is_task_launching_log_registered()) {
     // If task launching order is registered,
     // follow that instead of getting a task from the queue.
@@ -792,32 +710,9 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
       auto found = this->scheduler->task_name_to_task.find(task_name);
       if (found != this->scheduler->task_name_to_task.end()) {
         InnerTask* found_task = found->second;
-        if (found_task->get_status() != Task::RUNNABLE) {
+        if (found_task->get_status() != TaskStatus::RUNNABLE) {
           // If task is not ready, break this loop.
           break;
-=======
-  while (has_task && (fail_count < max_fail)) {
-    num_tasks = this->get_compute_count();
-    has_task = num_tasks > 0;
-
-    if (has_task) {
-      InnerTask *task = this->runnable_tasks->front();
-      bool has_resources = check_resources(task);
-
-      if (has_resources) {
-        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-        if (has_thread) {
-          InnerTask *task = this->runnable_tasks->pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
-          // Decrease Resources
-          this->reserve_resources(task);
-          launcher->enqueue(task, worker);
-          this->status.increase(RuntimeReserverState::Success);
-        } else {
-          this->status.increase(RuntimeReserverState::NoWorker);
-          fail_count++; // += max_fail;
-          // break;        // No more workers available
->>>>>>> dev
         }
         bool has_resources = check_resources(found_task);
         if (!has_resources) {
@@ -844,8 +739,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         //std::cout << found_task->name << " next task:" <<
         //  this->scheduler->task_launching_log[
         //      this->scheduler->task_launching_log_ptr] << "\n" << std::flush;
-
-<<<<<<< HEAD
         // To consider global_0 which can be run multiple times.
         // In this case, the launcher could run the old object instead of waiting
         // for the new object.
@@ -853,28 +746,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
         this->status.increase(RuntimeReserverState::Success);
         if (found_task->is_data_task()) {
           this->movement_tasks->pop();
-=======
-  // Try to launch as many data movement tasks as possible
-  has_task = true;
-  num_tasks = 0;
-  while (has_task) {
-    num_tasks = this->get_movement_count();
-
-    has_task = num_tasks > 0;
-    if (has_task) {
-      InnerTask *task = this->movement_tasks->front();
-      bool has_resources = check_data_resources(task);
-
-      if (has_resources) {
-        bool has_thread = scheduler->workers.get_num_available_workers() > 0;
-        if (has_thread) {
-          InnerTask *task = this->movement_tasks->pop();
-          InnerWorker *worker = scheduler->workers.dequeue_worker();
-          // Decrease Resources
-          this->reserve_data_resources(task);
-          launcher->enqueue(task, worker);
-          this->status.increase(RuntimeReserverState::Success);
->>>>>>> dev
         } else {
           this->runnable_tasks->pop();
         }
@@ -1075,10 +946,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);
-<<<<<<< HEAD
-=======
 
->>>>>>> dev
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

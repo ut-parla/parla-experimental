@@ -374,8 +374,8 @@ void InnerTask::get_dependency_completion_epochs(
 }
 
 
-Task::StatusFlags InnerTask::notify(
-    Task::State dependency_state, bool is_data) {
+TaskStatusFlags InnerTask::notify(
+    TaskState dependency_state, bool is_data) {
 
   bool spawnable = false;
   bool mappable = false;

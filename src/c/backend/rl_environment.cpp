@@ -30,7 +30,7 @@ void RLEnvironment::make_current_workload_state(
     InnerTask *task, torch::Tensor current_state, DevID_t num_devices) {
   // 1) # of active dependencies:
   uint32_t num_considering_task_states{
-      Task::State::RUNNING - Task::State::MAPPED + 1};
+      int(TaskState::RUNNING) - int(TaskState::MAPPED) + 1};
   // This vector counts the number of dependencies (parents)
   // which are between in MAPPED and RUNNING states.
   // Those dependencies typically could affect the current target
@@ -42,10 +42,10 @@ void RLEnvironment::make_current_workload_state(
     InnerTask *dependency = task->dependencies.at(i);
     if (!check_valid_tasks(dependency->name)) { continue; }
     if (dependency->is_data.load()) { continue; }
-    Task::State task_state = task->get_state();
-    if (task_state < Task::State::MAPPED ||
-        task_state > Task::State::RUNNING) { continue; }
-    ++num_dependencies[task_state - Task::State::MAPPED];
+    TaskState task_state = task->get_state();
+    if (task_state < TaskState::MAPPED ||
+        task_state > TaskState::RUNNING) { continue; }
+    ++num_dependencies[int(task_state) - int(TaskState::MAPPED)];
 
     // Number of dependencies mapped to this device:
     // This is device specific task state, not workload information.
@@ -159,9 +159,9 @@ void RLEnvironment::make_current_device_specific_state(
         this->device_manager_->get_device_by_global_id(d);
     const ResourcePool_t &device_pool = device->get_resource_pool();
     const ResourcePool_t &reserved_device_pool = device->get_reserved_pool();  
-    int64_t total_device_memory = device_pool.get(Resource::Memory);
+    int64_t total_device_memory = device_pool.template get<Resource::Memory>();
     int64_t remaining_device_memory =
-        reserved_device_pool.get(Resource::Memory);
+        reserved_device_pool.template get<Resource::Memory>();
     current_state[0][offset] = (total_device_memory - remaining_device_memory) / double{1 << 20};
 #if PRINT_LOG
     LOG_INFO("Debug", "Total device: current state[{}]={}, {} / {}",
@@ -203,7 +203,7 @@ torch::Tensor RLEnvironment::make_next_state(
   const ResourcePool_t &device_pool = device->get_resource_pool();
   ResourcePool_t &task_pool = task->device_constraints[chosen_device_id];
   const ResourcePool_t &reserved_device_pool = device->get_reserved_pool();  
-  int64_t total_device_memory = device_pool.get(Resource::Memory);
+  int64_t total_device_memory = device_pool.template get<Resource::Memory>();
   // Reserved device memory count is not updated yet.
   // After all of the RL phases are done, this count is updated based on
   // task memory.
@@ -217,7 +217,7 @@ torch::Tensor RLEnvironment::make_next_state(
   }
   // Nonlocal PArrays are moved to the target device.
   int64_t remaining_device_memory =
-      reserved_device_pool.get(Resource::Memory) - prev_nonlocal_bytes;
+      reserved_device_pool.template get<Resource::Memory>() - prev_nonlocal_bytes;
   next_state[0][offset + 5] =
       (total_device_memory - remaining_device_memory) / double(1 << 20);
 

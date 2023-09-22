@@ -158,14 +158,12 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-<<<<<<< HEAD
 InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
     DeviceManager *device_manager, MappingPolicyType mapping_policy)
-    : mm_(memory_manager), device_manager_(device_manager),
-    parray_tracker_(device_manager) {
+    : mm_(memory_manager), device_manager_(device_manager) {
   // For now, it does not evict PArrays on CPU memory.
   this->memory_size_to_evict.resize(
-      device_manager->template get_num_devices<DeviceType::All>());
+      device_manager->template get_num_devices<ParlaDeviceType::All>());
 
   // A dummy task count is used to keep the scheduler alive.
   // NOTE: At least one task must be added to the scheduler by the main thread,
@@ -350,7 +348,7 @@ void InnerScheduler::create_parray(InnerPArray *parray, int parray_device_id) {
 }
 
 void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
-  Device *device =
+  ParlaDevice *device =
       this->device_manager_->get_device_by_global_id(global_dev_id);
 
   PArrayTracker *mapped_tracker = this->mapper->get_parray_tracker();
@@ -371,22 +369,22 @@ void InnerScheduler::remove_parray_from_tracker(
 }
 
 size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
-  Device *device =
+  ParlaDevice *device =
       this->device_manager_->get_device_by_global_id(global_dev_idx);
   auto &mapped_memory_pool = device->get_mapped_pool();
-  return device->query_mapped<Resource::Memory>();
+  return device->template query_mapped<Resource::Memory>();
 }
 
 size_t InnerScheduler::get_reserved_memory(DevID_t global_dev_idx) {
-  Device *device =
+  ParlaDevice *device =
       this->device_manager_->get_device_by_global_id(global_dev_idx);
-  return device->query_reserved<Resource::Memory>();
+  return device->template query_reserved<Resource::Memory>();
 }
 
 size_t InnerScheduler::get_max_memory(DevID_t global_dev_idx) {
-  Device *device =
+  ParlaDevice *device =
       this->device_manager_->get_device_by_global_id(global_dev_idx);
-  return device->query_max<Resource::Memory>();
+  return device->template query_max<Resource::Memory>();
 }
 
 bool InnerScheduler::get_mapped_parray_state(DevID_t global_dev_idx,
@@ -467,14 +465,16 @@ void InnerScheduler::task_cleanup_postsync(InnerWorker *worker, InnerTask *task,
           task->num_dependents);
     }
 
+#if 0
     if (task->is_data_task()) {
       // Decrease the number of mapped data tasks on the device
       // TODO(@dialecticDolt) Add this
-      this->mapper->atomic_decr_num_mapped_data_tasks_device(dev_id);
+      this->atomic_decr_num_mapped_data_tasks_device(dev_id);
     } else {
       // Decrease the number of mapped compute tasks on the device
-      this->mapper->atomic_decr_num_mapped_tasks_device(dev_id);
+      this->atomic_decr_num_running_tasks(dev_id);
     }
+#endif
   }
 
   // Clear all assigned streams from the task

@@ -49,9 +49,6 @@
 using namespace std::chrono_literals;
 using namespace parray;
 
-using namespace std::chrono_literals;
-using namespace parray;
-
 // General Note: A LOT of these atomics could just be declared as volatile.
 
 // Forward Declarations of Inner Classes

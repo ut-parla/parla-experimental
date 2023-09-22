@@ -123,7 +123,7 @@ public:
   SchedulerPhase(InnerScheduler *scheduler, DeviceManager *devices)
       : scheduler(scheduler), device_manager(devices) {
     this->parray_tracker =
-        new PArrayTracker(devices->get_num_devices<DeviceType::All>());
+        new PArrayTracker(devices->get_num_devices<ParlaDeviceType::All>());
   }
 
   ~SchedulerPhase() { delete this->parray_tracker; }
@@ -179,11 +179,8 @@ public:
   Mapper() = delete;
   Mapper(InnerScheduler *scheduler, DeviceManager *devices,
       MappingPolicyType policy_type)
-      : SchedulerPhase(scheduler, devices), dummy_dev_idx_{0} {
+      : SchedulerPhase(scheduler, devices) {
     DevID_t num_devices = devices->get_num_devices();
-    dev_num_mapped_tasks_.resize(num_devices);
-    dev_num_mapped_data_tasks_.resize(num_devices);
-
     if (policy_type == MappingPolicyType::LoadBalancingLocality) {
       std::cout << "Locality- and load balancing-aware heuristic is enabled\n";
       this->policy_ = std::make_shared<LocalityLoadBalancingMappingPolicy>(
@@ -219,88 +216,6 @@ public:
     return this->policy_.get();
   }
 
-  /// @brief Increase the count of tasks mapped to a device
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the tasks mapped to a device
-  size_t atomic_incr_num_mapped_tasks_device(DevID_t dev_id,
-                                             size_t weight = 1) {
-    // Increase the number of the total mapped tasks to the whole devices.
-    // We do not get the old total number of mapped tasks.
-    total_num_mapped_tasks_.fetch_add(weight, std::memory_order_relaxed);
-    return dev_num_mapped_tasks_[dev_id].fetch_add(weight,
-                                                   std::memory_order_relaxed);
-  }
-
-  /// @brief Decrease the count of tasks mapped to a device.
-  ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the tasks mapped to a device
-  size_t atomic_decr_num_mapped_tasks_device(DevID_t dev_id,
-                                             size_t weight = 1) {
-    // Decrease the number of the total mapped tasks to the whole devices.
-    // We do not get the old total number of mapped tasks.
-    total_num_mapped_tasks_.fetch_sub(weight, std::memory_order_relaxed);
-    return dev_num_mapped_tasks_[dev_id].fetch_sub(weight,
-                                                   std::memory_order_relaxed);
-  }
-
-  /// Increase the number of the data tasks mapped to a device.
-  ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the data tasks mapped to a device
-  size_t atomic_incr_num_mapped_data_tasks_device(DevID_t dev_id,
-                                                  size_t weight = 1) {
-    // Increase the number of the total mapped data tasks to the whole devices.
-    // We do not get the old total number of mapped data tasks.
-    total_num_mapped_data_tasks_.fetch_add(weight, std::memory_order_relaxed);
-    return dev_num_mapped_data_tasks_[dev_id].fetch_add(
-        weight, std::memory_order_relaxed);
-  }
-
-  /// Decrease the number of the data tasks mapped to a device.
-  ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The number of the data tasks mapped to a device
-  size_t atomic_decr_num_mapped_data_tasks_device(DevID_t dev_id,
-                                                  size_t weight = 1) {
-    // Decrease the number of the total mapped data tasks to the whole devices.
-    // We do not get the old total number of mapped data tasks.
-    total_num_mapped_data_tasks_.fetch_sub(weight, std::memory_order_relaxed);
-    return dev_num_mapped_data_tasks_[dev_id].fetch_sub(
-        weight, std::memory_order_relaxed);
-  }
-
-  /// @brief Return the number of total mapped tasks to the whole devices.
-  ///
-  /// @return The old number of total mapped compute tasks
-  const size_t atomic_load_total_num_mapped_tasks() const {
-    return total_num_mapped_tasks_.load(std::memory_order_relaxed);
-  }
-
-  /// @brief Return the number of mapped compute tasks to a single device.
-  ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The old number of the tasks mapped to a device
-  const size_t atomic_load_dev_num_mapped_tasks_device(DevID_t dev_id) const {
-    return dev_num_mapped_tasks_[dev_id].load(std::memory_order_relaxed);
-  }
-
-  /// Return the number of total mapped data tasks to the whole devices.
-  ///
-  /// @return The old number of total mapped data tasks
-  const size_t atomic_load_total_num_mapped_data_tasks() const {
-    return total_num_mapped_data_tasks_.load(std::memory_order_relaxed);
-  }
-
-  /// Return the number of mapped data tasks to a single device.
-  ///
-  /// @param dev_id Device global ID where a task is mapped
-  /// @return The old number of the data tasks mapped to a device
-  const size_t
-  atomic_load_dev_num_mapped_data_tasks_device(DevID_t dev_id) const {
-    return dev_num_mapped_data_tasks_[dev_id].load(std::memory_order_relaxed);
-  }
-
 protected:
   /// The name of the phase. Used for debugging and tracing.
   inline static const std::string name{"Mapper"};
@@ -315,17 +230,6 @@ protected:
   void map_task(InnerTask *task, DeviceRequirementList &chosen_devices);
 
   std::shared_ptr<MappingPolicy> policy_;
-  /// The total number of compute tasks mapped to and running on all devices.
-  std::atomic<size_t> total_num_mapped_tasks_{0};
-
-  /// The total number of data tasks mapped to and running on all devices.
-  std::atomic<size_t> total_num_mapped_data_tasks_{0};
-
-  /// The total number of compute tasks mapped to and running on each device.
-  std::vector<CopyableAtomic<size_t>> dev_num_mapped_tasks_;
-
-  /// The total number of data tasks mapped to and running on each device.
-  std::vector<CopyableAtomic<size_t>> dev_num_mapped_data_tasks_;
 };
 
 /**
