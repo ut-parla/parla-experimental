@@ -29,7 +29,7 @@ parser.add_argument('-trials', type=int, default=1)
 # What matrix file (.npy) to load
 parser.add_argument('-matrix', default=None)
 # Are the placements fixed by the user or determined by the scheduler?
-parser.add_argument('-fixed', default=0, type=int)
+parser.add_argument('-fixed', default=1, type=int)
 # How many GPUs to run on?
 parser.add_argument('-ngpus', default=4, type=int)
 args = parser.parse_args()
@@ -47,9 +47,10 @@ gpus = cuda_visible_devices[:args.ngpus]
 os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, gpus))
 
 
-ngpus = cp.cuda.runtime.getDeviceCount()
+#ngpus = cp.cuda.runtime.getDeviceCount()
 # Make sure that the enviornment configuration is correct
-assert (ngpus == args.ngpus)
+#assert (ngpus == args.ngpus)
+ngpus = args.ngpus
 
 block_size = args.b
 fixed = args.fixed
@@ -117,7 +118,7 @@ def flatten(t):
     return [item for sublist in t for item in sublist]
 
 
-def cholesky_blocked_inplace(a, block_size):
+def cholesky_blocked_inplace(a, ngpus):
     """
     This is a less naive version of dpotrf with one level of blocking.
     Blocks are currently assumed to evenly divide the axes lengths.
@@ -234,34 +235,38 @@ def cholesky_blocked_inplace(a, block_size):
     return subcholesky[len(a) - 1]
 
 
-def main():
-    @spawn(placement=cpu)
-    async def test_blocked_cholesky():
-        global n
+def run(matrix='chol_1000.npy', block_size=250, n=1000, check_error=True, check_nan=True, workers=4, ngpus=args.ngpus, fixed=True):
 
-        if args.matrix is None:
+    np.random.seed(10)
+    random.seed(10)
+    save_file = True
+    num_tests = 1
+
+    @spawn(placement=cpu, vcus=0)
+    async def test_blocked_cholesky():
+        nonlocal n
+
+        try:
+            print("Loading matrix from file: ", matrix)
+            a = np.load(matrix)
+            print("Loaded matrix from file. Shape=", a.shape)
+            n = a.shape[0]
+        except Exception:
             print("Generating matrix of size: ", n)
-            np.random.seed(10)
             # Construct input data
             a = np.random.rand(n, n)
             a = a @ a.T
 
             if save_file:
-                np.save(f"chol_{n}", a)
-        else:
-            print("Loading matrix from file: ", args.matrix)
-            a = np.load(args.matrix)
-            print("Loaded matrix from file. Shape=", a.shape)
-            n = a.shape[0]
+                np.save(matrix, a)
 
         # Copy and layout input
         print("Blocksize: ", block_size)
         assert not n % block_size
         a1 = a.copy()
+
         # a_temp = a1.reshape(n//block_size, block_size, n//block_size, block_size).swapaxes(1, 2)
 
-        n_gpus = cp.cuda.runtime.getDeviceCount()
-        ap_parray = None
         ap_list = None
 
         for k in range(num_tests):
@@ -271,12 +276,11 @@ def main():
             mempool.free_all_blocks()
 
             if k == 0:
-                print("FIRST ITER")
                 ap_list = list()
                 for i in range(n//block_size):
                     ap_list.append(list())
                     for j in range(n//block_size):
-                        with cp.cuda.Device(i % n_gpus):
+                        with cp.cuda.Device(i % ngpus):
                             ap_list[i].append(cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F'))
                             cp.cuda.Device().synchronize()
@@ -284,7 +288,7 @@ def main():
                 rs = TaskSpace("Reset")
                 for i in range(n//block_size):
                     for j in range(n//block_size):
-                        @spawn(rs[i, j], placement=gpu(i % n_gpus))
+                        @spawn(rs[i, j], placement=gpu(i % ngpus))
                         def reset():
                             ap_list[i][j] = cp.asarray(
                                 a1[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size], order='F')
@@ -292,12 +296,12 @@ def main():
 
                 await rs
 
-            print("Starting Cholesky")
-            print("------------")
+            print("Starting Cholesky...")
+
             start = time.perf_counter()
 
             # Call Parla Cholesky result and wait for completion
-            await cholesky_blocked_inplace(ap_list, block_size)
+            await cholesky_blocked_inplace(ap_list, ngpus)
             # print(ap_parray)
 
             # print(ap)
@@ -321,26 +325,22 @@ def main():
                 zerofy_start = 0
                 zerofy_end = 0
 
-            print("Time:", (end - start) + (zerofy_end - zerofy_start))
+            print("Completed Cholesky.")
 
-            print("--------")
-            # Check result
-            print("Is NAN: ", np.isnan(np.sum(ap)))
-            if np.isnan(np.sum(ap)) is True:
-                print(ap)
+            print("Time:", (end - start) + (zerofy_end - zerofy_start))
+            
+            if check_nan:
+                is_nan = np.isnan(np.sum(ap))
+                print("Is Nan: ", is_nan)
+                assert not is_nan
 
             if check_error:
-                if time_zeros:
-                    computed_L = cp.asnumpy(computed_L_cupy)
-                else:
-                    computed_L = np.tril(ap)
-                print(computed_L)
+                computed_L = np.tril(ap)
                 error = np.max(np.absolute(a - computed_L @ computed_L.T))
                 print("Error", error)
+                assert error < 1e-8
 
 
 if __name__ == '__main__':
-    np.random.seed(10)
-    random.seed(10)
     with Parla():
-        main()
+        run()

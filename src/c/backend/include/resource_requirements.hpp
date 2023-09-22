@@ -1,3 +1,8 @@
+/*! @file resource_requirements.hpp
+ *  @brief Provides task constraint classes to hold potential placement
+ * locations and architectures.
+ */
+
 #ifndef PARLA_RESOURCE_REQUIREMENTS_HPP
 #define PARLA_RESOURCE_REQUIREMENTS_HPP
 

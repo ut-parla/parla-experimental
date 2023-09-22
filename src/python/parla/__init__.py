@@ -7,6 +7,7 @@ from .cython import core
 from .cython import device_manager
 from .cython import device
 from .cython import variants
+from .cython import mm
 from .common.spawn import spawn
 from .common import parray
 from .common.globals import PyMappingPolicyType
@@ -23,6 +24,7 @@ TaskSpace = tasks.TaskSpace
 Tasks = tasks.TaskCollection
 
 DeviceManager = device_manager.PyDeviceManager
+PyMM = mm.PyMM
 
 Stream = device.Stream
 create_env = tasks.create_env
@@ -63,6 +65,7 @@ class Parla:
         self.sig = sig_type
         self.handle_interrupt = True
         self._device_manager = DeviceManager(dev_config_file)
+        self._memory_manager = PyMM(self._device_manager)
 
         if logfile is None:
             logfile = os.environ.get("PARLA_LOGFILE", None)
@@ -81,8 +84,10 @@ class Parla:
         if hasattr(self, "_sched"):
             raise ValueError(
                 "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(self.mapping_policy, self._device_manager, **self.kwds)
-
+        self._sched = self.scheduler_class(self.mapping_policy,
+                                           self._memory_manager,
+                                           self._device_manager,
+                                           **self.kwds)
         self.interuppted = False
         self.released = False
 

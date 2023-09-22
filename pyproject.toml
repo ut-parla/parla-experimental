@@ -5,8 +5,10 @@ requires = [
     "scikit-build",
     "cmake",
     "pip",
-#"cython",
     "cython<=0.29.36",
     "ninja",
     "numpy"
 ]
+
+[tool.ruff]
+extend-ignore = ["F841", "401"]

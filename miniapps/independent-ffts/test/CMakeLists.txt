@@ -1,0 +1,6 @@
+message(STATUS "Building unit tests")
+message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+file(COPY ${CMAKE_SOURCE_DIR}/test/data DESTINATION ${CMAKE_BINARY_DIR}/test/)
+file(COPY ${CMAKE_SOURCE_DIR}/test/python DESTINATION ${CMAKE_BINARY_DIR}/test/)
+file(COPY ${CMAKE_SOURCE_DIR}/test/run_tests.sh DESTINATION ${CMAKE_BINARY_DIR}/test/)
+add_subdirectory(cpp)

@@ -30,14 +30,17 @@ def main():
     skbuild.setup(
         name="parla",
         version="0.0.0",
-        description="Minimal Example of a C++/Python Extension with CMake, Unit Testing, and Documentation",
-        author='William Ruys',
-        author_email="will@oden.utexas.edu",
-        packages=["parla", "parla.cython", "parla.common", "parla.utility"],
+        description="Parla: A Python Parallel Programming Framework",
+        author='UT Austin Parla Team',
+        author_email="",
+        packages=["parla", "parla.cython", "parla.common", "parla.utility", "parla.array", "parla.tasks", "parla.devices"],
         package_dir={"parla": "src/python/parla",
                      "parla.cython": "src/python/parla/cython",
                      "parla.common": "src/python/parla/common",
-                     "parla.utility": "src/python/parla/utility"},
+                     "parla.utility": "src/python/parla/utility", 
+                     "parla.array": "src/python/parla/array",
+                     "parla.tasks": "src/python/parla/tasks", 
+                     "parla.devices": "src/python/parla/devices"},
         python_requires=">=3.8",
         cmake_args=cmake_args
     )

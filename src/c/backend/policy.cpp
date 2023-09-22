@@ -12,6 +12,8 @@ bool LocalityLoadBalancingMappingPolicy::calc_score_devplacement(
   // std::cout << "[Locality-aware- and Load-balancing mapping policy]\n";
 
   // Check device resource availability.
+  // Note that this counter is tracking 'launched' or 'reserved' resource
+  // status.
   if (!device.check_resource_availability(dev_placement_req.get())) {
     // std::cout << "Device resource failure!" << std::endl;
     return false;

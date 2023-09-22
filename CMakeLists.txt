@@ -9,7 +9,7 @@ option(PARLA_DEBUG "Enables all debugging flags" ON)
 
 option(PARLA_ENABLE_LOGGING "Enable binlog logging" OFF)
 option(PARLA_ENABLE_NVTX "Enable tracing with nvtx" OFF)
-option(PARLA_ENABLE_NVTX "Enable compilation for CUDA architectures" OFF)
+option(PARLA_ENABLE_CUDA "Enable compilation for CUDA architectures" OFF)
 
 message(STATUS "PARLA_BUILD_TESTS: " ${PARLA_BUILD_TESTS})
 message(STATUS "PARLA_DEBUG: " ${PARLA_DEBUG})

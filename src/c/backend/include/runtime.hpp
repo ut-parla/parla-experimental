@@ -1,8 +1,29 @@
 #pragma once
-
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
+
+/**
+ * @mainpage Parla Documentation
+ *
+ * Welcome to the core C++ & Cython documentation for Parla.
+ * This is the landing page for the Doxygen-generated HTML documentation
+ * including call graphs and inheritance diagrams. You likely got here from the
+ * MKDocs documentation, which is the main user-facing documentation for Parla.
+ * This page exists to help contributors navigate the C++ runtime.
+ *
+ * @section sec_links Links
+ *
+ * - [GitHub Repository](https://github.com/ut-parla/parla-experimental)
+ */
+
+/*! @file runtime.hpp
+ *  @brief The core C++ runtime for Parla. Includes the main scheduler and task
+ * classes.
+ */
+
+#include "device.hpp"
 #include "resources.hpp"
+#include <algorithm>
 #include <assert.h>
 #include <atomic>
 #include <chrono>
@@ -15,8 +36,6 @@
 #include <unordered_map>
 #include <utility>
 
-using namespace std::chrono_literals;
-
 #include "containers.hpp"
 
 #include "device_manager.hpp"
@@ -25,8 +44,15 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+#include "memory_manager.hpp"
 
-// General Note. A LOT of these atomics could just be declared as volatile.
+using namespace std::chrono_literals;
+using namespace parray;
+
+using namespace std::chrono_literals;
+using namespace parray;
+
+// General Note: A LOT of these atomics could just be declared as volatile.
 
 // Forward Declarations of Inner Classes
 class InnerTask;
@@ -37,46 +63,42 @@ class InnerScheduler;
 class RLTaskMappingPolicy;
 
 // Type Aliases for common containers
-
 using WorkerQueue = ProtectedQueue<InnerWorker *>;
 using WorkerList = ProtectedVector<InnerWorker *>;
-
 using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
-
 using SpaceList = ProtectedVector<TaskBarrier *>;
-
 using PointerList = ProtectedVector<uintptr_t>;
+using CreatedPArrayQueue = ProtectedQueue<PArrayLocationSize_t>;
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
-/* Access mode to a PArray. */
-enum AccessMode {
-  // Input of a task.
-  IN = 0,
-  // Output of a task.
-  OUT = 1,
-  // Input/output of a task.
-  INOUT = 2
-};
+/// Global New PArray List for arrays instatiated outside of the runtime
+inline CreatedPArrayQueue unmapped_created_parrays;
+inline CreatedPArrayQueue unreserved_created_parrays;
 
-// Forward declaration of python callbacks
+// Callbacks into Python
 
-/* Python function to assign a task to a worker */
 typedef void (*launchfunc_t)(void *scheduler, void *task, void *worker);
-
-/* Python function to stop the scheduler */
 typedef void (*stopfunc_t)(void *scheduler);
 
-// Callback Launchers
-
-/* C++ -> Cython callback to launch a single task */
+/*!
+ * @brief Callback function to launch a single task by calling into the Python
+ * scheduler.
+ * @note Currently unused in the C++ runtime. Legacy implementation from the
+ * first C++ runtime which would acquire the GIL from the scheduler thread.
+ */
 inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
                                  void *worker) {
   func(scheduler, task, worker);
 }
 
-/* C*+ -> Cython callback to stop the main scheduler. Called at runtime exit. */
+/*!
+ * @brief Callback function to stop the main scheduler thread. Acquires the
+ * interpreter and signals the Python runtime to stop.
+ * @note Called at Parla runtime shutdown (at context destruction or during
+ * exception handling)
+ */
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
 }
@@ -87,40 +109,75 @@ enum class MappingPolicyType {
   RLTest = 2
 };
 
-namespace Task {
+inline void add_unmapped_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                        size_t to_move_size) {
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unmapped_created_parrays.push_back(parray_location);
+}
 
-/*State of the task. Shows which part of the runtime the task is in.*/
-enum State {
-  // Initial State. Task has been created but not spawned
+inline void add_unreserved_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                          size_t to_move_size) {
+
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unreserved_created_parrays.push_back(parray_location);
+}
+
+inline void create_parray(InnerPArray *parray, int parray_device_id) {
+  auto dev_id = parrayid_to_globalid(parray_device_id);
+  size_t to_move_size = parray->get_size();
+  add_unmapped_created_parray(parray, dev_id, to_move_size);
+  add_unreserved_created_parray(parray, dev_id, to_move_size);
+}
+
+/*!
+ * @brief Tracks the state of of a task within the runtime
+ * @note  This is the lifecycle of a task within the runtime. These states
+ * depend on the runtime acting on the task, in contrast to the Status of a task
+ * which depends on the state of the tasks dependencies.
+ */
+enum class TaskState {
+  /// Initial State. Task has been created but not spawned
   CREATED = 0,
-  // Task has been spawned
+  /// Task has been spawned
   SPAWNED = 1,
-  // Task has been mapped
+  /// Task has been mapped
   MAPPED = 2,
-  // Task has persistent resources reserved
+  /// Task has persistent resources reserved
   RESERVED = 3,
-  // Task is ready to run
+  /// Task is ready to run
   READY = 4,
-  // Task is currently running and has runtime resources reserved
+  /// Task is currently running and has runtime resources reserved
   RUNNING = 5,
-  // Task body has completed but GPU kernels may be asynchronously running
+  /// Task body has completed but GPU kernels may be asynchronously running
   RUNAHEAD = 6,
-  // Task has completed
+  /// Task has completed
   COMPLETED = 7
 };
 
-enum SynchronizationType {
-  // No synchronization
+/*!
+ * @brief The type of between task synchronization to use in runahead scheduling
+ * on device hardware queues
+ */
+enum class SynchronizationType {
+  /// No unahead scheduling. Tasks block for body completion before running
+  /// ahead
   NONE = 0,
-  // BLocking synchronization
+  /// Block task body execution by waiting for events on the streams from
+  /// dependency tasks to complete
   BLOCKING = 1,
-  // Non-blocking synchronization
+  /// Do not block task body execution. Cross stream wait events are added to
+  /// the tasks streams before the body executes.
   NON_BLOCKING = 2,
-  // User defined synchronization
+  /// No synchronization (relies on user written code to ensure state)
   USER = 3
 };
 
-class StatusFlags {
+/*
+ * @brief Struct to store task status
+ */
+class TaskStatusFlags {
 public:
   bool spawnable{false};
   bool mappable{false};
@@ -128,10 +185,10 @@ public:
   bool compute_runnable{false};
   bool runnable{false};
 
-  StatusFlags() = default;
+  TaskStatusFlags() = default;
 
-  StatusFlags(bool spawnable, bool mappable, bool reservable,
-              bool compute_runnable, bool runnable)
+  TaskStatusFlags(bool spawnable, bool mappable, bool reservable,
+                  bool compute_runnable, bool runnable)
       : spawnable(spawnable), mappable(mappable), reservable(reservable),
         compute_runnable(compute_runnable), runnable(runnable) {}
 
@@ -141,7 +198,7 @@ public:
 };
 
 /* Properties of the tasks dependencies */
-enum Status {
+enum class TaskStatus {
   // Initial State. Status of dependencies is unknown or not spawned
   INITIAL = 0,
   // All dependencies are spawned (this task can be safely spawned)
@@ -157,25 +214,24 @@ enum Status {
   RUNNABLE = 5
 };
 
-} // namespace Task
-
 #ifdef PARLA_ENABLE_LOGGING
-BINLOG_ADAPT_STRUCT(Task::StatusFlags, spawnable, mappable, reservable,
+BINLOG_ADAPT_STRUCT(TaskStatusFlags, spawnable, mappable, reservable,
                     compute_runnable, runnable)
-BINLOG_ADAPT_ENUM(Task::State, CREATED, SPAWNED, MAPPED, RESERVED, READY,
-                  RUNNING, RUNAHEAD, COMPLETED)
-BINLOG_ADAPT_ENUM(Task::Status, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
+BINLOG_ADAPT_ENUM(TaskState, CREATED, SPAWNED, MAPPED, RESERVED, READY, RUNNING,
+                  RUNAHEAD, COMPLETED)
+BINLOG_ADAPT_ENUM(TaskStatus, INITIAL, SPAWNABLE, MAPPABLE, RESERVABLE,
                   COMPUTE_RUNNABLE, RUNNABLE)
 #endif
 
-using TaskState = std::pair<InnerTask *, Task::StatusFlags>;
-using TaskStateList = std::vector<TaskState>;
+/// @brief A pair of a task and its status information
+using TaskStatusPair = std::pair<InnerTask *, TaskStatusFlags>;
+
+/// @brief A list of task status pairs
+using TaskStatusList = std::vector<TaskStatusPair>;
 
 /**
- *   The C++ "Mirror" of Parla's Python Tasks
- *   This class is used to create a C++ representation of a Parla Task
- *   All scheduling logic should be handled by these after creation until
- * launched by the Python callback
+ *   @brief The C++ runtime implementation of a task.
+ *   Inherits metadata from the Python layer.
  */
 class InnerTask {
 
@@ -203,10 +259,10 @@ public:
   int instance = 0;
 
   /* State of the task (where is this task)*/
-  std::atomic<Task::State> state{Task::CREATED};
+  std::atomic<TaskState> state{TaskState::CREATED};
 
   /* Status of the task (state of its dependencies)*/
-  std::atomic<Task::Status> status{Task::INITIAL};
+  std::atomic<TaskStatus> status{TaskStatus::INITIAL};
 
   /* Reference to the scheduler (used for synchronizing state on events) */
   InnerScheduler *scheduler = nullptr;
@@ -215,7 +271,7 @@ public:
   PointerList events;
 
   /*Synchronization Type */
-  Task::SynchronizationType sync_type = Task::NON_BLOCKING;
+  SynchronizationType sync_type = SynchronizationType::NON_BLOCKING;
 
   /*Container for Streams*/
   PointerList streams;
@@ -280,8 +336,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them.
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
-  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-      parray_list;
+  std::vector<std::vector<PArrayAccess_t>> parray_list;
 
   // Epochs from the first epoch to task launching
   double begin_time_epochs{0};
@@ -318,27 +373,29 @@ public:
   void queue_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task. For external use.*/
-  Task::StatusFlags process_dependencies();
+  TaskStatusFlags process_dependencies();
 
   /* Clear the dependency list */
   void clear_dependencies();
 
   /* Add a dependency to the task and process it*/
-  Task::State add_dependency(InnerTask *task);
+  TaskState add_dependency(InnerTask *task);
 
   /* Add a list of dependencies to the task and process them. For external
    * use.*/
-  Task::StatusFlags add_dependencies(std::vector<InnerTask *> &tasks,
-                                     bool data_tasks = false);
+  TaskStatusFlags add_dependencies(std::vector<InnerTask *> &tasks,
+                                   bool data_tasks = false);
 
   /* Add a dependent to the task */
-  Task::State add_dependent_task(InnerTask *task);
-  Task::State add_dependent_space(TaskBarrier *barrier);
+  TaskState add_dependent_task(InnerTask *task);
+  TaskState add_dependent_space(TaskBarrier *barrier);
 
   /* Add a list of dependents to the task */
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
 
+  /* Handle the creation of a new parray object */
+  void create_parray(InnerPArray *parray, int parray_device_id);
   /*
    * Add a PArray to the task
    *
@@ -350,7 +407,7 @@ public:
    * Cython, but C++ enum and Python enum or int are not compatible. So, for
    * conveniency, I just pass int between Python and C++.
    */
-  void add_parray(parray::InnerPArray *parray, int access_mode, int dev_id);
+  void add_parray(InnerPArray *parray, int access_mode, int dev_id);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -358,7 +415,7 @@ public:
    *  Returns a container of tasks that are now ready to run
    *  TODO: Decide on a container to use for this
    */
-  void notify_dependents(TaskStateList &tasks, Task::State new_state);
+  void notify_dependents(TaskStatusList &tasks, TaskState new_state);
   void notify_dependents_completed();
 
   /* Wrapper for testing */
@@ -370,15 +427,15 @@ public:
    *  Return true if 0 blocking dependencies remain.
    *  Used by "notify_dependents"
    */
-  Task::StatusFlags notify(Task::State dependency_state, bool is_data = false);
+  TaskStatusFlags notify(TaskState dependency_state, bool is_data = false);
 
   void get_dependency_completion_epochs(double dep_compltime_epochs);
 
   /* Reset state and increment all internal counters. Used by continuation */
   void reset() {
     // TODO(wlr): Should this be done with set_state and assert old==RUNNING?
-    this->state.store(Task::SPAWNED);
-    this->status.store(Task::INITIAL);
+    this->state.store(TaskState::SPAWNED);
+    this->status.store(TaskStatus::INITIAL);
     this->instance++;
     this->num_blocking_compute_dependencies.store(1);
     this->num_blocking_dependencies.store(1);
@@ -395,6 +452,11 @@ public:
   /* Get a task name */
   std::string get_name();
 
+  /* Return True if an instance is a data movement task */
+  const bool is_data_task() const {
+    return this->is_data.load(std::memory_order_relaxed);
+  }
+
   /* Get number of dependencies */
   int get_num_dependencies();
 
@@ -410,40 +472,45 @@ public:
     return this->num_unmapped_dependencies.load();
   };
 
-  template <ResourceCategory category> inline void set_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->num_persistant_instances.store(this->assigned_devices.size());
     } else {
       this->num_runtime_instances.store(this->assigned_devices.size());
     }
   };
 
-  template <ResourceCategory category> inline int decrement_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int decrement_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.fetch_sub(1);
     } else {
       return this->num_runtime_instances.fetch_sub(1);
     }
   };
 
-  template <ResourceCategory category> inline int get_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int get_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.load();
     } else {
       return this->num_runtime_instances.load();
     }
   };
 
-  template <ResourceCategory category> inline bool get_removed() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline bool get_removed() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->removed_reserved;
     } else {
       return this->removed_runtime;
     }
   }
 
-  template <ResourceCategory category> inline void set_removed(bool waiting) {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_removed(bool waiting) {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->removed_reserved = waiting;
     } else {
       this->removed_runtime = waiting;
@@ -477,11 +544,18 @@ public:
     }
   }
 
-  /*handle_runahead_dependencies*/
-  void handle_runahead_dependencies(int sync_type) {
-    if (sync_type == Task::BLOCKING) {
+  /*!
+   * @brief Dispatches to the appropriate synchronization function for runahead
+   * scheduling
+   * @param sync_type SynchronizationType::BLOCKING or
+   * SynchronizationType::NON_BLOCKING
+   */
+  void handle_runahead_dependencies(int sync_type_int) {
+    SynchronizationType sync_type =
+        static_cast<SynchronizationType>(sync_type_int);
+    if (sync_type == SynchronizationType::BLOCKING) {
       this->synchronize_dependency_events();
-    } else if (sync_type == Task::NON_BLOCKING) {
+    } else if (sync_type == SynchronizationType::NON_BLOCKING) {
       this->wait_dependency_events();
     }
   }
@@ -535,6 +609,9 @@ public:
   /*Add to the assigned device list*/
   void add_assigned_device(ParlaDevice *device);
 
+  /* Fix the assigned device set.*/
+  void finalize_assigned_devices();
+
   /*
    * Copy a vector of device pointers
    *
@@ -546,25 +623,25 @@ public:
   int set_state(int state);
 
   /* Set the task state */
-  Task::State set_state(Task::State state);
+  TaskState set_state(TaskState state);
 
   /* Get the task state */
-  Task::State get_state() const {
-    const Task::State state = this->state.load();
+  TaskState get_state() const {
+    const TaskState state = this->state.load();
     return state;
   }
 
   /*Set the task status */
-  Task::Status set_status(Task::Status status);
+  TaskStatus set_status(TaskStatus status);
 
   /*Determine status from parts*/
   // TODO(wlr): this should be private
-  Task::Status determine_status(bool spawnable, bool mappable, bool reservable,
-                                bool ready);
+  TaskStatus determine_status(bool spawnable, bool mappable, bool reservable,
+                              bool ready);
 
   /*Get the task status*/
-  Task::Status get_status() const {
-    const Task::Status status = this->status.load();
+  TaskStatus get_status() const {
+    const TaskStatus status = this->status.load();
     return status;
   }
 
@@ -583,9 +660,6 @@ public:
   PlacementRequirementCollections &get_placement_req_options() {
     return placement_req_options_;
   }
-
-  /* Return True if an instance is a data movement task */
-  bool is_data_task();
 
   /* Set epochs at task launching from when the task graph begins */
   void record_task_begin_epochs(double epochs) {
@@ -623,47 +697,47 @@ public:
   //           immediately assign the unique id. We may need another function
   //           call from Python t C++ when we create Python data move task
   //           later. The current id for all the data move tasks is 0.
-  InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
+  InnerDataTask(std::string name, long long int id, InnerPArray *parray,
                 AccessMode access_mode, int dev_id)
       : parray_(parray), access_mode_(access_mode), dev_id_(dev_id),
         InnerTask(name, id, nullptr) {
     this->is_data = true;
     // Data tasks are created after persistent resource reservation.
     // Therefore its start state is always RESERVED.
-    this->set_state(Task::RESERVED);
+    this->set_state(TaskState::RESERVED);
   }
 
   /// Return a python PArray pointer (as void*).
   void *get_py_parray();
 
-  /// Return a access mode of PArray.
-  AccessMode get_access_mode();
+  /// Return a access mode of PArray (as int value, used for Python interface)
+  int get_access_mode();
 
   // TODO(hc): will be removed
   int get_device_id() { return this->dev_id_; }
 
 private:
-  parray::InnerPArray *parray_;
+  InnerPArray *parray_;
   AccessMode access_mode_;
   int dev_id_;
 };
 
 #ifdef PARLA_ENABLE_LOGGING
-LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status)
+LOG_ADAPT_STRUCT(InnerTask, name, instance, get_state, get_status, is_data_task)
 LOG_ADAPT_DERIVED(InnerDataTask, (InnerTask))
 #endif
 
 /**
- *   The C++ "Mirror" of Parla's Python TaskSets & Spaces
- *   They are used as barriers for the calling thread for the completion of
- *   their members
+ *  @brief A task barrier is a synchronization primitive that notifies when a
+ * set of tasks are completed.
  */
-
 class TaskBarrier {
   // TODO: As is, this is not resuable.
 
   // TODO: This assumes the Python holder of the TaskBarrier will not be deleted
-  // before all of its tasks are completed. Add backlinks for cleanup?
+  // before all of its tasks are completed. Otherwise its reference will be
+  // cleaned by the GC and lead to a segfault. This is a serious problem. Add
+  // backlinks for cleanup? How to handlw without a huge performance hit?
 
 public:
   std::mutex mtx;
@@ -676,7 +750,7 @@ public:
 
   TaskBarrier(int num_tasks) : num_incomplete_tasks(num_tasks) {}
 
-  Task::State _add_task(InnerTask *task);
+  TaskState _add_task(InnerTask *task);
   void add_task(InnerTask *task);
   void add_tasks(std::vector<InnerTask *> &tasks);
   void set_id(int64_t id) { this->id = id; }
@@ -696,6 +770,11 @@ public:
   }
 };
 
+/*!
+ * @brief The C++ backend for the Parla TaskSpace
+ * @details The TaskSpace is a collection of tasks that can be queried (sliced)
+ * to get a subset of tasks and synchronized on.
+ */
 class InnerTaskSpace : public TaskBarrier {
 
 public:
@@ -727,10 +806,11 @@ public:
 };
 
 /**
- *   The C++ "Mirror" of Parla's Python Workers
- *   This class is used to create a C++ representation of a Parla Worker
- *   All scheduling logic should be handled by these after creation until
- * launched by the Python callback
+ * @brief A worker is a thread that executes tasks.
+ * @details The worker is a C++ object that is created by the Python runtime.
+ * It is responsible for executing tasks assigned to it by the scheduler. The
+ * worker sleeps until it receives a task from the scheduler. When it recieves a
+ * task, it wakes up and acquires the GIL.
  */
 class InnerWorker {
 
@@ -751,8 +831,8 @@ public:
 
   int thread_idx = -1;
 
-  /* Task Buffer (for enqueing new ready tasks at task cleanup ) */
-  TaskStateList enqueue_buffer;
+  /// A list of newly ready tasks that will be enqueued by this worker.
+  TaskStatusList enqueue_buffer;
 
   // TODO: (improvement?) Custom Barrier and Event Handling
 
@@ -761,25 +841,25 @@ public:
   InnerWorker() = default;
   InnerWorker(void *worker) : py_worker(worker){};
 
-  /* Set the Python Worker */
+  /// Set the backlink to the python worker
   void set_py_worker(void *worker) { this->py_worker = worker; };
 
-  /*Set the scheduler*/
+  /// Store the scheduler that owns this worker
   void set_scheduler(InnerScheduler *scheduler) {
     this->scheduler = scheduler;
   };
 
-  /* Set the thread idx */
+  /// Set the thread index of this worker
   void set_thread_idx(int idx) { this->thread_idx = idx; };
 
-  /* Wait for a task to be assigned */
+  /// wait for a task to be assigned
   void wait();
 
-  /* Assign a task to the worker and notify worker that it is available*/
+  /// assign a task to the worker and notify worker that it is available
   void assign_task(InnerTask *task);
 
-  /*
-   * Get a C++ task instance that this worker thread will execute.
+  /**
+   * @brief Get the C++ task instance that this worker thread will execute.
    * This function returns two outputs, a pointer to a task pointer and
    * a pointer to a flag specifying if this task is data task or not.
    * If that is the data task, the callee creates a Python data task instance
@@ -807,63 +887,71 @@ public:
 LOG_ADAPT_STRUCT(InnerWorker, thread_idx, notified)
 #endif
 
+/**
+ * @brief A worker pool is a collection of workers.
+ * @details For worker creation and managing status.
+ * @tparam AllWorkers_t A container type for storing the list of all workers
+ * (should be thread-safe)
+ * @tparam ActiveWorkers_t A container type for storing the list of active
+ * workers (should be thread-safe)
+ */
 template <typename AllWorkers_t, typename ActiveWorkers_t> class WorkerPool {
 
 public:
-  /* Container of all workers */
+  /// Container of all workers
   AllWorkers_t all_workers;
 
-  /* Container of available workers */
+  /// Container of available workers
   ActiveWorkers_t active_workers;
 
-  /* Number of workers */
   int max_workers;
 
-  /*Mutex for blocking spawn/await*/
+  /// mutex for blocking additional spawn/await*/ until workers are notified
   std::mutex mtx;
 
-  /*Condition variable for blocking spawn/await*/
+  /// condition variable for blocking spawn/await*/
   std::condition_variable cv;
 
-  /* Number of notified but not running workers*/
+  /// number of notified but not running workers (waiting)
   std::atomic<int> notified_workers{0};
 
   WorkerPool() = default;
   WorkerPool(int nworkers) : max_workers(nworkers){};
 
-  /* Add a worker to the active pool */
+  /// add a worker to the active pool
   void enqueue_worker(InnerWorker *worker);
 
-  /* Remove a worker from the active pool */
+  /// remove a worker from the active pool
   InnerWorker *dequeue_worker();
 
-  /* Add a worker to the all pool */
+  /// add a worker to the all pool
   void add_worker(InnerWorker *worker);
 
-  /* Get number of available workers */
+  /// get number of available workers
   int get_num_available_workers();
 
-  /* Get number of total workers */
+  /// get number of total workers
   int get_num_workers();
 
-  /* Set number of total workers */
+  /// set number of total workers
   void set_num_workers(int nworkers);
 
-  /*Increase number of notified workers*/
+  /// increase number of notified workers
   int increase_num_notified_workers();
 
-  /*Decrease number of notified workers*/
+  // decrease number of notified workers
   int decrease_num_notified_workers();
 
-  /*Get number of notified workers*/
+  // get number of notified workers
   inline int get_num_notified_workers() {
     return this->notified_workers.load();
   }
 
-  /*Blocking for spawn/await so that other threads can take the GIL*/
+  /// @brief barrier to block additional for spawns so that other waiting
+  /// workers threads can take the GIL*/
   void spawn_wait();
 
-  /* Remove a worker from the all pool */
+  /// Remove a worker from the all pool
   // void remove_worker(InnerWorker* worker);
 };
 
@@ -976,6 +1064,21 @@ public:
   /* Phase: maps tasks to devices */
   Mapper *mapper;
 
+  /* If it is set, break an infinite loop in InnerScheduler::run()
+     and invoke PArray eviction from PythonScheduler */
+  bool break_for_eviction = false;
+  /* Memory size to evict for each device */
+  std::vector<size_t> memory_size_to_evict{0};
+
+  /* Track the number of eviction manager invocation */
+  size_t num_eviction_invocation{0};
+
+  /* Set necessary memory size getting from eviction manager
+     on each device */
+  void set_memory_size_to_evict(size_t, DevID_t);
+  /* Get memory size to evict for each device */
+  size_t get_memory_size_to_evict(DevID_t);
+
   /* Phase reserves resources to limit/plan task execution*/
   MemoryReserver *memory_reserver;
   RuntimeReserver *runtime_reserver;
@@ -983,7 +1086,8 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(DeviceManager *device_manager, MappingPolicyType policy_type);
+  InnerScheduler(LRUGlobalEvictionManager *memory_manager,
+      DeviceManager *device_manager, MappingPolicyType policy_type);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
@@ -1005,6 +1109,9 @@ public:
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
 
+  /* Get a flag that represents if there is still a task to be executed */
+  bool get_should_run();
+
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
   void run();
 
@@ -1021,10 +1128,10 @@ public:
   void spawn_task(InnerTask *task);
 
   /* Enqueue task. */
-  void enqueue_task(InnerTask *task, Task::StatusFlags flags);
+  void enqueue_task(InnerTask *task, TaskStatusFlags flags);
 
   /* Enqueue more than one task */
-  void enqueue_tasks(TaskStateList &tasks);
+  void enqueue_tasks(TaskStatusList &tasks);
 
   /* Add worker */
   void add_worker(InnerWorker *worker);
@@ -1069,27 +1176,48 @@ public:
     return this->workers.get_num_notified_workers();
   }
 
-  /* Get a PArray tracker */
-  PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
-
   /* Reserve a PArray in a device */
-  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    ParlaDevice *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.reserve_parray(*parray, device);
-  }
+  void create_parray(InnerPArray *parray, int parray_device_id);
 
   /* Release a PArray in a device */
-  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    ParlaDevice *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.release_parray(*parray, device);
+  void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
+
+  /* Reflect a PArray removal to PArray trackers */
+  void remove_parray_from_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id);
+
+  /* A task started to refer to the PArray, and so, reflect that to
+   * the eviction manager (mm) */
+  void grab_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->grab_parray_reference(parray, global_dev_id);
   }
 
-  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
-    return this->parray_tracker_.get_parray_state(global_dev_idx,
-                                                  parray_parent_id);
+  /* A task released the PArray, and so, reflect that to the eviction
+   * manager (mm) */
+  void release_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->release_parray_reference(parray, global_dev_id);
   }
+
+  size_t get_mm_evictable_bytes(DevID_t dev_id) {
+    return this->mm_->get_evictable_bytes(dev_id);
+  }
+
+  /* Get mapped memory on device */
+  size_t get_mapped_memory(DevID_t global_dev_id);
+
+  /* Get reserved memory on device */
+  size_t get_reserved_memory(DevID_t global_dev_id);
+
+  /*Get total memory on device */
+  size_t get_max_memory(DevID_t global_dev_id);
+
+  /* Get parray state in mapping parray tracker */
+  bool get_mapped_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
+
+  /* Get parray state in reserved parray tracker */
+  bool get_reserved_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
@@ -1329,10 +1457,6 @@ protected:
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
 
-  /// It manages the current/planned distribution of PArrays across devices.
-  /// Parla task mapping policy considers locality of PArrays through this.
-  PArrayTracker parray_tracker_;
-
   /// The total number of tasks mapped to and running on the whole devices.
   std::atomic<size_t> total_num_mapped_tasks_{0};
   /// The total number of tasks mapped to and running on a single device.
@@ -1343,6 +1467,7 @@ protected:
   std::vector<CopyableAtomic<size_t>> dev_num_running_tasks_;
   std::mutex task_mapping_log_mtx_;
   std::mutex task_launching_log_mtx_;
+  LRUGlobalEvictionManager *mm_;
 };
 
 #endif // PARLA_BACKEND_HPP

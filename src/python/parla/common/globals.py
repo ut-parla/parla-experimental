@@ -1,25 +1,48 @@
+"""!
+@file globals.py
+@brief Contains the core user-facing and internal global and configuration variables.
+"""
+
+from __future__ import annotations # For type hints of unloaded classes
+
+
 from enum import IntEnum
 import threading
 import os
+
 try:
     import cupy
+    num_gpu = cupy.cuda.runtime.getDeviceCount()
     CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
-except ImportError:
+except Exception as e:
     cupy = None
     CUPY_ENABLED = False
 
+if CUPY_ENABLED:
+    try:
+        import crosspy
+        CROSSPY_ENABLED = (os.getenv("PARLA_ENABLE_CROSSPY", "1") == "1")
+    except ImportError:
+        CROSSPY_ENABLED = False
+        crosspy = None
+else:
+    CROSSPY_ENABLED = False
+    crosspy = None
+
 
 USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
-PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS")
+PREINIT_THREADS = (os.getenv("PARLA_PREINIT_THREADS", "1") == "1")
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
 print("CUPY_ENABLED: ", CUPY_ENABLED)
+print("CROSSPY_ENABLED: ", CROSSPY_ENABLED)
 print("PREINIT_THREADS: ", PREINIT_THREADS)
 
+# TODO(hc): This will be removed during runahead refactoring.
 _global_data_tasks = {}
 
 
-VCU_BASELINE=1000
+VCU_BASELINE = 1000
 
 
 class SynchronizationType(IntEnum):
@@ -230,6 +253,8 @@ _Locals = Locals()
 def get_locals():
     return _Locals
 
+def get_current_task():
+    return _Locals.task
 
 def get_current_devices():
     return _Locals.devices
@@ -242,6 +267,9 @@ def get_active_device():
 def get_current_stream():
     return _Locals.stream
 
+def get_default_taskspace():
+    return _Locals.scheduler.default_taskspace
+
 
 def get_current_context():
     return _Locals.context
@@ -252,8 +280,11 @@ def get_scheduler():
 
 
 def get_device_manager():
-    return get_scheduler().device_manager
-
+    scheduler = get_scheduler()
+    if scheduler is None:
+        raise RuntimeError("Attempted to access device manager, but no scheduler is active.")
+    else:
+        return scheduler.device_manager
 
 def get_stream_pool():
     return get_device_manager().stream_pool

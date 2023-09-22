@@ -1,5 +1,9 @@
-from crosspy import CrossPyArray
+"""!
+@file spawn.py
+@brief Contains the core user-facing API to spawn tasks.
+"""
 
+from __future__ import annotations # For type hints of unloaded classes
 from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
@@ -7,8 +11,8 @@ from parla.cython import device, device_manager
 from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
-from parla.common.globals import default_sync, VCU_BASELINE
-
+from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType, crosspy, CROSSPY_ENABLED
+from crosspy import CrossPyArray
 import inspect
 
 from parla.cython import tasks
@@ -50,7 +54,7 @@ def _make_cell(val):
 
 # @profile
 def spawn(task=None,
-          dependencies=[],
+          dependencies =[],
           # This collection does not contain Union anymore, which was used by the
           # old Parla, since we now allow support {arch, arch, arch} placement
           # to map a task to three devices.
@@ -58,12 +62,12 @@ def spawn(task=None,
                                       Any, None]] = None,
           # TODO(hc): this will be refined to support multi-dimensional CrossPy
           #           support
-          input: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
-          output: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
-          inout: List[Union[CrossPyArray, Tuple[PArray, int]]] = None,
-          vcus=None,
-          memory=None,
-          runahead=default_sync
+          input: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
+          output: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
+          inout: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
+          vcus: float =None,
+          memory: int =None,
+          runahead: SynchronizationType = default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
 
@@ -74,7 +78,9 @@ def spawn(task=None,
 
         if task is None:
             idx = len(taskspace)
-
+        else:
+            idx = task
+            
         task = taskspace[idx]
 
     # @profile
@@ -86,7 +92,7 @@ def spawn(task=None,
         nonlocal placement
         nonlocal runahead
 
-        #COMMENT(wlr): Just added this back to revert my commit 30 min ago.
+        # COMMENT(wlr): Just added this back to revert my commit 30 min ago.
         if vcus is not None:
             # Default behavior the same as Parla 0.2.
             # The baseline should not be multiplied when placement is None.
@@ -124,11 +130,12 @@ def spawn(task=None,
         placement = placement if placement is not None else [
             arch[{'vcus': vcus if vcus is not None else 0,
                   'memory': memory if memory is not None else 0}]
-                for arch in device_manager.get_all_architectures()]
-        
-        #print("placement: ", placement)
+            for arch in device_manager.get_all_architectures()]
 
-        device_reqs = scheduler.get_device_reqs_from_placement(placement, vcus, memory)
+        # print("placement: ", placement)
+
+        device_reqs = scheduler.get_device_reqs_from_placement(
+            placement, vcus, memory)
         task.set_device_reqs(device_reqs)
 
         dataflow = Dataflow(input, output, inout)

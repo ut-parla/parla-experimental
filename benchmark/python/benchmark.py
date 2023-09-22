@@ -219,7 +219,7 @@ def serial_scalinum_gpus(fD_array_bytes, sD_array_bytes, num_gpus,
 
         run_config = RunConfig(
             outer_iterations=1,
-            inner_iterations=1,
+            inner_iterations=iter,
             verbose=verbose,
             num_gpus=num_gpus,
             logfile=logpath,

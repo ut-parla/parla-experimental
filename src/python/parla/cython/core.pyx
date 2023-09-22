@@ -1,12 +1,18 @@
+"""!
+@file core.pyx
+@brief Contains the core intermediate cython wrapper classes for Task, Workers, and Scheduler.
+"""
+
 import cython 
 
-from parla.common.parray.core import PArray
+#from parla.common.parray.core import PArray
 from parla.common.dataflow import Dataflow
 from parla.common.globals import AccessMode
 
 from parla.cython.device cimport ParlaDevice
 from parla.cython.cyparray cimport CyPArray
 from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
+from parla.cython.mm cimport CyMM
 import threading
 from enum import IntEnum, auto
 from parla.common.globals import cupy
@@ -23,6 +29,7 @@ LOG_INFO = 2
 LOG_WARN = 3
 LOG_ERROR = 4
 LOG_FATAL = 5
+
 
 cpdef py_write_log(filename):
     fname = filename.encode('utf-8')
@@ -139,7 +146,10 @@ cdef void callback_launch(void* python_scheduler, void* python_task, void*
         #print("Done with callback", flush=True)
         #(<object>python_function)(<object>python_input)
 
-cdef void callback_stop(void* python_function) nogil:
+ctypedef void(*f_type)(void*) 
+
+@cython.binding(False)
+cdef void callback_stop(void* python_function) noexcept nogil:
     with gil:
         #print("Inside callback to cython (stop)", flush=True)
         scheduler = <object>python_function
@@ -188,6 +198,10 @@ cdef class PyInnerTask:
     cpdef get_py_task(self):
         cdef InnerTask* c_self = self.c_task
         return <object> c_self.get_py_task()
+
+    cpdef create_parray(self, CyPArray cy_parray, int parray_dev_id):
+        cdef InnerTask* c_self = self.c_task
+        c_self.create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
     cpdef set_scheduler(self, PyInnerScheduler scheduler):
         cdef InnerTask* c_self = self.c_task
@@ -339,7 +353,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_stream 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_stream, cupy.cuda.Stream):
+        if (py_stream is not None) and isinstance(py_stream, cupy.cuda.Stream):
             i_stream = <uintptr_t> py_stream.ptr
             c_self.add_stream(i_stream)
 
@@ -347,7 +361,7 @@ cdef class PyInnerTask:
         cdef uintptr_t i_event 
         cdef InnerTask* c_self = self.c_task
 
-        if isinstance(py_event, cupy.cuda.Event):
+        if (py_event is not None) and isinstance(py_event, cupy.cuda.Event):
             i_event = <uintptr_t> py_event.ptr
             c_self.add_event(i_event)
 
@@ -477,18 +491,6 @@ cdef class PyTaskSpace:
         with nogil:
             c_self.wait()
 
-        
-
-        
-
-        
-        
-
-
-
-
-
-
 cdef class PyInnerWorker:
     cdef InnerWorker* inner_worker
 
@@ -552,7 +554,7 @@ cdef class PyInnerWorker:
                     py_assigned_devices.append(py_device)
                 py_parray = <object> c_data_task.get_py_parray()
                 access_mode = c_data_task.get_access_mode()
-                dev_id = c_data_task.get_device_id();
+                dev_id = c_data_task.get_device_id()
 
                 # Due to circular imports, the data movement task
                 # is not created, but necessary information/objects
@@ -592,14 +594,26 @@ cdef class PyInnerWorker:
 cdef class PyInnerScheduler:
     cdef InnerScheduler* inner_scheduler
 
+<<<<<<< HEAD
     def __cinit__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler, int mapping_policy):
+=======
+    def __cinit__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+>>>>>>> dev
         cdef InnerScheduler* _inner_scheduler
         cdef DeviceManager* _cpp_device_manager = <DeviceManager*> cy_device_manager.get_cpp_device_manager()
+        cdef LRUGlobalEvictionManager* _cpp_memory_manager = <LRUGlobalEvictionManager*> cy_memory_manager.get_cpp_memory_manager()
 
+<<<<<<< HEAD
         _inner_scheduler = new InnerScheduler(_cpp_device_manager, <MappingPolicyType> mapping_policy)
         self.inner_scheduler = _inner_scheduler
 
     def __init__(self, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler, int mapping_policy):
+=======
+        _inner_scheduler = new InnerScheduler(_cpp_memory_manager, _cpp_device_manager)
+        self.inner_scheduler = _inner_scheduler
+
+    def __init__(self, CyMM cy_memory_manager, CyDeviceManager cy_device_manager, int num_workers, float vcus, object python_scheduler):
+>>>>>>> dev
         cdef InnerScheduler* _inner_scheduler
         _inner_scheduler = self.inner_scheduler
 
@@ -616,6 +630,14 @@ cdef class PyInnerScheduler:
 
     def __dealloc__(self):
         del self.inner_scheduler
+
+    cpdef get_should_run(self):
+        """
+        This function checks whether there are remaining tasks
+        in C scheduler queues.
+        """
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_should_run()
 
     cpdef run(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -646,6 +668,10 @@ cdef class PyInnerScheduler:
         cdef InnerWorker* c_worker = worker.inner_worker
         c_self.enqueue_worker(c_worker)
 
+    cpdef remove_parray_from_tracker(self, CyPArray cy_parray, int dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        c_self.remove_parray_from_tracker(cy_parray.get_cpp_parray(), dev_id)
+
     #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -668,10 +694,6 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.task_cleanup_postsync(c_worker, c_task, state)
 
-    cpdef get_num_active_tasks(self):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_num_active_tasks()
-
     cpdef increase_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.increase_num_active_tasks()
@@ -692,6 +714,10 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_running_tasks()
 
+    cpdef get_num_active_tasks(self):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_num_active_tasks()
+
     cpdef get_num_notified_workers(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_notified_workers()
@@ -701,18 +727,35 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.spawn_wait()
 
-    cpdef reserve_parray(self, CyPArray cy_parray, int global_dev_id):
+    cpdef create_parray(self, CyPArray cy_parray, int parray_dev_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.reserve_parray(cy_parray.get_cpp_parray(), global_dev_id)
+        c_self.create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
-    cpdef release_parray(self, CyPArray cy_parray, int global_dev_id):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        c_self.release_parray(cy_parray.get_cpp_parray(), global_dev_id)
-
-    cpdef get_parray_state(\
+    cpdef get_mapped_parray_state(\
         self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_parray_state(global_dev_id, parray_parent_id)
+        return c_self.get_mapped_parray_state(global_dev_id, parray_parent_id)
+
+    cpdef get_reserved_parray_state(\
+        self, int global_dev_id, long long int parray_parent_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_reserved_parray_state(global_dev_id, parray_parent_id)
+
+    cpdef get_max_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_max_memory(global_dev_id)
+    
+    cpdef get_mapped_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_mapped_memory(global_dev_id)
+
+    cpdef get_reserved_memory(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_reserved_memory(global_dev_id)
+
+    cpdef get_memory_size_to_evict(self, int global_dev_id):
+        cdef InnerScheduler* c_self = self.inner_scheduler
+        return c_self.get_memory_size_to_evict(global_dev_id)
 
     cpdef complete_task_order_logs(self, PyInnerTask task):
         cdef InnerScheduler* c_self = self.inner_scheduler
@@ -748,7 +791,7 @@ class DataMovementTaskAttributes:
     This is delcared to avoid circular imports that could happen
     when we import tasks.pyx in here.
     """
-    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+    def __init__(self, name, py_parray, access_mode, assigned_devices, \
                  c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray
