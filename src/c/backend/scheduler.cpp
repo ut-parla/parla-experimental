@@ -381,24 +381,53 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 void InnerScheduler::complete_task_order_logs(InnerTask* task) {
   // after this update from end_task_graph, the next iteration would wake up.
   // so, the correct ordering is guaranteed.
-  if (task->name.find("end_task_graph") != std::string::npos) {
-    if (!this->is_task_mapping_log_registered()) {
-      // The first iteration might not omit some tasks
-      // that run after the first iteration.
-      // e.g., Cholesky's Reset tasks
-      this->task_mapping_log_register_counter.fetch_add(1);
-      if (this->task_mapping_log_register_counter.load() == 2) {
-        this->complete_task_mapping_log();
-      }
+  if (!this->is_task_mapping_log_registered()) {
+    // The first iteration might not omit some tasks
+    // that run after the first iteration.
+    // e.g., Cholesky's Reset tasks
+    this->task_log_register_counter.fetch_add(1);
+    if (this->task_log_register_counter.load() == 2) {
+      this->complete_task_mapping_log();
     }
-    if (!this->is_task_launching_log_registered()) {
-      // TODO(hc): change this counter name
-      if (this->task_mapping_log_register_counter.load() == 2) {
-        this->complete_task_launching_log();
-      }
+  }
+  if (!this->is_task_launching_log_registered()) {
+    // TODO(hc): change this counter name
+    if (this->task_log_register_counter.load() == 2) {
+      this->complete_task_launching_log();
     }
   }
 }
+
+bool InnerScheduler::check_task_mapping_order_mode(uint32_t term = 50) {
+  bool allow_proceeding{false};
+  if (this->task_mapping_log_mode == 0) {
+    allow_proceeding = false;
+  } else if (this->task_mapping_log_mode == 1 ||
+      this->task_mapping_log_mode == 2) {
+    if (this->num_epochs == 1 || (this->num_epochs % (1 + term) == 0)) {
+      // Allow log registration and its completion
+      allow_proceeding = true;
+    } else {
+      allow_proceeding = false;
+    }
+  }
+}
+
+bool InnerScheduler::check_task_launching_order_mode(uint32_t term = 50) {
+  bool allow_proceeding{false};
+  if (this->task_launching_log_mode == 0) {
+    allow_proceeding = false;
+  } else if (this->task_launching_log_mode == 1 ||
+      this->task_launching_log_mode == 2) {
+    if (this->num_epochs == 1 || (this->num_epochs % (1 + term) == 0)) {
+      // Allow log registration and its completion
+      allow_proceeding = true;
+    } else {
+      allow_proceeding = false;
+    }
+  }
+}
+
 
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }
 

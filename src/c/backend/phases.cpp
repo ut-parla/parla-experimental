@@ -515,7 +515,8 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
   // Try to launch as many compute tasks as possible
   int fail_count = 0;
   int max_fail = this->runnable_tasks->get_num_devices() * 2;
-  bool has_task = true;
+  bool has_task = this->get_compute_count() > 0 ||
+                  this->get_movement_count() > 0;
   int num_tasks = 0;
   if (this->scheduler->is_task_launching_log_registered()) {
     // If task launching order is registered,
@@ -533,7 +534,6 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           // If task is not ready, break this loop.
           break;
         }
-        InnerWorker *worker = scheduler->workers.dequeue_worker();
         bool has_resources = check_resources(found_task);
         if (!has_resources) {
           // If resource is not ready, break this loop.
@@ -545,6 +545,7 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
           // If thread is not ready, break this loop.
           break;
         }
+        InnerWorker *worker = scheduler->workers.dequeue_worker();
         // Pop a single task from the queue; since launching replay mode 
         // only needs information about if there is remaining task or not.
         for (ParlaDevice *device : found_task->assigned_devices) {
@@ -553,8 +554,12 @@ void RuntimeReserver::run(SchedulerPhase *next_phase) {
               global_dev_id);
           this->scheduler->atomic_incr_num_ready_tasks(global_dev_id);
         }
-        launcher->enqueue(found_task, worker);
         this->scheduler->task_launching_log_ptr++;
+        launcher->enqueue(found_task, worker);
+        //std::cout << found_task->name << " next task:" <<
+        //  this->scheduler->task_launching_log[
+        //      this->scheduler->task_launching_log_ptr] << "\n" << std::flush;
+
         // To consider global_0 which can be run multiple times.
         // In this case, the launcher could run the old object instead of waiting
         // for the new object.
@@ -698,7 +703,7 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
 
   // Log launching task order.
   if (!this->scheduler->is_task_launching_log_registered()) {
-    if (this->scheduler->task_mapping_log_register_counter.load() == 1) {
+    if (this->scheduler->task_log_register_counter.load() == 1) {
       // Only register the second iteration; this is because it is possible
       // that there are tasks spawned from the second iteration like
       // Reset in Cholesky.
@@ -739,8 +744,6 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
     this->scheduler->reset_task_mapping_log_pointer();
     this->scheduler->reset_task_name_to_task();
 
-    this->scheduler->complete_task_order_logs(task);
-
     // global_0 after the last task will be here.
     // so this should be also skipped.
     //this->scheduler->task_launching_log_ptr++;
@@ -749,21 +752,23 @@ void Launcher::enqueue(InnerTask *task, InnerWorker *worker) {
       std::cout << "task mapping order:\n";
       for (size_t i = 0; i < this->scheduler->task_mapping_log.size(); ++i) {
         std::cout << i << ", " << this->scheduler->task_mapping_log[i].first <<
-          ", " << this->scheduler->task_mapping_log[i].second << "\n";
+          ", " << this->scheduler->task_mapping_log[i].second << "\n" << std::flush;
       }
     }
     if (!this->scheduler->is_task_launching_log_registered()) {
       std::cout << "task launching order:\n";
       for (size_t i = 0; i < this->scheduler->task_launching_log.size(); ++i) {
-        std::cout << i << ", " << this->scheduler->task_launching_log[i] << "\n";
+        std::cout << i << ", " << this->scheduler->task_launching_log[i] << "\n" << std::flush;
       }
     }
+
+    this->scheduler->complete_task_order_logs(task);
+    ++this->scheduler->num_epochs;
   }
 
   // Assign task to thread and notify via c++ condition variable.
   // No GIL needed until worker wakes.
   worker->assign_task(task);
-  //std::cout << task->name << " assigns to " << worker << "\n";
   LOG_INFO(WORKER, "Assigned {} to {}", task, worker);
 }
 

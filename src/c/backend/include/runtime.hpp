@@ -944,7 +944,8 @@ public:
   std::vector<std::pair<std::string, DevID_t>> task_mapping_log;
   std::vector<std::string> task_launching_log;
   ProtectedUnorderedMap<std::string, InnerTask*> task_name_to_task;
-  std::atomic<int> task_mapping_log_register_counter{0};
+  std::atomic<int> task_log_register_counter{0};
+  size_t num_epochs{0};
 
   uint64_t task_mapping_order_{0};
   uint64_t task_launching_order_{0};
@@ -1303,7 +1304,7 @@ public:
     this->task_launching_log_registered = false;
   }
   void register_task_mapping_log(InnerTask* task) {
-    if (task_mapping_log_register_counter.load() == 1) {
+    if (task_log_register_counter.load() == 1) {
       this->task_mapping_log.push_back({
           task->name, task->assigned_devices[0]->get_global_id()});
     }
@@ -1314,6 +1315,15 @@ public:
 
   void complete_task_order_logs(InnerTask* task);
 
+  // Check if task mapping/launching order logging is enabled or not
+  // If the current mode is no logging, skip all related function calls.
+  // If the current mode is logging, from 2nd iteration, log x (user parameters)
+  // + 2 iteration executions.
+  // We only need to use this function for avoiding logging completion marking
+  // since if the logging is not completed, the replay will be never run.
+  bool check_task_mapping_order_mode(uint32_t term);
+
+  bool check_task_launching_order_mode(uint32_t term);
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
