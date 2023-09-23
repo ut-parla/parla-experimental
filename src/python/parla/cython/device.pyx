@@ -215,7 +215,7 @@ class PyCUDADevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
+        super().__init__(PyDeviceType.CUDA, "CUDA", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device
         #initialization
         #In Parla, we assume 80% of the actual device memory as the full 
@@ -237,7 +237,7 @@ class PyCPUDevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -336,7 +336,7 @@ class PyArchitecture(metaclass=ABCMeta):
 
 class ImportableArchitecture(PyArchitecture):
 
-    def __init__(self, arch_name = "UnnamedArchitecture", architecture_type = DeviceType.CPU):
+    def __init__(self, arch_name = "UnnamedArchitecture", architecture_type = PyDeviceType.CPU):
         self._name = arch_name
         self._architecture_type = architecture_type
 
@@ -401,11 +401,11 @@ class ImportableArchitecture(PyArchitecture):
 
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("CUDAArch", PyDeviceType.CUDA)
 
 class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
+        ImportableArchitecture.__init__(self, "CUDAArch", PyDeviceType.CUDA)
  
 
 class PyCPUArchitecture(PyArchitecture):
@@ -418,7 +418,7 @@ class PyCPUArchitecture(PyArchitecture):
 
 class ImportableCPUArchitecture(PyCPUArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CPUArch", DeviceType.CPU)
+        ImportableArchitecture.__init__(self, "CPUArch", PyDeviceType.CPU)
 
 
 # TODO(hc): use dataclass later.

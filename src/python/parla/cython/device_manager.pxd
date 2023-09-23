@@ -13,7 +13,7 @@ cdef extern from "include/device_manager.hpp" nogil:
 
     cdef cppclass DeviceManager:
         DeviceManager() 
-        void register_device(Device*) 
+        void register_device(ParlaDevice*) 
         void print_registered_devices() 
         void free_memory_by_parray_id(int parray_dev_id, unsigned long memory_size)
         void free_memory(unsigned int global_dev_id, unsigned long memory_size)

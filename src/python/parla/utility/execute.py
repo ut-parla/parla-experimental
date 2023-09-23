@@ -98,9 +98,6 @@ class GPUInfo():
     
 _GPUInfo = GPUInfo()
 
-
-_GPUInfo = GPUInfo()
-
 def get_placement_set_from(ps_str_set, num_gpus):
     ps_set = []
     # TODO(hc): This assumes a single device task.

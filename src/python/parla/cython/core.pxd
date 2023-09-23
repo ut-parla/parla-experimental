@@ -167,7 +167,6 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void complete_task_order_logs(InnerTask* task);
 
-        int get_num_active_tasks()
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
