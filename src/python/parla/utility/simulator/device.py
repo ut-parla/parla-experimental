@@ -62,7 +62,7 @@ class DevicePArrayPool:
             sublist = list()
             for data in self.pool:
                 if compare(getattr(
-                     data.locations[self.device.name], status)):
+                     data.status_per_device[self.device.name], status)):
                     sublist.append(data)
             return sublist
 

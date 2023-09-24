@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import device
 from resource_pool import ResourcePool
 from priority_queue import PriorityQueue
+from data import PArray
 
 SyntheticDevice = device.SyntheticDevice
 
@@ -604,344 +605,6 @@ class Assign2(object):
                 break
 
 
-class DataStatus:
-    def __init__(self, _stale=0, _used=0, _prefetch=0, _in_progress=False):
-        self.stale = _stale
-        self.used = _used
-        self.prefetched = _prefetch
-        self.in_progress = _in_progress
-
-        # Tasks that depend on this data (that have been prefetched for)
-        self.dependent_tasks = []
-
-        # Tasks that are currently moving this data (e.g. prefetching)
-        self.moving_tasks = []  # PriorityQueueueue()
-
-        # Tasks that are removing this data (e.g. evicting from this device)
-        self.eviction_tasks = []
-
-    def __str__(self):
-        return f"Data State :: stale: {self.stale} | used: {self.used} | prefetch: {self.prefetched} | in_progress: {self.in_progress}"
-
-    def __repr__(self):
-        return f"({self.stale}, {self.used}, {self.prefetched}, {self.in_progress})"
-
-    def __hash__(self):
-        return hash((self.stale, self.used, self.prefetched, self.in_progress))
-
-
-class Data:
-
-    dataspace = dict()
-
-    def __init__(self, _name, _size, device_list):
-        self.name = _name
-        self.size = _size
-
-        self.locations = dict()
-
-        for device in device_list:
-            self.locations[device.name] = DataStatus()
-
-        # Must be set before use.
-        Data.dataspace[self.name] = self
-
-        # heuristics for eviction
-        self.info = dict()
-
-        self.transfers = dict()
-
-    def __str__(self):
-        return f"Data: {self.name} {self.size} | State: {self.locations}"
-
-    def get_status(self, device):
-        if device.name in self.locations:
-            return self.locations[device.name]
-        else:
-            return False
-
-    def add_transfer(self, device):
-        if device.name in self.transfers:
-            self.transfers[device.name] += 1
-        else:
-            self.transfers[device.name] = 1
-
-    def get_dependent_tasks(self, device_list=None):
-        dependent_tasks = []
-        if device_list is None:
-            for device in self.locations:
-                dependent_tasks.extend(
-                    self.locations[device.name].dependent_tasks)
-        else:
-            for device in device_list:
-                dependent_tasks.extend(
-                    self.locations[device.name].dependent_tasks)
-        return dependent_tasks
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __repr__(self):
-        return str(self.name)
-
-    def __eq__(self, other):
-        return self.name == other.name
-
-    def update_state(self, device, stale=0, used=0, prefetch=0):
-        if device.name in self.locations:
-            self.locations[device.name].stale = stale
-            self.locations[device.name].used = used
-            self.locations[device.name].prefetched = prefetch
-            return True
-        return False
-
-    def increment_state(self, device, stale=False, used=False, prefetch=False):
-        if device.name in self.locations:
-            if stale:
-                self.locations[device.name].stale += 1
-            if used:
-                self.locations[device.name].used += 1
-            if prefetch:
-                self.locations[device.name].prefetched += 1
-            return True
-        return False
-
-    def decrement_state(self, device, stale=False, used=False, prefetch=False):
-        if device.name in self.locations:
-            if stale:
-                self.locations[device.name].stale -= 1
-            if used:
-                self.locations[device.name].used -= 1
-            if prefetch:
-                self.locations[device.name].prefetched -= 1
-            return True
-        return False
-
-    def update(self, device, state, value):
-        if device.name in self.locations:
-            setattr(self.locations[device.name], state, value)
-            return True
-        return False
-
-    def query(self, device, property):
-        if device.name in self.locations:
-            if hasattr(self.locations[device.name], property):
-                return getattr(self.locations[device.name], property)
-        return None
-
-    def valid(self, device, allow_in_progress=False):
-        # Does the data have a valid copy on the device?
-        if device.name in self.locations:
-            if self.locations[device.name].stale:
-                return False
-            if not allow_in_progress and self.locations[device.name].in_progress:
-                return False
-        else:
-            return False
-        return True
-
-    def evict(self, device_name):
-        if device_name in self.locations:
-            if self.locations[device_name].stale and not self.locations[device_name].used:
-
-                # Delete from data table
-                del self.locations[device_name]
-
-                # Delete from device list
-                device = SyntheticDevice.devicespace[device_name]
-                device.delete_data(self)
-
-            elif self.locations[device_name].stale and self.locations[device_name].used:
-                raise Exception("Invalid State. Data is stale and used.")
-
-    def evict_stale(self):
-        device_names = list(self.locations.keys())
-        state = list(self.locations.values())
-        for device_name, state in zip(device_names, state):
-            # print("Eviction: ", device_name, state)
-            if state.stale:
-                self.evict(device_name)
-
-    def set(self, key, value):
-        self.info[key] = value
-
-    def decrement(self, key, value=0):
-        if key in self.info:
-            self.info[key] -= 1
-        else:
-            self.info[key] = value
-
-    def increment(self, key, value=0):
-        if key in self.info:
-            self.info[key] += 1
-        else:
-            self.info[key] = value
-
-    def create_on_device(self, device, in_progress=True):
-        if device.name not in self.locations:
-            self.locations[device.name] = DataStatus(0, 0, 0, in_progress)
-
-        # if in_progress and not self.locations[device.name].in_progress:
-        #    self.locations[device.name].in_progress = True
-
-    def unlock(self, device_list):
-        # Decrement used counter
-        for device in device_list:
-            if device.name in self.locations:
-                print("Unlocking data: ", self.name, device_list)
-                self.locations[device.name].used -= 1
-                assert(self.locations[device.name].used >= 0)
-            else:
-                raise Exception(
-                    "Attempting to unlock data that is not on device.")
-
-    def lock(self, device_list):
-        # Increment used counter
-        for device in device_list:
-            if device.name in self.locations:
-                print("Locking data: ", self.name, device_list)
-                self.locations[device.name].used += 1
-                assert(self.locations[device.name].used >= 0)
-            else:
-                raise Exception(
-                    "Attempting to lock data that is not on device.")
-
-    def start_prefetch(self, calling_task, task_list, device_list):
-        for device in device_list:
-
-            # print("OLD: ", self)
-            # Add to data table (Create state if not already there)
-            self.create_on_device(device, in_progress=True)
-            # print("NEW: ", self)
-
-            # Add to device pool
-            # NOTE: Must be done after create_on_device (because state is used to update the memory tracking)
-            device.add_data(self)
-
-            assert(device.name in self.locations)
-
-            # Increment prefetch counter
-            # print("Incrementing prefetch counter", self, task_list)
-            self.locations[device.name].prefetched += 1
-            self.locations[device.name].dependent_tasks.extend(task_list)
-
-            assert(calling_task.completion_time >= 0)
-            # self.locations[device.name].moving_tasks.put(
-            #    (calling_task.completion_time, calling_task))
-            self.locations[device.name].moving_tasks.append(calling_task)
-
-    def finish_prefetch(self, calling_task, task_list, device_list):
-        for device in device_list:
-
-            # if device.name in self.locations:
-            assert(device.name in self.locations)
-            self.locations[device.name].in_progress = False
-
-            self.locations[device.name].moving_tasks.remove(calling_task)
-            # finished_task = self.locations[device.name].moving_tasks.get()[1]
-            # assert(finished_task == calling_task)
-
-            # print("FINISH Prefetch Check", self)
-
-    def use(self, task, device_list, is_movement):
-        # Decrement prefetch counter
-        for device in device_list:
-
-            if device.name in self.locations and not is_movement:
-                self.locations[device.name].prefetched -= 1
-                # print("USEING")
-                # print(self.locations[device.name].dependent_tasks)
-                # print(task.name)
-                self.locations[device.name].dependent_tasks.remove(task)
-            elif not is_movement:
-                raise Exception(
-                    f"Invalid State. Data is not available by task runtime. \n\t {task} | \n\t {data} | \n\t {device}")
-
-    def read(self, task, device_list, is_movement=False):
-        # Decrement prefetch counter
-        self.use(task, device_list, is_movement)
-
-    def write(self, task, device_list, is_movement=False):
-
-        # NOTE: Write data isn't prefetched.
-        # Decrease prefetch count
-        # self.use(task, device_list, is_movement)
-
-        #Check if data is already being used on device.
-
-        if not is_movement:
-
-            for device in device_list:
-                if(self.locations[device.name].used > 1):
-                    print(self.name, self.locations)
-                    assert(False)
-
-            for device_name in self.locations.keys():
-                if SyntheticDevice.devicespace[device_name] not in device_list:
-                    if(self.locations[device_name].used > 0):
-                        print(self.name, self.locations)
-                        assert(False)
-
-            # Mark stale
-            device_name_list = [d.name for d in device_list]
-            for device_name in self.locations.keys():
-                if device_name not in device_name_list:
-                    self.locations[device_name].stale += 1
-
-            # Clear stale data from devices
-            # NOTE: Should be no-op if is_movement is True
-            self.evict_stale()
-
-    def active_transfer(self, device):
-        # Is the data currently being moved/created?
-        if status := self.get_status(device):
-            return status.in_progress
-        else:
-            return False
-
-    def active_use(self, device):
-        # Is the data currently used by a task
-        if status := self.get_status(device):
-            return status.used > 0
-        return False
-
-    def active_need(self, device):
-        # Is the data on device already prefetched and needed for any scheduled tasks?
-        if status := self.get_status(device):
-            return status.prefetched > 0
-        return False
-
-    def get_valid_sources(self, allow_in_progress=False):
-        valid_sources = []
-        for device_name in self.locations.keys():
-            device = SyntheticDevice.devicespace[device_name]
-            if self.valid(device, allow_in_progress=allow_in_progress):
-                valid_sources.append(device)
-        return valid_sources
-
-    def choose_source(self, target_device, pool, required=False):
-        topology = pool.topology
-
-        # if already in progress at target, return that as the source
-        # print("CHECK SOURCES IN PROGRESS :: ", self, target_device)
-        if self.active_transfer(target_device):
-            return target_device
-
-        # otherwise, find the best source
-
-        # Get list of non-stale devices that hold this data
-        source_list = self.get_valid_sources()
-        # print("SOURCE LIST", source_list)
-
-        # Find the closest free source for the data
-        closest_free_source = topology.find_best(
-            target_device, source_list, free=True)
-
-        return closest_free_source
-
-    # def __del__(self):
-    #    del Data.dataspace[self.name]
-
 
 
 class BandwidthHandle(object):
@@ -1173,7 +836,7 @@ class SyntheticTopology(object):
         transfer_time = current_time
         for data_name, source in data_sources.items():
             target = targets[data_name]
-            data = Data.dataspace[data_name]
+            data = PArray.dataspace[data_name]
 
             # Is the data already being transfer to this device?
             # In this case, we have to wait for the completition of the transfer
@@ -1200,7 +863,7 @@ class SyntheticTopology(object):
         for data_name in data_targets.keys():
             target_device = data_targets[data_name]
             source_device = data_sources[data_name]
-            data = Data.dataspace[data_name]
+            data = PArray.dataspace[data_name]
 
             # Only take resources if the transfer is not already active
             if (not data.active_transfer(target_device)) and (not (target_device == source_device)):
@@ -1214,7 +877,7 @@ class SyntheticTopology(object):
         for data_name in data_targets.keys():
             target_device = data_targets[data_name]
             source_device = data_sources[data_name]
-            data = Data.dataspace[data_name]
+            data = PArray.dataspace[data_name]
 
             # Only free resources if the transfer is not already active
             if data_name in reserved:
@@ -1236,8 +899,8 @@ def initialize_data(data_config, device_map):
     # NOTE: Assumes initialization on ONLY one location.
     for data_name, data_info in data_config.items():
         device = device_map[data_info[1]]
-        data = Data("D"+str(data_name),
-                    data_info[0], [device])
+        data = PArray("D"+str(data_name),
+                      data_info[0], [device])
         device.add_data(data)
         data_list[data.name] = data
     return data_list
@@ -1493,7 +1156,7 @@ class SyntheticTask:
         success_flag = True
 
         for data_name, device in self.data_targets.items():
-            data = Data.dataspace[data_name]
+            data = PArray.dataspace[data_name]
 
             if not data.valid(device):
                 success_flag = False
@@ -1598,7 +1261,7 @@ class SyntheticTask:
                 if not (device_target == device_source):
                     to_lock.append(device_source)
 
-            data.lock(to_lock)
+            data.acquire(to_lock)
 
 
     def unlock_data(self):
@@ -1617,7 +1280,7 @@ class SyntheticTask:
                 if not (device_source == device_target):
                     to_unlock.append(device_source)
 
-            data.unlock(to_unlock)
+            data.release(to_unlock)
 
         """
         for data in self.write_data:
