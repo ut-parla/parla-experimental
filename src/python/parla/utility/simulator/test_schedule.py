@@ -1,10 +1,8 @@
 import numpy as np
 import time
 import warnings
-import copy
 import queue
 from fractions import Fraction
-from collections import namedtuple
 
 import device
 from resource_pool import ResourcePool
@@ -13,6 +11,7 @@ from data import PArray
 from utility import read_graphx, convert_to_dictionary, compute_data_edges
 from utility import add_data_tasks, make_networkx_graph, get_valid_order
 from utility import task_status_color_map, plot_graph
+from log_stack import LogDict
 
 SyntheticDevice = device.SyntheticDevice
 
@@ -438,58 +437,6 @@ def initialize_data(data_config, device_map):
         device.add_data(data)
         data_list[data.name] = data
     return data_list
-
-
-class State:
-
-    def __init__(self, graph, level=1):
-        state_dict = dict()
-
-        State = namedtuple("State", "status device start_time completion_time")
-        for task in graph.nodes():
-            state_dict[task] = State(0, None, None, None)
-
-        self.active_state = state_dict
-        self.state_list = []
-        self.state_list.append((0.0, state_dict))
-
-        self.level = level
-
-    def log_device(self, device):
-        if self.level == 1:
-            self.active_state[device.name] = copy.deepcopy(device)
-        else:
-            self.active_state[device.name] = device.get_current_resources()
-
-    def log_data(self, data):
-        if self.level == 1:
-            self.active_state[data.name] = copy.deepcopy(data)
-        else:
-            pass
-            #self.active_state[data.name] = copy.deepcopy(data.locations)
-
-    def set_task_status(self, task, type, value):
-        self.active_state[task] = self.active_state[task]._replace(
-            **{type: value})
-
-    def get_task_status(self, task, type):
-        return getattr(self.active_state[task], type)
-
-    def advance_time(self, current_time):
-        self.state_list.append((current_time, self.active_state))
-        self.active_state = copy.deepcopy(self.active_state)
-
-    def get_state_at_time(self, time):
-        import bisect
-        times, states = zip(*self.state_list)
-        idx = bisect.bisect_left(times, time)
-        return states[idx]
-
-    def __getitem__(self, idx):
-        return self.state_list[idx]
-
-    def unpack(self):
-        return zip(*self.state_list)
 
 
 class SyntheticTask:
@@ -1060,8 +1007,8 @@ class SyntheticSchedule:
                 task.order = idx
                 idx = idx+2
                 device.push_planned_task(task)
-                self.state.set_task_status(task.name, "status", "mapped")
-                self.state.set_task_status(task.name, "device", device.id)
+                self.state.set_task_log(task.name, "status", "mapped")
+                self.state.set_task_log(task.name, "device", device.id)
             # self.all_tasks.append(task)
 
     def complete_task(self):
@@ -1091,9 +1038,9 @@ class SyntheticSchedule:
 
             # Update global state log
             self.state.advance_time(self.time)
-            self.state.set_task_status(
+            self.state.set_task_log(
                 recent_task.name, "completion_time", self.time)
-            self.state.set_task_status(
+            self.state.set_task_log(
                 recent_task.name, "status", "completed")
 
     def start_tasks(self):
@@ -1131,9 +1078,9 @@ class SyntheticSchedule:
                     # print(data0)
 
                     # Update global state log
-                    self.state.set_task_status(
+                    self.state.set_task_log(
                         task.name, "status", "active")
-                    self.state.set_task_status(
+                    self.state.set_task_log(
                         task.name, "start_time", self.time)
                 else:
                     continue
@@ -1142,7 +1089,7 @@ class SyntheticSchedule:
             self.state.log_device(device)
 
         for data in self.data:
-            self.state.log_data(data)
+            self.state.log_parray(data)
 
     def count_planned_tasks(self, type="Both"):
         count_compute = 0
@@ -1446,7 +1393,7 @@ def make_image_folder_time(end_time, step, folder_name, state):
     idx = 0
     while time_stamp < end_time:
         filename = folder_name + "/" + "graph_" + str(idx) + ".png"
-        point = state.get_state_at_time(time_stamp)
+        point = state.get_logs_with_time(time_stamp)
         plot_graph(graph_full, point, task_status_color_map, output=filename)
         time_stamp += step
         idx += 1
@@ -1498,7 +1445,7 @@ def make_interactive(end_time, state):
 
     def show(value):
         time = float(value)
-        plot_graph(graph_full, state.get_state_at_time(
+        plot_graph(graph_full, state.get_logs_with_time(
             time), task_status_color_map)
         load = PIL.Image.open("graph.png")
         load = load.resize((450, 350))
@@ -1620,7 +1567,7 @@ plot_graph(graph_full, data_dict=(read_dict, write_dict, dependency_dict))
 
 #Level = 0 (Save minimal state)
 #Level = 1 (Save everything! Deep Copy of objects! Needed for some plotting functions below.)
-state = State(graph_full, level=1)
+state = LogDict(graph_full, log_level=1)
 
 task_handles = initialize_task_handles(graph_full, task_dictionaries,
                                        movement_dictionaries, device_map, data_map)
@@ -1650,7 +1597,7 @@ print("Predicted Graph Time (s): ", graph_t)
 #import sys
 #sys.exit(0)
 
-#point = state.get_state_at_time(0.5)
+#point = state.get_logs_with_time(0.5)
 #print(point)
 #plot_graph(graph_full, state.active_state, task_device_color_map)
 
