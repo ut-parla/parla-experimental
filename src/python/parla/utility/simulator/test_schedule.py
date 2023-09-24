@@ -3,33 +3,22 @@ import PIL.ImageTk
 from tkinter import *
 from re import S
 import numpy as np
-import queue
-from queue import PriorityQueue, Queue
 from fractions import Fraction as F
 import matplotlib.pyplot as plt
 import time
 import warnings
 import copy
+import queue
 
 from collections import namedtuple
 from fractions import Fraction
 import matplotlib.pyplot as plt
-import heapq
 
+import device
+from resource_pool import ResourcePool
+from priority_queue import PriorityQueue
 
-class PriorityQ:
-    def __init__(self):
-        self.queue = []
-
-    def put(self, item):
-        heapq.heappush(self.queue, item)
-
-    def get(self):
-        return heapq.heappop(self.queue)
-
-    def __len__(self):
-        return len(self.queue)
-
+SyntheticDevice = device.SyntheticDevice
 
 def str_to_tuple(string):
     if "M" in string:
@@ -626,7 +615,7 @@ class DataStatus:
         self.dependent_tasks = []
 
         # Tasks that are currently moving this data (e.g. prefetching)
-        self.moving_tasks = []  # PriorityQueue()
+        self.moving_tasks = []  # PriorityQueueueue()
 
         # Tasks that are removing this data (e.g. evicting from this device)
         self.eviction_tasks = []
@@ -1052,7 +1041,7 @@ class SyntheticTopology(object):
         self.max_copy = dict()
         self.active_copy = dict()
         for d in device_list:
-            self.max_copy[d.name] = d.copy_engines
+            self.max_copy[d.name] = d.num_copy_engines
             self.active_copy[d.name] = 0
 
     def __str__(self):
@@ -1230,418 +1219,6 @@ class SyntheticTopology(object):
             # Only free resources if the transfer is not already active
             if data_name in reserved:
                 self.decrease_usage(target_device, source_device)
-
-
-class ResourcePool:
-
-    def __init__(self):
-        self.pool = dict()
-
-    def __str__(self):
-        return f"ResourcePool: {self.pool}"
-
-    def __repr__(self):
-        return f"ResourcePool: {self.pool}"
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def add_resource(self, device, resource, amount):
-        if device not in self.pool:
-            self.pool[device] = dict()
-        self.pool[device][resource] = amount
-
-    def add_resources(self, device, resources):
-        for resource, amount in resources.items():
-            self.add_resource(device, resource, amount)
-        return True
-
-    def set_toplogy(self, topology):
-        self.topology = topology
-
-        for device in self.topology.devices:
-            self.add_resources(device.name, device.resources)
-
-            # Add backlink to device (in case we ever need to query it there)
-            device.active_memory = self
-
-    def finalize(self):
-        self.max_pool = copy.deepcopy(self.pool)
-        self.max_connections = copy.deepcopy(self.connections)
-
-    def check_device_resources(self, device, requested_resources):
-        # print(device, requested_resources, self.pool)
-        if device.name not in self.pool:
-            return False
-        for resource, amount in requested_resources.items():
-            if resource not in self.pool[device.name]:
-                return False
-            if resource == "memory":
-                # print("Checking memory")
-                # print(self.pool[device.name][resource],
-                #      device.persistent_memory, amount)
-                if (self.pool[device.name][resource] - device.persistent_memory) < amount:
-                    return False
-            else:
-                if self.pool[device.name][resource] < amount:
-                    return False
-        return True
-
-    def check_resources(self, requested_resources):
-        for device_name, resources in requested_resources.items():
-            device = SyntheticDevice.devicespace[device_name]
-            if not self.check_device_resources(device, resources):
-                return False
-        return True
-
-    def reserve_resources_device(self, device, requested_resources):
-        for resource, amount in requested_resources.items():
-            self.pool[device][resource] -= amount
-        return True
-
-    def free_resources_device(self, device, requested_resources):
-        for resource, amount in requested_resources.items():
-            self.pool[device][resource] += amount
-        return True
-
-    def reserve_resources(self, requested_resources):
-        for device, resources in requested_resources.items():
-            self.reserve_resources_device(device, resources)
-        return True
-
-    def free_resources(self, requested_resources):
-        for device, resources in requested_resources.items():
-            self.free_resources_device(device, resources)
-        return True
-
-    def delete_device(self, device):
-        del self.pool[device]
-        return True
-
-    def delete_resource_device(self, device, resource):
-        if device in self.pool:
-            if resource in self.pool[device]:
-                del self.pool[device][resource]
-        return True
-
-    def delete_resources_device(self, device, resources):
-        for resource in resources:
-            self.delete_resource(self, device, resource)
-        return True
-
-    def delete_resource(self, resource):
-        for device in self.pool.keys():
-            self.delete_resource_device(device, resource)
-        return True
-
-    def delete_resources(self, resources):
-        for device in self.pool.keys():
-            self.delete_resources_device(device, resources)
-        return True
-
-
-class EvictionPolicy:
-
-    def apply(self, datapool, active_tasks, planned_tasks):
-        # Assign or update priority to every item in datapool
-        pass
-
-
-class DataPool:
-
-    def __init__(self, _device, _policy):
-        self.pool = list()
-        self.device = _device
-        self.policy = _policy
-
-        self.total_memory = 0
-        self.in_progress_memory = 0
-
-    def __getitem__(self, index):
-        return self.pool[index]
-
-    def __setitem__(self, index, value):
-        # NOTE: DON'T EVER USE THIS. For debugging convience only. Use add_data to append instead.
-        self.pool[index] = value
-
-    def __str__(self):
-        return f"{[ d.name+repr(d.get_status(self.device)) for d in self.pool]}"
-
-    def __repr__(self):
-        return f"{[repr(x) for x in self.pool]}"
-
-    def add_data(self, data):
-
-        # check if data is already in pool
-        if data in self.pool:
-            return
-
-        # if space on device is available, add to list and consume resources
-        self.pool.append(data)
-
-        self.update_memory()
-
-        # Rank by priority
-        # self.policy.apply(self.pool, None, None)
-        # self.pool.sort(key=lambda x: getattr(
-        #    x.locations[self.device], "priority"))
-
-    def evict(self):
-        return self.pool.pop()
-
-    def __contains__(self, item):
-        return item in self.pool
-
-    def verify(self, data):
-        if search_attribute(self.pool, data, "name") is not None:
-            return True
-
-    def delete_data(self, data):
-        self.pool.remove(data)
-        self.update_memory()
-
-    def default_compare(self, val):
-        return val > 0
-
-    def get_status(self, data_name):
-        return search_attribute(self.pool, data_name, "name").get_status(self.device)
-
-    def extract_list(self, property, compare=None):
-        if compare is None:
-            compare = self.default_compare
-
-        if property == "all":
-            return self.pool
-        else:
-            sublist = list()
-            for data in self.pool:
-                if compare(getattr(data, property)):
-                    sublist.append(data)
-            return sublist
-
-    def extract_list_status(self, property, compare=None):
-        if compare is None:
-            compare = self.default_compare
-
-        if property == "all":
-            return self.pool
-        else:
-            sublist = list()
-            for data in self.pool:
-                if compare(getattr(data.locations[self.device.name], property)):
-                    sublist.append(data)
-            return sublist
-
-    def __get_sublist_size(self, sublist):
-        return sum([data.size for data in sublist])
-
-    def find_memory(self, property, compare=None):
-        if compare is None:
-            compare = self.default_compare
-
-        return self.__get_sublist_size(self.extract_list(property, compare))
-
-    def find_memory_status(self, property, compare=None):
-        if compare is None:
-            compare = self.default_compare
-
-        return self.__get_sublist_size(self.extract_list_status(property, compare))
-
-    def update_memory(self):
-        self.total_memory = self.find_memory_status("all")
-        self.in_progress_memory = self.find_memory_status("in_progress")
-
-        self.device.update_persistent_memory()
-
-    def evictable_memory(self, include_prefetched=True):
-        size = 0
-        for data in self.pool:
-            if data.locations[self.device].prefetched and not include_prefetched:
-                continue
-            if data.locations[self.device.name].used:
-                continue
-            size += data.size
-        return size
-
-
-class SyntheticDevice:
-
-    count = 0
-    devicespace = dict()
-
-    def __init__(self, _name, _id, _resources, copy_engines=2, idx=None, policy=EvictionPolicy()):
-        self.name = _name
-        self.id = _id
-        if idx is not None:
-            self.idx = idx
-        else:
-            self.idx = SyntheticDevice.count
-        SyntheticDevice.count += 1
-
-        self.resources = _resources
-        self.active_tasks = PriorityQ()
-        self.planned_compute_tasks = PriorityQ()
-        self.planned_movement_tasks = PriorityQ()
-        self.copy_engines = copy_engines
-
-        SyntheticDevice.devicespace[self.name] = self
-
-        self.active_data = DataPool(self, policy)
-        self.persistent_memory = 0
-
-    def is_cpu(self):
-        return self.id < 0
-
-    def __eq__(self, other):
-        return self.name == other.name
-
-    def __lt__(self, other):
-        return self.id < other.id
-
-    def __repr__(self):
-        return str(self.name)
-
-    def __str__(self):
-        if self.active_memory:
-            return f"Device {self.name} | \n\t Planned Data Tasks: {self.planned_movement_tasks.queue} | \n\t Planned Compute Tasks: {self.planned_compute_tasks.queue} | \n\t Active Tasks: {self.active_tasks.queue} | \n\t Resources: {self.active_memory.pool[self.name]} | \n\t Memory: {self.available_memory()} | \n\t Active Data: {self.active_data}"
-        else:
-            return f"Device {self.name} | \n\t Planned Tasks: {self.planned_tasks.queue} | \n\t Active Tasks: {self.active_tasks.queue} | \n\t Resources: {self.resources}"
-
-    def get_current_resources(self):
-        current_resources = copy.deepcopy(self.active_memory.pool[self.name])
-        current_resources["memory"] = self.available_memory()
-        return current_resources
-
-    def delete_data(self, data):
-        return self.active_data.delete_data(data)
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def add_data(self, data):
-        return self.active_data.add_data(data)
-
-    def available_memory(self, usage=False):
-
-        if not usage:
-            if hasattr(self, "active_memory") and self.active_memory is not None:
-                if self.name in self.active_memory.pool:
-                    return self.active_memory.pool[self.name]["memory"] - self.persistent_memory
-            else:
-                return False
-        else:
-            if hasattr(self, "active_memory") and self.active_memory is not None:
-                if self.name in self.active_memory.pool:
-                    return self.resources["memory"] - (self.active_memory.pool[self.name]["memory"] - self.persistent_memory)
-            else:
-                return False
-
-    def available_acus(self, usage=False):
-        if not usage:
-            if self.name in self.active_memory.pool:
-                return self.active_memory.pool[self.name]["acus"]
-        else:
-            if self.name in self.active_memory.pool:
-                return 1 - self.active_memory.pool[self.name]["acus"]
-
-    def update_persistent_memory(self):
-        self.persistent_memory = self.active_data.total_memory
-
-        # There should always be enough memory to fit both the running tasks AND the persistent data.
-        if hasattr(self, "active_memory") and self.active_memory is not None:
-            if self.name in self.active_memory.pool:
-                assert(self.persistent_memory <
-                       self.active_memory.pool[self.name]["memory"])
-
-    def get_nonlocal_size(self, data):
-        # Return the size of data that needs to be moved if not already on the device
-        if data in self.active_data:
-            return 0
-
-        return data.size
-
-    def check_fit(self, data):
-        # Check if the data is already on the device
-        if data in self.active_data:
-            # TODO: Check if its not stale, i dunno. I don't think theres a good reason to rerequest memory.
-            # print("ITS ALREADY THERE (possibly in progress")
-            return True
-        if available_memory := self.available_memory():
-            if data.size <= available_memory:
-                return True
-        return False
-
-    def check_fit_with_eviction(self, data):
-        if self.check_fit(data):
-            return True
-
-        if available_memory := self.available_memory():
-            if evictable_memory := self.evictable_memory():
-                if data.size <= available_memory + evictable_memory:
-                    return True
-        return False
-
-    def evictable_memory(self, include_prefetched=True):
-        return self.active_data.evictable_memory(include_prefetched)
-
-    def resident_memory(self, in_progress=True):
-        if in_progress:
-            return self.active_data.total_memory - self.active_data.in_progress_memory
-        else:
-            return self.active_data.total_memory
-
-    def get_data(self, type="all"):
-        # options are "in_progress", "prefetched", "all", "used"
-        return self.active_data.extract_list(type)
-
-    def evict_best(self):
-        return self.active_data.evict()
-
-    def set_concurrent_copies(self, copy_engines):
-        self.copy_engines = copy_engines
-
-    def count_active_tasks(self, type):
-        if type == "all":
-            return len(self.active_tasks.queue)
-        elif type == "all_useful":
-            return len([task for task in self.active_tasks.queue if task[1].is_redundant == False])
-        elif type == "compute":
-            return len([task for task in self.active_tasks.queue if task[1].is_movement == False])
-        elif type == "movement":
-            return len([task for task in self.active_tasks.queue if task[1].is_movement == True])
-        elif type == "copy":
-            return len([task for task in self.active_tasks.queue if (task[1].is_movement and not task[1].is_redundant)])
-
-    def add_planned_task(self, _task):
-        if _task.is_movement:
-            self.planned_movement_tasks.put(_task)
-        else:
-            self.planned_compute_tasks.put(_task)
-        return True
-
-    def pop_planned_task(self):
-        if self.planned_tasks.queue[0].status == 1:
-            return self.planned_tasks.get()
-        return False
-
-    def add_local_active_task(self, task):
-        self.active_tasks.put((task.completion_time, task))
-        return True
-
-    def pop_local_active_task(self):
-        return self.active_tasks.get()
-
-    def initialize_resource_tracking(self, resource_pool, EvictionPolicy, data_list=None):
-        self.resource_pool = resource_pool
-        self.data_pool = DataPool(
-            self.name, EvictionPolicy, self.resource_pool)
-
-        if data_list is not None:
-            for data in data_list:
-                self.data_pool.add_data(data)
-
-    # def __del__(self):
-    #    del SyntheticDevice.devicespace[self.name]
 
 
 def form_device_map(devices):
@@ -2200,8 +1777,8 @@ class SyntheticSchedule:
         self.dataspace = dict()
 
         self.all_tasks = list()
-        self.tasks = PriorityQ()
-        self.active_tasks = PriorityQ()
+        self.tasks = PriorityQueue()
+        self.active_tasks = PriorityQueue()
         self.completed_tasks = list()
 
         self.resource_pool = ResourcePool()
@@ -2270,7 +1847,7 @@ class SyntheticSchedule:
     def add_device(self, device):
         # TODO: Deprecated (use set_topology)
         self.resource_pool.add_resources(device.name, device.resources)
-        device.active_memory = self.resource_pool
+        device.resource_pool = self.resource_pool
         self.devicespace[device.name] = device
 
     def remove_device(self, device):
@@ -2285,7 +1862,7 @@ class SyntheticSchedule:
                 device = self.devicespace[location]
                 task.order = idx
                 idx = idx+2
-                device.add_planned_task(task)
+                device.push_planned_task(task)
                 self.state.set_task_status(task.name, "status", "mapped")
                 self.state.set_task_status(task.name, "device", device.id)
             # self.all_tasks.append(task)
@@ -2351,7 +1928,7 @@ class SyntheticSchedule:
 
                     # Push task to local active queue (for device)
                     # NOTE: This is mainly just as a convience for logging
-                    device.add_local_active_task(task)
+                    device.push_local_active_task(task)
 
                     # data0 = task.read_data[0]
                     # print(data0)
@@ -2583,7 +2160,7 @@ def plot_memory(device_list, state):
             if device.name in state:
                 print(state)
                 print(device.name)
-                memory = state[device.name].available_memory(usage=True)
+                memory = state[device.name].used_memory()
                 memory_count[device.name].append(memory)
 
     for device in device_list:
@@ -2610,7 +2187,7 @@ def plot_acus(device_list, state):
     for state in states:
         for device in device_list:
             if device.name in state:
-                memory = state[device.name].available_acus(usage=True)
+                memory = state[device.name].used_acus()
                 memory_count[device.name].append(memory)
 
     for device in device_list:
