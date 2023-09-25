@@ -223,8 +223,8 @@ def add_data_tasks(task_list, task_dictionaries, task_data_dependencies):
 
     n_tasks = len(task_list)
     data_tasks = []
-    data_task_dict = dict()
-    task_to_movement_dict = dict()
+    datamove_task_meta_info = dict()
+    compute_tid_to_datamove_tid = dict()
 
     count = n_tasks
 
@@ -232,7 +232,7 @@ def add_data_tasks(task_list, task_dictionaries, task_data_dependencies):
         # For each task create all data movement tasks
         ids, runtime, dependencies, data = task
         data_dependencies = task_data_dependencies[tuple(ids)]
-        task_to_movement_dict[tuple(ids)] = []
+        compute_tid_to_datamove_tid[tuple(ids)] = []
 
         # Make one data movement task for each piece of data that needs to be read
         for data in read_dict[tuple(ids)]:
@@ -259,12 +259,12 @@ def add_data_tasks(task_list, task_dictionaries, task_data_dependencies):
             # Create data movement task tuple
             data_task_tuple = (movement_id, movement_depenendices, [data])
             data_tasks.append(data_task_tuple)
-            data_task_dict[movement_id] = data_task_tuple
-            task_to_movement_dict[tuple(ids)].append(movement_id)
+            datamove_task_meta_info[movement_id] = data_task_tuple
+            compute_tid_to_datamove_tid[tuple(ids)].append(movement_id)
             count += 1
             count_dict[movement_id] = count
 
-    return data_tasks, data_task_dict, task_to_movement_dict
+    return data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid
 
 
 def make_networkx_graph(task_list, task_dictionaries, data_config, movement_dictionaries=None, plot_isolated=False, plot_weights=False, check_redundant=True):
@@ -278,7 +278,7 @@ def make_networkx_graph(task_list, task_dictionaries, data_config, movement_dict
     runtime_dict, dependency_dict, write_dict, read_dict, count_dict = task_dictionaries
 
     if movement_dictionaries is not None:
-        data_tasks, data_task_dict, task_to_movement_dict = movement_dictionaries
+        data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid = movement_dictionaries
 
     for task in task_list:
         ids, runtime, dependencies, data = task
@@ -290,7 +290,7 @@ def make_networkx_graph(task_list, task_dictionaries, data_config, movement_dict
         ids, runtime, dependencies, data = task
         for node in dependencies:
             if "M" in node and movement_dictionaries:
-                data = data_task_dict[node][2][0]
+                data = datamove_task_meta_info[node][2][0]
                 data_info = data_config[data]
                 # print("Data: ", data, "Data Info: ", data_info[0])
                 weight = str(data_info[0])
@@ -301,9 +301,9 @@ def make_networkx_graph(task_list, task_dictionaries, data_config, movement_dict
                     if check_redundant:
                         redundant = False
                         # Make sure it is not a redundant edge
-                        targets_data_tasks = task_to_movement_dict[tuple(ids)]
+                        targets_data_tasks = compute_tid_to_datamove_tid[tuple(ids)]
                         for data_task in targets_data_tasks:
-                            data_task_info = data_task_dict[data_task]
+                            data_task_info = datamove_task_meta_info[data_task]
                             if node in data_task_info[1]:
                                 redundant = True
                     else:

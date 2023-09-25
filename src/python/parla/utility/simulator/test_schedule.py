@@ -11,6 +11,7 @@ from data import PArray
 from utility import read_graphx, convert_to_dictionary, compute_data_edges
 from utility import add_data_tasks, make_networkx_graph, get_valid_order
 from utility import task_status_color_map, plot_graph
+from task import TaskHandle, SyntheticTask
 from log_stack import LogDict
 
 SyntheticDevice = device.SyntheticDevice
@@ -439,473 +440,6 @@ def initialize_data(data_config, device_map):
     return data_list
 
 
-class SyntheticTask:
-
-    taskspace = dict()
-
-    def __init__(self, _name, _resources, _duration, _dependencies, _dependents, _read_data, _write_data, _data_targets, _order=None):
-        self.name = _name
-        self.resources = _resources
-        self.duration = _duration
-
-        # What tasks does this task depend on?
-        self.dependencies = _dependencies
-
-        # What tasks depend on this task?
-        self.dependents = _dependents
-
-        # Is this task ready?
-        self.status = 0
-
-        # Priority order (if any)
-        self.order = _order
-
-        self.completion_time = -1.0
-
-        # Set of data to read and write
-        self.write_data = _write_data
-        self.read_data = _read_data
-
-        # Where does the data need to be located at task runtime? (Needed for multidevice tasks)
-        self.data_targets = _data_targets
-        self.data_sources = None
-
-        self.locations = list(self.resources.keys())
-
-        self.is_movement = False
-
-        self.unlock_flag = True
-        self.evict_flag = True
-        self.free_flag = True
-        self.copy_flag = False
-
-        self.is_redundant = False
-
-        SyntheticTask.taskspace[self.name] = self
-
-    def __str__(self):
-        return f"Task: {self.name} | \n\t Dependencies: {self.dependencies} | \n\t Resources: {self.resources} | \n\t Duration: {self.duration} | \n\t Data: {self.read_data} : {self.write_data} | \n\t Needed Configuration: {self.data_targets}"
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __repr__(self):
-        return str(self.name)
-
-    def __lt__(self, other):
-        # If task is running on device, use completion time order
-        if self.completion_time > 0 and other.completion_time > 0:
-            return self.completion_time < other.completion_time
-        # Otherwise use priority order (user assigned)
-        else:
-            return self.order < other.order
-
-    def __eq__(self, other):
-        # Two tasks are equal if they have the same name
-        return self.name == other.name
-
-    def make_data_movement(self):
-        self.is_movement = True
-        self.unlock_flag = False
-        self.free_flag = False
-        self.copy_flag = True
-
-    def make_evict(self):
-        self.evict_flag = False
-
-    def add_dependent(self, dependent):
-        self.dependents.append(dependent)
-
-        for dependent in self.dependents:
-            dependent.update_status()
-
-    def add_dependency(self, dependency):
-        self.dependencies.append(dependency)
-        self.status = 0
-
-    def convert_references(self, taskspace):
-        self.dependencies = [taskspace[dependency]
-                             for dependency in self.dependencies]
-        self.dependents = [taskspace[dependent]
-                           for dependent in self.dependents]
-
-    def update_status(self):
-        self.status = 0
-        # print("Updating Status of",  self.name, self.dependencies)
-        for dependency in self.dependencies:
-            if dependency.status != 2:
-                self.status = 0
-                return
-        self.status = 1
-
-    def check_status(self):
-        return self.status
-
-    def start(self):
-
-        # If task is moving data, then update corresponding data blocks and device data pools
-        if self.is_movement:
-            assert(self.data_sources is not None)
-            for data in self.read_data:
-                data.start_prefetch(self,
-                                    self.dependents, [self.data_targets[data.name]])
-                # print("Prefetch Check: ", data)
-
-        # Lock all used data and their sources (if any)
-        self.lock_data()
-
-        # Perform read on used data (decrements prefetch counter if not movement)
-        for data in self.read_data:
-            target = self.data_targets[data.name]
-            data.read(self, [target], self.is_movement)
-
-        # Perform write on used data:
-        # 1. (causes eviction in the data pool for all others)
-        # 2. (decrements prefetch counter)
-        # NOTE: Data movement tasks should NOT be writing data, list should be empty.
-        for data in self.write_data:
-            target = self.data_targets[data.name]
-            data.write(self, [target], self.is_movement)
-
-    def finish(self):
-
-        # Update status to completed
-        self.status = 2
-
-        # Propogate status to dependents
-        for dependent in self.dependents:
-            dependent.update_status()
-
-        # Unlock all used data and their sources
-        self.unlock_data()
-
-        # If task has moved data, then update corresponding data blocks and device data pools
-        if self.is_movement:
-            for data in self.read_data:
-                data.finish_prefetch(self, self.dependents, [
-                    self.data_targets[data.name]])
-
-            # NOTE: Data movement tasks should NOT have any write data
-            # for data in self.write_data:
-            #    data.prefetch(self.dependents, [self.data_sources[data.name]])
-
-    def find_source(self, data, pool, required=False):
-        success_flag = True
-
-        # Find source
-        target_device = self.data_targets[data.name]
-        source = data.choose_source(target_device, pool, required=required)
-        # print("The best free connection is: ", source.name)
-        self.data_sources[data.name] = source
-
-        if source is None:
-            success_flag = False
-
-        return success_flag
-
-    def assign_data_sources(self, pool, required=False):
-        self.data_sources = dict()
-        success_flag = True
-
-        for data in self.read_data:
-            if not self.find_source(data, pool, required=required):
-                success_flag = False
-
-        for data in self.write_data:
-            if not self.find_source(data, pool, required=required):
-                success_flag = False
-
-        return success_flag
-
-    def compute_non_resident_memory(self):
-        sizes = []
-
-        for data in self.read_data:
-            device_target = self.data_targets[data]
-            size = device_target.get_nonlocal_size(data)
-            sizes.append(size)
-
-        for data in self.write_data:
-            device_target = self.data_targets[data]
-            size = device_target.get_nonlocal_size(data)
-            sizes.append(size)
-
-        return sum(sizes)
-
-    def check_data_locations(self):
-        # Check if all data is located at the correct location to run the task
-        success_flag = True
-
-        for data_name, device in self.data_targets.items():
-            data = PArray.dataspace[data_name]
-
-            if not data.valid(device):
-                success_flag = False
-                break
-
-        return success_flag
-
-    def check_resources(self, pool):
-        # Check if all resources and communication links are available to run the task
-        # Check if all data is located at the correct location to run the task (if not movement)
-        success_flag = True
-
-        # Make sure all data transfers can fit on the device
-        if self.is_movement:
-
-            for data in self.read_data:
-                device_target = self.data_targets[data.name]
-                success_flag = success_flag and device_target.check_fit(data)
-
-            # NOTE: This should be empty
-            for data in self.write_data:
-                device_target = self.data_targets[data.name]
-                success_flag = success_flag and device_target.check_fit(data)
-
-        if not success_flag:
-            return False
-
-        # Make sure data transfer can be scheduled right now
-        if self.is_movement:
-            # Try to assign all data movement to active links
-            success_flag = success_flag and self.assign_data_sources(
-                pool, required=True)
-            # print("Data Sources", self.data_sources)
-        else:
-            # Make sure all data is already loaded
-            success_flag = success_flag and self.check_data_locations()
-
-            if not success_flag:
-                raise Exception(
-                    f"Data missing on device before task start. Task: {self.name}")
-
-        # Make sure enough resources on the device are available to run the task
-        if success_flag:
-            return pool.check_resources(self.resources)
-        else:
-            return False
-
-    def reserve_resources(self, pool):
-        # Reserve resources and communication links for the task
-        pool.reserve_resources(self.resources)
-
-        if self.data_sources:
-            self.reserved = pool.topology.reserve_communication(
-                self.data_targets, self.data_sources)
-
-            if (len(self.reserved) == 0) and self.is_movement:
-                self.is_redundant = True
-
-    def free_resources(self, pool):
-        # Free resources and communication links for the task
-        if not self.is_movement:
-            pool.free_resources(self.resources)
-
-        if self.data_sources:
-            pool.topology.free_communication(
-                self.data_targets, self.data_sources, self.reserved)
-
-    def estimate_time(self, current_time, pool):
-        # TODO: For data movement and eviction, compute from data movement time
-
-        transfer_time = 0
-        if self.is_movement:
-            transfer_time = pool.topology.compute_transfer_time(current_time, self.data_targets,
-                                                                self.data_sources)
-
-        # print(self.name, "Transfer Time:", transfer_time - current_time)
-
-        # TODO: This assumes compute and data movement tasks are disjoint
-        if self.is_movement:
-            self.completion_time = transfer_time
-        else:
-            self.completion_time = current_time + self.duration
-
-        assert(self.completion_time >= 0)
-        assert(self.completion_time < float(np.inf))
-
-        return self.completion_time
-
-    def lock_data(self):
-        # print("Locking Data for Task:", self.name)
-
-        joint_data = (set(self.read_data) | set(self.write_data))
-        for data in joint_data:
-            to_lock = []
-
-            device_target = self.data_targets[data.name]
-            to_lock.append(device_target)
-
-            if self.data_sources:
-                device_source = self.data_sources[data.name]
-                assert(device_source is not None)
-                if not (device_target == device_source):
-                    to_lock.append(device_source)
-
-            data.acquire(to_lock)
-
-
-    def unlock_data(self):
-
-        joint_data = (set(self.read_data) | set(self.write_data))
-
-        for data in joint_data:
-            to_unlock = []
-
-            device_target = self.data_targets[data.name]
-            to_unlock.append(device_target)
-
-            if self.data_sources:
-                device_source = self.data_sources[data.name]
-                assert(device_source is not None)
-                if not (device_source == device_target):
-                    to_unlock.append(device_source)
-
-            data.release(to_unlock)
-
-        """
-        for data in self.write_data:
-
-            to_unlock = []
-
-            device_target = self.data_targets[data.name]
-            to_unlock.append(device_target)
-
-            if self.data_sources:
-                device_source = self.data_sources[data.name]
-                assert(device_source is not None)
-                if not (device_source == device_target):
-                    to_unlock.append(device_source)
-
-            data.unlock(to_unlock)
-        """
-
-    # def __del__(self):
-    #    del SyntheticTask.taskspace[self.name]
-
-
-class TaskHandle:
-
-    data = {}
-    device_map = {}
-    movement_dict = {}
-
-    def __init__(self, task_id, runtime, dependency, dependants, read, write, associated_movement):
-        self.task_id = task_id
-        self.runtime_info = runtime
-        self.dependency = dependency
-        self.dependants = dependants
-        self.read = read
-        self.write = write
-        self.associated_movement = associated_movement
-
-    @ staticmethod
-    def set_data(data):
-        TaskHandle.data = data
-
-    @ staticmethod
-    def set_devices(device_map):
-        TaskHandle.device_map = device_map
-
-    @ staticmethod
-    def set_movement_dict(movement_dict):
-        TaskHandle.movement_dict = movement_dict
-
-    def get_valid_devices(self):
-        contraint_set = list(self.runtime_info.keys())
-        device_list = list(TaskHandle.device_map.keys())
-        n_gpus = len([d for d in device_list if d >= 0])
-
-        all_idx, all_devices = zip(*TaskHandle.device_map.items())
-
-        # Add all devices
-        valid_devices = set()
-        for idx in contraint_set:
-            if idx < 0:
-                valid_devices.add(TaskHandle.device_map[idx])
-            if idx > 0:
-                valid_devices.add(TaskHandle.device_map[(idx-1)])
-
-        # Add all GPU devices
-        if 0 in contraint_set:
-            for device in all_devices:
-                if not device.is_cpu():
-                    valid_devices.add(device)
-
-        return list(valid_devices)
-
-    def get_info_on_device(self, device):
-        #print("CHECK", self.runtime_info)
-
-        shifted_idx = device.id + 1
-        if device.id < 0:
-            if device.id in self.runtime_info:
-                return self.runtime_info[device.id]
-
-        if shifted_idx > 0:
-            if shifted_idx in self.runtime_info:
-                return self.runtime_info[shifted_idx]
-
-        if 0 in self.runtime_info:
-            return self.runtime_info[0]
-
-        return None
-
-    def make_task(self, device):
-
-        # def __init__(self, _name, _resources, _duration, _dependencies, _dependents, _read_data, _write_data, _data_targets, _order=None)
-        name = self.task_id
-
-        info = self.get_info_on_device(device)
-
-        compute_time = info[0]
-        acus = info[1]
-        gil_count = info[2]
-        gil_time = info[3]
-        memory = info[4]
-
-        task_time = compute_time + gil_time*gil_count
-
-        resources = {device.name: {"memory": memory, "acus": acus}}
-        duration = task_time
-
-        dependencies = self.dependency
-        dependants = self.dependants
-
-        read_data = [TaskHandle.data["D"+str(d)] for d in self.read]
-        write_data = [TaskHandle.data["D"+str(d)] for d in self.write]
-
-        data_targets = {"D"+str(d): device for d in self.read}
-
-        return SyntheticTask(name, resources, duration, dependencies, dependants, read_data, write_data, data_targets)
-
-    def make_movement_tasks(self, device):
-
-        task_list = []
-
-        for movement in self.associated_movement:
-            movement_tuple = TaskHandle.movement_dict[movement]
-            name = movement
-
-            resources = {device.name: {"memory": 0, "acus": Fraction(0)}}
-            duration = 0
-
-            dependencies = movement_tuple[1]
-            dependants = [self.task_id]
-
-            reads = movement_tuple[2]
-
-            read_data = [TaskHandle.data["D"+str(d)]for d in reads]
-            data_targets = {"D"+str(d): device for d in reads}
-
-            movement_task = SyntheticTask(
-                name, resources, duration, dependencies, dependants, read_data, [], data_targets)
-            movement_task.make_data_movement()
-
-            task_list.append(movement_task)
-
-        return task_list
-
 
 class SyntheticSchedule:
 
@@ -983,7 +517,7 @@ class SyntheticSchedule:
 
     def adjust_references(self, taskspace):
         for task in self.all_tasks:
-            task.convert_references(taskspace)
+            task.convert_tasknames_to_objs(taskspace)
 
         # for data in self.data:
         #    data.dataspace = self.dataspace
@@ -1166,38 +700,40 @@ class SyntheticSchedule:
 
 def initialize_task_handles(graph, task_dictionaries, movement_dictionaries, device_map, data_map):
     runtime_dict, dependency_dict, write_dict, read_dict, count_dict = task_dictionaries
-    data_tasks, data_task_dict, task_to_movement_dict = movement_dictionaries
+    data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid = movement_dictionaries
 
     task_handle_dict = dict()
     # __init__(self, task_id, runtime, dependency,
     #         dependants, read, write, associated_movement)
 
-    TaskHandle.set_data(data_map)
-    TaskHandle.set_devices(device_map)
-    TaskHandle.set_movement_dict(data_task_dict)
+    TaskHandle.set_parray_name_to_obj(data_map)
+    TaskHandle.set_device_id_to_obj(device_map)
+    TaskHandle.set_datamove_task_meta_info(datamove_task_meta_info)
 
     for task_name in graph.nodes():
-        name = task_name
-
-        if "M" in name:
+        if "M" in task_name:
             continue
 
-        runtime = runtime_dict[name]
-        dependency = dependency_dict[name]
+        runtime = runtime_dict[task_name]
+        dependency = dependency_dict[task_name]
 
-        in_edges = graph_full.in_edges(nbunch=[name])
+        in_edges = graph_full.in_edges(nbunch=[task_name])
         in_edges = [edge[0] for edge in in_edges]
 
-        out_edges = graph_full.out_edges(nbunch=[name])
+        out_edges = graph_full.out_edges(nbunch=[task_name])
         out_edges = [edge[1] for edge in out_edges]
 
-        reads = read_dict[name]
-        writes = write_dict[name]
+        reads = read_dict[task_name]
+        writes = write_dict[task_name]
 
-        movement = task_to_movement_dict[name]
+        # Extract a list of ids of data move tasks for a task
+        # having `name.`
+        datamove_tid_list = compute_tid_to_datamove_tid[
+            task_name]
 
         task = TaskHandle(task_name, runtime, in_edges,
-                          out_edges, reads, writes, movement)
+                          out_edges, reads, writes,
+                          datamove_tid_list)
         task_handle_dict[task_name] = task
 
     return task_handle_dict
@@ -1211,10 +747,10 @@ def instantiate_tasks(task_handles, task_list, mapping):
         task_handle = task_handles[task_name]
         device = mapping[task_name]
 
-        current_task = task_handle.make_task(device)
+        current_task = task_handle.create_compute_task(device)
         task_dict[task_name] = current_task
 
-        movement_tasks = task_handle.make_movement_tasks(device)
+        movement_tasks = task_handle.create_movement_tasks(device)
 
         for task in movement_tasks:
             task_dict[task.name] = task
@@ -1500,10 +1036,10 @@ task_dictionaries = (runtime_dict, dependency_dict,
 task_data_dependencies = compute_data_edges(
     (runtime_dict, dependency_dict, write_dict, read_dict, count_dict))
 
-data_tasks, data_task_dict, task_to_movement_dict = add_data_tasks(
+data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid = add_data_tasks(
     task_list, (runtime_dict, dependency_dict, write_dict, read_dict, count_dict), task_data_dependencies)
 
-movement_dictionaries = (data_tasks, data_task_dict, task_to_movement_dict)
+movement_dictionaries = (data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid)
 
 # Create devices
 gpu0 = SyntheticDevice(
@@ -1557,11 +1093,11 @@ data = list(data_map.values())
 graph_compute = make_networkx_graph(task_list, (runtime_dict, dependency_dict, write_dict, read_dict,
                                                 count_dict), data_config, None)
 graph_w_data = make_networkx_graph(task_list, (runtime_dict, dependency_dict, write_dict, read_dict,
-                                               count_dict), data_config, (data_tasks, data_task_dict, task_to_movement_dict))
+                                               count_dict), data_config, (data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid))
 graph_full = make_networkx_graph(task_list, (runtime_dict, dependency_dict, write_dict, read_dict,
-                                             count_dict), data_config, (data_tasks, data_task_dict, task_to_movement_dict), check_redundant=False)
+                                             count_dict), data_config, (data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid), check_redundant=False)
 #hyper, hyper_dual = make_networkx_datagraph(task_list, (runtime_dict, dependency_dict, write_dict, read_dict,
-#                                                        count_dict), data_config, (data_tasks, data_task_dict, task_to_movement_dict))
+#                                                        count_dict), data_config, (data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid))
 plot_graph(graph_full, data_dict=(read_dict, write_dict, dependency_dict))
 #plot_hypergraph(hyper_dual)
 
@@ -1608,4 +1144,3 @@ print("Predicted Graph Time (s): ", graph_t)
 #plot_active_tasks(devices, state, "all_useful")
 #plot_transfers_data(data[0], devices, state)
 # make_interactive(scheduler.time, state)
-

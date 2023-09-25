@@ -342,6 +342,11 @@ class PArray:
         scheduled tasks.
         """
         if status := self.get_status(device):
+            # TODO(hc): how is prefetched used?
+            # use() and read() on a device decreases that device's prefetch
+            # counter. But use() and read() mean the valid data is on the
+            # device. Then why is this valid?
+            # shouldn't it be stale?
             return status.prefetched > 0
         return False
 
@@ -356,7 +361,7 @@ class PArray:
                 valid_sources.append(device)
         return valid_sources
 
-    def choose_source(self, target_device, pool, required=False):
+    def choose_source_device(self, target_device, pool, required=False):
         """
         Choose a source device having the valid copy and that would be used
         to copy a data to another device.
