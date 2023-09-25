@@ -380,7 +380,7 @@ class PArray:
         # print("SOURCE LIST", source_list)
 
         # Find the closest free source for the data
-        closest_free_source = topology.find_best(
+        closest_free_source = topology.find_best_parray_source(
             target_device, source_list, free=True)
 
         return closest_free_source
