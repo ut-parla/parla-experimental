@@ -20,43 +20,8 @@ import task
 
 SyntheticDevice = device.SyntheticDevice
 
-class CanAssign(object):
-    def __init__(self, q1, q2, pool):
-        self.q1 = q1
-        self.q2 = q2
-        self.pool = pool
-        self.state = 0
 
-    def __iter__(self):
-        while True:
-            try:
-                # print("CanAssign: ", self.q.queue)
-
-                if not len(self.q.queue):
-                    break
-                # Check if top of queue is ready
-                # print("Before", self.q.queue[0].name, self.q.queue[0].status)
-                self.q.queue[0].update_status()
-                # print("After", self.q.queue[0].name, self.q.queue[0].status)
-
-                if self.q.queue[0].status != 1:
-                    break
-
-                # Check if top of queue can fit in memory
-                if not self.q.queue[0].check_resources(self.pool):
-                    break
-
-                # Check if there is enough data to evict to make room for new task
-                # TODO implement this
-                # if so, yield an eviction task
-
-                yield self.q.get()
-
-            except queue.Empty:
-                break
-
-
-class Assign2(object):
+class DispatchTaskToDevice(object):
     def __init__(self, q1, q2, pool):
         self.q1 = q1
         self.q2 = q2
@@ -267,7 +232,9 @@ class SyntheticSchedule:
 
     def start_tasks(self):
         for device in self.devices:
-            for task in Assign2(device.planned_compute_tasks, device.planned_movement_tasks, self.resource_pool):
+            for task in DispatchTaskToDevice(device.planned_compute_tasks,
+                                             device.planned_movement_tasks,
+                                             self.resource_pool):
 
                 if task:
                     print("Assigning Task:", task.name, task.dependencies)
