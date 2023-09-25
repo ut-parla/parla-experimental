@@ -9,27 +9,16 @@ from resource_pool import ResourcePool
 from priority_queue import PriorityQueue
 from data import PArray
 from utility import read_graphx, convert_to_dictionary, compute_data_edges
-from utility import add_data_tasks, make_networkx_graph, get_valid_order
-from utility import task_status_color_map, plot_graph
+from utility import add_data_tasks, make_networkx_graph
+from utility import task_status_color_map, plot_graph, Drainer
+from utility import initialize_data, form_device_map
+import utility
 from task import TaskHandle, SyntheticTask
 from log_stack import LogDict
 from hw_topo import BandwidthHandle, SyntheticTopology
+import task
 
 SyntheticDevice = device.SyntheticDevice
-
-class Drainer(object):
-    def __init__(self, q):
-        self.q = q
-
-    def __iter__(self):
-        while True:
-            try:
-                if len(self.q) == 0:
-                    break
-                yield self.q.get()
-            except queue.Empty:
-                break
-
 
 class CanAssign(object):
     def __init__(self, q1, q2, pool):
@@ -138,29 +127,6 @@ class Assign2(object):
             except (queue.Empty, StopIteration) as error:
                 # print("Queue is empty (error catch)")
                 break
-
-
-def form_device_map(devices):
-    device_map = dict()
-    for device in devices:
-        device_map[device.id] = device
-    return device_map
-
-
-def initialize_data(data_config, device_map):
-    data_list = dict()
-    device_list = device_map.keys()
-    n_gpus = len([d for d in device_list if d >= 0])
-
-    # NOTE: Assumes initialization on ONLY one location.
-    for data_name, data_info in data_config.items():
-        device = device_map[data_info[1]]
-        data = PArray("D"+str(data_name),
-                      data_info[0], [device])
-        device.add_data(data)
-        data_list[data.name] = data
-    return data_list
-
 
 
 class SyntheticSchedule:
@@ -420,331 +386,6 @@ class SyntheticSchedule:
         return self.time
 
 
-def initialize_task_handles(graph, task_dictionaries, movement_dictionaries, device_map, data_map):
-    runtime_dict, dependency_dict, write_dict, read_dict, count_dict = task_dictionaries
-    data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid = movement_dictionaries
-
-    task_handle_dict = dict()
-    # __init__(self, task_id, runtime, dependency,
-    #         dependants, read, write, associated_movement)
-
-    TaskHandle.set_parray_name_to_obj(data_map)
-    TaskHandle.set_device_id_to_obj(device_map)
-    TaskHandle.set_datamove_task_meta_info(datamove_task_meta_info)
-
-    for task_name in graph.nodes():
-        if "M" in task_name:
-            continue
-
-        runtime = runtime_dict[task_name]
-        dependency = dependency_dict[task_name]
-
-        in_edges = graph_full.in_edges(nbunch=[task_name])
-        in_edges = [edge[0] for edge in in_edges]
-
-        out_edges = graph_full.out_edges(nbunch=[task_name])
-        out_edges = [edge[1] for edge in out_edges]
-
-        reads = read_dict[task_name]
-        writes = write_dict[task_name]
-
-        # Extract a list of ids of data move tasks for a task
-        # having `name.`
-        datamove_tid_list = compute_tid_to_datamove_tid[
-            task_name]
-
-        task = TaskHandle(task_name, runtime, in_edges,
-                          out_edges, reads, writes,
-                          datamove_tid_list)
-        task_handle_dict[task_name] = task
-
-    return task_handle_dict
-
-
-def instantiate_tasks(task_handles, task_list, mapping):
-    task_dict = dict()
-
-    for task_name in task_list:
-
-        task_handle = task_handles[task_name]
-        device = mapping[task_name]
-
-        current_task = task_handle.create_compute_task(device)
-        task_dict[task_name] = current_task
-
-        movement_tasks = task_handle.create_movement_tasks(device)
-
-        for task in movement_tasks:
-            task_dict[task.name] = task
-
-    return task_dict
-
-
-def order_tasks(tasks, order):
-    task_list = []
-    idx = 0
-    for task_name in order:
-        task_list.append(tasks[task_name])
-        task_list[idx].order = idx
-        idx = idx + 1
-    return task_list
-
-
-units = {"B": 1, "KB": 10**3, "MB": 10**6, "GB": 10**9, "TB": 10**12}
-# Alternative unit definitions, notably used by Windows:
-# units = {"B": 1, "KB": 2**10, "MB": 2**20, "GB": 2**30, "TB": 2**40}
-
-
-def parse_size(size):
-    number, unit = [string.strip() for string in size.split()]
-    return int(float(number)*units[unit])
-
-
-def get_trivial_mapping(task_handles):
-    import random
-    mapping = dict()
-
-    for task_name in task_handles.keys():
-        task_handle = task_handles[task_name]
-        valid_devices = task_handle.get_valid_devices()
-        print(valid_devices)
-        valid_devices.sort()
-        #mapping[task_name] = valid_devices[0]
-        mapping[task_name] = random.choice(valid_devices)
-
-    return mapping
-
-
-def plot_active_tasks(device_list, state, type="all"):
-    from matplotlib.ticker import MaxNLocator
-    ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # print(state.state_list)
-
-    times, states = state.unpack()
-    active_task_counts = dict()
-
-    for device in device_list:
-        active_task_counts[device.name] = []
-
-    for state in states:
-        for device in device_list:
-            if device.name in state:
-                n_tasks = state[device.name].count_active_tasks(type)
-                active_task_counts[device.name].append(n_tasks)
-
-    #print(times, active_task_counts)
-
-    for device in device_list:
-        plt.step(
-            times, active_task_counts[device.name], where="post", label=device.name)
-    plt.xlabel("Time (s)")
-    plt.ylabel("# active tasks")
-    plt.legend()
-    plt.title("Active Tasks")
-    plt.show()
-
-
-def plot_memory(device_list, state):
-    from matplotlib.ticker import MaxNLocator
-    ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    times, states = state.unpack()
-    memory_count = dict()
-
-    for device in device_list:
-        memory_count[device.name] = []
-
-    for state in states:
-        for device in device_list:
-            if device.name in state:
-                print(state)
-                print(device.name)
-                memory = state[device.name].used_memory()
-                memory_count[device.name].append(memory)
-
-    for device in device_list:
-        plt.step(times, memory_count[device.name],
-                 where="post", label=device.name)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Memory (bytes)")
-    plt.legend()
-    plt.title("Used Memory")
-    plt.show()
-
-
-def plot_acus(device_list, state):
-    from matplotlib.ticker import MaxNLocator
-    ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    times, states = state.unpack()
-    memory_count = dict()
-
-    for device in device_list:
-        memory_count[device.name] = []
-
-    for state in states:
-        for device in device_list:
-            if device.name in state:
-                memory = state[device.name].used_acus()
-                memory_count[device.name].append(memory)
-
-    for device in device_list:
-        plt.step(times, memory_count[device.name],
-                 where="post", label=device.name)
-
-    plt.xlabel("Time (s)")
-    plt.ylabel("ACUs")
-    plt.legend()
-    plt.title("Used ACUs")
-    plt.show()
-
-
-def plot_transfers_data(data, device_list, state, total=False):
-    from matplotlib.ticker import MaxNLocator
-    ax = plt.figure().gca()
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    times, states = state.unpack()
-    count = dict()
-
-    for device in device_list:
-        count[device.name] = []
-    count["total"] = []
-
-    for state in states:
-        s = 0
-        for device in device_list:
-            if device.name in state:
-                try:
-                    transfers = state[data.name].transfers[device.name]
-                except KeyError:
-                    transfers = 0
-
-                count[device.name].append(transfers)
-                s += transfers
-        count["total"].append(s)
-
-    if not total:
-        for device in device_list:
-            plt.step(times, count[device.name],
-                     where="post", label=device.name)
-    else:
-        plt.step(times, count["total"], where="post", label="total")
-
-    plt.xlabel("Time (s)")
-    plt.ylabel("# Transfers")
-    plt.legend()
-    plt.title("Movement Count")
-    plt.show()
-
-
-def make_image_folder_time(end_time, step, folder_name, state):
-    import os
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
-
-    time_stamp = 0.0
-    idx = 0
-    while time_stamp < end_time:
-        filename = folder_name + "/" + "graph_" + str(idx) + ".png"
-        point = state.get_logs_with_time(time_stamp)
-        plot_graph(graph_full, point, task_status_color_map, output=filename)
-        time_stamp += step
-        idx += 1
-
-
-def make_image_folder(folder_name, state, increment=True):
-    import os
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
-
-    inc = 0
-    for time_state in state.state_list:
-        time_stamp = time_state[0]
-        if increment:
-            filename = folder_name + "/" + "graph_" + str(inc) + ".png"
-        else:
-            filename = folder_name + "/" + "graph_" + str(time_stamp) + ".png"
-        point = time_state[1]
-        plot_graph(graph_full, point, task_status_color_map, output=filename)
-        inc += 1
-
-
-def make_movie(folder_name):
-    import cv2
-    import glob
-
-    frameSize = (500, 500)
-    out = cv2.VideoWriter('output_video.avi',
-                          cv2.VideoWriter_fourcc(*'DIVX'), 10, frameSize)
-    for filename in glob.glob(folder_name + "/*.png"):
-        img = cv2.imread(filename)
-        out.write(img)
-    out.release()
-
-
-def make_interactive(end_time, state):
-
-    root = Tk()
-    root.wm_title("Window")
-    root.geometry("1000x1000")
-
-    v1 = DoubleVar()
-
-    iterate = False
-
-    def stop():
-        nonlocal iterate
-        iterate = (not iterate)
-
-    def show(value):
-        time = float(value)
-        plot_graph(graph_full, state.get_logs_with_time(
-            time), task_status_color_map)
-        load = PIL.Image.open("graph.png")
-        load = load.resize((450, 350))
-        render = PIL.ImageTk.PhotoImage(load)
-        img = Label(root, image=render)
-        img.image = render
-        img.place(x=250, y=100)
-        sel = str(time)
-        l1.config(text=sel)
-
-    s1 = Scale(root, variable=v1, from_=0, to=end_time,
-               orient=HORIZONTAL, length=600, resolution=0.01, state='active', command=show)
-
-    def refreshscale():
-        nonlocal iterate
-        # print("Refresh", iterate)
-        if iterate:
-            v = s1.get()
-
-            def increment(v):
-                if v > end_time:
-                    return 0.0
-                else:
-                    v = v + 0.5
-                    return v
-            vafter = increment(v)
-            s1.set(vafter)
-        root.after(500, refreshscale)
-
-    l3 = Label(root, text="Time Slider")
-    b1 = Button(root, text="Start/Stop", command=stop)
-    l1 = Label(root)
-
-    s1.pack(anchor=CENTER)
-    l3.pack()
-    b1.pack(anchor=CENTER)
-    l1.pack()
-    refreshscale()
-    root.mainloop()
-
-
 data_config, task_list = read_graphx("test.gphx")  #
 #data_config, task_list = read_graphx("reduce.gph")
 runtime_dict, dependency_dict, write_dict, read_dict, count_dict = convert_to_dictionary(
@@ -765,15 +406,15 @@ movement_dictionaries = (data_tasks, datamove_task_meta_info, compute_tid_to_dat
 
 # Create devices
 gpu0 = SyntheticDevice(
-    "gpu0", 0, {"memory": parse_size("16 GB"), "acus": Fraction(1)})
+    "gpu0", 0, {"memory": utility.parse_size("16 GB"), "acus": Fraction(1)})
 gpu1 = SyntheticDevice(
-    "gpu1", 1, {"memory": parse_size("16 GB"), "acus": Fraction(1)})
+    "gpu1", 1, {"memory": utility.parse_size("16 GB"), "acus": Fraction(1)})
 gpu2 = SyntheticDevice(
-    "gpu2", 2, {"memory": parse_size("16 GB"), "acus": Fraction(1)})
+    "gpu2", 2, {"memory": utility.parse_size("16 GB"), "acus": Fraction(1)})
 gpu3 = SyntheticDevice(
-    "gpu3", 3, {"memory": parse_size("16 GB"), "acus": Fraction(1)})
+    "gpu3", 3, {"memory": utility.parse_size("16 GB"), "acus": Fraction(1)})
 cpu = SyntheticDevice(
-    "cpu", -1, {"memory": parse_size("40 GB"), "acus": Fraction(1)})
+    "cpu", -1, {"memory": utility.parse_size("40 GB"), "acus": Fraction(1)})
 
 # Create device topology
 topology = SyntheticTopology("Top1", [gpu0, gpu1, gpu2, gpu3, cpu])
@@ -809,7 +450,7 @@ scheduler = SyntheticSchedule("Scheduler", topology=topology)
 
 devices = scheduler.devices
 device_map = form_device_map(devices)
-data_map = initialize_data(data_config, device_map)
+data_map = utility.initialize_data(data_config, device_map)
 data = list(data_map.values())
 
 graph_compute = make_networkx_graph(task_list, (runtime_dict, dependency_dict, write_dict, read_dict,
@@ -827,15 +468,15 @@ plot_graph(graph_full, data_dict=(read_dict, write_dict, dependency_dict))
 #Level = 1 (Save everything! Deep Copy of objects! Needed for some plotting functions below.)
 state = LogDict(graph_full, log_level=1)
 
-task_handles = initialize_task_handles(graph_full, task_dictionaries,
-                                       movement_dictionaries, device_map, data_map)
+task_handles = task.initialize_task_handles( \
+    graph_full, task_dictionaries, movement_dictionaries, device_map, data_map)
 
-order = get_valid_order(graph_compute)
-mapping = get_trivial_mapping(task_handles)
+order = utility.get_valid_order(graph_compute)
+mapping = utility.get_trivial_mapping(task_handles)
 
-tasks = instantiate_tasks(task_handles, order, mapping)
-full_order = get_valid_order(graph_full)
-task_list = order_tasks(tasks, full_order)
+tasks = task.instantiate_tasks(task_handles, order, mapping)
+full_order = utility.get_valid_order(graph_full)
+task_list = utility.order_tasks(tasks, full_order)
 
 scheduler.set_tasks(task_list)
 scheduler.adjust_references(tasks)

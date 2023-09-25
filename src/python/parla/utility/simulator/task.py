@@ -526,3 +526,63 @@ class SyntheticTask:
     def __eq__(self, other):
         # Two tasks are equal if they have the same name
         return self.name == other.name
+
+
+def initialize_task_handles(graph, task_dictionaries, movement_dictionaries, device_map, data_map):
+    runtime_dict, dependency_dict, write_dict, read_dict, count_dict = task_dictionaries
+    data_tasks, datamove_task_meta_info, compute_tid_to_datamove_tid = movement_dictionaries
+
+    task_handle_dict = dict()
+    # __init__(self, task_id, runtime, dependency,
+    #         dependants, read, write, associated_movement)
+
+    TaskHandle.set_parray_name_to_obj(data_map)
+    TaskHandle.set_device_id_to_obj(device_map)
+    TaskHandle.set_datamove_task_meta_info(datamove_task_meta_info)
+
+    for task_name in graph.nodes():
+        if "M" in task_name:
+            continue
+
+        runtime = runtime_dict[task_name]
+        dependency = dependency_dict[task_name]
+
+        in_edges = graph.in_edges(nbunch=[task_name])
+        in_edges = [edge[0] for edge in in_edges]
+
+        out_edges = graph.out_edges(nbunch=[task_name])
+        out_edges = [edge[1] for edge in out_edges]
+
+        reads = read_dict[task_name]
+        writes = write_dict[task_name]
+
+        # Extract a list of ids of data move tasks for a task
+        # having `name.`
+        datamove_tid_list = compute_tid_to_datamove_tid[
+            task_name]
+
+        task = TaskHandle(task_name, runtime, in_edges,
+                          out_edges, reads, writes,
+                          datamove_tid_list)
+        task_handle_dict[task_name] = task
+
+    return task_handle_dict
+
+
+def instantiate_tasks(task_handles, task_list, mapping):
+    task_dict = dict()
+
+    for task_name in task_list:
+
+        task_handle = task_handles[task_name]
+        device = mapping[task_name]
+
+        current_task = task_handle.create_compute_task(device)
+        task_dict[task_name] = current_task
+
+        movement_tasks = task_handle.create_movement_tasks(device)
+
+        for task in movement_tasks:
+            task_dict[task.name] = task
+
+    return task_dict
