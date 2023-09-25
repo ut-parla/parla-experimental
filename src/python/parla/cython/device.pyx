@@ -11,7 +11,7 @@ cimport cython
 
 from parla.common.globals import _Locals as Locals
 from parla.common.globals import cupy, CUPY_ENABLED
-from parla.common.globals import DeviceType as PyDeviceType
+from parla.common.globals import DeviceType
 from parla.common.globals import VCU_BASELINE, get_device_manager
 
 from abc import ABCMeta, abstractmethod
@@ -72,13 +72,13 @@ class DeviceConfiguration:
     """
     A dataclass to represent a device configuration.
     """
-    type: PyDeviceType
+    type: DeviceType = DeviceType.CPU
     id: int = 0
     memory: long = 0
     vcus: int = 1000
 
     __annotations__ = {
-        "type": PyDeviceType,
+        "type": DeviceType,
         "id": int,
         "memory": long,
         "vcus": int
@@ -103,9 +103,9 @@ class PyDevice:
     This class is to abstract a single device in Python and manages
     a device context as a task runs in Python.
     """
-    def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
+    def __init__(self, dev_type: DeviceType, dev_type_name, dev_id: int):
         self._dev_type = dev_type
-        self._device_name = dev_type_name + ":" + str(dev_id)
+        self._device_name = f"{dev_type_name}[{str(dev_id)}]"
         self._device = self
         self._device_id = dev_id
 
@@ -185,7 +185,7 @@ class PyDevice:
         return hash(self._device_name)
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, int) or isinstance(other, PyDeviceType):
+        if isinstance(other, int) or isinstance(other, DeviceType):
             return self.architecture == other
         elif isinstance(other, PyDevice):
             return self._device_name == other._device_name
@@ -215,14 +215,9 @@ class PyCUDADevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
-        #TODO(wlr): If we ever support VECs, we might need to move this device
-        #initialization
-        #In Parla, we assume 80% of the actual device memory as the full 
-        #memory size.
-        #We assume that 1~20% of the device memory is used by external
-        #libraries including CuPy.
-        self._cy_device = CyCUDADevice(dev_id, mem_sz * 0.8, num_vcus, self)
+        super().__init__(DeviceType.GPU, "GPU", dev_id)
+        #TODO(wlr): If we ever support VECs, we might need to move this device initialization
+        self._cy_device = CyCUDADevice(dev_id, mem_sz*0.8, num_vcus, self)
 
     @property
     def device(self):
@@ -309,7 +304,7 @@ class PyArchitecture(metaclass=ABCMeta):
         return self._devices
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, int) or isinstance(o, PyDeviceType):
+        if isinstance(o, int) or isinstance(o, DeviceType):
             return self.id == o
         elif isinstance(o, type(self)):
             return (self.id == o.id) 
@@ -320,7 +315,7 @@ class PyArchitecture(metaclass=ABCMeta):
         return hash(self._id)
 
     def __repr__(self):
-        return type(self).__name__
+        return f"{self.name}[-1]"
 
     def __mul__(self, num_archs: int):
         arch_ps = [self for i in range(0, num_archs)]
@@ -383,7 +378,7 @@ class ImportableArchitecture(PyArchitecture):
         return self._architecture_type
 
     def __repr__(self):
-        return type(self).__name__
+        return f"{self.name}[-1]"
 
     def __mul__(self, num_archs: int):
         #architecture = get_device_manager().get_architecture(self._architecture_type)
@@ -401,16 +396,16 @@ class ImportableArchitecture(PyArchitecture):
 
 class PyCUDAArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("GPU", DeviceType.GPU)
 
 class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
+        ImportableArchitecture.__init__(self, "GPU", DeviceType.GPU)
  
 
 class PyCPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CPUArch", PyDeviceType.CPU)
+        super().__init__("CPU", DeviceType.CPU)
 
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
@@ -418,7 +413,7 @@ class PyCPUArchitecture(PyArchitecture):
 
 class ImportableCPUArchitecture(PyCPUArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CPUArch", DeviceType.CPU)
+        ImportableArchitecture.__init__(self, "CPU", DeviceType.CPU)
 
 
 # TODO(hc): use dataclass later.

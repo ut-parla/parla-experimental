@@ -1,3 +1,4 @@
+
 """!
 @file execute.py
 @brief Provides mechanisms to launch and log synthetic task graphs.
@@ -10,10 +11,7 @@ from dataclasses import dataclass, field
 
 from .threads import Propagate
 
-from .graphs import LogState, DeviceType, MovementType, DataInitType, TaskID, TaskRuntimeInfo, TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample
-from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig, ReductionConfig, ReductionScatterConfig
-from .graphs import generate_serial_graph, generate_independent_graph, generate_reduction_graph, generate_reduction_scatter_graph, shuffle_tasks
-from .graphs import read_pgraph, parse_blog
+from .graphs import *
 
 import os
 import tempfile
@@ -22,14 +20,15 @@ import time
 import itertools
 
 from parla import Parla, spawn, TaskSpace, parray
-from parla import sleep_gil as lock_sleep
-from parla import sleep_nogil as free_sleep
+from parla import sleep_gil
+from parla import sleep_nogil
 from parla.common.array import clone_here
-from parla.common.globals import get_current_devices, get_current_stream, get_current_context
+from parla.common.globals import get_current_devices, get_current_stream, cupy, CUPY_ENABLED, get_current_context
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
-from parla.cython.core import gpu_bsleep_nogil
+from parla import gpu_sleep_nogil
+from parla.cython.core import gpu_bsleep_nogil, gpu_bsleep_gil
 import numpy as np
 
 from fractions import Fraction
@@ -40,7 +39,7 @@ PArray = parray.core.PArray
 def make_parrays(data_list):
     parray_list = list()
     for i, data in enumerate(data_list):
-        parray_list.append(asarray(data, name="data"+str(i)) )
+        parray_list.append( asarray(data, name="data"+str(i)) )
     return parray_list
 
 
@@ -70,52 +69,68 @@ def estimate_frequency(n_samples=10, ticks=1900000000):
     print("Finished Benchmark.")
     print("Estimated GPU Frequency: Mean: ", estimated_speed,
           ", Median: ", median_speed, flush=True)
+    
     return estimated_speed
 
 
 class GPUInfo():
-    #approximate average on frontera RTX
-    #cycles_per_second = 1919820866.3481758
-    #cycles_per_second = 875649327.7713356
-    #cycles_per_second = 47994628114801.04
+
+    # approximate average on frontera RTX
+    # cycles_per_second = 1919820866.3481758
+    # cycles_per_second = 867404498.3008006
+    # cycles_per_second = 47994628114801.04
     cycles_per_second = 1949802881.4819772
 
-    def update(self, cycles):
-        if cycles is None:
-            self.cycles_per_second = cycles
+    def update_cycles(self, cycles: float =None):
 
-    def get_cycles_per_second(self):
+        if cycles is None:
+            cycles = estimate_frequency()
+        
+        self.cycles_per_second = cycles
+
+    def get_cycles(self) -> int:
         return self.cycles_per_second
     
 _GPUInfo = GPUInfo()
 
+@specialize
+def free_sleep(duration: float, config: RunConfig = None):
+    sleep_nogil(duration)
 
-_GPUInfo = GPUInfo()
+@free_sleep.variant(architecture=gpu)
+def free_sleep_gpu(duration: float, config: RunConfig = None):
+    """
+    Assumes all GPUs on the system are the same.
+    """
+    device = get_current_devices()[0]
+    stream = get_current_stream()
 
-def get_placement_set_from(ps_str_set, num_gpus):
-    ps_set = []
-    # TODO(hc): This assumes a single device task.
-    for ps_str in ps_str_set[0]:
-        dev_type = int(ps_str)
-        if dev_type == DeviceType.ANY_GPU_DEVICE:
-            ps_set.append(gpu)
-        elif dev_type == DeviceType.CPU_DEVICE:
-            ps_set.append(cpu)
-        # TODO(hc): just assume that system has 4 gpus.
-        elif dev_type == DeviceType.GPU_0:
-            ps_set.append(gpu(0))
-        elif dev_type == DeviceType.GPU_1:
-            ps_set.append(gpu(1))
-        elif dev_type == DeviceType.GPU_2:
-            ps_set.append(gpu(2))
-        elif dev_type == DeviceType.GPU_3:
-            ps_set.append(gpu(3))
-        elif dev_type >= DeviceType.USER_CHOSEN_DEVICE:
-            gpu_idx = (dev_type - DeviceType.USER_CHOSEN_DEVICE) % num_gpus
-            ps_set.append(gpu(gpu_idx))
-        else:
-            raise ValueError("Does not support this placement:", dev_type)
-    return tuple(ps_set)
+    cycles_per_second = _GPUInfo.get_cycles()
+    ticks = int(cycles_per_second * duration)
+    gpu_bsleep_nogil(device.id, ticks, stream)
+
+    if config.inner_sync:
+        stream.synchronize()
+
+@specialize
+def lock_sleep(duration: float, config: RunConfig = None):
+    sleep_gil(duration)
+
+@lock_sleep.variant(architecture=gpu)
+def lock_sleep_gpu(duration: float, config: RunConfig = None):
+    """
+    Assumes all GPUs on the system are the same.
+    """
+    device = get_current_devices()[0]
+    stream = get_current_stream()
+
+    cycles_per_second = _GPUInfo.get_cycles()
+    ticks = int(cycles_per_second * duration)
+    gpu_bsleep_gil(device.id, ticks, stream)
+
+    if config.inner_sync:
+        stream.synchronize()
+
 
 
 def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
@@ -123,8 +138,11 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
     data_list = []
     # If data does not exist, this loop will not be iterated.
     for data_idx in data_config:
-        data_location = data_config[data_idx].location
-        data_size = data_config[data_idx].size
+
+        data_info = data_config[data_idx]
+
+        data_location = data_info.location
+        data_size = data_info.size
 
         if data_location == DeviceType.CPU_DEVICE:
             data = np.zeros([data_size, data_scale],
@@ -141,340 +159,271 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
         else:
             raise NotImplementedError("This device is not supported for data")
         value += 1
-    if data_movement_type == MovementType.EAGER_MOVEMENT:
-        data_list = make_parrays(data_list)
-        if len(data_list) > 0:
-            assert isinstance(data_list[0], PArray)
+
+        
     return data_list
 
 
+#TODO(wlr): Rewrite this supporting multiple device placement.
+def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
+
+    if data_movement_type == MovementType.NO_MOVEMENT:
+        return None
+    
+    elif data_movement_type == MovementType.LAZY_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
+            
+    if data_movement_type == MovementType.EAGER_MOVEMENT:
+        data_list = create_arrays(data_config, data_scale)
+        data_list = make_parrays(data_list)
+        if len(data_list) > 0:
+            assert isinstance(data_list[0], PArray)
+    '''
+    if len(data_list) > 0:
+        print("[validation] Generated data type:", type(data_list[0]))
+    '''
+    return data_list
+
+
+def get_kernel_info(info: TaskRuntimeInfo, config: RunConfig = None) -> Tuple[float, float, int]:
+        task_time = info.task_time
+        gil_fraction = info.gil_fraction
+        gil_accesses = info.gil_accesses
+
+        if config is not None:
+            if config.task_time is not None:
+                task_time = config.task_time
+            if config.gil_accesses is not None:
+                gil_accesses = config.gil_accesses
+            if config.gil_fraction is not None:
+                gil_fraction = config.gil_fraction
+
+        kernel_time = task_time / max(gil_accesses, 1)
+        free_time = kernel_time * (1 - gil_fraction)
+        gil_time = kernel_time * gil_fraction
+
+        return (free_time, gil_time), gil_accesses
+
+def convert_context_to_devices(context):
+    device_list = []
+    for device in context.devices:
+        if device.architecture.name == "CPU":
+            dev = Device(Architecture.CPU, device.id)
+        elif device.architecture.name == "GPU":
+            dev = Device(Architecture.GPU, device.id)
+        else:
+            raise ValueError(f"Invalid architecture: {device.architecture.name}")
+        device_list.append(dev)
+    return tuple(device_list)
+    
+
+
+def synthetic_kernel(runtime_info: TaskPlacementInfo,  config: RunConfig):
+    """
+    A simple synthetic kernel that simulates a task that takes a given amount of time
+    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
+    the total time given.
+    """
+
+    if config.verbose:
+        task_internal_start_t = time.perf_counter()
+
+    context = get_current_context()
+    devices = convert_context_to_devices(context)
+    details = runtime_info[devices]
+
+    if len(devices) == 0:
+        raise ValueError("No devices provided to busy sleep kernel.")
+    if len(devices) != len(details):
+        raise ValueError("Not enough TaskRuntimeInfo provided to busy sleep kernel. Must be equal to number of devices.")
+
+    info = []
+    for idx, device in enumerate(devices):
+        if isinstance(details, TaskRuntimeInfo):
+            info.append(details)
+        else:
+            info.append(details[idx])
+        if info is None:
+            raise ValueError(f"TaskRuntimeInfo cannot be None for {device}. Please check the runtime info passed to the task.")
+        
+    waste_time(info, config)
+
+    if config.verbose:
+        task_internal_end_t = time.perf_counter()
+        task_internal_duration = task_internal_end_t - task_internal_start_t
+        return task_internal_duration
+
+    return None
+
 @specialize
-def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
-    """
-    A simple synthetic kernel that simulates a task that takes a given amount of time
-    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
-    the total time given.
-    """
-    if config.verbose:
-        task_internal_start_t = time.perf_counter()
+def waste_time(info_list: List[TaskRuntimeInfo], config: RunConfig):
+    
+    if len(info_list) == 0:
+        raise ValueError("No TaskRuntimeInfo provided to busy sleep kernel.")
+    
+    info = info_list[0]
 
-    # Simulate task work
-    kernel_time = total_time / gil_accesses
-    free_time = kernel_time * (1 - gil_fraction)
-    gil_time = kernel_time * gil_fraction
+    (free_time, gil_time), gil_accesses = get_kernel_info(info, config=config)
 
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
-
-    for i in range(gil_accesses):
+    if gil_accesses == 0:
         free_sleep(free_time)
-        lock_sleep(gil_time)
-
-    if config.verbose:
-        task_internal_end_t = time.perf_counter()
-        task_internal_duration = task_internal_end_t - task_internal_start_t
-        return task_internal_duration
-
-    return None
-
-
-@synthetic_kernel.variant(architecture=gpu)
-def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
-    """
-    A simple synthetic kernel that simulates a task that takes a given amount of time
-    and accesses the GIL a given number of times. The GIL is accessed in a fraction of
-    the total time given.
-    """
-    if config.verbose:
-        task_internal_start_t = time.perf_counter()
-
-    # Simulate task work
-    kernel_time = total_time / gil_accesses
-
-    free_time = kernel_time * (1 - gil_fraction)
-    gil_time = kernel_time * gil_fraction
-
-    cycles_per_second = _GPUInfo.get_cycles_per_second()
-    parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
-
-    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
-
-    dev_id = get_current_devices()[0]
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
-    for i in range(gil_accesses):
-        #print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
-        gpu_bsleep_nogil(dev_id[0]().device_id, int(
-            ticks), parla_cuda_stream.stream)
-        parla_cuda_stream.stream.synchronize()
-        lock_sleep(gil_time)
-
-    if config.verbose:
-        task_internal_end_t = time.perf_counter()
-        task_internal_duration = task_internal_end_t - task_internal_start_t
-        return task_internal_duration
-
-    #task_internal_end_t = time.perf_counter()
-    #task_internal_duration = task_internal_end_t - task_internal_start_t
-    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
-
-    return None
-
-
-def create_task_no_data(task, taskspaces, config, data_list=None):
-
-    try:
-        # Task ID
-        task_idx = task.task_id.task_idx
-        taskspace = taskspaces[task.task_id.taskspace]
-
-        # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
-
-        # Valid Placement Set
-        num_gpus = config.num_gpus
-        placement_key = task.task_runtime.keys()
-        placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str, num_gpus)
-
-        # TODO: This needs rework with Device support
-        # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options.
-        runtime_info = task.task_runtime[placement_set_str[0]]
-
-        # Task Constraints
-        device_fraction = runtime_info.device_fraction
-        if config.device_fraction is not None:
-            device_fraction = config.device_fraction
-
-        # Task Work
-        total_time = runtime_info.task_time
-        gil_accesses = runtime_info.gil_accesses
-        gil_fraction = runtime_info.gil_fraction
-
-        if config.task_time is not None:
-            total_time = config.task_time
-
-        if config.gil_accesses is not None:
-            gil_accesses = config.gil_accesses
-
-        if config.gil_fraction is not None:
-            gil_fraction = config.gil_fraction
-
-        # print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-        #      " placement:", placement_set, " placement key:", placement_set_str)
-
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
-        async def task_func():
-            if config.verbose:
-                print(f"+{task.task_id} Running", flush=True)
-
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
-
-            if config.verbose:
-                print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
-
-    except Exception as e:
-        print(f"Failed creating Task {task.task_id}: {e}", flush=True)
-    finally:
         return
+    
+    else:
+        for i in range(gil_accesses):
+            free_sleep(free_time)
+            lock_sleep(gil_time)
+
+@waste_time.variant(architecture=gpu)
+def waste_time_gpu(info_list: List[TaskRuntimeInfo], config: RunConfig):
+
+    context = get_current_context()
+    if len(info_list) < len(context.devices):
+        raise ValueError("Not enough TaskRuntimeInfo provided to busy sleep kernel. Must be equal to number of devices.")
+    
+    for idx, device in enumerate(context.loop()):
+        print("Device: ", device)
+        info = info_list[idx]
+        (free_time, gil_time), gil_accesses = get_kernel_info(info, config=config)
+        if gil_accesses == 0:
+            free_sleep(free_time, config=config)
+        else:
+            for i in range(gil_accesses):
+                free_sleep(free_time, config=config)
+                lock_sleep(gil_time, config=config)
+
+    if config.outer_sync:
+        context.synchronize()
 
 
-def create_task_eager_data(task, taskspaces, config=None, data_list=None):
+def build_parla_device(mapping: Device, runtime_info: TaskRuntimeInfo):
 
-    try:
-        # Task ID
-        task_idx = task.task_id.task_idx
-        taskspace = taskspaces[task.task_id.taskspace]
+    if mapping.architecture == Architecture.CPU:
+        arch = cpu
+    elif mapping.architecture == Architecture.GPU:
+        arch = gpu
+    elif mapping.architecture == Architecture.ANY:
+        raise NotImplementedError("ANY architecture not supported for Parla devices.")
+    else:
+        raise ValueError(f"Invalid architecture: {mapping.architecture}")
+    
+    device_memory = runtime_info.memory
+    device_fraction = runtime_info.device_fraction
 
-        # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
+    #Instatiate the Parla device object (may require scheduler to be active)
+    if mapping.device_id != -1:
+        device = arch(mapping.device_id)[{'memory': device_memory, 'vcus': device_fraction}]
+    else:
+        device = arch[{'memory': device_memory, 'vcus': device_fraction}]
 
-        # Valid Placement Set
-        num_gpus = config.num_gpus
-        placement_key = task.task_runtime.keys()
-        placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str, num_gpus)
+    return device
 
-        # In/out/inout data information
-        # read: list, write: list, read_write: list
-        data_information = task.data_dependencies
+def build_parla_device_tuple(mapping: Device | Tuple[Device], runtime_info: TaskPlacementInfo):
+
+    if isinstance(mapping, Device):
+        mapping = (mapping,)
+    
+    device_constraints = runtime_info[mapping]
+
+    if device_constraints is None:
+        raise ValueError(f"Device constraints cannot be None for {mapping}. Please check the runtime info passed to the task.")
+    if len(device_constraints) != len(mapping):
+        raise ValueError(f"Device constraints must be the same length as the mapping. Please check the runtime info passed to the task.")
+    
+    device_list = []
+
+    for idx, device in enumerate(mapping):
+        if device is None:
+            raise ValueError(f"Device cannot be None in mapping. Please check the runtime info passed to the task.")
+        
+        parla_device = build_parla_device(device, device_constraints[idx])
+        device_list.append(parla_device)
+    
+    return tuple(device_list)
+
+def build_parla_placement(mapping: Device | Tuple[Device] | None, task_placment_info: TaskPlacementInfo):
+
+    if mapping is None:
+        mapping_list = task_placment_info.locations
+        mapping_list = [build_parla_device_tuple(mapping, task_placment_info) for mapping in mapping_list]
+        return mapping_list 
+    
+    return [build_parla_device_tuple(mapping, task_placment_info)]
+    
+
+def parse_task_info(task: TaskInfo, taskspaces: Dict[str, TaskSpace], config: RunConfig, data_list: List):
+    """
+    Parse a tasks configuration into Parla objects to launch the task.
+    """
+
+    # Task ID
+    task_idx = task.id.task_idx
+    taskspace = taskspaces[task.id.taskspace]
+    task_name = task.id 
+
+    # Dependency Info (List of Parla Tasks)
+    dependencies = [taskspaces[dep.taskspace][dep.task_idx] for dep in task.dependencies]
+
+    # Valid Placement Set
+    placement_info = task.runtime
+    placement_list = build_parla_placement(task.mapping, placement_info)
+
+    #Data information
+    data_information = task.data_dependencies
+
+
+    #TODO(wlr): Fix Lazy Movement
+    if config.movement_type == MovementType.EAGER_MOVEMENT:
         read_data_list = data_information.read
         write_data_list = data_information.write
         rw_data_list = data_information.read_write
+    else:
+        read_data_list = []
+        write_data_list = []
+        rw_data_list = []
 
-        # Remove duplicated data blocks between in/out and inout
-        if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(
-                set(read_data_list).difference(set(rw_data_list)))
-        if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(
-                set(write_data_list).difference(set(rw_data_list)))
+    # Remove duplicated data blocks between in/out and inout
+    if len(read_data_list) > 0 and len(rw_data_list) > 0:
+        read_data_list = list(
+            set(read_data_list).difference(set(rw_data_list)))
+    if len(write_data_list) > 0 and len(rw_data_list) > 0:
+        write_data_list = list(
+            set(write_data_list).difference(set(rw_data_list)))
 
-        """
-        print("RW data list:", rw_data_list)
-        print("R data list:", read_data_list)
-        print("W data list:", write_data_list)
-        print("Data list:", data_list)
-        """
+    # Construct data blocks.
+    INOUT = [] if len(rw_data_list) == 0 else [
+            data_list[d] for d in rw_data_list
+        ]
+    
+    IN = [] if len(read_data_list) == 0 else [
+            data_list[d] for d in read_data_list
+        ]
+    OUT = [] if len(write_data_list) == 0 else [
+            data_list[d] for d in write_data_list
+        ]
+    
+    return task_name, (task_idx, taskspace, dependencies, placement_list), (IN, OUT, INOUT), placement_info
 
-        # Construct data blocks.
-        INOUT = [] if len(rw_data_list) == 0 else [
-            (data_list[d], 0) for d in rw_data_list]
-        IN = [] if len(read_data_list) == 0 else [(data_list[d], 0)
-                                                  for d in read_data_list]
-        OUT = [] if len(write_data_list) == 0 else [(data_list[d], 0)
-                                                    for d in write_data_list]
-
-        # TODO: This needs rework with Device support
-        # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options.
-        runtime_info = task.task_runtime[placement_set_str[0]]
-
-        # Task Constraints
-        device_fraction = runtime_info.device_fraction
-        if config.device_fraction is not None:
-            device_fraction = config.device_fraction
-
-        # Task Work
-        total_time = runtime_info.task_time
-        gil_accesses = runtime_info.gil_accesses
-        gil_fraction = runtime_info.gil_fraction
-
-        if config.task_time is not None:
-            total_time = config.task_time
-
-        if config.gil_accesses is not None:
-            gil_accesses = config.gil_accesses
-
-        if config.gil_fraction is not None:
-            gil_fraction = config.gil_fraction
-
-        """
-        print("Eager data in:", IN, " out:", OUT, " inout:", INOUT, flush=True)
-        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-            " placement:", placement_set)
-        # TODO(hc): Add data checking.
-        """
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
-        async def task_func():
-            if config.verbose:
-                print(f"+{task.task_id} Running", flush=True)
-
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
-
-            if config.verbose:
-                print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
-
-    except Exception as e:
-        print(f"Failed creating Task {task.task_id}: {e}", flush=True)
-    finally:
-        return
-
-
-def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
-
+def create_task(task_name, task_info, data_info, runtime_info, config: RunConfig):
     try:
-        # Task ID
-        task_idx = task.task_id.task_idx
-        taskspace = taskspaces[task.task_id.taskspace]
-
-        # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
-
-        # Valid Placement Set
-        num_gpus = config.num_gpus
-        placement_key = task.task_runtime.keys()
-        placement_set_str = list(placement_key)
-        placement_set = get_placement_set_from(placement_set_str, num_gpus)
-
-        # In/out/inout data information
-        # read: list, write: list, read_write: list
-        data_information = task.data_dependencies
-        read_data_list = data_information.read
-        write_data_list = data_information.write
-        rw_data_list = data_information.read_write
-
-        # Remove duplicated data blocks between in/out and inout
-        if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(
-                set(read_data_list).difference(set(rw_data_list)))
-        if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(
-                set(write_data_list).difference(set(rw_data_list)))
-
-        """
-        print("RW data list:", rw_data_list)
-        print("R data list:", read_data_list)
-        print("W data list:", write_data_list)
-        print("Data list:", data_list)
-        """
-
-        # TODO: This needs rework with Device support
-        # TODO(hc): This assumes that this task is a single task
-        #           and does not have multiple placement options.
-        runtime_info = task.task_runtime[placement_set_str[0]]
-
-        # Task Constraints
-        device_fraction = runtime_info.device_fraction
-        if config.device_fraction is not None:
-            device_fraction = config.device_fraction
-
-        # Task Work
-        total_time = runtime_info.task_time
-        gil_accesses = runtime_info.gil_accesses
-        gil_fraction = runtime_info.gil_fraction
-
-        if config.task_time is not None:
-            total_time = config.task_time
-
-        if config.gil_accesses is not None:
-            gil_accesses = config.gil_accesses
-
-        if config.gil_fraction is not None:
-            gil_fraction = config.gil_fraction
-        """
-        print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
-              " placement:", placement_set)
-        """
-
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        task_idx, T, dependencies, placement_set = task_info
+        IN, OUT, INOUT = data_info
+        
+        @spawn(T[task_idx], dependencies=dependencies, placement=placement_set, input=IN, inout=INOUT)
         async def task_func():
-            if config.verbose:
-                print(f"+{task.task_id} Running", flush=True)
-
-            local_data = dict()
-
-            for d in itertools.chain(read_data_list, rw_data_list):
-                data = data_list[d]
-                where = -1 if isinstance(data, np.ndarray) else data.device.id
-                local_data[d] = clone_here(data)
-                old = None
-                if config.do_check:
-                    old = np.copy(data[0, 1])
-                    local_data[d][0, 1] = -old
-                if config.verbose:
-                    print(
-                        f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>", flush=True)
-
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
-
-            for d in itertools.chain(write_data_list, rw_data_list):
-                data_list[d] = local_data[d]
 
             if config.verbose:
-                print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
+                print(f"+{task_name} Running", flush=True)
+
+            elapsed = synthetic_kernel(runtime_info, config=config)
+
+            if config.verbose:
+                print(f"-{task_name} Finished: {elapsed} seconds", flush=True)
 
     except Exception as e:
-        print(f"Failed creating Task {task.task_id}: {e}", flush=True)
+        print(f"Failed creating Task {task_name}: {e}", flush=True)
     finally:
         return
-
 
 def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
 
@@ -482,15 +431,8 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
     # Spawn tasks
     for task, details in tasks.items():
-        if run_config.movement_type == MovementType.NO_MOVEMENT:
-            create_task_no_data(details, taskspaces,
-                                config=run_config, data_list=data_list)
-        elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
-            create_task_eager_data(details, taskspaces,
-                                   config=run_config, data_list=data_list)
-        elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
-            create_task_lazy_data(details, taskspaces,
-                                  config=run_config, data_list=data_list)
+        task_name, task_info, data_info, runtime_info = parse_task_info(details, taskspaces, run_config, data_list)
+        create_task(task_name, task_info, data_info, runtime_info, run_config)
 
     spawn_end_t = time.perf_counter()
 
@@ -498,18 +440,21 @@ def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConf
 
 
 def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
-    @spawn(vcus=0)
+
+    @spawn(vcus=0, placement=cpu)
     async def main_task():
 
         graph_times = []
-        # Generate data once for multiple iterations.
-        data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
-        for i in range(0, run_config.inner_iterations):
+
+        for i in range(run_config.inner_iterations):
+            data_list = generate_data(
+                data_config, run_config.data_scale, run_config.movement_type)
+
             # Initialize task spaces
             taskspaces = {}
 
             for task, details in tasks.items():
-                space_name = details.task_id.taskspace
+                space_name = details.id.taskspace
                 if space_name not in taskspaces:
                     taskspaces[space_name] = TaskSpace(space_name)
 
@@ -519,80 +464,10 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
 
             for taskspace in taskspaces.values():
                 await taskspace
+
             graph_end_t = time.perf_counter()
 
             graph_elapsed = graph_end_t - graph_start_t
-            graph_times.append(graph_elapsed)
-
-        graph_times = np.asarray(graph_times)
-        graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(
-            graph_times), np.min(graph_times), np.max(graph_times), len(graph_times))
-
-        timing.append(graph_t)
-
-
-def execute_eviction_manager_benchmark(
-    data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo],
-    run_config: RunConfig, timing: List[TimeSample]):
-    """
-    This function is used to benchmark the Parla eviction manager.
-    It first generates a list of PArray lists, and iteratively passes
-    one of them to task graph execution.
-    So, the PArray list passed at the last iteration remains on memory
-    as an evictable state, but no task would refer to this. 
-    The eviction manager would evicts those evictable PArrays if more
-    memory is necessary for the further execution.
-    """
-    #TODO(hc): it might be a separate test.
-    @spawn(vcus=0)
-    async def main_task():
-
-        graph_times = []
-        data_list = []
-        max_memory = 0
-        num_data = 20
-        for i in range(0, num_data):
-            data_list.append(
-                generate_data(
-                  data_config, run_config.data_scale,
-                  run_config.movement_type))
-        data_id = 0
-        for i in range(0, run_config.inner_iterations):
-            import cupy
-            # Initialize task spaces
-            taskspaces = {}
-
-            # Create a task space with the postfix of the current iteration.
-            for task, details in tasks.items():
-                space_name = details.task_id.taskspace
-                if space_name not in taskspaces:
-                    taskspaces[space_name] = TaskSpace(space_name)
-            """
-            for k in range(0, 4):
-                with cupy.cuda.Device(k):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t Right Before {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-            """
-            graph_start_t = time.perf_counter()
-
-            execute_tasks(taskspaces, tasks, run_config, data_list=data_list[data_id])
-            data_id += 1
-            if data_id == num_data:
-                data_id = 0
-
-            for taskspace in taskspaces.values():
-                await taskspace
-            taskspace = None
-            graph_end_t = time.perf_counter()
-            """
-            for k in range(0, 4):
-                with cupy.cuda.Device(k):
-                    mempool = cupy.get_default_memory_pool()
-                    print(f"\t Right After {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}") 
-            """
-
-            graph_elapsed = graph_end_t - graph_start_t
-            print("Iteration:", i, ", execution time:", graph_elapsed, flush=True)
             graph_times.append(graph_elapsed)
 
         graph_times = np.asarray(graph_times)
@@ -616,8 +491,7 @@ def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, 
 
         with Parla(logfile=run_config.logfile):
             internal_start_t = time.perf_counter()
-            execute_eviction_manager_benchmark(
-                data_config, tasks, run_config, timing)
+            execute_graph(data_config, tasks, run_config, timing)
             internal_end_t = time.perf_counter()
 
         outer_end_t = time.perf_counter()
@@ -637,7 +511,7 @@ def verify_order(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Li
 
         details = truth_graph[task]
 
-        for dependency in details.task_dependencies:
+        for dependency in details.dependencies:
             if log_times[task].start_t < log_times[dependency].end_t:
                 print("Task {task} started before dependency {dependency}")
                 return False
@@ -654,7 +528,7 @@ def verify_dependencies(log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict
 
         details = truth_graph[task]
 
-        for dependency in details.task_dependencies:
+        for dependency in details.dependencies:
             if dependency not in log_graph:
                 print(
                     f"Dependency {dependency} of task {task} not in log graph")
@@ -686,7 +560,7 @@ def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Lis
 
         # TODO: This needs to be fixed for device support
         device_idx = (-1,)  # CPU
-        expected_time = details.task_runtime[device_idx].task_time
+        expected_time = details.runtime[device_idx].task_time
         observed_time = log_times[task].duration / 1000
 
         if observed_time > expected_time * factor:
@@ -817,14 +691,12 @@ class GraphContext(object):
         return self
 
     def run(self, run_config: RunConfig, max_time: int = 100):
-        return run(self.graph, self.data_config, run_config)
-        """
+
         @timeout(max_time)
         def run_with_timeout():
             return run(self.graph, self.data_config, run_config)
 
         return run_with_timeout()
-        """
 
     def __exit__(self, type, value, traceback):
         self.diro.__exit__(type, value, traceback)

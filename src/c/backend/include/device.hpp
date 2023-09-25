@@ -31,13 +31,13 @@ class DeviceRequirement;
 /**
  * @brief Architecture types for devices.
  */
-enum class DeviceType { INVALID = -2, All = -1, CPU = 0, CUDA = 1 };
+enum class DeviceType { INVALID = -2, Any = -1, CPU = 0, GPU = 1 };
 
 inline const constexpr std::array architecture_types{DeviceType::CPU,
-                                                     DeviceType::CUDA};
+                                                     DeviceType::GPU};
 inline const constexpr int NUM_DEVICE_TYPES = architecture_types.size();
 inline const std::array<std::string, NUM_DEVICE_TYPES> architecture_names{
-    "CPU", "CUDA"};
+    "CPU", "GPU"};
 
 /// Devices can be distinguished from other devices
 /// by a class type and its index.
@@ -132,7 +132,7 @@ protected:
 class CUDADevice : public Device {
 public:
   CUDADevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : Device(DeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
+      : Device(DeviceType::GPU, dev_id, mem_sz, num_vcus, py_dev, 3) {}
 
 private:
 };

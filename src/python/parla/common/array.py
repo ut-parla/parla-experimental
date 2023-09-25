@@ -77,7 +77,7 @@ class NumpyArray(ArrayType):
         current_context = get_current_context()
         current_device = current_context.devices[0]
 
-        is_gpu = (current_device.architecture == DeviceType.CUDA)
+        is_gpu = (current_device.architecture == DeviceType.GPU)
 
         if CUPY_ENABLED and isinstance(src, cupy.ndarray):
             if is_gpu and (src.flags['C_CONTIGUOUS'] or src.flags['F_CONTIGUOUS']):
@@ -121,7 +121,7 @@ class CupyArray(ArrayType):
         current_context = get_current_context()
         current_device = current_context.devices[0]
 
-        is_gpu = (current_device.architecture == DeviceType.CUDA)
+        is_gpu = (current_device.architecture == DeviceType.GPU)
 
         if isinstance(src, cupy.ndarray) or isinstance(src, numpy.ndarray):
 
@@ -298,7 +298,7 @@ def clone_here(source, kind=None):
         current_device = current_content.devices[0]
 
         # FIXME: Make this a property of the device
-        if (current_device.architecture == DeviceType.CUDA) and CUPY_ENABLED:
+        if (current_device.architecture == DeviceType.GPU) and CUPY_ENABLED:
             AType = CupyArray()
         else:
             AType = NumpyArray()
