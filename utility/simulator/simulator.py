@@ -65,19 +65,16 @@ class SchedulerArchitecture:
     def __post_init__(self, topology: SimulatedTopology = None):
         pass
 
-    def mapper(self, scheduler_state: SchedulerState, max_tasks: int = None):
+    def mapper(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
         pass
 
-    def reserver(self, scheduler_state: SchedulerState, max_tasks: int = None):
+    def reserver(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
         pass
 
-    def launcher(self, scheduler_state: SchedulerState, max_tasks: int = None):
+    def launcher(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
         pass
 
-    def complete_task(self, scheduler_state: SchedulerState, task_id: TaskID):
-        pass
-
-    def start_task(self, scheduler_state: SchedulerState, task: SimulatedTask):
+    def complete_task(self, scheduler_state: SchedulerState, task_id: TaskID) -> List[Event]:
         pass
 
     def __str__(self):
@@ -118,7 +115,7 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-    def launcher(self, scheduler_state: SchedulerState, event: Launcher):
+    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Event]:
         i = 0
         max_tasks = event.max_tasks
 
@@ -178,7 +175,7 @@ class ParlaArchitecture(SchedulerArchitecture):
                 else:
                     continue
 
-    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted):
+    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Event]:
         task_id = event.task_id
 
         if task_id is None or task_id not in self.taskmap:
