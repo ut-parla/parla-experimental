@@ -110,9 +110,11 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.mapped_tasks[device.name] = TaskQueue()
             self.reservable_tasks[device.name] = TaskQueue()
 
+            self.reserved_tasks[device.name] = dict()
             self.reserved_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.reserved_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
+            self.reserved_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
