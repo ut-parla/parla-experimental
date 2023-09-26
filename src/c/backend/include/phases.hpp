@@ -120,7 +120,7 @@ public:
   SchedulerPhase(InnerScheduler *scheduler, DeviceManager *devices)
       : scheduler(scheduler), device_manager(devices) {
     this->parray_tracker =
-        new PArrayTracker(devices->get_num_devices<DeviceType::All>());
+        new PArrayTracker(devices->get_num_devices<DeviceType::Any>());
   }
 
   ~SchedulerPhase() { delete this->parray_tracker; }

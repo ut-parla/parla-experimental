@@ -4,15 +4,13 @@
 #include "device_manager.hpp"
 #include "parray.hpp"
 
-
 /**
  * @brief Node type of a PArray eviction double-linked list.
  */
 class PArrayNode {
 public:
-  PArrayNode(parray::InnerPArray *parr, size_t prior = 0) :
-      parray(parr), priority(prior), next(nullptr), prev(nullptr)
-  {}
+  PArrayNode(parray::InnerPArray *parr, size_t prior = 0)
+      : parray(parr), priority(prior), next(nullptr), prev(nullptr) {}
 
   /// Pointer to the PArray instance
   parray::InnerPArray *parray;
@@ -33,7 +31,6 @@ public:
  */
 class DoubleLinkedList {
 public:
-
   /**
    * @brief Print the current list.
    */
@@ -41,7 +38,7 @@ public:
     PArrayNode *node = this->head_;
     std::cout << "[Evictable PArray List]\n";
     while (node != nullptr) {
-      std::cout << node->parray->id << " -> \n"; 
+      std::cout << node->parray->id << " -> \n";
       node = node->next;
     }
     std::cout << "\n";
@@ -118,7 +115,7 @@ public:
     std::lock_guard guard(this->mtx_);
     PArrayNode *old_head = this->head_;
     if (old_head != nullptr) {
-      this->remove_unsafe(old_head); 
+      this->remove_unsafe(old_head);
     }
     return old_head;
   }
@@ -140,8 +137,8 @@ public:
    * @param node PArray node to be removed from this list
    */
   bool remove_unsafe(PArrayNode *node) {
-    if (node->prev == nullptr && node->next == nullptr &&
-        node != this->head_ && node != this->tail_) {
+    if (node->prev == nullptr && node->next == nullptr && node != this->head_ &&
+        node != this->tail_) {
       // If a node is not in this list, do nothing and return false.
       return false;
     }
@@ -184,17 +181,13 @@ public:
    * @brief Return the current head of this list.
    * This function is not thread safe.
    */
-  PArrayNode *get_head() {
-    return this->head_;
-  }
+  PArrayNode *get_head() { return this->head_; }
 
   /**
    * @brief Return the current tail of this list.
    * This function is not thread safe.
    */
-  PArrayNode *get_tail() {
-    return this->tail_;
-  }
+  PArrayNode *get_tail() { return this->tail_; }
 
 private:
   PArrayNode *head_{nullptr};
@@ -202,7 +195,6 @@ private:
   std::mutex mtx_;
   size_t list_size_{0};
 };
-
 
 /**
  * @brief Least-recently-used (LRU) policy based eviction manager for
@@ -221,9 +213,7 @@ public:
 
   LRUDeviceEvictionManager(DevID_t dev_id) : dev_id_(dev_id) {}
 
-  void print() {
-    this->zr_parray_list_.print();
-  }
+  void print() { this->zr_parray_list_.print(); }
 
   /**
    * @brief A task started to refer to `parray` in the device.
@@ -234,22 +224,21 @@ public:
    * @param parray pointer to a parray to be referred by a task
    */
   void grab_parray_reference(parray::InnerPArray *parray,
-      size_t& accumulated_used_parray_bytes) {
+                             size_t &accumulated_used_parray_bytes) {
     std::lock_guard guard(this->mtx_);
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found == this->parray_reference_counts_.end()) {
       // Add `parray` to the zr list if it does not exist.
       PArrayNode *parray_node = new PArrayNode(parray);
-      this->parray_reference_counts_[parray_id] =
-          ParrayRefInfo{parray_node, 1};
+      this->parray_reference_counts_[parray_id] = ParrayRefInfo{parray_node, 1};
       // This PArray would be used for the first time, so accumulate
       // its bytes.
       accumulated_used_parray_bytes += parray->get_size();
     } else {
       // If `parray` is already in the zr list, removes it
       // from the list and increases its reference count.
-      found->second.ref_count++; 
+      found->second.ref_count++;
       if (this->zr_parray_list_.remove(found->second.parray_node_ptr)) {
         // If this PArray was in the zero-referenced list, it implies
         // new allocation will be performed.
@@ -269,12 +258,12 @@ public:
    * @param parray pointer to a parray to be released by a task
    */
   void release_parray_reference(parray::InnerPArray *parray,
-      size_t& evictable_parray_bytes) {
+                                size_t &evictable_parray_bytes) {
     std::lock_guard guard(this->mtx_);
     uint64_t parray_id = parray->id;
     auto found = this->parray_reference_counts_.find(parray_id);
     if (found != this->parray_reference_counts_.end()) {
-      found->second.ref_count--; 
+      found->second.ref_count--;
       if (found->second.ref_count == 0) {
         // If none of the tasks referes to `parray`, add it to
         // the zr list.
@@ -299,12 +288,13 @@ public:
    * @detail This removes and returns the head of the zero-referenced list
    * to be evicted from this device.
    * Note that this function is not thread safe since it assumes that only
-   * the scheduler thread calls into this function during eviction. 
+   * the scheduler thread calls into this function during eviction.
    */
-  PArrayNode *remove_and_return_head_from_zrlist(
-      size_t& accumulated_released_parray_bytes, size_t& evictable_parray_bytes) {
+  PArrayNode *
+  remove_and_return_head_from_zrlist(size_t &accumulated_released_parray_bytes,
+                                     size_t &evictable_parray_bytes) {
     std::lock_guard guard(this->mtx_);
-    PArrayNode* head = this->zr_parray_list_.remove_head();
+    PArrayNode *head = this->zr_parray_list_.remove_head();
     // This function is called when this head is evicted.
     accumulated_released_parray_bytes += head->parray->get_size();
     evictable_parray_bytes -= head->parray->get_size();
@@ -320,7 +310,7 @@ public:
    * due to, for example, out-of-scope. Then, C++ PArrays
    * start to hold invalid Python PArray pointers.
    * When a scheduler starts PArray eviction, it is possible that
-   * the C++ PArrays holding invalid Python PArrays are chosen 
+   * the C++ PArrays holding invalid Python PArrays are chosen
    * as evictable PArrays and causes segmentation fault.
    * This function removes those PArrays in advance to avoid
    * this issue (But users should be aware of and take care of this scenario).
@@ -333,9 +323,9 @@ public:
   //           the zero-referenced list, but I have higher priorities.
   void clear_all_instances() {
     this->mtx_.lock();
-    PArrayNode* head{nullptr};
+    PArrayNode *head{nullptr};
     do {
-      head = this->zr_parray_list_.remove_head(); 
+      head = this->zr_parray_list_.remove_head();
     } while (head != nullptr);
     this->mtx_.unlock();
   }
@@ -350,16 +340,16 @@ private:
   DoubleLinkedList zr_parray_list_;
 };
 
-
 /**
  * @brief Least-recently-used policy (LRU) based global eviction manager.
  * @detail This manages and evicts PArrays if necessary.
  */
 class LRUGlobalEvictionManager {
 public:
-  LRUGlobalEvictionManager(DeviceManager *device_manager) :
-    device_manager_(device_manager) {
-    DevID_t num_devices = device_manager->template get_num_devices<DeviceType::All>();
+  LRUGlobalEvictionManager(DeviceManager *device_manager)
+      : device_manager_(device_manager) {
+    DevID_t num_devices =
+        device_manager->template get_num_devices<DeviceType::Any>();
     this->device_mm_.resize(num_devices);
     for (size_t i = 0; i < this->device_mm_.size(); ++i) {
       this->device_mm_[i] = new LRUDeviceEvictionManager(i);
@@ -372,10 +362,11 @@ public:
     for (DevID_t d = 0; d < this->evictable_parray_bytes_.size(); ++d) {
       total_evictable_bytes += this->evictable_parray_bytes_[d];
     }
-    std::cout << "Total accumulated used parray bytes:" <<
-      this->accumulated_used_parray_bytes_ << ", total accumulated" <<
-      " released parray bytes:" << this->accumulated_released_parray_bytes_ <<
-      ", evictable parray bytes:" << total_evictable_bytes << "\n";
+    std::cout << "Total accumulated used parray bytes:"
+              << this->accumulated_used_parray_bytes_ << ", total accumulated"
+              << " released parray bytes:"
+              << this->accumulated_released_parray_bytes_
+              << ", evictable parray bytes:" << total_evictable_bytes << "\n";
   }
 
   /**
@@ -413,9 +404,7 @@ public:
    *
    * @param dev_id device id of a device to access its information
    */
-  size_t size(DevID_t dev_id) {
-    return this->device_mm_[dev_id]->size();
-  }
+  size_t size(DevID_t dev_id) { return this->device_mm_[dev_id]->size(); }
 
   /**
    * @brief Remove and return the head of the zero-referenced list.
@@ -457,7 +446,7 @@ private:
   std::vector<LRUDeviceEvictionManager *> device_mm_;
   /// Accumulation of the total bytes to allocate PArrays
   size_t accumulated_used_parray_bytes_{0};
-  /// Accumulation of the total bytes released by the eviction manager 
+  /// Accumulation of the total bytes released by the eviction manager
   size_t accumulated_released_parray_bytes_{0};
   /// The total bytes of the evictable PArrays in the zr list
   std::vector<size_t> evictable_parray_bytes_{0};

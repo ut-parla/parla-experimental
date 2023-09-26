@@ -126,13 +126,13 @@ template class WorkerPool<WorkerQueue, WorkerQueue>;
 
 // Scheduler Implementation
 
-InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
+InnerScheduler::InnerScheduler(LRUGlobalEvictionManager *memory_manager,
                                DeviceManager *device_manager)
     : device_manager_(device_manager), mm_(memory_manager) {
 
   // For now, it does not evict PArrays on CPU memory.
   this->memory_size_to_evict.resize(
-      device_manager->template get_num_devices<DeviceType::All>());
+      device_manager->template get_num_devices<DeviceType::Any>());
 
   this->workers.set_num_workers(1);
 
@@ -144,8 +144,8 @@ InnerScheduler::InnerScheduler(LRUGlobalEvictionManager* memory_manager,
 }
 
 InnerScheduler::~InnerScheduler() {
-  std::cout << " Number of eviction invocation:" <<
-      this->num_eviction_invocation << "\n";
+  std::cout << " Number of eviction invocation:"
+            << this->num_eviction_invocation << "\n";
   delete this->mapper;
   delete this->memory_reserver;
   delete this->runtime_reserver;
@@ -164,12 +164,9 @@ void InnerScheduler::set_stop_callback(stopfunc_t stop_callback) {
   this->stop_callback = stop_callback;
 }
 
-bool InnerScheduler::get_should_run() {
-  return this->should_run.load();
-}
+bool InnerScheduler::get_should_run() { return this->should_run.load(); }
 
-void InnerScheduler::set_memory_size_to_evict(
-    size_t size, DevID_t dev_id) {
+void InnerScheduler::set_memory_size_to_evict(size_t size, DevID_t dev_id) {
   this->memory_size_to_evict[dev_id] = size;
 }
 
@@ -203,7 +200,7 @@ void InnerScheduler::stop() {
   // no more task, and it wraps C scheduler's loop.
   // Therefore, there is no point for C++ scheduler to explicitly invoke
   // this callback at here. Python scheduler knows when it needs to stop.
-  //launch_stop_callback(this->stop_callback, this->py_scheduler);
+  // launch_stop_callback(this->stop_callback, this->py_scheduler);
   LOG_INFO(SCHEDULER, "Stopped scheduler");
 }
 
@@ -241,7 +238,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
     this->memory_reserver->enqueue(task);
   } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
     task->set_status(TaskStatus::RUNNABLE);
-    //std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
+    // std::cout << "ENQUEUE FROM CALLBACK" << std::endl;
     LOG_INFO(SCHEDULER, "Enqueing task: {} to runtime reserver", task);
     this->runtime_reserver->enqueue(task);
   }
@@ -316,13 +313,13 @@ void InnerScheduler::remove_parray(InnerPArray *parray, DevID_t global_dev_id) {
   // Could also be to call DELETED or REMOVED status on do_log
 }
 
-void InnerScheduler::remove_parray_from_tracker(
-    parray::InnerPArray *parray, DevID_t global_dev_id) {
+void InnerScheduler::remove_parray_from_tracker(parray::InnerPArray *parray,
+                                                DevID_t global_dev_id) {
   AccessMode access_mode = AccessMode::FREED;
-  this->mapper->get_parray_tracker()->do_log(global_dev_id,
-      std::make_pair(parray, access_mode));
-  this->memory_reserver->get_parray_tracker()->do_log(global_dev_id,
-      std::make_pair(parray, access_mode));
+  this->mapper->get_parray_tracker()->do_log(
+      global_dev_id, std::make_pair(parray, access_mode));
+  this->memory_reserver->get_parray_tracker()->do_log(
+      global_dev_id, std::make_pair(parray, access_mode));
 }
 
 size_t InnerScheduler::get_mapped_memory(DevID_t global_dev_idx) {
