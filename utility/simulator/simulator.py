@@ -25,6 +25,7 @@ class ObjectRegistry:
     datamap: Dict[DataID, SimulatedData] = field(default_factory=dict)
 
 
+# TODO: Rename to "SystemState"
 @dataclass(slots=True)
 class SchedulerState:
     topology: SimulatedTopology
@@ -116,64 +117,65 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
     def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Event]:
-        i = 0
-        max_tasks = event.max_tasks
+        pass
+        # i = 0
+        # max_tasks = event.max_tasks
 
-        while i < max_tasks:
+        # while i < max_tasks:
 
-            for device in self.devices:
-                reserved_tasks = self.reserved_tasks[device]
-                data_tasks = reserved_tasks[TaskType.DATA]
-                compute_tasks = reserved_tasks[TaskType.COMPUTE]
+        #     for device in self.devices:
+        #         reserved_tasks = self.reserved_tasks[device]
+        #         data_tasks = reserved_tasks[TaskType.DATA]
+        #         compute_tasks = reserved_tasks[TaskType.COMPUTE]
 
-                active_queue = data_tasks
+        #         active_queue = data_tasks
 
-                # Check if there are any tasks that can be launched
+        #         # Check if there are any tasks that can be launched
 
-                task = active_queue.peek()
-                if task
-                if self.check_resources(task, self.resource_pool):
-                    task = active_queue.get()
-                    duration = estimate_time(task, self.resource_pool)
-                    start_task(task)
+        #         task = active_queue.peek()
+        #         if task
+        #         if self.check_resources(task, self.resource_pool):
+        #             task = active_queue.get()
+        #             duration = estimate_time(task, self.resource_pool)
+        #             start_task(task)
 
-                if task:
-                    print("Assigning Task:", task.name, task.dependencies)
+        #         if task:
+        #             print("Assigning Task:", task.name, task.dependencies)
 
-                    # data0 = task.read_data[0]
-                    # print(data0)
+        #             # data0 = task.read_data[0]
+        #             # print(data0)
 
-                    # Assign memory
-                    task.reserve_resources(self.resource_pool)
+        #             # Assign memory
+        #             task.reserve_resources(self.resource_pool)
 
-                    # Compute time to completion
-                    task.estimate_time(self.time, self.resource_pool)
-                    # print("Expected Complete: ", task.completion_time)
-                    # "Start" Task
-                    # 1. Locks data (so it can't be evicted)
-                    # 2. Updates data status (to evict stale data)
-                    task.start()
+        #             # Compute time to completion
+        #             task.estimate_time(self.time, self.resource_pool)
+        #             # print("Expected Complete: ", task.completion_time)
+        #             # "Start" Task
+        #             # 1. Locks data (so it can't be evicted)
+        #             # 2. Updates data status (to evict stale data)
+        #             task.start()
 
-                    # Lock used data
-                    # task.lock_data()
+        #             # Lock used data
+        #             # task.lock_data()
 
-                    # Push task to global active queue
-                    self.active_tasks.put((task.completion_time, task))
+        #             # Push task to global active queue
+        #             self.active_tasks.put((task.completion_time, task))
 
-                    # Push task to local active queue (for device)
-                    # NOTE: This is mainly just as a convience for logging
-                    device.push_local_active_task(task)
+        #             # Push task to local active queue (for device)
+        #             # NOTE: This is mainly just as a convience for logging
+        #             device.push_local_active_task(task)
 
-                    # data0 = task.read_data[0]
-                    # print(data0)
+        #             # data0 = task.read_data[0]
+        #             # print(data0)
 
-                    # Update global state log
-                    self.state.set_task_log(
-                        task.name, "status", "active")
-                    self.state.set_task_log(
-                        task.name, "start_time", self.time)
-                else:
-                    continue
+        #             # Update global state log
+        #             self.state.set_task_log(
+        #                 task.name, "status", "active")
+        #             self.state.set_task_log(
+        #                 task.name, "start_time", self.time)
+        #         else:
+        #             continue
 
     def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Event]:
         task_id = event.task_id

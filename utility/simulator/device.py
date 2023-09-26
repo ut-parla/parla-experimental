@@ -1,6 +1,6 @@
 from ..types import Architecture, Device, TaskID, TaskState, ResourceType
 from dataclasses import dataclass, field
-from .queue import PriorityQueue
+from .queue import *
 from enum import IntEnum
 from typing import List, Dict, Set, Tuple, Optional, Self
 from fractions import Fraction
@@ -10,13 +10,15 @@ from collections import defaultdict as DefaultDict
 Numeric = int | float | Fraction | Decimal
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, init=False)
 class ResourceSet:
     store: DefaultDict[ResourceType, Numeric] = field(
         default_factory=lambda: DefaultDict(int))
 
-    def __post_init__(self, vcus: Numeric, memory: int, copy: int):
-        self.store[ResourceType.VCUS] = Fraction(vcus)
+    def __init__(self, vcus: Numeric, memory: int, copy: int):
+        self.store = DefaultDict(int)
+
+        self.store[ResourceType.VCU] = Fraction(vcus)
         self.store[ResourceType.MEMORY] = memory
         self.store[ResourceType.COPY] = copy
 
@@ -68,5 +70,10 @@ class DataPool:
 @dataclass(slots=True)
 class SimulatedDevice:
     name: Device
-    tasks: Dict[TaskState, PriorityQueue[TaskID]]
-    resources: ResourceSet = ResourceSet(1, 100, 2)
+    tasks: Dict[TaskState, TaskQueue] = field(default_factory=dict)
+    resources: ResourceSet = field(default_factory=ResourceSet)
+
+    def __post_init__(self):
+        self.resources[ResourceType.VCU] = 1
+        self.resources[ResourceType.MEMORY] = 100
+        self.resources[ResourceType.COPY] = 2

@@ -7,7 +7,7 @@ from ..types import DataInfo
 from typing import List, Dict, Set, Tuple, Optional, Self
 
 from .queue import PriorityQueue
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .resources import ResourcePool
 from .datapool import DataPool
@@ -23,13 +23,13 @@ class TaskTimes():
     complete_t: float = 0.0
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, init=False)
 class TaskCounters():
     unmapped_deps: int = 0
     unreserved_deps: int = 0
     uncompleted_deps: int = 0
 
-    def __post_init__(self, info: TaskInfo):
+    def __init__(self, info: TaskInfo):
         self.unmapped_deps = len(info.dependencies)
         self.unreserved_deps = len(info.dependencies)
         self.uncompleted_deps = len(info.dependencies)
@@ -55,8 +55,9 @@ class SimulatedTask:
     name: TaskID
     info: TaskInfo
     state: TaskState = TaskState.SPAWNED
-    times: TaskTimes = TaskTimes()
+    times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters | None = None
+    datatasks: List[Self] = field(default_factory=list)
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
@@ -74,11 +75,11 @@ class SimulatedTask:
         self.info.dependencies = deps
 
     @property
-    def mapped_devices(self) -> Tuple[Device]:
+    def assigned_devices(self) -> Tuple[Device]:
         return self.info.mapping
 
-    @mapped_devices.setter
-    def mapped_devices(self, devices: Tuple[Device]):
+    @assigned_devices.setter
+    def assigned_devices(self, devices: Tuple[Device]):
         self.info.mapping = devices
 
     @property
@@ -116,7 +117,10 @@ class SimulatedTask:
 
 @dataclass(slots=True)
 class SimulatedComputeTask(SimulatedTask):
-    pass
+
+    def add_data_dependency(self, task: TaskID):
+        self.info.dependencies.append(task)
+        self.counters.uncompleted_deps += 1
 
 
 @dataclass(slots=True)

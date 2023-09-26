@@ -1,7 +1,13 @@
 import heapq
 from ..types import TaskID
 from .events import Event
-from typing import Tuple
+from typing import Tuple, TypeVar
+
+# (completion_time, event)
+EventPair = Tuple[float, Event]
+
+# (order, task)
+TaskPair = Tuple[int, TaskID]
 
 
 class PriorityQueue:
@@ -63,7 +69,9 @@ class TaskQueue(PriorityQueue):
 
 
 class GetNextTask(QueueDrainer):
-    pass
+
+    def __iter__(self) -> TaskPair:
+        return super().__iter__()
 
 
 class EventQueue(PriorityQueue):
@@ -83,4 +91,6 @@ class EventQueue(PriorityQueue):
 
 
 class GetNextEvent(QueueDrainer):
-    pass
+
+    def __iter__(self) -> EventPair:
+        return super().__iter__()

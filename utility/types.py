@@ -46,6 +46,16 @@ class Device:
 #########################################
 # Data Information
 #########################################
+
+class AccessType(IntEnum):
+    """
+    Used to specify the type of access for a data object in a synthetic task graph.
+    """
+    READ = 0
+    WRITE = 1
+    READ_WRITE = 2
+
+
 @dataclass(frozen=True, slots=True)
 class DataID:
     id: int
@@ -96,6 +106,16 @@ class TaskDataInfo:
     write: list[int | DataAccess] = field(default_factory=list)
     read_write: list[int | DataAccess] = field(default_factory=list)
 
+    def __getitem__(self, access: AccessType):
+        if access == AccessType.READ:
+            return self.read
+        elif access == AccessType.WRITE:
+            return self.write
+        elif access == AccessType.READ_WRITE:
+            return self.read_write
+        else:
+            raise ValueError(f"Invalid access type: {access}")
+
 
 DataMap = Dict[int, DataInfo]
 
@@ -135,6 +155,9 @@ class TaskID:
     task_idx: Tuple[int] = (0,)  # The index of the task in the task space
     # How many times the task has been spawned (continuation number)
     instance: int = 0
+
+    def __str__(self):
+        return f"{self.taskspace}[{self.task_idx}]"
 
 
 @dataclass(slots=True)

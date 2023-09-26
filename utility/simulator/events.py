@@ -9,12 +9,12 @@ class Event():
 
 @dataclass(slots=True)
 class PhaseEvent(Event):
-    max_tasks: int
+    max_tasks: int | None = None
 
 
 @dataclass(slots=True)
 class TaskEvent(Event):
-    task: TaskID
+    task: TaskID | None = None
 
 
 @dataclass(slots=True)
@@ -34,4 +34,4 @@ class Launcher(PhaseEvent):
 
 @dataclass(slots=True)
 class TaskCompleted(TaskEvent):
-    task: TaskID
+    pass
