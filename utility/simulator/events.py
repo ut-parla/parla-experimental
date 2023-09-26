@@ -34,4 +34,4 @@ class Launcher(PhaseEvent):
 
 @dataclass(slots=True)
 class TaskCompleted(TaskEvent):
-    pass
+    func: str = "task_completed"

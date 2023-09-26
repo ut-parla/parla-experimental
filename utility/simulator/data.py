@@ -18,6 +18,10 @@ class DataPhase(IntEnum):
     MOVING = 3
     ACTIVE = 4
 
+# TODO(WILL): ENDED HERE Sept. 26, 2022
+# Next step: Implement these states in Data and DataPool
+#            Make check_resources/reserve_resources in task
+
 
 @dataclass(slots=True)
 class DataStatus():
