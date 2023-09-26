@@ -1,0 +1,82 @@
+Current implementation:
+
+0. hw topology
+1. task creation with configuration
+2. data movement task
+3. task execution moves time forward
+4. task completion registers 
+
+Discussion:
+
+0. need to define how scheduler on simulator works
+- for each time step, how many tasks can be moved to the next state?
+  (e.g., scheduler can process X tasks per Y microseconds)
+  - the number of tasks to be moved could be based on the actual throughput
+  - or just follow user parameters (e.g., threshold = 10, only 10 tasks are moved
+    to the next state for each time step,
+    even though more tasks satisfy transition conditions)
+  - or make stochastic environment (which may be more practical)
+
+1. more detail scheduler mechanism scenario:
+- all tasks are spawned at the beginning
+- some set of tasks in mappable are mapped to device (by greedy or rl, for replaying)
+  - the order of mappable tasks could be random or fixed if replaying mode is set
+  - can limit the number of task mapping; could be user parameter or stochatic
+- some set of tasks in mapped can reserve resources if their parents have reserved
+  - also can limit the number of task reservation; colud be user parameter or stochatic
+- ready tasks are tasks which have reserved resource and all parents have done.
+  - do not limit the number of tasks to be processed at this phase
+- code structure example:
+
+```
+  timestep = 0
+  while True:
+    timestep += 1
+    for t in running_tasks:
+      t.update_time(timestep) # could be completed and notify childs
+    scheduler.process(t)
+
+
+  ...
+
+
+  class scheduler:
+    ..
+    def process(t):
+      update_time(t)
+      check_mappable_task()
+      mapping()
+      reservation()
+      launching()
+
+    def check_mappable_task():
+      num_tasks_become_mappable = 0
+      for t in created_task()
+        if t's parent are all mapped:
+          if stochastic_mode:
+            if randomly_decide_do_or_not():
+              update_task_to_mappable(t)
+          else:
+            if num_tasks_become_mappable < threshold:
+              update_task_to_mappable(t)
+            else:
+              break
+
+    def mapping():
+      num_tasks_become_mapped = 0
+      for t in mappable_task()
+        if stochastic_mode:
+          if randomly_decide_do_or_not():
+            map_task(t)
+        else:
+          if num_tasks_become_mapped < threshold:
+            update_task_to_mapped(t)
+          else:
+            break
+
+```
+
+2. Need to fix task mapping and launching orders
+- Can remove the stochatic nature in the order of the task processing
+- We can use wait-time related reward between past episodes
+(so, fixing the orders could be one main contribution of our work)
