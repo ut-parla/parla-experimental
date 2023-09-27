@@ -1,17 +1,19 @@
-from ..types import Architecture, Device, TaskID, DataID, DataInfo
+from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType
 from typing import List, Dict, Set, Tuple, Optional
 from .device import SimulatedDevice, ResourceSet
 from dataclasses import dataclass
+from .utility import parse_size
 
 import numpy as np
+from fractions import Fraction
 
 NamedDevice = Device | SimulatedDevice
 
 
 @dataclass(slots=True)
 class SimulatedTopology():
-    name: str = "SimulatedTopology"
     devices: List[SimulatedDevice]
+    name: str = "SimulatedTopology"
     id_map: Dict[Device, int] = None
     bandwidth: np.ndarray = None
     host: SimulatedDevice = None
@@ -22,6 +24,7 @@ class SimulatedTopology():
     max_copy_engines: Dict[Device, int] = None
 
     def __post_init__(self):
+        self.id_map = {}
         for i, device in enumerate(self.devices):
             self.id_map[device.name] = i
             if device.name.architecture == Architecture.CPU:
@@ -39,7 +42,8 @@ class SimulatedTopology():
         self.active_copy_engines = {
             device.name: 0 for device in self.devices}
         self.max_copy_engines = {
-            device.name: device.resources.copy for device in self.devices}
+            device.name: device.resources.store[ResourceType.COPY] \
+            for device in self.devices}
 
     def get_index(self, device: NamedDevice) -> int:
         if isinstance(device, SimulatedDevice):
@@ -130,3 +134,57 @@ class SimulatedTopology():
                 and (self.active_connections[dst_idx, src_idx] == 0)
         else:
             return (self.active_connections[src_idx, dst_idx] == 0)
+
+
+
+def create_4gpus_1cpu_hwtopo():
+    # Create devices
+    gpu0 = SimulatedDevice(
+        Device(Architecture.GPU, 0), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu1 = SimulatedDevice(
+        Device(Architecture.GPU, 1), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu2 = SimulatedDevice(
+        Device(Architecture.GPU, 2), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu3 = SimulatedDevice(
+        Device(Architecture.GPU, 3), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    cpu = SimulatedDevice(
+        Device(Architecture.CPU, 4), # TODO(hc): this ID is per-arch? or global?
+                                     # what id should be given to here?
+        ResourceSet(1, parse_size("16 GB"), 3))
+
+    # Create device topology
+    topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Top1-4")
+
+    bw = 100
+    """
+    topology.add_connection(gpu0, gpu1, symmetric=True)
+    topology.add_connection(gpu2, gpu3, symmetric=True)
+
+    topology.add_bandwidth(gpu0, gpu1, 2*bw, reverse_value=bw)
+    topology.add_bandwidth(gpu0, gpu2, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu0, gpu3, bw, reverse_value=bw)
+
+    topology.add_bandwidth(gpu1, gpu2, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu1, gpu3, bw, reverse_value=bw)
+
+    topology.add_bandwidth(gpu2, gpu3, 2*bw, reverse_value=bw)
+
+    # Self copy (not used)
+    topology.add_bandwidth(gpu3, gpu3, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu2, gpu2, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu1, gpu1, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu0, gpu0, bw, reverse_value=bw)
+    topology.add_bandwidth(cpu, cpu, bw, reverse_value=bw)
+
+    # With CPU
+    topology.add_bandwidth(gpu0, cpu, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu1, cpu, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu2, cpu, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu3, cpu, bw, reverse_value=bw)
+    """
+
+    return topology

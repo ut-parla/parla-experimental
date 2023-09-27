@@ -66,6 +66,12 @@ class SchedulerArchitecture:
     def __post_init__(self, topology: SimulatedTopology = None):
         pass
 
+    def initial_events(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
+        """
+        This event adds initial events to an event queue.
+        """
+        pass
+
     def mapper(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
         pass
 
@@ -118,8 +124,14 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Event]:
-        pass
+
+    def initial_events(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
+        print("Initial events are invoked")
+        return []
+
+
+    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Tuple[float, Event]]:
+        return []
         # i = 0
         # max_tasks = event.max_tasks
 
@@ -179,7 +191,7 @@ class ParlaArchitecture(SchedulerArchitecture):
         #         else:
         #             continue
 
-    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Event]:
+    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Tuple[float, Event]]:
         task_id = event.task_id
 
         if task_id is None or task_id not in self.taskmap:
@@ -199,6 +211,13 @@ class ParlaArchitecture(SchedulerArchitecture):
 
         # Update dependencies
         # recent_task.finish()
+        return []
+
+    def map_task(self, scheduler_state: SchedulerState, event: Mapper) -> List[Tuple[float, Event]]:
+        return []
+
+    def reserve_task(self, scheduler_state: SchedulerState, event: Reserver) -> List[Tuple[float, Event]]:
+        return []
 
 
 @dataclass(slots=True)
@@ -227,15 +246,23 @@ class SimulatedScheduler:
         return f"Scheduler {self.name} | Current Time: {self.time}"
 
     def process_event(self, event: Event):
-        self.mechanisms[event.func](self.state, event)
+        # New events are created from the current event.
+        new_event_pairs = self.mechanisms[event.func](self.state, event)
+        # Append new events and their completion times to the event queue
+        for completion_time, new_event in new_event_pairs:
+            self.events.put(new_event, completion_time)
 
     def run(self):
+        initial_event = Event("initial_events")
+        self.events.put(initial_event, 0)
 
         for event_pair in GetNextEvent(self.events):
             if event_pair:
                 completion_time, event = event_pair
                 # Process Event
-                self.process_event(event)
+                new_events = self.process_event(event)
                 # Advance time
                 self.time = max(self.time, completion_time)
                 # Update Log
+
+

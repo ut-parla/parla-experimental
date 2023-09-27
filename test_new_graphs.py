@@ -6,6 +6,8 @@ from utility.execute import run
 from utility.visualize import *
 
 from utility.simulator.preprocess import *
+from utility.simulator.simulator import *
+from utility.simulator.topology import *
 
 
 def run():
@@ -36,7 +38,7 @@ def run():
 
     computetask, datatask, data = read_graph("graph")
 
-    # print(computetask)
+    hw_topo = create_4gpus_1cpu_hwtopo()
 
     # G, labels = convert_to_networkx(tasks)
     # print(G)
