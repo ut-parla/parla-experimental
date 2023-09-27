@@ -30,6 +30,9 @@ class SimulatedTopology():
             if device.name.architecture == Architecture.CPU:
                 self.host = device
 
+        self.connections = np.zeros(
+            (len(self.devices), len(self.devices)), dtype=np.int32)
+
         self.active_connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
 
@@ -152,7 +155,7 @@ def create_4gpus_1cpu_hwtopo():
         Device(Architecture.GPU, 3), 
         ResourceSet(1, parse_size("16 GB"), 3))
     cpu = SimulatedDevice(
-        Device(Architecture.CPU, 4), # TODO(hc): this ID is per-arch? or global?
+        Device(Architecture.CPU, 0), # TODO(hc): this ID is per-arch? or global?
                                      # what id should be given to here?
         ResourceSet(1, parse_size("16 GB"), 3))
 
@@ -160,31 +163,29 @@ def create_4gpus_1cpu_hwtopo():
     topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Top1-4")
 
     bw = 100
-    """
-    topology.add_connection(gpu0, gpu1, symmetric=True)
-    topology.add_connection(gpu2, gpu3, symmetric=True)
+    topology.add_connection(gpu0, gpu1, bidirectional=True)
+    topology.add_connection(gpu2, gpu3, bidirectional=True)
 
-    topology.add_bandwidth(gpu0, gpu1, 2*bw, reverse_value=bw)
-    topology.add_bandwidth(gpu0, gpu2, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu0, gpu3, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu0, gpu1, 2*bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu3, bw, bidirectional=bw)
 
-    topology.add_bandwidth(gpu1, gpu2, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu1, gpu3, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu1, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, gpu3, bw, bidirectional=bw)
 
-    topology.add_bandwidth(gpu2, gpu3, 2*bw, reverse_value=bw)
+    topology.add_bandwidth(gpu2, gpu3, 2*bw, bidirectional=bw)
 
     # Self copy (not used)
-    topology.add_bandwidth(gpu3, gpu3, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu2, gpu2, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu1, gpu1, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu0, gpu0, bw, reverse_value=bw)
-    topology.add_bandwidth(cpu, cpu, bw, reverse_value=bw)
+    topology.add_bandwidth(gpu3, gpu3, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu2, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, gpu1, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu0, bw, bidirectional=bw)
+    topology.add_bandwidth(cpu, cpu, bw, bidirectional=bw)
 
     # With CPU
-    topology.add_bandwidth(gpu0, cpu, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu1, cpu, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu2, cpu, bw, reverse_value=bw)
-    topology.add_bandwidth(gpu3, cpu, bw, reverse_value=bw)
-    """
+    topology.add_bandwidth(gpu0, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu2, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu3, cpu, bw, bidirectional=bw)
 
     return topology
