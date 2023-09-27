@@ -102,9 +102,9 @@ class TaskDataInfo:
     @field write: The list of data objects that are written by the task (and not read). These don't really exist.
     @field read_write: The list of data objects that are read and written by the task
     """
-    read: list[int | DataAccess] = field(default_factory=list)
-    write: list[int | DataAccess] = field(default_factory=list)
-    read_write: list[int | DataAccess] = field(default_factory=list)
+    read: list[DataID | DataAccess] = field(default_factory=list)
+    write: list[DataID | DataAccess] = field(default_factory=list)
+    read_write: list[DataID | DataAccess] = field(default_factory=list)
 
     def __getitem__(self, access: AccessType):
         if access == AccessType.READ:
