@@ -28,6 +28,9 @@ class ResourceSet:
     def __setitem__(self, key: ResourceType, value: Numeric):
         self.store[key] = value
 
+    def __iter__(self): # For unpack operator
+        return iter(self.store)
+
     def __add__(self, other: Self) -> Self:
         for key in other.store:
             if key in self.store:

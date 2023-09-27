@@ -11,7 +11,7 @@ from ..types import Architecture, Device, TaskID, TaskState, TaskType
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
 from typing import List, Dict, Set, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
 from rich import print
@@ -28,24 +28,23 @@ class ObjectRegistry:
 # TODO: Rename to "SystemState"
 @dataclass(slots=True)
 class SchedulerState:
-    topology: SimulatedTopology
+    topology: InitVar[SimulatedTopology]
     data_pool: DataPool = None
     resource_pool: ResourcePool = None
     objects: ObjectRegistry = None
 
-    def __post_init__(self, topology: SimulatedTopology = None):
+    def __post_init__(self, topology: SimulatedTopology):
 
         if topology is None:
             raise ValueError("Topology must be specified.")
 
         self.objects = ObjectRegistry()
-        self.topology = topology
 
         for device in topology.devices:
             self.objects.devicemap[device.name] = device
 
         self.data_pool = DataPool()
-        self.resource_pool = ResourcePool(topology.devices)
+        self.resource_pool = ResourcePool(devices=topology.devices)
 
 
 class SchedulerType(IntEnum):
@@ -55,9 +54,9 @@ class SchedulerType(IntEnum):
 class SchedulerArchitecture:
     completed_tasks: List[TaskID] = []
 
-    def __getitem__(self, event):
+    def __getitem__(self, func):
         try:
-            function = getattr(self, event.func)
+            function = getattr(self, func)
         except AttributeError:
             raise NotImplementedError(
                 f"SchedulerArchitecture does not have function {event.func}")
@@ -96,15 +95,14 @@ class SchedulerArchitecture:
 
 @dataclass(slots=True)
 class ParlaArchitecture(SchedulerArchitecture):
+    topology: InitVar[SimulatedTopology]
     spawned_tasks: TaskQueue = TaskQueue()
     mappable_tasks: TaskQueue = TaskQueue()
-    mapped_tasks: Dict[Device, TaskQueue] | None = None
-
-    reservable_tasks: Dict[Device, TaskQueue] | None = None
-    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] | None = None
-
-    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] | None = None
-    launched_tasks:  Dict[Device, TaskQueue] | None = None
+    mapped_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    reservable_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
+    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
+    launched_tasks:  Dict[Device, TaskQueue] = field(default_factory=dict)
 
     def __post_init__(self, topology: SimulatedTopology = None):
 
@@ -120,7 +118,7 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.reserved_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.reserved_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-            self.reserved_tasks[device.name] = dict()
+            self.launchable_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
@@ -222,9 +220,8 @@ class ParlaArchitecture(SchedulerArchitecture):
 
 @dataclass(slots=True)
 class SimulatedScheduler:
-
-    name: str
-
+    topology: InitVar[SimulatedTopology]
+    name: str = "SimulatedScheduler"
     # Task Queues for Runtime Phases
     mechanisms: SchedulerArchitecture = None
     state: SchedulerState = None
@@ -232,7 +229,7 @@ class SimulatedScheduler:
     events: EventQueue = EventQueue()
     time: float = 0.0
 
-    def __post_init__(self, topology, scheduler: SchedulerType = SchedulerType.PARLA):
+    def __post_init__(self, topology: SimulatedTopology, scheduler: SchedulerType = SchedulerType.PARLA):
 
         self.state = SchedulerState(topology=topology)
 

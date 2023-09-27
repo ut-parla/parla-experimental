@@ -1,7 +1,7 @@
 from ..types import Architecture, Device, TaskID, DataID, DataInfo, TaskState
 from typing import List, Dict, Set, Tuple, Optional
 from .device import SimulatedDevice, ResourceSet
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 
 import numpy as np
 
@@ -10,7 +10,7 @@ NamedDevice = Device | SimulatedDevice
 
 @dataclass(slots=True)
 class ResourcePool:
-    devices: List[SimulatedDevice]
+    devices: InitVar[List[SimulatedDevice]]
     pool: Dict[Device, Dict[TaskState, ResourceSet]] = None
 
     def __post_init__(self, devices: List[SimulatedDevice]):
