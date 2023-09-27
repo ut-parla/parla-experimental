@@ -29,24 +29,47 @@ class SimulatedTopology():
             self.id_map[device.name] = i
             if device.name.architecture == Architecture.CPU:
                 self.host = device
-
+        # 1 if connection between devices exist, otherwise 0.
         self.connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
-
+        # 1 if connection between devices are used, otherwise 0.
         self.active_connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
-
-        self.active_connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32)
-
+        # Bandwidth between devices.
         self.bandwidth = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.float32)
-
         self.active_copy_engines = {
             device.name: 0 for device in self.devices}
         self.max_copy_engines = {
             device.name: device.resources.store[ResourceType.COPY] \
             for device in self.devices}
+
+    def __str__(self) -> str:
+        repr_str = "[[HW Topology]]\n"
+        repr_str += self.name + "\n"
+        for d in self.devices:
+            repr_str += str(d.name) + "\n"
+            repr_str += "[Resource]\n"
+            repr_str += "Memory: "
+            repr_str += str(d.resources[ResourceType.MEMORY]) + "\n"
+            repr_str += "VCU: "
+            repr_str += str(d.resources[ResourceType.VCU]) + "\n"
+            repr_str += "COPY: "
+            repr_str += str(d.resources[ResourceType.COPY]) + "\n\n"
+
+        repr_str += "[Connections]\n"
+        for d1 in range(len(self.devices)):
+            for d2 in range(len(self.devices)):
+                if self.connections[d1,d2] == 1:
+                    repr_str += str(self.devices[d1].name) + ","
+                    repr_str += str(self.devices[d2].name)
+                    repr_str += " bandwidth: " + str(self.bandwidth[d1][d2])
+                    repr_str += "\n"
+
+        return repr_str
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def get_index(self, device: NamedDevice) -> int:
         if isinstance(device, SimulatedDevice):
@@ -181,7 +204,18 @@ def create_4gpus_1cpu_hwtopo():
 
     bw = 100
     topology.add_connection(gpu0, gpu1, bidirectional=True)
+    topology.add_connection(gpu0, gpu2, bidirectional=True)
+    topology.add_connection(gpu0, gpu3, bidirectional=True)
+    topology.add_connection(gpu0, cpu, bidirectional=True)
+
+    topology.add_connection(gpu1, gpu2, bidirectional=True)
+    topology.add_connection(gpu1, gpu3, bidirectional=True)
+    topology.add_connection(gpu1, cpu, bidirectional=True)
+
     topology.add_connection(gpu2, gpu3, bidirectional=True)
+    topology.add_connection(gpu2, cpu, bidirectional=True)
+
+    topology.add_connection(gpu3, cpu, bidirectional=True)
 
     topology.add_bandwidth(gpu0, gpu1, 2*bw, bidirectional=bw)
     topology.add_bandwidth(gpu0, gpu2, bw, bidirectional=bw)
@@ -204,5 +238,7 @@ def create_4gpus_1cpu_hwtopo():
     topology.add_bandwidth(gpu1, cpu, bw, bidirectional=bw)
     topology.add_bandwidth(gpu2, cpu, bw, bidirectional=bw)
     topology.add_bandwidth(gpu3, cpu, bw, bidirectional=bw)
+
+    print(topology)
 
     return topology
