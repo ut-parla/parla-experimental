@@ -3,7 +3,7 @@
 @brief Contains the core user-facing API to spawn tasks.
 """
 
-from __future__ import annotations # For type hints of unloaded classes
+from __future__ import annotations  # For type hints of unloaded classes
 from parla.cython import scheduler
 from parla.cython import core
 from parla.cython import tasks
@@ -12,7 +12,6 @@ from parla.common.dataflow import Dataflow
 from parla.common.parray.core import PArray
 from parla.utility.tracer import NVTXTracer
 from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType, crosspy, CROSSPY_ENABLED
-from crosspy import CrossPyArray
 import inspect
 
 from parla.cython import tasks
@@ -54,7 +53,7 @@ def _make_cell(val):
 
 # @profile
 def spawn(task=None,
-          dependencies =[],
+          dependencies=[],
           # This collection does not contain Union anymore, which was used by the
           # old Parla, since we now allow support {arch, arch, arch} placement
           # to map a task to three devices.
@@ -65,8 +64,8 @@ def spawn(task=None,
           input: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
           output: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
           inout: List[Union[crosspy.CrossPyArray, Tuple[PArray, int]]] = None,
-          vcus: float =None,
-          memory: int =None,
+          vcus: float = None,
+          memory: int = None,
           runahead: SynchronizationType = default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
@@ -80,7 +79,7 @@ def spawn(task=None,
             idx = len(taskspace)
         else:
             idx = task
-            
+
         task = taskspace[idx]
 
     # @profile
