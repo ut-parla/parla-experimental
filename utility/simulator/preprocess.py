@@ -126,13 +126,13 @@ def create_task_graph(graph: TaskMap) -> Tuple[SimulatedComputeTaskMap, Simulate
     compute_tasks = create_compute_tasks(graph)
 
     from rich import print
-    # print(compute_tasks)
+    print(compute_tasks)
 
     recent_writers = find_recent_writers(graph)
 
     data_tasks = create_data_tasks(compute_tasks, recent_writers)
 
-    print(data_tasks)
+    #print(data_tasks)
 
     return compute_tasks, data_tasks
 

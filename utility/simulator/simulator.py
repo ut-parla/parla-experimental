@@ -182,10 +182,12 @@ class ParlaArchitecture(SchedulerArchitecture):
     def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Event]:
         task_id = event.task_id
 
+        objects = scheduler_state.objects
+
         if task_id is None or task_id not in self.taskmap:
             raise RuntimeError(f"Task {task_id} does not exist!")
 
-        task = self.taskmap[task_id]
+        task = objects.taskmap[task_id]
 
         if task is None:
             raise RuntimeError(f"Task {task_id} does not exist!")

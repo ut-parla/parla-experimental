@@ -251,7 +251,7 @@ class TaskPlacementInfo:
     def __repr__(self):
         return repr(self.info)
 
-    def _get_any(self, device, lookup: Dict[Device, TaskRuntimeInfo]):
+    def _get_any(self, device: Device, lookup: Dict[Device, TaskRuntimeInfo]):
 
         if device in lookup:
             return lookup[device]
@@ -300,7 +300,7 @@ class TaskPlacementInfo:
         if isinstance(placement, tuple):
             for idx, device in enumerate(placement):
                 runtime_info = self._get_any(
-                    device, self.info[len(placement)][idx])
+                    device, self.lookup[len(placement)][idx])
                 if runtime_info is None:
                     return False
         else:

@@ -21,6 +21,9 @@ class DataPhase(IntEnum):
 # TODO(WILL): ENDED HERE Sept. 26, 2022
 # Next step: Implement these states in Data and DataPool
 #            Make check_resources/reserve_resources in task
+#            Make acquire/release/evict in datapool/data
+#              - DataPool is the caller of data.evict (reverse of old code)
+#
 
 
 @dataclass(slots=True)

@@ -1,5 +1,6 @@
 from device import SyntheticDevice
 
+
 class PArrayStatus:
     def __init__(self, _stale=0, _used=0, _prefetch=0, _in_progress=False):
         self.stale = _stale
@@ -168,7 +169,7 @@ class PArray:
                 device.delete_data(self)
 
             elif self.status_per_device[device_name].stale and \
-                 self.status_per_device[device_name].used:
+                    self.status_per_device[device_name].used:
                 raise Exception("Invalid State. Data is stale and used.")
 
     def evict_stale(self):
@@ -187,7 +188,8 @@ class PArray:
         Create new PArray copy on a specified device.
         """
         if device.name not in self.status_per_device:
-            self.status_per_device[device.name] = PArrayStatus(0, 0, 0, in_progress)
+            self.status_per_device[device.name] = PArrayStatus(
+                0, 0, 0, in_progress)
 
         # if in_progress and not self.status_per_device[device.name].in_progress:
         #    self.status_per_device[device.name].in_progress = True
@@ -200,7 +202,7 @@ class PArray:
             if device.name in self.status_per_device:
                 print("Releasing data: ", self.name, device_list)
                 self.status_per_device[device.name].used -= 1
-                assert(self.status_per_device[device.name].used >= 0)
+                assert (self.status_per_device[device.name].used >= 0)
             else:
                 raise Exception(
                     "Attempting to release data that is not on device.")
@@ -214,7 +216,7 @@ class PArray:
             if device.name in self.status_per_device:
                 print("Acquiring data: ", self.name, device_list)
                 self.status_per_device[device.name].used += 1
-                assert(self.status_per_device[device.name].used >= 0)
+                assert (self.status_per_device[device.name].used >= 0)
             else:
                 raise Exception(
                     "Attempting to acquire data that is not on device.")
@@ -234,17 +236,19 @@ class PArray:
             # NOTE: Must be done after create_copy_on_device (because state is used to update the memory tracking)
             device.add_data(self)
 
-            assert(device.name in self.status_per_device)
+            assert (device.name in self.status_per_device)
 
             # Increment prefetch counter
             # print("Incrementing prefetch counter", self, task_list)
             self.status_per_device[device.name].prefetched += 1
-            self.status_per_device[device.name].dependent_tasks.extend(task_list)
+            self.status_per_device[device.name].dependent_tasks.extend(
+                task_list)
 
-            assert(calling_task.completion_time >= 0)
+            assert (calling_task.completion_time >= 0)
             # self.status_per_device[device.name].moving_tasks.put(
             #    (calling_task.completion_time, calling_task))
-            self.status_per_device[device.name].moving_tasks.append(calling_task)
+            self.status_per_device[device.name].moving_tasks.append(
+                calling_task)
 
     def finish_prefetch(self, calling_task, task_list, device_list):
         """
@@ -253,10 +257,11 @@ class PArray:
         for device in device_list:
 
             # if device.name in self.status_per_device:
-            assert(device.name in self.status_per_device)
+            assert (device.name in self.status_per_device)
             self.status_per_device[device.name].in_progress = False
 
-            self.status_per_device[device.name].moving_tasks.remove(calling_task)
+            self.status_per_device[device.name].moving_tasks.remove(
+                calling_task)
             # finished_task = self.status_per_device[device.name].moving_tasks.get()[1]
             # assert(finished_task == calling_task)
 
@@ -274,7 +279,8 @@ class PArray:
                 # print(self.status_per_device[device.name].dependent_tasks)
                 # print(task.name)
                 # TODO(hc): why doens't it increase moving task counter?
-                self.status_per_device[device.name].dependent_tasks.remove(task)
+                self.status_per_device[device.name].dependent_tasks.remove(
+                    task)
             elif not is_movement:
                 raise Exception(
                     f"Invalid State. Data is not available by task runtime. \n\t {task} | \n\t {data} | \n\t {device}")
@@ -294,20 +300,20 @@ class PArray:
         # Decrease prefetch count
         # self.use(task, device_list, is_movement)
 
-        #Check if data is already being used on device.
+        # Check if data is already being used on device.
 
         if not is_movement:
 
             for device in device_list:
-                if(self.status_per_device[device.name].used > 1):
+                if (self.status_per_device[device.name].used > 1):
                     print(self.name, self.status_per_device)
-                    assert(False)
+                    assert (False)
 
             for device_name in self.status_per_device.keys():
                 if SyntheticDevice.devicespace[device_name] not in device_list:
-                    if(self.status_per_device[device_name].used > 0):
+                    if (self.status_per_device[device_name].used > 0):
                         print(self.name, self.status_per_device)
-                        assert(False)
+                        assert (False)
 
             # Mark stale copies of this device on other devices.
             device_name_list = [d.name for d in device_list]
@@ -396,4 +402,3 @@ class PArray:
 
     def __eq__(self, other):
         return self.name == other.name
-
