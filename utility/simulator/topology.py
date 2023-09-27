@@ -141,6 +141,24 @@ class SimulatedTopology():
 
 
 def create_4gpus_1cpu_hwtopo():
+    """
+    This function creates 4 GPUs and 1 CPU architecture.
+
+    The topology looks like below:
+
+    gpu0 - gpu1
+     | \   / |
+     |  \ /  |
+     |  / \  |
+     | /   \ |
+    gpu2 - gpu3
+
+    gpu0-gpu1 and gpu2-gpu3 have bandwidth of 200 (we assume NVLinks),
+    and other connections have bandiwdth of 100.
+
+    All GPUs are connected to CPU by connections having bandwidth of 100.
+    Each GPU is equipped with 16GB DRAM, and CPU is equipped with 130GB.
+    """
     # Create devices
     gpu0 = SimulatedDevice(
         Device(Architecture.GPU, 0), 
@@ -155,12 +173,11 @@ def create_4gpus_1cpu_hwtopo():
         Device(Architecture.GPU, 3), 
         ResourceSet(1, parse_size("16 GB"), 3))
     cpu = SimulatedDevice(
-        Device(Architecture.CPU, 0), # TODO(hc): this ID is per-arch? or global?
-                                     # what id should be given to here?
-        ResourceSet(1, parse_size("16 GB"), 3))
+        Device(Architecture.CPU, 0), 
+        ResourceSet(1, parse_size("130 GB"), 3))
 
     # Create device topology
-    topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Top1-4")
+    topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Topo4G-1C")
 
     bw = 100
     topology.add_connection(gpu0, gpu1, bidirectional=True)
