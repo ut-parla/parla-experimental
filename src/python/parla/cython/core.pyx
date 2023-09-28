@@ -224,9 +224,9 @@ cdef class PyInnerTask:
                 c_self.queue_dependency(c_dependency)
                 
         if process:
-            with nogil:
-                status_flags = c_self.process_dependencies()
-                status = status_flags.mappable
+            #with nogil:
+            status_flags = c_self.process_dependencies()
+            status = status_flags.mappable
 
         return status
 
@@ -307,8 +307,8 @@ cdef class PyInnerTask:
     cpdef notify_dependents_wrapper(self):
         cdef InnerTask* c_self = self.c_task
         cdef bool status = False
-        with nogil:
-            status = c_self.notify_dependents_wrapper()
+        #with nogil:
+        status = c_self.notify_dependents_wrapper()
         return status
 
     cpdef set_state(self, int state):
@@ -429,8 +429,8 @@ cdef class PyTaskBarrier:
                 task = inner_task.c_task
                 c_task_list.push_back(task)
 
-        with nogil:
-            c_self.add_tasks(c_task_list)
+        #with nogil:
+        c_self.add_tasks(c_task_list)
 
 cdef class PyTaskSpace:
     cdef InnerTaskSpace* c_task_space
@@ -637,22 +637,22 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
-        with nogil:
-            c_self.task_cleanup(c_worker, c_task, state)
+        #with nogil:
+        c_self.task_cleanup(c_worker, c_task, state)
 
     cpdef task_cleanup_presync(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
-        with nogil:
-            c_self.task_cleanup_presync(c_worker, c_task, state)
+        #with nogil:
+        c_self.task_cleanup_presync(c_worker, c_task, state)
 
     cpdef task_cleanup_postsync(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
         cdef InnerTask* c_task = task.c_task
-        with nogil:
-            c_self.task_cleanup_postsync(c_worker, c_task, state)
+        #with nogil:
+        c_self.task_cleanup_postsync(c_worker, c_task, state)
 
     cpdef get_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler

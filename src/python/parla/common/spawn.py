@@ -33,8 +33,9 @@ nvtx.initialize()
 
 Resources = core.Resources
 
+import os
 
-# @profile
+PARLA_INTERRUPT_SPAWN = os.environ["PARLA_INTERRUPT_SPAWN"] == "1"
 
 
 def _make_cell(val):
@@ -152,9 +153,10 @@ def spawn(task=None,
 
         # This is a complete hack but somehow performs better than doing the "right" thing of signaling from waiting threads that the compute bound thread needs to release the GIL.
         # TODO: Make this an optional flag.
-        if ((task_locals.spawn_count % 10 == 0)):
-            scheduler.spawn_wait()
-        task_locals.spawn_count += 1
+        if PARLA_INTERRUPT_SPAWN:
+            if ((task_locals.spawn_count % 10 == 0)):
+                scheduler.spawn_wait()
+            task_locals.spawn_count += 1
 
         return task
 

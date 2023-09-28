@@ -38,7 +38,8 @@ __global__ void gpu_sleep_1(clock_t clock_count) {
 void gpu_busy_sleep(const int device, const unsigned long cycles,
                     uintptr_t stream_ptr) {
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
-  gpu_sleep_1<<<1, 1, device, stream>>>(cycles);
+  cudaSetDevice(device);
+  gpu_sleep_1<<<1, 1, 0, stream>>>(cycles);
 }
 
 void event_synchronize(uintptr_t event_ptr) {

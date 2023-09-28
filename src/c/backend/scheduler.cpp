@@ -324,7 +324,7 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
 
   task_cleanup_presync(worker, task, state);
   // synchronize task enviornment
-  task->synchronize_events();
+  //task->synchronize_events();
   task_cleanup_postsync(worker, task, state);
 }
 

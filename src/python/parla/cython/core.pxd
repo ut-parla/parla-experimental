@@ -91,7 +91,7 @@ cdef extern from "include/runtime.hpp" nogil:
     cdef cppclass TaskBarrier:
         TaskBarrier() except +
         void add_tasks(vector[InnerTask*] tasks) except +
-        void wait() except +
+        void wait()
         void set_id(int64_t i) except +
 
     cdef cppclass InnerTaskSpace:
@@ -116,7 +116,7 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
         void get_task(InnerTask** task, bool* is_data_task)
-        void remove_task() except +
+        void remove_task()
 
         void wait()
         void stop()
@@ -133,18 +133,18 @@ cdef extern from "include/runtime.hpp" nogil:
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
 
-        void run() except +
+        void run()
         void stop()
 
         void activate_wrapper()
 
-        void spawn_task(InnerTask* task) except +
+        void spawn_task(InnerTask* task)
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)
-        void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
-        void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
-        void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup(InnerWorker* worker, InnerTask* task, int state)
+        void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state)
+        void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state)
 
         int get_num_active_tasks()
         void increase_num_active_tasks()
@@ -156,7 +156,7 @@ cdef extern from "include/runtime.hpp" nogil:
         int get_num_notified_workers()
         bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void spawn_wait() except +
+        void spawn_wait()
 
         void reserve_parray(InnerPArray* parray, int dev_id) except +
         void release_parray(InnerPArray* parray, int dev_id) except +

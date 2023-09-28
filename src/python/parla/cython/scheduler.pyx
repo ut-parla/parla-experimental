@@ -198,7 +198,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     #with self._monitor:
                     #    if not self.task:
                     #        self._monitor.wait()
-                    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                    #nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
                     self.inner_worker.wait_for_task()
 
                     self.task = self.inner_worker.get_task()
@@ -214,7 +214,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         #comment(wlr): Need this is all cases currently. FIXME: Add stream/event creation in C++ so python isn't the owner.
                         _global_data_tasks[id(self.task)] = self.task
 
-                    nvtx.pop_range(domain="Python Runtime")
+                    #nvtx.pop_range(domain="Python Runtime")
 
                     #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
 
@@ -223,49 +223,49 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     if isinstance(self.task, Task):
                         active_task = self.task 
 
-                        parla_devices = active_task.get_assigned_devices()
-                        device_context = create_env(parla_devices)
+                        #parla_devices = active_task.get_assigned_devices()
+                        #device_context = create_env(parla_devices)
 
                         #Save device_context with task object
                         #comment(wlr): This replaces the old enviornment (for continuation tasks)
                         #print("Setting environment for task", active_task, flush=True)
-                        active_task.environment = device_context
+                        #active_task.environment = device_context
 
 
                         #Writes all 'default' streams and event pointers to c++ task
                         #This allows their synchronization without the GIL and faster iteration over them
                         #(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
-                        device_context.write_to_task(active_task)
+                        #device_context.write_to_task(active_task)
                         #print("Wrote enviornment to task", active_task, flush=True)
 
                         #handle event wait in python 
-                        if USE_PYTHON_RUNAHEAD:
-                            active_task.py_handle_runahead_dependencies() 
-                        else:
-                            #handle event wait in C++ (good if num_dependencies large)
-                            active_task.handle_runahead_dependencies()
+                        #if USE_PYTHON_RUNAHEAD:
+                        #    active_task.py_handle_runahead_dependencies() 
+                        #else:
+                        #    #handle event wait in C++ (good if num_dependencies large)
+                        #    active_task.handle_runahead_dependencies()
 
-                        nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
+                        #nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
 
                         # print("Running Task", active_task, flush=True)
 
                         #Push the task to the thread local stack
-                        Locals.push_task(active_task)
+                        #Locals.push_task(active_task)
 
-                        with device_context as env:
+                        #with device_context as env:
                             
-                            core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
-                            #Run the task body (this may complete the task or return a continuation)
-                            #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
-                            active_task.run()
+                        #core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
+                        #Run the task body (this may complete the task or return a continuation)
+                        #The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
+                        active_task.run()
 
                         #Pop the task from the thread local stack
-                        Locals.pop_task()
+                        #Locals.pop_task()
 
                         #Log events on all 'task default' streams
-                        device_context.record_events()
+                        #device_context.record_events()
 
-                        nvtx.pop_range(domain="Python Runtime")
+                        #nvtx.pop_range(domain="Python Runtime")
                         #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
 
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
@@ -273,15 +273,15 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         final_state  = active_task.state
 
                         #FIXME: This can be cleaned up and hidden from this function with a better interface...
-                        if active_task.runahead == SyncType.NONE:
-                            device_context.finalize()
+                        #if active_task.runahead == SyncType.NONE:
+                        #    device_context.finalize()
 
                         #TODO(wlr): Add better exception handling
                         if isinstance(final_state, tasks.TaskException):
                             raise TaskBodyException(active_task.state.exception)
 
                         elif isinstance(final_state, tasks.TaskRunning):
-                            nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
+                            #nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
                             #print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
                             active_task.dependencies = active_task.state.dependencies
                             active_task.func = active_task.state.func
@@ -289,27 +289,27 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                             active_task.inner_task.clear_dependencies()
                             active_task.add_dependencies(active_task.dependencies, process=False)
-                            nvtx.pop_range(domain="Python Runtime")
+                            #nvtx.pop_range(domain="Python Runtime")
                         
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
                         #print("Cleaning up Task", active_task, flush=True)
                         
-                        if USE_PYTHON_RUNAHEAD:
+                        #if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
-                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            if active_task.runahead != SyncType.NONE:
-                                device_context.synchronize(events=True)
-                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                        else:
-                            #Handle synchronization in C++
-                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #    self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #    #if active_task.runahead != SyncType.NONE:
+                            #    device_context.synchronize(events=True)
+                        #    self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        #else:
+                        #    #Handle synchronization in C++
+                        self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
 
                         #print("Finished Cleaning up Task", active_task, flush=True)
 
-                        if active_task.runahead != SyncType.NONE:
-                            device_context.return_streams()
+                        #if active_task.runahead != SyncType.NONE:
+                        #    device_context.return_streams()
 
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
