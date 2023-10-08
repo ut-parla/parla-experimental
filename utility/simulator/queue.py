@@ -28,7 +28,6 @@ class PriorityQueue:
 
 
 class QueueDrainer(object):
-    # TODO(hc): better name?
     def __init__(self, q: PriorityQueue, maxiter: int = None):
         self.q = q
         self.iter = 0

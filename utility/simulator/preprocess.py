@@ -144,3 +144,13 @@ def read_graph(graph_name: str) -> Tuple[SimulatedComputeTaskMap, SimulatedDataT
     compute_tasks, data_tasks = create_task_graph(tasks)
 
     return compute_tasks, data_tasks, data
+
+
+def construct_networkx_graph(computetask, datatask, data):
+    print("Compute:", computetask)
+    print("Data Task:", datatask)
+    print("Data:", data)
+    # Target: {u: {v1: {parray1: size}, v2: {parray2: size, parray3: size}..}..}
+    # iterate each task, iterate its dependencies in a nested loop, and add intersection betwen u and v.
+    # TODO(hc): check if computetask' data dependencies are correctly removed after datamove tasks have
+    # been created
