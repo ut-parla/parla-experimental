@@ -261,5 +261,3 @@ class SimulatedScheduler:
                 # Advance time
                 self.time = max(self.time, completion_time)
                 # Update Log
-
-

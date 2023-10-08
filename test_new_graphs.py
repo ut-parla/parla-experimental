@@ -34,12 +34,15 @@ def run():
     write_data_to_yaml(data, "graph")
 
     tasks = read_tasks_from_yaml("graph")
-    # print(tasks)
 
     computetask, datatask, data = read_graph("graph")
+    networkx_graph, networkx_label = convert_to_networkx(computetask, datatask)
+    # Convert networkx graph to pydot graph, and export it to png file
+    plot_pydot(networkx_graph)
 
     hw_topo = create_4gpus_1cpu_hwtopo()
-
+    scheduler = SimulatedScheduler(topology=hw_topo)
+    scheduler.run()
     # G, labels = convert_to_networkx(tasks)
     # print(G)
 
