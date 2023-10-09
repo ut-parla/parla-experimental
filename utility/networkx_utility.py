@@ -53,3 +53,25 @@ def plot_pydot(G: nx.DiGraph):
     sio.seek(0)
     img = mpimg.imread(sio)
     implot = plt.imshow(img, aspect='equal')
+
+
+def get_valid_order(G: nx.DiGraph):
+    """
+    Sort a graph by a topology, and return a valid order of the graph.
+    """
+    nodes = nx.topological_sort(G)
+    order = [str(node) for node in nodes]
+    return order
+
+
+def get_sorted_tasks(name_to_task, computetask, datatask, order):
+    """
+    Sort SimulatedTask instances by order passed.
+    """
+    task_list = []
+    task_order = 0
+    for task_name in order:
+        name_to_task[task_name].info.order = task_order
+        task_list.append(name_to_task[task_name])
+        task_order += 1
+    return task_list
