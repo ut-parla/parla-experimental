@@ -28,23 +28,23 @@ class ObjectRegistry:
 # TODO: Rename to "SystemState"
 @dataclass(slots=True)
 class SchedulerState:
-    topology: InitVar[SimulatedTopology]
+    topology: SimulatedTopology = None
     data_pool: DataPool = None
     resource_pool: ResourcePool = None
     objects: ObjectRegistry = None
 
-    def __post_init__(self, topology: SimulatedTopology):
+    def __post_init__(self):
 
-        if topology is None:
+        if self.topology is None:
             raise ValueError("Topology must be specified.")
 
         self.objects = ObjectRegistry()
 
-        for device in topology.devices:
+        for device in self.topology.devices:
             self.objects.devicemap[device.name] = device
 
         self.data_pool = DataPool()
-        self.resource_pool = ResourcePool(devices=topology.devices)
+        self.resource_pool = ResourcePool(devices=self.topology.devices)
 
 
 class SchedulerType(IntEnum):
@@ -95,7 +95,7 @@ class SchedulerArchitecture:
 
 @dataclass(slots=True)
 class ParlaArchitecture(SchedulerArchitecture):
-    topology: InitVar[SimulatedTopology]
+    topology: SimulatedTopology = None
     spawned_tasks: TaskQueue = TaskQueue()
     mappable_tasks: TaskQueue = TaskQueue()
     mapped_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
@@ -104,12 +104,12 @@ class ParlaArchitecture(SchedulerArchitecture):
     launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
     launched_tasks:  Dict[Device, TaskQueue] = field(default_factory=dict)
 
-    def __post_init__(self, topology: SimulatedTopology = None):
+    def __post_init__(self):
 
-        if topology is None:
+        if self.topology is None:
             raise ValueError("Topology must be specified.")
 
-        for device in topology.devices:
+        for device in self.topology.devices:
 
             self.mapped_tasks[device.name] = TaskQueue()
             self.reservable_tasks[device.name] = TaskQueue()
@@ -220,7 +220,8 @@ class ParlaArchitecture(SchedulerArchitecture):
 
 @dataclass(slots=True)
 class SimulatedScheduler:
-    topology: InitVar[SimulatedTopology]
+    topology: SimulatedTopology
+    task_list: List[SimulatedTask]
     name: str = "SimulatedScheduler"
     # Task Queues for Runtime Phases
     mechanisms: SchedulerArchitecture = None
@@ -229,12 +230,12 @@ class SimulatedScheduler:
     events: EventQueue = EventQueue()
     time: float = 0.0
 
-    def __post_init__(self, topology: SimulatedTopology, scheduler: SchedulerType = SchedulerType.PARLA):
+    def __post_init__(self, scheduler: SchedulerType = SchedulerType.PARLA):
 
-        self.state = SchedulerState(topology=topology)
+        self.state = SchedulerState(topology=self.topology)
 
         if scheduler == SchedulerType.PARLA:
-            self.mechanisms = ParlaArchitecture(topology=topology)
+            self.mechanisms = ParlaArchitecture(topology=self.topology)
         else:
             raise NotImplementedError(
                 f"Scheduler type {scheduler} is not implemented")

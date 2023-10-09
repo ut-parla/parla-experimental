@@ -64,7 +64,7 @@ def get_valid_order(G: nx.DiGraph):
     return order
 
 
-def get_sorted_tasks(name_to_task, computetask, datatask, order):
+def get_sorted_tasks(name_to_task, computetask, datatask, order) -> List[SimulatedTask]:
     """
     Sort SimulatedTask instances by order passed.
     """
