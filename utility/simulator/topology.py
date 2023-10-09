@@ -29,10 +29,10 @@ class SimulatedTopology():
             self.id_map[device.name] = i
             if device.name.architecture == Architecture.CPU:
                 self.host = device
-        # 1 if connection between devices exist, otherwise 0.
+        # greater than 0 if used.
         self.connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
-        # 1 if connection between devices are used, otherwise 0.
+        # greater than 0 if used.
         self.active_connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
         # Bandwidth between devices.

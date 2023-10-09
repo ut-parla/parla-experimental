@@ -113,7 +113,13 @@ def create_data_tasks(graph: SimulatedComputeTaskMap, recent_writers: DataWriter
 
             data_task_id = TaskID(taskspace=f"{task_info.id}.data", task_idx=i)
             runtime = TaskRuntimeInfo(task_time=0)
-            # TODO(hc): for now, only support read-only data
+						# Adding read data is sufficient since
+						# (1) By this point rw/r should already be merged into the read
+ 					  # list and filtered for unique.
+						# (2) There is /only/ read-only data tasks.
+						# There is no such thing as a "write" data task
+						# (the parla model is wrong for this).
+						# Compute tasks write to data, data tasks only read data.
             data_info = TaskDataInfo(read=[DataAccess(id=data)])
             data_task_info = TaskInfo(id=data_task_id, dependencies=dependencies,
                                       runtime=runtime, data_dependencies=data_info)

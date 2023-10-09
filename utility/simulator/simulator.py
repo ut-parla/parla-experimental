@@ -262,7 +262,7 @@ class SimulatedScheduler:
 
     def process_event(self, event: Event):
         # New events are created from the current event.
-        new_event_pairs = self.mechanisms[event.func](self.state, event)
+        new_event_pairs = self.mechanisms[event](state)
         # Append new events and their completion times to the event queue
         for completion_time, new_event in new_event_pairs:
             self.events.put(new_event, completion_time)
