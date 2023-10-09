@@ -18,6 +18,7 @@ class Architecture(IntEnum):
     """
     Used to specify the architecture of a device in a synthetic task graph.
     """
+
     ANY = -1
     CPU = 0
     GPU = 1
@@ -31,6 +32,7 @@ class Device:
     """
     Identifies a device in a synthetic task graph.
     """
+
     # The architecture of the device
     architecture: Architecture = Architecture.CPU
     # The id of the device (-1 for any)
@@ -47,10 +49,12 @@ class Device:
 # Data Information
 #########################################
 
+
 class AccessType(IntEnum):
     """
     Used to specify the type of access for a data object in a synthetic task graph.
     """
+
     READ = 0
     WRITE = 1
     READ_WRITE = 2
@@ -88,6 +92,7 @@ class DataAccess:
 
     Only access patterns along the first dimension are supported.
     """
+
     id: DataID
     pattern: slice | list[int] | int | None = None
     device: int = 0
@@ -102,6 +107,7 @@ class TaskDataInfo:
     @field write: The list of data objects that are written by the task (and not read). These don't really exist.
     @field read_write: The list of data objects that are read and written by the task
     """
+
     read: list[DataID | DataAccess] = field(default_factory=list)
     write: list[DataID | DataAccess] = field(default_factory=list)
     read_write: list[DataID | DataAccess] = field(default_factory=list)
@@ -151,6 +157,7 @@ class TaskID:
     """
     The identifier for a task in a synthetic task graph.
     """
+
     taskspace: str = "T"  # The task space the task belongs to
     task_idx: Tuple[int] = (0,)  # The index of the task in the task space
     # How many times the task has been spawned (continuation number)
@@ -165,6 +172,7 @@ class TaskRuntimeInfo:
     """
     The collection of important runtime information / constraints for a task in a synthetic task graph.
     """
+
     task_time: float = 0
     device_fraction: Union[float, Fraction] = 0
     gil_accesses: int = 0
@@ -176,12 +184,20 @@ class TaskRuntimeInfo:
 class TaskPlacementInfo:
     locations: list[Device | Tuple[Device]] = field(default_factory=list)
     # info: Dict[NDevices, Dict[LocalIdx, Dict[Device, TaskRuntimeInfo]]]
-    info: Dict[Device | Tuple[Device], TaskRuntimeInfo |
-               Dict[Device, TaskRuntimeInfo]] = field(default_factory=dict)
+    info: Dict[
+        Device | Tuple[Device], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]
+    ] = field(default_factory=dict)
     lookup: defaultdict[defaultdict[dict]] = field(
-        default_factory=lambda: defaultdict(lambda: defaultdict(dict)))
+        default_factory=lambda: defaultdict(lambda: defaultdict(dict))
+    )
 
-    def add(self, placement: Device | Tuple[Device], runtime_info: TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo] | List[TaskRuntimeInfo]):
+    def add(
+        self,
+        placement: Device | Tuple[Device],
+        runtime_info: TaskRuntimeInfo
+        | Dict[Device, TaskRuntimeInfo]
+        | List[TaskRuntimeInfo],
+    ):
         if isinstance(placement, Device):
             placement = (placement,)
 
@@ -190,18 +206,19 @@ class TaskPlacementInfo:
                 self.lookup[len(placement)][localidx][device] = runtime_info
         elif isinstance(placement, tuple) and isinstance(runtime_info, dict):
             for localidx, device in enumerate(placement):
-                self.lookup[len(placement)
-                            ][localidx][device] = runtime_info[device]
+                self.lookup[len(placement)][localidx][device] = runtime_info[device]
         elif isinstance(placement, tuple) and isinstance(runtime_info, list):
             if len(placement) != len(runtime_info):
                 raise ValueError(
-                    f"Invalid placement and runtime_info. {placement} and {runtime_info} must be the same length.")
+                    f"Invalid placement and runtime_info. {placement} and {runtime_info} must be the same length."
+                )
             for localidx, device in enumerate(placement):
                 details = runtime_info[localidx]
                 self.lookup[len(placement)][localidx][device] = details
         else:
             raise ValueError(
-                f"Invalid runtime_info type: {type(runtime_info)}. Expected TaskRuntimeInfo or Dict[Device, TaskRuntimeInfo].")
+                f"Invalid runtime_info type: {type(runtime_info)}. Expected TaskRuntimeInfo or Dict[Device, TaskRuntimeInfo]."
+            )
 
         self.locations.append(placement)
         self.info[placement] = runtime_info
@@ -215,7 +232,8 @@ class TaskPlacementInfo:
                 del self.lookup[len(placement)][localidx][device]
         else:
             raise ValueError(
-                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]")
+                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]"
+            )
 
         del self.info[placement]
         self.locations.remove(placement)
@@ -234,7 +252,8 @@ class TaskPlacementInfo:
             elif isinstance(details, list):
                 if len(device) != len(details):
                     raise ValueError(
-                        f"Invalid placement and runtime_info. {device} and {details} must be the same length.")
+                        f"Invalid placement and runtime_info. {device} and {details} must be the same length."
+                    )
                 for localidx, d in enumerate(device):
                     self.lookup[len(device)][localidx][d] = details[localidx]
             elif isinstance(details, TaskRuntimeInfo):
@@ -252,7 +271,6 @@ class TaskPlacementInfo:
         return repr(self.info)
 
     def _get_any(self, device: Device, lookup: Dict[Device, TaskRuntimeInfo]):
-
         if device in lookup:
             return lookup[device]
 
@@ -267,7 +285,6 @@ class TaskPlacementInfo:
         return None
 
     def __getitem__(self, placement: Device | Tuple[Device]) -> List[TaskRuntimeInfo]:
-
         if placement is None:
             raise KeyError("Placement query cannot be None.")
 
@@ -277,20 +294,19 @@ class TaskPlacementInfo:
         if isinstance(placement, tuple):
             runtime_info_list = []
             for idx, device in enumerate(placement):
-                runtime_info = self._get_any(
-                    device, self.lookup[len(placement)][idx])
+                runtime_info = self._get_any(device, self.lookup[len(placement)][idx])
                 if runtime_info is not None:
                     runtime_info_list.append(runtime_info)
                 else:
                     raise KeyError(f"RuntimeInfo not found for {placement}.")
         else:
             raise KeyError(
-                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]")
+                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]"
+            )
 
         return runtime_info_list
 
     def __contains__(self, placement: Device | Tuple[Device]) -> bool:
-
         if placement is None:
             return False
 
@@ -299,13 +315,13 @@ class TaskPlacementInfo:
 
         if isinstance(placement, tuple):
             for idx, device in enumerate(placement):
-                runtime_info = self._get_any(
-                    device, self.lookup[len(placement)][idx])
+                runtime_info = self._get_any(device, self.lookup[len(placement)][idx])
                 if runtime_info is None:
                     return False
         else:
             raise KeyError(
-                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]")
+                f"Invalid placement: {placement} of {type(placement)}. Expected Device or Tuple[Device]"
+            )
 
         return True
 
@@ -315,6 +331,7 @@ class TaskInfo:
     """
     The collection of important information for a task in a synthetic task graph.
     """
+
     id: TaskID
     runtime: TaskPlacementInfo
     dependencies: list[TaskID]
@@ -336,6 +353,7 @@ class TaskTime:
     """
     The parsed timing information from a task from an execution log.
     """
+
     assigned_t: float
     start_t: float
     end_t: float
@@ -347,6 +365,7 @@ class TimeSample:
     """
     A collection of timing information.
     """
+
     mean: float
     median: float
     std: float
@@ -359,10 +378,12 @@ class TimeSample:
 # Generic Synthetic Graph Configurations
 #########################################
 
+
 class MovementType(IntEnum):
     """
     Used to specify the type of data movement to be used in a synthetic task graph execution.
     """
+
     NO_MOVEMENT = 0
     LAZY_MOVEMENT = 1
     EAGER_MOVEMENT = 2
@@ -372,6 +393,7 @@ class DataInitType(IntEnum):
     """
     Used to specify the data movement pattern and initialization in a synthetic task graph execution.
     """
+
     NO_DATA = 0
     INDEPENDENT_DATA = 1
     OVERLAPPED_DATA = 2
@@ -397,6 +419,7 @@ class GraphConfig:
     @field data_config: The data configuration for the graph
 
     """
+
     task_config: TaskPlacementInfo = field(default_factory=TaskPlacementInfo)
     fixed_placement: bool = False
     placement_arch = Architecture.GPU
@@ -408,6 +431,7 @@ class GraphConfig:
 # Specific Synthetic Graph Configurations
 #########################################
 
+
 @dataclass(slots=True)
 class IndependentConfig(GraphConfig):
     """
@@ -415,6 +439,7 @@ class IndependentConfig(GraphConfig):
 
     @field task_count: The number of tasks in the graph
     """
+
     task_count: int = 1
 
 
@@ -434,6 +459,7 @@ class SerialConfig(GraphConfig):
     --T(3,1)--T(3, 2)--T(3, 3)-->
 
     """
+
     steps: int = 1
     dependency_count: int = 1
     chains: int = 1
@@ -454,6 +480,7 @@ class ReductionConfig(GraphConfig):
     |   \   |   \
     T(2,1) T(2,2) T(2,3) T(2,4)
     """
+
     levels: int = 8
     branch_factor: int = 2
 
@@ -463,12 +490,14 @@ class ReductionScatterConfig(GraphConfig):
     """
     Used to configure the generation of a reduction-scatter task graph.
     """
+
     # The total number of tasks.
     # The number of tasks for each level is calculated based on this.
     # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
     #       with 2 bridge tasks.
     task_count: int = 1
     levels: int = 4  # Number of levels in the tree
+
 
 #########################################
 # Synthetic Graph Execution Configurations
@@ -496,6 +525,7 @@ class RunConfig:
     @field do_check: If this is true, validate configuration/execution
     @field num_gpus: The number of GPUs to use for the execution
     """
+
     outer_iterations: int = 1
     inner_iterations: int = 1
     inner_sync: bool = False
@@ -512,12 +542,15 @@ class RunConfig:
     do_check: bool = False
     num_gpus: int = 4
 
+
 #########################################
 # Utility Functions & Conversions
 #########################################
 
 
-def apply_mapping(mapping: Dict[TaskID, Device | Tuple[Device]], tasks: TaskMap) -> TaskMap:
+def apply_mapping(
+    mapping: Dict[TaskID, Device | Tuple[Device]], tasks: TaskMap
+) -> TaskMap:
     """
     Apply the mapping to the tasks
     """
@@ -596,8 +629,7 @@ def numeric_to_str(obj: Fraction | Decimal):
     elif isinstance(obj, Decimal):
         return f"{obj:0.2f}"
     else:
-        raise ValueError(
-            f"Unsupported numeric type {type(obj)} of value {obj}")
+        raise ValueError(f"Unsupported numeric type {type(obj)} of value {obj}")
 
 
 def sizeof_fmt(num, suffix="B"):
@@ -629,18 +661,16 @@ def make_data_access_from_dict(data_access: Dict) -> DataAccess:
     if "pattern" in data_access:
         data_pattern = data_access["pattern"]
         if data_pattern is not None:
-            raise NotImplementedError(
-                "Access patterns currently not supported.")
+            raise NotImplementedError("Access patterns currently not supported.")
     return DataAccess(id=data_idx)
 
 
 def make_data_dependencies_from_dict(data_dependencies: Dict) -> TaskDataInfo:
-    read_data = [make_data_access_from_dict(
-        x) for x in data_dependencies["read"]]
-    write_data = [make_data_access_from_dict(
-        x) for x in data_dependencies["write"]]
-    read_write_data = [make_data_access_from_dict(
-        x) for x in data_dependencies["read_write"]]
+    read_data = [make_data_access_from_dict(x) for x in data_dependencies["read"]]
+    write_data = [make_data_access_from_dict(x) for x in data_dependencies["write"]]
+    read_write_data = [
+        make_data_access_from_dict(x) for x in data_dependencies["read_write"]
+    ]
     return TaskDataInfo(read_data, write_data, read_write_data)
 
 
@@ -651,7 +681,9 @@ def make_task_runtime_from_dict(task_runtime: Dict) -> TaskRuntimeInfo:
     gil_fraction = Fraction(task_runtime["gil_fraction"])
     memory = int(task_runtime["memory"])
 
-    return TaskRuntimeInfo(task_time, device_fraction, gil_accesses, gil_fraction, memory)
+    return TaskRuntimeInfo(
+        task_time, device_fraction, gil_accesses, gil_fraction, memory
+    )
 
 
 def device_from_string(device_str: str) -> Device | Tuple[Device]:
@@ -692,7 +724,12 @@ def device_from_string(device_str: str) -> Device | Tuple[Device]:
         return tuple(devices)
 
 
-def make_task_placement_from_dict(task_runtime: Dict) -> Dict[Device | Tuple[Device], TaskRuntimeInfo | Dict[Device | Tuple[Device], TaskRuntimeInfo]]:
+def make_task_placement_from_dict(
+    task_runtime: Dict,
+) -> Dict[
+    Device | Tuple[Device],
+    TaskRuntimeInfo | Dict[Device | Tuple[Device], TaskRuntimeInfo],
+]:
     """
     Parse the device runtime from a dictionary
     """
@@ -700,16 +737,16 @@ def make_task_placement_from_dict(task_runtime: Dict) -> Dict[Device | Tuple[Dev
     for device_str, runtime in task_runtime.items():
         device = device_from_string(device_str)
 
-        if 'task_time' in runtime:
+        if "task_time" in runtime:
             device_runtime[device] = make_task_runtime_from_dict(runtime)
         elif isinstance(runtime, list):
-            device_runtime[device] = [
-                make_task_runtime_from_dict(r) for r in runtime]
+            device_runtime[device] = [make_task_runtime_from_dict(r) for r in runtime]
         elif isinstance(device, tuple):
             device_runtime[device] = make_task_runtime_from_dict(runtime)
         else:
             raise ValueError(
-                f"Unknown device type {device} or Invalid runtime {runtime} configuration.")
+                f"Unknown device type {device} or Invalid runtime {runtime} configuration."
+            )
 
     device_runtime = TaskPlacementInfo(info=device_runtime)
     device_runtime.update()

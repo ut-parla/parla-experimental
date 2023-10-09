@@ -28,7 +28,6 @@ class PriorityQueue:
 
 
 class QueueDrainer(object):
-    # TODO(hc): better name?
     def __init__(self, q: PriorityQueue, maxiter: int = None):
         self.q = q
         self.iter = 0
@@ -54,14 +53,14 @@ class TaskQueue(PriorityQueue):
         super().put((task.info.order, task))
 
     def get(self) -> TaskID:
-        pair = super().queue.get()
+        pair = super().get()
         if pair:
             return pair[1]
         else:
             return None
 
     def peek(self) -> TaskID:
-        pair = super().queue.peek()
+        pair = super().peek()
         if pair:
             return pair[1]
         else:
@@ -80,10 +79,10 @@ class EventQueue(PriorityQueue):
         super().put((completion_time, event))
 
     def get(self) -> Tuple[float, Event]:
-        return super().queue.get()
+        return super().get()
 
     def peek(self) -> Event:
-        pair = super().queue.peek()
+        pair = super().peek()
         if pair:
             return pair[1]
         else:

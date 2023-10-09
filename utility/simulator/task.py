@@ -57,7 +57,6 @@ class SimulatedTask:
     state: TaskState = TaskState.SPAWNED
     times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters | None = None
-    datatasks: List[Self] = field(default_factory=list)
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
@@ -117,6 +116,7 @@ class SimulatedTask:
 
 @dataclass(slots=True)
 class SimulatedComputeTask(SimulatedTask):
+    datatasks: List[Self] = field(default_factory=list)
 
     def add_data_dependency(self, task: TaskID):
         self.info.dependencies.append(task)

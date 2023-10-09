@@ -1,17 +1,19 @@
-from ..types import Architecture, Device, TaskID, DataID, DataInfo
+from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType
 from typing import List, Dict, Set, Tuple, Optional
 from .device import SimulatedDevice, ResourceSet
 from dataclasses import dataclass
+from .utility import parse_size
 
 import numpy as np
+from fractions import Fraction
 
 NamedDevice = Device | SimulatedDevice
 
 
 @dataclass(slots=True)
 class SimulatedTopology():
-    name: str = "SimulatedTopology"
     devices: List[SimulatedDevice]
+    name: str = "SimulatedTopology"
     id_map: Dict[Device, int] = None
     bandwidth: np.ndarray = None
     host: SimulatedDevice = None
@@ -22,24 +24,52 @@ class SimulatedTopology():
     max_copy_engines: Dict[Device, int] = None
 
     def __post_init__(self):
+        self.id_map = {}
         for i, device in enumerate(self.devices):
             self.id_map[device.name] = i
             if device.name.architecture == Architecture.CPU:
                 self.host = device
-
+        # greater than 0 if used.
+        self.connections = np.zeros(
+            (len(self.devices), len(self.devices)), dtype=np.int32)
+        # greater than 0 if used.
         self.active_connections = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.int32)
-
-        self.active_connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32)
-
+        # Bandwidth between devices.
         self.bandwidth = np.zeros(
             (len(self.devices), len(self.devices)), dtype=np.float32)
-
         self.active_copy_engines = {
             device.name: 0 for device in self.devices}
         self.max_copy_engines = {
-            device.name: device.resources.copy for device in self.devices}
+            device.name: device.resources.store[ResourceType.COPY] \
+            for device in self.devices}
+
+    def __str__(self) -> str:
+        repr_str = "[[HW Topology]]\n"
+        repr_str += self.name + "\n"
+        for d in self.devices:
+            repr_str += str(d.name) + "\n"
+            repr_str += "[Resource]\n"
+            repr_str += "Memory: "
+            repr_str += str(d.resources[ResourceType.MEMORY]) + "\n"
+            repr_str += "VCU: "
+            repr_str += str(d.resources[ResourceType.VCU]) + "\n"
+            repr_str += "COPY: "
+            repr_str += str(d.resources[ResourceType.COPY]) + "\n\n"
+
+        repr_str += "[Connections]\n"
+        for d1 in range(len(self.devices)):
+            for d2 in range(len(self.devices)):
+                if self.connections[d1,d2] == 1:
+                    repr_str += str(self.devices[d1].name) + ","
+                    repr_str += str(self.devices[d2].name)
+                    repr_str += " bandwidth: " + str(self.bandwidth[d1][d2])
+                    repr_str += "\n"
+
+        return repr_str
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def get_index(self, device: NamedDevice) -> int:
         if isinstance(device, SimulatedDevice):
@@ -130,3 +160,85 @@ class SimulatedTopology():
                 and (self.active_connections[dst_idx, src_idx] == 0)
         else:
             return (self.active_connections[src_idx, dst_idx] == 0)
+
+
+
+def create_4gpus_1cpu_hwtopo():
+    """
+    This function creates 4 GPUs and 1 CPU architecture.
+
+    The topology looks like below:
+
+    gpu0 - gpu1
+     | \   / |
+     |  \ /  |
+     |  / \  |
+     | /   \ |
+    gpu2 - gpu3
+
+    gpu0-gpu1 and gpu2-gpu3 have bandwidth of 200 (we assume NVLinks),
+    and other connections have bandiwdth of 100.
+
+    All GPUs are connected to CPU by connections having bandwidth of 100.
+    Each GPU is equipped with 16GB DRAM, and CPU is equipped with 130GB.
+    """
+    # Create devices
+    gpu0 = SimulatedDevice(
+        Device(Architecture.GPU, 0), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu1 = SimulatedDevice(
+        Device(Architecture.GPU, 1), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu2 = SimulatedDevice(
+        Device(Architecture.GPU, 2), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    gpu3 = SimulatedDevice(
+        Device(Architecture.GPU, 3), 
+        ResourceSet(1, parse_size("16 GB"), 3))
+    cpu = SimulatedDevice(
+        Device(Architecture.CPU, 0), 
+        ResourceSet(1, parse_size("130 GB"), 3))
+
+    # Create device topology
+    topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Topo4G-1C")
+
+    bw = 100
+    topology.add_connection(gpu0, gpu1, bidirectional=True)
+    topology.add_connection(gpu0, gpu2, bidirectional=True)
+    topology.add_connection(gpu0, gpu3, bidirectional=True)
+    topology.add_connection(gpu0, cpu, bidirectional=True)
+
+    topology.add_connection(gpu1, gpu2, bidirectional=True)
+    topology.add_connection(gpu1, gpu3, bidirectional=True)
+    topology.add_connection(gpu1, cpu, bidirectional=True)
+
+    topology.add_connection(gpu2, gpu3, bidirectional=True)
+    topology.add_connection(gpu2, cpu, bidirectional=True)
+
+    topology.add_connection(gpu3, cpu, bidirectional=True)
+
+    topology.add_bandwidth(gpu0, gpu1, 2*bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu3, bw, bidirectional=bw)
+
+    topology.add_bandwidth(gpu1, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, gpu3, bw, bidirectional=bw)
+
+    topology.add_bandwidth(gpu2, gpu3, 2*bw, bidirectional=bw)
+
+    # Self copy (not used)
+    topology.add_bandwidth(gpu3, gpu3, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu2, gpu2, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, gpu1, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu0, gpu0, bw, bidirectional=bw)
+    topology.add_bandwidth(cpu, cpu, bw, bidirectional=bw)
+
+    # With CPU
+    topology.add_bandwidth(gpu0, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu1, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu2, cpu, bw, bidirectional=bw)
+    topology.add_bandwidth(gpu3, cpu, bw, bidirectional=bw)
+
+    print(topology)
+
+    return topology

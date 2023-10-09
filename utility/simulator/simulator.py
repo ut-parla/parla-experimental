@@ -11,7 +11,7 @@ from ..types import Architecture, Device, TaskID, TaskState, TaskType
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
 from typing import List, Dict, Set, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
 from rich import print
@@ -28,24 +28,23 @@ class ObjectRegistry:
 # TODO: Rename to "SystemState"
 @dataclass(slots=True)
 class SchedulerState:
-    topology: SimulatedTopology
+    topology: SimulatedTopology = None
     data_pool: DataPool = None
     resource_pool: ResourcePool = None
     objects: ObjectRegistry = None
 
-    def __post_init__(self, topology: SimulatedTopology = None):
+    def __post_init__(self):
 
-        if topology is None:
+        if self.topology is None:
             raise ValueError("Topology must be specified.")
 
         self.objects = ObjectRegistry()
-        self.topology = topology
 
-        for device in topology.devices:
+        for device in self.topology.devices:
             self.objects.devicemap[device.name] = device
 
         self.data_pool = DataPool()
-        self.resource_pool = ResourcePool(topology.devices)
+        self.resource_pool = ResourcePool(devices=self.topology.devices)
 
 
 class SchedulerType(IntEnum):
@@ -55,15 +54,24 @@ class SchedulerType(IntEnum):
 class SchedulerArchitecture:
     completed_tasks: List[TaskID] = []
 
-    def __getitem__(self, event):
+    def __getitem__(self, func):
         try:
-            function = getattr(self, event.func)
+            function = getattr(self, func)
         except AttributeError:
             raise NotImplementedError(
                 f"SchedulerArchitecture does not have function {event.func}")
         return function
 
     def __post_init__(self, topology: SimulatedTopology = None):
+        pass
+
+
+    def add_initial_task(self, task: SimulatedTask):
+        """
+        Append an initial task.
+        The caller should add a task through this function
+        since a different runtime system may have a different mechanism.
+        """
         pass
 
     def mapper(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
@@ -90,22 +98,21 @@ class SchedulerArchitecture:
 
 @dataclass(slots=True)
 class ParlaArchitecture(SchedulerArchitecture):
+    topology: SimulatedTopology = None
     spawned_tasks: TaskQueue = TaskQueue()
     mappable_tasks: TaskQueue = TaskQueue()
-    mapped_tasks: Dict[Device, TaskQueue] | None = None
+    mapped_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    reservable_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
+    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
+    launched_tasks:  Dict[Device, TaskQueue] = field(default_factory=dict)
 
-    reservable_tasks: Dict[Device, TaskQueue] | None = None
-    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] | None = None
+    def __post_init__(self):
 
-    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] | None = None
-    launched_tasks:  Dict[Device, TaskQueue] | None = None
-
-    def __post_init__(self, topology: SimulatedTopology = None):
-
-        if topology is None:
+        if self.topology is None:
             raise ValueError("Topology must be specified.")
 
-        for device in topology.devices:
+        for device in self.topology.devices:
 
             self.mapped_tasks[device.name] = TaskQueue()
             self.reservable_tasks[device.name] = TaskQueue()
@@ -114,12 +121,21 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.reserved_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.reserved_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-            self.reserved_tasks[device.name] = dict()
+            self.launchable_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Event]:
-        pass
+
+    def add_initial_task(self, task: SimulatedTask):
+        """
+        Append an initial task who does not have any dependency to
+        a spawned task queue.
+        """
+        self.spawned_tasks.put(task)
+
+
+    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Tuple[float, Event]]:
+        return []
         # i = 0
         # max_tasks = event.max_tasks
 
@@ -179,7 +195,7 @@ class ParlaArchitecture(SchedulerArchitecture):
         #         else:
         #             continue
 
-    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Event]:
+    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Tuple[float, Event]]:
         task_id = event.task_id
 
         objects = scheduler_state.objects
@@ -201,13 +217,20 @@ class ParlaArchitecture(SchedulerArchitecture):
 
         # Update dependencies
         # recent_task.finish()
+        return []
+
+    def map_task(self, scheduler_state: SchedulerState, event: Mapper) -> List[Tuple[float, Event]]:
+        return []
+
+    def reserve_task(self, scheduler_state: SchedulerState, event: Reserver) -> List[Tuple[float, Event]]:
+        return []
 
 
 @dataclass(slots=True)
 class SimulatedScheduler:
-
-    name: str
-
+    topology: SimulatedTopology
+    task_list: List[SimulatedTask]
+    name: str = "SimulatedScheduler"
     # Task Queues for Runtime Phases
     mechanisms: SchedulerArchitecture = None
     state: SchedulerState = None
@@ -215,12 +238,12 @@ class SimulatedScheduler:
     events: EventQueue = EventQueue()
     time: float = 0.0
 
-    def __post_init__(self, topology, scheduler: SchedulerType = SchedulerType.PARLA):
+    def __post_init__(self, scheduler: SchedulerType = SchedulerType.PARLA):
 
-        self.state = SchedulerState(topology=topology)
+        self.state = SchedulerState(topology=self.topology)
 
         if scheduler == SchedulerType.PARLA:
-            self.mechanisms = ParlaArchitecture(topology=topology)
+            self.mechanisms = ParlaArchitecture(topology=self.topology)
         else:
             raise NotImplementedError(
                 f"Scheduler type {scheduler} is not implemented")
@@ -228,16 +251,32 @@ class SimulatedScheduler:
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
 
+    def spawn_initial_tasks(self):
+        for task in self.task_list:
+            if len(task.info.dependencies) == 0:
+                self.mechanisms.add_initial_task(task)
+        """
+        TODO(hc): remove it.
+        for i in range(len(self.mechanisms.spawned_tasks)):
+            print("First task:", str(self.mechanisms.spawned_tasks.queue[i][1].name))
+        """
+
+
     def process_event(self, event: Event):
-        self.mechanisms[event.func](self.state, event)
+        # New events are created from the current event.
+        new_event_pairs = self.mechanisms[event](state)
+        # Append new events and their completion times to the event queue
+        for completion_time, new_event in new_event_pairs:
+            self.events.put(new_event, completion_time)
 
     def run(self):
+        self.spawn_initial_tasks()
 
         for event_pair in GetNextEvent(self.events):
             if event_pair:
                 completion_time, event = event_pair
                 # Process Event
-                self.process_event(event)
+                new_events = self.process_event(event)
                 # Advance time
                 self.time = max(self.time, completion_time)
                 # Update Log

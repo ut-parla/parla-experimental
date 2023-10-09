@@ -79,25 +79,33 @@ def find_recent_writers(graph: TaskMap) -> DataWriters:
 SimulatedTaskMap = Dict[TaskID, SimulatedTask]
 SimulatedComputeTaskMap = Dict[TaskID, SimulatedComputeTask]
 SimulatedDataTaskMap = Dict[TaskID, SimulatedDataTask]
+NameToTask = Dict[str, SimulatedTask]
 
 
-def create_compute_tasks(graph: TaskMap) -> SimulatedComputeTaskMap:
+def create_compute_tasks(graph: TaskMap) -> Tuple[SimulatedComputeTaskMap, NameToTask]:
     """
     Create compute tasks for each task in the graph.
     """
     compute_tasks = dict()
+    # This is used by graph sorting
+    name_to_task = dict()
 
     for task in graph.values():
         compute_tasks[task.id] = SimulatedComputeTask(task.id, task)
+        name_to_task[str(task.id)] = compute_tasks[task.id]
 
-    return compute_tasks
+    return compute_tasks, name_to_task
 
 
-def create_data_tasks(graph: SimulatedComputeTaskMap, recent_writers: DataWriters) -> SimulatedDataTaskMap:
+def create_data_tasks(
+    graph: SimulatedComputeTaskMap, recent_writers: DataWriters
+) -> Tuple[SimulatedDataTaskMap, NameToTask]:
     """
     Create data tasks for each data item in the task.
     """
     data_tasks = dict()
+    # This is used by graph sorting
+    name_to_task = dict()
 
     for task in graph.values():
         task_info = task.info
@@ -108,39 +116,55 @@ def create_data_tasks(graph: SimulatedComputeTaskMap, recent_writers: DataWriter
 
             data_task_id = TaskID(taskspace=f"{task_info.id}.data", task_idx=i)
             runtime = TaskRuntimeInfo(task_time=0)
+            # Adding read data is sufficient since
+            # (1) By this point rw/r should already be merged into the read
+            # list and filtered for unique.
+            # (2) There is /only/ read-only data tasks.
+            # There is no such thing as a "write" data task
+            # (the parla model is wrong for this).
+            # Compute tasks write to data, data tasks only read data.
             data_info = TaskDataInfo(read=[DataAccess(id=data)])
-            data_task_info = TaskInfo(id=data_task_id, dependencies=dependencies,
-                                      runtime=runtime, data_dependencies=data_info)
+            data_task_info = TaskInfo(
+                id=data_task_id,
+                dependencies=dependencies,
+                runtime=runtime,
+                data_dependencies=data_info,
+            )
 
         data_task = SimulatedDataTask(name=data_task_id, info=data_task_info)
         data_tasks[data_task_id] = data_task
         task.add_data_dependency(data_task_id)
+        name_to_task[str(data_task_id)] = data_task
 
-    return data_tasks
+    return data_tasks, name_to_task
 
 
-def create_task_graph(graph: TaskMap) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap]:
+def create_task_graph(
+    graph: TaskMap,
+) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap, NameToTask]:
     """
     Create a task graph from a task map.
     """
-    compute_tasks = create_compute_tasks(graph)
+    compute_tasks, name_to_compute_task = create_compute_tasks(graph)
 
     from rich import print
+
     print(compute_tasks)
 
     recent_writers = find_recent_writers(graph)
 
-    data_tasks = create_data_tasks(compute_tasks, recent_writers)
+    data_tasks, name_to_data_task = create_data_tasks(compute_tasks, recent_writers)
+    name_to_task = dict(name_to_compute_task, **name_to_data_task)
 
-    #print(data_tasks)
-
-    return compute_tasks, data_tasks
+    return compute_tasks, data_tasks, name_to_task
 
 
-def read_graph(graph_name: str) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap, DataMap]:
+def read_graph(
+    graph_name: str,
+) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap, DataMap, NameToTask]:
     tasks = read_tasks_from_yaml(graph_name)
     data = read_data_from_yaml(graph_name)
 
-    compute_tasks, data_tasks = create_task_graph(tasks)
+    compute_tasks, data_tasks, name_to_task = create_task_graph(tasks)
 
-    return compute_tasks, data_tasks, data
+    return compute_tasks, data_tasks, data, name_to_task

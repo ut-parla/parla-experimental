@@ -28,6 +28,9 @@ class ResourceSet:
     def __setitem__(self, key: ResourceType, value: Numeric):
         self.store[key] = value
 
+    def __iter__(self): # For unpack operator
+        return iter(self.store)
+
     def __add__(self, other: Self) -> Self:
         for key in other.store:
             if key in self.store:
@@ -70,10 +73,5 @@ class DataPool:
 @dataclass(slots=True)
 class SimulatedDevice:
     name: Device
-    tasks: Dict[TaskState, TaskQueue] = field(default_factory=dict)
     resources: ResourceSet = field(default_factory=ResourceSet)
-
-    def __post_init__(self):
-        self.resources[ResourceType.VCU] = 1
-        self.resources[ResourceType.MEMORY] = 100
-        self.resources[ResourceType.COPY] = 2
+    tasks: Dict[TaskState, TaskQueue] = field(default_factory=dict)
