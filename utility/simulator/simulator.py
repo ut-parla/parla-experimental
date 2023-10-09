@@ -65,9 +65,12 @@ class SchedulerArchitecture:
     def __post_init__(self, topology: SimulatedTopology = None):
         pass
 
-    def initial_events(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
+
+    def add_initial_task(self, task: SimulatedTask):
         """
-        This event adds initial events to an event queue.
+        Append an initial task.
+        The caller should add a task through this function
+        since a different runtime system may have a different mechanism.
         """
         pass
 
@@ -123,9 +126,12 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
 
-    def initial_events(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
-        print("Initial events are invoked")
-        return []
+    def add_initial_task(self, task: SimulatedTask):
+        """
+        Append an initial task who does not have any dependency to
+        a spawned task queue.
+        """
+        self.spawned_tasks.put(task)
 
 
     def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Tuple[float, Event]]:
@@ -243,6 +249,17 @@ class SimulatedScheduler:
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
 
+    def spawn_initial_tasks(self):
+        for task in self.task_list:
+            if len(task.info.dependencies) == 0:
+                self.mechanisms.add_initial_task(task)
+        """
+        TODO(hc): remove it.
+        for i in range(len(self.mechanisms.spawned_tasks)):
+            print("First task:", str(self.mechanisms.spawned_tasks.queue[i][1].name))
+        """
+
+
     def process_event(self, event: Event):
         # New events are created from the current event.
         new_event_pairs = self.mechanisms[event.func](self.state, event)
@@ -251,8 +268,7 @@ class SimulatedScheduler:
             self.events.put(new_event, completion_time)
 
     def run(self):
-        initial_event = Event("initial_events")
-        self.events.put(initial_event, 0)
+        self.spawn_initial_tasks()
 
         for event_pair in GetNextEvent(self.events):
             if event_pair:
