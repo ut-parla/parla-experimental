@@ -59,7 +59,8 @@ class SimulatedScheduler:
         for completion_time, new_event in new_event_pairs:
             self.events.put(new_event, completion_time)
 
-        for event_pair in GetNextEvent(self.events):
+        next_events = EventIterator(self.events)
+        for event_pair in next_events:
             if event_pair:
                 completion_time, event = event_pair
                 # Process Event

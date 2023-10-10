@@ -3,7 +3,7 @@ from __future__ import annotations
 import heapq
 from ..types import TaskID, Time
 from .events import Event
-from typing import Tuple, TypeVar, Optional, Self
+from typing import Tuple, TypeVar, Optional, Self, Dict
 
 # (completion_time, event)
 EventPair = Tuple[Time, Event]
@@ -109,6 +109,23 @@ class TaskIterator(QueueIterator):
 
     def __str__(self):
         return f"TaskIterator({self.q}, ITER={self.iter}, MAXITER={self.maxiter}, PEEK={self.peek})"
+
+
+# class MultiTaskIterator:
+#     def __init__(
+#         self, multiq: Dict[object, TaskQueue], maxiter: int = -1, peek: bool = False
+#     ):
+#         self.multiq = multiq
+#         self.iter = 0
+#         self.maxiter = maxiter
+#         self.peek = peek
+#         self.success_count = 0
+
+#     def __iter__(self):
+#         return self
+
+#     def __next__(self):
+#         return
 
 
 class EventQueue(PriorityQueue):
