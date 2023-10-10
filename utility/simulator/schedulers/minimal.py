@@ -1,4 +1,9 @@
-from ..task import SimulatedTask, SimulatedDataTask, SimulatedComputeTask
+from utility.simulator.data import List
+from utility.simulator.device import EventPair, List, SimulatedTask
+from utility.simulator.queue import EventPair, SimulatedTask
+from utility.simulator.resources import List
+from utility.simulator.topology import List
+from ..task import List, SimulatedTask, SimulatedDataTask, SimulatedComputeTask
 from ..data import *
 from ..device import *
 from ..queue import *
@@ -38,11 +43,16 @@ class MinimalArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
+    def initialize(self, tasks: List[SimulatedTask]) -> List[EventPair]:
+        # Initialize the set of visible tasks
+        self.add_initial_tasks(tasks)
+
+        # Initialize the event queue
+        next_event = Launcher()
+        next_time = Time(0)
+        return [(next_time, next_event)]
+
     def add_initial_tasks(self, tasks: List[SimulatedTask]):
-        """
-        Append an initial task who does not have any dependency to
-        a spawned task queue.
-        """
         for task in tasks:
             self.spawned_tasks.put(task)
 
@@ -125,12 +135,4 @@ class MinimalArchitecture(SchedulerArchitecture):
 
         # Update dependencies
         # recent_task.finish()
-        return []
-
-    def map_task(self, scheduler_state: SystemState, event: Mapper) -> List[EventPair]:
-        return []
-
-    def reserve_task(
-        self, scheduler_state: SystemState, event: Reserver
-    ) -> List[EventPair]:
         return []

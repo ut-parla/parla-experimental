@@ -13,31 +13,69 @@ from ast import literal_eval as make_tuple
 # Time Information
 #########################################
 
+time_units: List[str] = ["ns", "us", "ms", "s", "m", "h", "d"]
+time_scale: List[int | Fraction] = [
+    1_000_000_000,
+    1_000_000,
+    1_000,
+    1,
+    Fraction(1, 60),
+    Fraction(1, 3600),
+    Fraction(1, 86400),
+]
+
 
 @dataclass(slots=True)
 class Time:
     duration: int = 0
-    base = "us"
+    unit: str = "us"
+    display_unit: str = "us"
+
+    def scale_between(self, target_unit: str) -> int | Fraction | Decimal:
+        if target_unit not in time_units:
+            raise ValueError(f"Invalid time unit: {target_unit}")
+        if self.unit not in time_units:
+            raise ValueError(f"Invalid time unit: {self.unit}")
+
+        target_idx = time_units.index(target_unit)
+        current_idx = time_units.index(self.unit)
+
+        return Fraction(time_scale[target_idx], time_scale[current_idx])
+
+    def scale_to(self, target_unit: str) -> int | Fraction | Decimal:
+        value = self.scale_between(target_unit) * self.duration
+        return value
+
+    def print(self, unit: str | None = None) -> str:
+        value = self.scale_to(unit or self.display_unit)
+        value_str = str(float(value)) if isinstance(value, Fraction) else str(value)
+        return f"{value_str}{unit or self.display_unit}"
 
     def __str__(self):
-        return f"{self.duration}{self.base}"
+        return self.print()
 
     def __repr__(self):
         return str(self)
 
     def __add__(self, other):
-        if isinstance(other, Time):
-            if self.base == other.base:
-                return Time(self.duration + other.duration)
-            else:
-                raise ValueError(
-                    f"Cannot add times with different bases: {self.base} and {other.base}"
-                )
+        if isinstance(other, Time) and self.unit == other.unit:
+            return Time(self.duration + other.duration)
         elif isinstance(other, int):
             return Time(self.duration + other)
+        else:
+            raise TypeError(f"Invalid type for Time.__add__: {type(other)}:{other}")
+
+    def __iadd__(self, other):
+        if isinstance(other, Time) and self.unit == other.unit:
+            self.duration += other.duration
+        elif isinstance(other, int):
+            self.duration += other
+        else:
+            raise TypeError(f"Invalid type for Time.__add__: {type(other)}:{other}")
+        return self
 
     def __eq__(self, __value: object) -> bool:
-        if isinstance(__value, Time):
+        if isinstance(__value, Time) and self.unit == __value.unit:
             return self.duration == __value.duration
         elif isinstance(__value, int):
             return self.duration == __value
@@ -45,7 +83,7 @@ class Time:
             return False
 
     def __lt__(self, __value: object) -> bool:
-        if isinstance(__value, Time):
+        if isinstance(__value, Time) and self.unit == __value.unit:
             return self.duration < __value.duration
         elif isinstance(__value, int):
             return self.duration < __value

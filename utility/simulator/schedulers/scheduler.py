@@ -143,16 +143,23 @@ class SchedulerArchitecture:
 
         return wrapper
 
-    def add_initial_task(self, task: SimulatedTask):
+    def initialize(self, tasks: List[SimulatedTask]) -> List[EventPair]:
+        raise NotImplementedError()
+        return []
+
+    def add_initial_tasks(self, task: SimulatedTask):
         pass
 
     def mapper(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        raise NotImplementedError()
         return []
 
     def reserver(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        raise NotImplementedError()
         return []
 
     def launcher(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        raise NotImplementedError()
         return []
 
     def complete_task(

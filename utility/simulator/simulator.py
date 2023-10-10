@@ -28,7 +28,7 @@ class SimulatedScheduler:
     state: SystemState = field(init=False)
 
     events: EventQueue = EventQueue()
-    time: int = 0
+    time: Time = field(default_factory=Time)
 
     def __post_init__(self, scheduler_type: str = "parla"):
         self.state = SystemState(topology=self.topology)
@@ -37,11 +37,14 @@ class SimulatedScheduler:
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
 
-    def register_tasks(self, taskmap: SimulatedTaskMap):
+    def register_taskmap(self, taskmap: SimulatedTaskMap):
         self.state.register_tasks(taskmap)
 
-    def register_data(self, datamap: SimulatedDataMap):
+    def register_datamap(self, datamap: SimulatedDataMap):
         self.state.register_data(datamap)
+
+    def add_initial_tasks(self, tasks: List[SimulatedTask]):
+        self.tasks.extend(tasks)
 
     def process_event(self, event: Event):
         # New events are created from the current event.
@@ -52,7 +55,7 @@ class SimulatedScheduler:
             self.events.put(new_event, completion_time)
 
     def run(self):
-        new_event_pairs = self.mechanisms.initialize()
+        new_event_pairs = self.mechanisms.initialize(self.tasks)
         for completion_time, new_event in new_event_pairs:
             self.events.put(new_event, completion_time)
 
