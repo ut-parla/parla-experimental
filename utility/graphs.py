@@ -53,8 +53,10 @@ def get_data_placement(idx, config):
 
     if data_config.architecture == Architecture.CPU:
         return Device(Architecture.CPU, 0)
-    if data_config.architecture == Architecture.GPU:
+    elif data_config.architecture == Architecture.GPU:
         return Device(Architecture.GPU, idx % config.n_devices)
+    else:
+        return Device(Architecture.CPU, 0)
 
 
 def check_config(config: GraphConfig):

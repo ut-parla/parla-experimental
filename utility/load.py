@@ -484,18 +484,22 @@ def read_from_pgraph(
             if len(dependencies) < 1 or dependencies[0].isspace() or not check_has[0]:
                 read_data = []
             else:
-                read_data = [int(x.strip()) for x in dependencies[0].split(",")]
+                read_data = [
+                    DataAccess(int(x.strip())) for x in dependencies[0].split(",")
+                ]
 
             if len(dependencies) < 2 or dependencies[1].isspace() or not check_has[1]:
                 write_data = []
             else:
-                write_data = [int(x.strip()) for x in dependencies[1].split(",")]
+                write_data = [
+                    DataAccess(int(x.strip())) for x in dependencies[1].split(",")
+                ]
 
             if len(dependencies) < 3 or dependencies[2].isspace() or not check_has[2]:
                 read_write_data = []
             else:
                 read_write_data = [
-                    int(x.strip()) if (x) else None for x in dependencies[2].split(",")
+                    DataAccess(int(x.strip())) for x in dependencies[2].split(",")
                 ]
 
             return TaskDataInfo(read_data, write_data, read_write_data)
