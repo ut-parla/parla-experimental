@@ -146,13 +146,13 @@ class DataInfo:
 
     id: DataID
     size: int
-    location: Device | Tuple[Device, ...]
+    location: Device | Tuple[Device, ...] | None
 
     def __init__(
         self,
         id: DataID | Tuple[int, ...] | int,
         size: int,
-        location: Device | Tuple[Device, ...],
+        location: Device | Tuple[Device, ...] | None,
     ):
         if not isinstance(id, DataID):
             id = DataID(id)
@@ -278,9 +278,10 @@ class TaskPlacementInfo:
     locations: list[Device | Tuple[Device, ...]] = field(default_factory=list)
     # info: Dict[NDevices, Dict[LocalIdx, Dict[Device, TaskRuntimeInfo]]]
     info: Dict[
-        Device | Tuple[Device, ...], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]
+        Device | Tuple[Device, ...],
+        TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo] | List[TaskRuntimeInfo],
     ] = field(default_factory=dict)
-    lookup: defaultdict[defaultdict[dict]] = field(
+    lookup: defaultdict[int, defaultdict[int, Dict[Device, TaskRuntimeInfo]]] = field(
         default_factory=lambda: defaultdict(lambda: defaultdict(dict))
     )
 
@@ -358,7 +359,7 @@ class TaskPlacementInfo:
         return self
 
     def __len__(self):
-        return len(self.list)
+        return len(self.info)
 
     def __repr__(self):
         return repr(self.info)
@@ -626,11 +627,11 @@ class RunConfig:
     inner_sync: bool = False
     outer_sync: bool = False
     verbose: bool = False
-    device_fraction: float = None  # VCUs
+    device_fraction: Optional[float | Fraction] = None
     data_scale: float = 1.0
     threads: int = 1
-    task_time: Optional[float] = None
-    gil_fraction: Optional[float] = None
+    task_time: Optional[int] = None
+    gil_fraction: Optional[float | Fraction] = None
     gil_accesses: Optional[int] = None
     movement_type: int = MovementType.NO_MOVEMENT
     logfile: str = "testing.blog"
@@ -786,22 +787,23 @@ def make_task_runtime_from_dict(task_runtime: Dict) -> TaskRuntimeInfo:
     )
 
 
-def device_from_string(device_str: str) -> Device | Tuple[Device, ...]:
+def device_from_string(device_str: str) -> Device | Tuple[Device, ...] | None:
     """
     Convert a device string (or string of a device tuple) to a device set
     """
     if device_str is None:
         return None
 
-    device_str = device_str.strip()
-    device_str = device_str.strip("()")
-    device_str = device_str.strip()
-    device_str = device_str.split(",")
-    device_str = [d.strip() for d in device_str]
+    processed_str = device_str.strip()
+    processed_str = processed_str.strip()
+    processed_str = processed_str.strip("()")
+    processed_str = processed_str.strip()
+    processed_str = processed_str.split(",")
+    processed_str = [d.strip() for d in processed_str]
 
     devices = []
 
-    for d in device_str:
+    for d in processed_str:
         if d.isspace() or d == "":
             continue
 

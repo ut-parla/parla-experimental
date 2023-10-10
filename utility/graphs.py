@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 import tempfile
 import time
 from enum import IntEnum
-
+import random
 from collections import defaultdict
 
 from .types import *
@@ -44,7 +44,7 @@ def shuffle_tasks(tasks: Dict[TaskID, TaskInfo]) -> Dict[TaskID, TaskInfo]:
     Shuffles the task graph
     """
     task_list = list(tasks.values())
-    np.random.shuffle(task_list)
+    random.shuffle(task_list)
     return convert_to_dictionary(task_list)
 
 
