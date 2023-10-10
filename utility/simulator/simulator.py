@@ -1,4 +1,4 @@
-from .task import *
+from .task import SimulatedTask, SimulatedDataTask, SimulatedComputeTask
 from .data import *
 from .device import *
 from .queue import *
@@ -7,10 +7,10 @@ from .resources import *
 from .task import *
 from .topology import *
 
-from ..types import Architecture, Device, TaskID, TaskState, TaskType
+from ..types import Architecture, Device, TaskID, TaskState, TaskType, Time
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Set, Tuple, Optional, Callable
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
@@ -24,24 +24,84 @@ class ObjectRegistry:
     taskmap: Dict[TaskID, SimulatedTask] = field(default_factory=dict)
     datamap: Dict[DataID, SimulatedData] = field(default_factory=dict)
 
+    def add_task(self, task: SimulatedTask):
+        self.taskmap[task.name] = task
 
-# TODO: Rename to "SystemState"
+    def get_task(self, task_id: Optional[TaskID]) -> SimulatedTask:
+        assert task_id is not None
+        assert self.taskmap is not None
+
+        if task_id not in self.taskmap:
+            raise ValueError(
+                f"System state does not have a reference to task: {task_id}."
+            )
+
+        task = self.taskmap[task_id]
+
+        if task is None:
+            raise ValueError(
+                f"System state has a reference to task {task_id} but it is None."
+            )
+
+        return task
+
+    def add_data(self, data: SimulatedData):
+        self.datamap[data.name] = data
+
+    def get_data(self, data_id: Optional[DataID]) -> SimulatedData:
+        assert data_id is not None
+        assert self.datamap is not None
+
+        if data_id not in self.datamap:
+            raise ValueError(
+                f"System state does not have a reference to data: {data_id}."
+            )
+
+        data = self.datamap[data_id]
+
+        if data is None:
+            raise ValueError(
+                f"System state has a reference to data {data_id} but it is None."
+            )
+
+        return data
+
+    def add_device(self, device: SimulatedDevice):
+        self.devicemap[device.name] = device
+
+    def get_device(self, device_id: Optional[Device]) -> SimulatedDevice:
+        assert device_id is not None
+        assert self.devicemap is not None
+
+        if device_id not in self.devicemap:
+            raise ValueError(
+                f"System state does not have a reference to device: {device_id}."
+            )
+
+        device = self.devicemap[device_id]
+
+        if device is None:
+            raise ValueError(
+                f"System state has a reference to device {device_id} but it is None."
+            )
+
+        return device
+
+
 @dataclass(slots=True)
-class SchedulerState:
-    topology: SimulatedTopology = None
-    data_pool: DataPool = None
-    resource_pool: ResourcePool = None
-    objects: ObjectRegistry = None
+class SystemState:
+    topology: SimulatedTopology
+    data_pool: DataPool = field(init=False)
+    resource_pool: ResourcePool = field(init=False)
+    objects: ObjectRegistry = field(init=False)
 
     def __post_init__(self):
-
-        if self.topology is None:
-            raise ValueError("Topology must be specified.")
+        assert self.topology is not None
 
         self.objects = ObjectRegistry()
 
         for device in self.topology.devices:
-            self.objects.devicemap[device.name] = device
+            self.objects.add_device(device)
 
         self.data_pool = DataPool()
         self.resource_pool = ResourcePool(devices=self.topology.devices)
@@ -54,37 +114,35 @@ class SchedulerType(IntEnum):
 class SchedulerArchitecture:
     completed_tasks: List[TaskID] = []
 
-    def __getitem__(self, func):
+    def __getitem__(self, event: Event) -> Callable[[SystemState], List[EventPair]]:
         try:
-            function = getattr(self, func)
+            function = getattr(self, event.func)
         except AttributeError:
             raise NotImplementedError(
-                f"SchedulerArchitecture does not have function {event.func}")
-        return function
+                f"SchedulerArchitecture does not implement function {event.func} for event {event}."
+            )
 
-    def __post_init__(self, topology: SimulatedTopology = None):
-        pass
+        def wrapper(scheduler_state: SystemState) -> List[EventPair]:
+            return function(scheduler_state, event)
 
+        return wrapper
 
     def add_initial_task(self, task: SimulatedTask):
-        """
-        Append an initial task.
-        The caller should add a task through this function
-        since a different runtime system may have a different mechanism.
-        """
         pass
 
-    def mapper(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
-        pass
+    def mapper(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        return []
 
-    def reserver(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
-        pass
+    def reserver(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        return []
 
-    def launcher(self, scheduler_state: SchedulerState, max_tasks: int = None) -> List[Event]:
-        pass
+    def launcher(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+        return []
 
-    def complete_task(self, scheduler_state: SchedulerState, task_id: TaskID) -> List[Event]:
-        pass
+    def complete_task(
+        self, scheduler_state: SystemState, event: Event
+    ) -> List[EventPair]:
+        return []
 
     def __str__(self):
         return f"SchedulerArchitecture()"
@@ -98,22 +156,28 @@ class SchedulerArchitecture:
 
 @dataclass(slots=True)
 class ParlaArchitecture(SchedulerArchitecture):
-    topology: SimulatedTopology = None
+    topology: SimulatedTopology
+
     spawned_tasks: TaskQueue = TaskQueue()
+
+    # Mapping Phase
     mappable_tasks: TaskQueue = TaskQueue()
     mapped_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    # Reserving Phase
     reservable_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
-    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
-    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(default_factory=dict)
-    launched_tasks:  Dict[Device, TaskQueue] = field(default_factory=dict)
+    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(
+        default_factory=dict
+    )
+    # Launching Phase
+    launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(
+        default_factory=dict
+    )
+    launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
 
     def __post_init__(self):
-
-        if self.topology is None:
-            raise ValueError("Topology must be specified.")
+        assert self.topology is not None
 
         for device in self.topology.devices:
-
             self.mapped_tasks[device.name] = TaskQueue()
             self.reservable_tasks[device.name] = TaskQueue()
 
@@ -125,16 +189,16 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-
     def add_initial_task(self, task: SimulatedTask):
         """
         Append an initial task who does not have any dependency to
         a spawned task queue.
         """
-        self.spawned_tasks.put(task)
+        self.spawned_tasks.put(task.name)
 
-
-    def launcher(self, scheduler_state: SchedulerState, event: Launcher) -> List[Tuple[float, Event]]:
+    def launcher(
+        self, scheduler_state: SystemState, event: Launcher
+    ) -> List[EventPair]:
         return []
         # i = 0
         # max_tasks = event.max_tasks
@@ -195,18 +259,12 @@ class ParlaArchitecture(SchedulerArchitecture):
         #         else:
         #             continue
 
-    def complete_task(self, scheduler_state: SchedulerState, event: TaskCompleted) -> List[Tuple[float, Event]]:
-        task_id = event.task_id
-
+    def complete_task(
+        self, scheduler_state: SystemState, event: TaskCompleted
+    ) -> List[EventPair]:
         objects = scheduler_state.objects
-
-        if task_id is None or task_id not in self.taskmap:
-            raise RuntimeError(f"Task {task_id} does not exist!")
-
-        task = objects.taskmap[task_id]
-
-        if task is None:
-            raise RuntimeError(f"Task {task_id} does not exist!")
+        assert objects is not None
+        task = objects.get_task(event.task)
 
         # Stop reserving memory
         # recent_task.free_resources(self.resource_pool)
@@ -219,58 +277,61 @@ class ParlaArchitecture(SchedulerArchitecture):
         # recent_task.finish()
         return []
 
-    def map_task(self, scheduler_state: SchedulerState, event: Mapper) -> List[Tuple[float, Event]]:
+    def map_task(self, scheduler_state: SystemState, event: Mapper) -> List[EventPair]:
         return []
 
-    def reserve_task(self, scheduler_state: SchedulerState, event: Reserver) -> List[Tuple[float, Event]]:
+    def reserve_task(
+        self, scheduler_state: SystemState, event: Reserver
+    ) -> List[EventPair]:
         return []
 
 
 @dataclass(slots=True)
 class SimulatedScheduler:
     topology: SimulatedTopology
-    task_list: List[SimulatedTask]
+    tasks: List[SimulatedTask] = field(default_factory=list)
     name: str = "SimulatedScheduler"
-    # Task Queues for Runtime Phases
-    mechanisms: SchedulerArchitecture = None
-    state: SchedulerState = None
+    mechanisms: SchedulerArchitecture = field(init=False)
+    state: SystemState = field(init=False)
 
     events: EventQueue = EventQueue()
-    time: float = 0.0
+    time: int = 0
 
     def __post_init__(self, scheduler: SchedulerType = SchedulerType.PARLA):
-
-        self.state = SchedulerState(topology=self.topology)
+        self.state = SystemState(topology=self.topology)
 
         if scheduler == SchedulerType.PARLA:
             self.mechanisms = ParlaArchitecture(topology=self.topology)
         else:
-            raise NotImplementedError(
-                f"Scheduler type {scheduler} is not implemented")
+            raise NotImplementedError(f"Scheduler type {scheduler} is not implemented")
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
 
-    def spawn_initial_tasks(self):
-        for task in self.task_list:
-            if len(task.info.dependencies) == 0:
-                self.mechanisms.add_initial_task(task)
-        """
-        TODO(hc): remove it.
-        for i in range(len(self.mechanisms.spawned_tasks)):
-            print("First task:", str(self.mechanisms.spawned_tasks.queue[i][1].name))
-        """
+    def populate(self, tasks: Optional[List[SimulatedTask]] = None):
+        if tasks is None:
+            assert self.tasks is not None
+        else:
+            self.tasks = tasks
 
+        for task in self.tasks:
+            self.state.objects.add_task(task)
+
+        for task in self.tasks:
+            self.mechanisms.add_initial_task(task)
 
     def process_event(self, event: Event):
         # New events are created from the current event.
-        new_event_pairs = self.mechanisms[event](state)
+        new_event_pairs = self.mechanisms[event](self.state)
+
         # Append new events and their completion times to the event queue
         for completion_time, new_event in new_event_pairs:
             self.events.put(new_event, completion_time)
 
     def run(self):
-        self.spawn_initial_tasks()
+        new_event_pairs = self.mechanisms.initiate()
+        for completion_time, new_event in new_event_pairs:
+            self.events.put(new_event, completion_time)
 
         for event_pair in GetNextEvent(self.events):
             if event_pair:

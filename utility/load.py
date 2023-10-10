@@ -17,17 +17,21 @@ def convert_to_dictionary(task_list: List[TaskInfo]) -> Dict[TaskID, TaskInfo]:
 # YAML Write
 ########################################
 
+
 def write_object_to_dict(obj):
     """
     Write a single task to an open YAML file
     """
     sub_dict = {}
 
-    def is_base(x): return isinstance(
-        x, (int, float, str, bool, type(None)))
+    def is_base(x):
+        return isinstance(x, (int, float, str, bool, type(None)))
 
-    def is_base_str(x): return isinstance(x, (tuple, Architecture, Device))
-    def is_base_value(x): return isinstance(x, (Decimal, Fraction))
+    def is_base_str(x):
+        return isinstance(x, (tuple, Architecture, Device, DataID))
+
+    def is_base_value(x):
+        return isinstance(x, (Decimal, Fraction))
 
     def unpack_values(values):
         if is_base_str(value):
@@ -57,7 +61,7 @@ def write_object_to_dict(obj):
     return sub_dict
 
 
-def write_data_to_yaml(data: Dict[int, DataInfo], basename: str = "graph"):
+def write_data_to_yaml(data: Dict[DataID, DataInfo], basename: str = "graph"):
     """
     Write the data specifiers to a yaml file
     """
@@ -81,7 +85,9 @@ def write_tasks_to_yaml(tasks: Dict[TaskID, TaskInfo], basename: str = "graph"):
         yaml.dump(tasks, file, default_flow_style=False, sort_keys=False)
 
 
-def write_task_mapping_to_yaml(task_mapping: Dict[TaskID, Device | Tuple[Device]], basename: str = "graph"):
+def write_task_mapping_to_yaml(
+    task_mapping: Dict[TaskID, Device | Tuple[Device]], basename: str = "graph"
+):
     """
     Write the task -> device mapping to a yaml file
     """
@@ -94,8 +100,7 @@ def write_task_mapping_to_yaml(task_mapping: Dict[TaskID, Device | Tuple[Device]
             mapping_dict = {"id": task_id, "mapping": device}
             maplist.append(write_object_to_dict(mapping_dict))
 
-        yaml.dump(maplist, file,
-                  default_flow_style=False, sort_keys=False)
+        yaml.dump(maplist, file, default_flow_style=False, sort_keys=False)
 
 
 def write_task_order_to_yaml(task_order: Dict[TaskID, int], basename: str = "graph"):
@@ -111,16 +116,16 @@ def write_task_order_to_yaml(task_order: Dict[TaskID, int], basename: str = "gra
             mapping_dict = {"id": task_id, "order": order}
             maplist.append(write_object_to_dict(mapping_dict))
 
-        yaml.dump(maplist, file,
-                  default_flow_style=False, sort_keys=False)
+        yaml.dump(maplist, file, default_flow_style=False, sort_keys=False)
 
 
-def write_to_yaml(tasks: Optional[Dict[TaskID, TaskInfo]] = None,
-                  data: Optional[Dict[int, DataInfo]] = None,
-                  mapping: Optional[Dict[TaskID,
-                                         Device | Tuple[Device]]] = None,
-                  order: Optional[Dict[TaskID, int]] = None,
-                  basename: str = "graph"):
+def write_to_yaml(
+    tasks: Optional[Dict[TaskID, TaskInfo]] = None,
+    data: Optional[Dict[int, DataInfo]] = None,
+    mapping: Optional[Dict[TaskID, Device | Tuple[Device]]] = None,
+    order: Optional[Dict[TaskID, int]] = None,
+    basename: str = "graph",
+):
     """
     Write the task graph to a yaml file
     """
@@ -151,22 +156,29 @@ def read_tasks_from_dict(task_dict: Dict) -> TaskInfo:
     task_id = make_task_id_from_dict(task_dict["id"])
 
     task_runtime = make_task_placement_from_dict(task_dict["runtime"])
-    task_dependencies = [make_task_id_from_dict(task)
-                         for task in task_dict["dependencies"]]
-    data_dependencies = make_data_dependencies_from_dict(
-        task_dict["data_dependencies"])
+    task_dependencies = [
+        make_task_id_from_dict(task) for task in task_dict["dependencies"]
+    ]
+    data_dependencies = make_data_dependencies_from_dict(task_dict["data_dependencies"])
 
-    if 'mapping' in task_dict:
+    if "mapping" in task_dict:
         task_mapping = device_from_string(task_dict["mapping"])
     else:
         task_mapping = None
 
-    if 'order' in task_dict:
+    if "order" in task_dict:
         task_order = int(task_dict["order"])
     else:
         task_order = 0
 
-    return TaskInfo(id=task_id, runtime=task_runtime, dependencies=task_dependencies, data_dependencies=data_dependencies, mapping=task_mapping, order=task_order)
+    return TaskInfo(
+        id=task_id,
+        runtime=task_runtime,
+        dependencies=task_dependencies,
+        data_dependencies=data_dependencies,
+        mapping=task_mapping,
+        order=task_order,
+    )
 
 
 def read_mapping_from_dict(mapping_dict: Dict) -> Tuple[TaskID, Device | Tuple[Device]]:
@@ -191,7 +203,7 @@ def read_order_from_dict(order_dict: Dict) -> Tuple[TaskID, int]:
     return task_id, task_order
 
 
-def read_data_from_yaml(basename: str = "graph") -> Dict[int, DataInfo]:
+def read_data_from_yaml(basename: str = "graph") -> Dict[DataID, DataInfo]:
     """
     Read the data specification from a yaml file
     """
@@ -234,7 +246,9 @@ def read_tasks_from_yaml(basename: str = "graph") -> Dict[TaskID, TaskInfo]:
     return task_dict
 
 
-def read_task_mapping_from_yaml(basename: str = "graph") -> Dict[TaskID, Device | Tuple[Device]]:
+def read_task_mapping_from_yaml(
+    basename: str = "graph",
+) -> Dict[TaskID, Device | Tuple[Device]]:
     """
     Read the task -> device mapping from a yaml file
     """
@@ -244,8 +258,7 @@ def read_task_mapping_from_yaml(basename: str = "graph") -> Dict[TaskID, Device 
         task_mapping = dict()
         with open(taskfile, "r") as file:
             mappings = yaml.load(file, Loader=yaml.FullLoader)
-            mappings = [read_mapping_from_dict(
-                mapping) for mapping in mappings]
+            mappings = [read_mapping_from_dict(mapping) for mapping in mappings]
 
         for mapping in mappings:
             task_mapping[mapping.id] = mapping.mapping
@@ -266,11 +279,11 @@ def read_task_order_from_yaml(basename: str = "graph") -> Dict[TaskID, int]:
     try:
         with open(taskfile, "r") as file:
             orders = yaml.load(file, Loader=yaml.FullLoader)
-            orders = [read_order_from_dict(
-                order) for order in orders]
+            orders = [read_order_from_dict(order) for order in orders]
 
         for order in orders:
-            task_order[order.id] = order.order
+            task_order[order[0]] = order[1]
+
     except FileNotFoundError:
         raise Warning(f"Could not find order file {taskfile}")
         return None
@@ -278,7 +291,9 @@ def read_task_order_from_yaml(basename: str = "graph") -> Dict[TaskID, int]:
     return task_order
 
 
-def read_from_yaml(taskfile: Optional[str] = None, datafile: Optional[str] = None) -> Tuple[Optional[Dict[TaskID, TaskInfo]], Optional[Dict[int, DataInfo]]]:
+def read_from_yaml(
+    taskfile: Optional[str] = None, datafile: Optional[str] = None
+) -> Tuple[Optional[Dict[TaskID, TaskInfo]], Optional[Dict[DataID, DataInfo]]]:
     """
     Read the task graph from a yaml file
     """
@@ -295,12 +310,15 @@ def read_from_yaml(taskfile: Optional[str] = None, datafile: Optional[str] = Non
 
     return tasks, data
 
+
 ###########################################
 # Legacy "PGRAPH" Parla Graph Format Write
 ###########################################
 
 
-def write_to_pgraph(tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], basename: str = "graph"):
+def write_to_pgraph(
+    tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], basename: str = "graph"
+):
     """
     Write the task graph to a pgraph file
     """
@@ -308,22 +326,27 @@ def write_to_pgraph(tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], ba
     taskfile = basename + ".pgraph"
 
     def info_to_comma(info):
-        comma = ", ".join(
-            [f"{getattr(info, slot)}" for slot in info.__slots__])
+        comma = ", ".join([f"{getattr(info, slot)}" for slot in info.__slots__])
         return comma
 
-    def unpack_runtime(runtime: TaskRuntimeInfo | Dict[Device | Tuple[Device], TaskRuntimeInfo]):
+    def unpack_runtime(
+        runtime: TaskPlacementInfo
+        | TaskRuntimeInfo
+        | Dict[Device | Tuple[Device, ...], TaskRuntimeInfo]
+    ):
         print("Unpacking runtime: ", type(runtime))
         if isinstance(runtime, TaskPlacementInfo):
             return unpack_runtime(runtime.info)
         elif isinstance(runtime, Dict):
-            return ", ".join([f"{{{device} : {unpack_runtime(r)}}}" for device,
-                              r in runtime.items()])
+            return ", ".join(
+                [f"{{{device} : {unpack_runtime(r)}}}" for device, r in runtime.items()]
+            )
         elif isinstance(runtime, TaskRuntimeInfo):
             return info_to_comma(runtime)
         elif isinstance(runtime, list):
             raise NotImplementedError(
-                f"PGraph does not support lists of runtime configurations (Device configurations cannot vary by their index in the placement options)")
+                f"PGraph does not support lists of runtime configurations (Device configurations cannot vary by their index in the placement options)"
+            )
         else:
             raise ValueError(f"Unknown runtime type {runtime}")
 
@@ -345,15 +368,15 @@ def write_to_pgraph(tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], ba
         return f"{read_string} : {write_string} : {read_write_string}"
 
     data_line = ", ".join(
-        [f"{{{data.size} : {data.location}}}" for data in data.values()])
+        [f"{{{data.size} : {data.location}}}" for data in data.values()]
+    )
     task_lines = []
 
     for task in tasks.values():
         task_id = unpack_id(task.id)
         task_runtime = unpack_runtime(task.runtime)
         task_dependencies = unpack_dependencies(task.dependencies)
-        task_data_dependencies = unpack_data_dependencies(
-            task.data_dependencies)
+        task_data_dependencies = unpack_data_dependencies(task.data_dependencies)
 
         task_line = f"{task_id} | {task_runtime} | {task_dependencies} | {task_data_dependencies}"
         task_lines.append(task_line)
@@ -369,8 +392,9 @@ def write_to_pgraph(tasks: Dict[TaskID, TaskInfo], data: Dict[int, DataInfo], ba
 ##########################################
 
 
-def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], Dict[int, DataInfo]]:
-
+def read_from_pgraph(
+    basename: str = "graph",
+) -> Tuple[Dict[TaskID, TaskInfo], Dict[int, DataInfo]]:
     task_dict = dict()
     data_dict = dict()
 
@@ -399,20 +423,24 @@ def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], D
         except Exception as e:
             raise ValueError(f"Could not parse task id {line}: {e}")
 
-    def extract_task_runtime(line: str) -> Dict[Device | Tuple[Device], TaskRuntimeInfo]:
+    def extract_task_runtime(
+        line: str,
+    ) -> TaskPlacementInfo:
         try:
             line = line.strip()
 
             configurations = line.split("},")
-            configurations = [config.strip().strip("{}").strip()
-                              for config in configurations]
+            configurations = [
+                config.strip().strip("{}").strip() for config in configurations
+            ]
             task_runtime = {}
             for config in configurations:
                 targets, details = config.split(":")
                 targets = device_from_string(targets)
 
-                details = [numeric_from_str(detail.strip())
-                           for detail in details.split(",")]
+                details = [
+                    numeric_from_str(detail.strip()) for detail in details.split(",")
+                ]
 
                 task_runtime[targets] = TaskRuntimeInfo(*details)
 
@@ -442,40 +470,39 @@ def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], D
             dependencies = line.split(":")
             dependencies = [dependency.strip() for dependency in dependencies]
 
-            check_has = [(not dependency.isspace()) and (not dependency == '')
-                         for dependency in dependencies]
+            check_has = [
+                (not dependency.isspace()) and (not dependency == "")
+                for dependency in dependencies
+            ]
 
             if not any(check_has):
                 return TaskDataInfo([], [], [])
 
             if len(dependencies) > 3:
-                raise ValueError(
-                    f"Too many data movement types {dependencies}")
+                raise ValueError(f"Too many data movement types {dependencies}")
 
             if len(dependencies) < 1 or dependencies[0].isspace() or not check_has[0]:
                 read_data = []
             else:
-                read_data = [int(x.strip())
-                             for x in dependencies[0].split(",")]
+                read_data = [int(x.strip()) for x in dependencies[0].split(",")]
 
             if len(dependencies) < 2 or dependencies[1].isspace() or not check_has[1]:
                 write_data = []
             else:
-                write_data = [int(x.strip())
-                              for x in dependencies[1].split(",")]
+                write_data = [int(x.strip()) for x in dependencies[1].split(",")]
 
             if len(dependencies) < 3 or dependencies[2].isspace() or not check_has[2]:
                 read_write_data = []
             else:
-                read_write_data = [int(x.strip()) if (
-                    x) else None for x in dependencies[2].split(",")]
+                read_write_data = [
+                    int(x.strip()) if (x) else None for x in dependencies[2].split(",")
+                ]
 
             return TaskDataInfo(read_data, write_data, read_write_data)
         except Exception as e:
             raise ValueError(f"Could not parse data dependencies {line}: {e}")
 
     with open(filename, "r") as file:
-
         lines = file.readlines()
 
         data_line = lines.pop(0)
@@ -488,7 +515,7 @@ def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], D
             data = data.split(":")
             data_size = int(data[0])
             data_location = device_from_string(data[1])
-            data_info = DataInfo(idx, data_size, data_location)
+            data_info = DataInfo(DataID((idx,)), data_size, data_location)
             data_dict[idx] = data_info
 
         for task_line in lines:
@@ -510,8 +537,9 @@ def read_from_pgraph(basename: str = "graph") -> Tuple[Dict[TaskID, TaskInfo], D
             else:
                 task_data_dependencies = TaskDataInfo([], [], [])
 
-            task_info = TaskInfo(task_id, task_runtime,
-                                 task_dependencies, task_data_dependencies)
+            task_info = TaskInfo(
+                task_id, task_runtime, task_dependencies, task_data_dependencies
+            )
             task_dict[task_id] = task_info
 
     return task_dict, data_dict

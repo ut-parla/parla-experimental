@@ -14,7 +14,7 @@ from .datapool import DataPool
 
 
 @dataclass(slots=True)
-class TaskTimes():
+class TaskTimes:
     duration: float = 0.0
     spawn_t: float = 0.0
     map_t: float = 0.0
@@ -24,7 +24,7 @@ class TaskTimes():
 
 
 @dataclass(slots=True, init=False)
-class TaskCounters():
+class TaskCounters:
     unmapped_deps: int = 0
     unreserved_deps: int = 0
     uncompleted_deps: int = 0
@@ -56,7 +56,7 @@ class SimulatedTask:
     info: TaskInfo
     state: TaskState = TaskState.SPAWNED
     times: TaskTimes = field(default_factory=TaskTimes)
-    counters: TaskCounters | None = None
+    counters: TaskCounters = field(init=False)
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
@@ -74,8 +74,11 @@ class SimulatedTask:
         self.info.dependencies = deps
 
     @property
-    def assigned_devices(self) -> Tuple[Device]:
-        return self.info.mapping
+    def assigned_devices(self) -> Optional[Tuple[Device]]:
+        if isinstance(self.info.mapping, Device):
+            return (self.info.mapping,)
+        else:
+            self.info.mapping
 
     @assigned_devices.setter
     def assigned_devices(self, devices: Tuple[Device]):
@@ -83,11 +86,11 @@ class SimulatedTask:
 
     @property
     def read_data_list(self) -> List[DataAccess]:
-        return self.info.read_data
+        return self.info.data_dependencies.read
 
     @property
     def write_data_list(self) -> List[DataAccess]:
-        return self.info.write_data
+        return self.info.data_dependencies.write
 
     @property
     def is_mappable(self) -> bool:
@@ -126,3 +129,10 @@ class SimulatedComputeTask(SimulatedTask):
 @dataclass(slots=True)
 class SimulatedDataTask(SimulatedTask):
     pass
+
+
+SimulatedTaskMap = Dict[
+    TaskID, SimulatedTask | SimulatedComputeTask | SimulatedDataTask
+]
+SimulatedComputeTaskMap = Dict[TaskID, SimulatedComputeTask]
+SimulatedDataTaskMap = Dict[TaskID, SimulatedDataTask]

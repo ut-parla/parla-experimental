@@ -3,6 +3,7 @@ from ..load import *
 from .task import *
 from .data import *
 from .device import *
+import networkx as nx
 
 
 def data_from_task(task: TaskInfo, access: AccessType) -> List[DataID]:
@@ -24,7 +25,6 @@ def find_writer_bfs(graph: TaskMap, node: TaskID, target: DataID) -> TaskID | Da
 
     while queue:
         s = queue.pop(0)
-        # print("Visiting: ", graph[s])
         for neighbor_id in graph[s].dependencies:
             neighbor = graph[neighbor_id]
             writes_to = data_from_task(neighbor, AccessType.WRITE)
@@ -58,7 +58,6 @@ def most_recent_writer(graph: TaskMap, task: TaskInfo) -> DataWriter:
     recent_writer = dict()
 
     for target in touches:
-        print("Finding writer for: ", target)
         recent_writer[target] = find_writer_bfs(graph, task.id, target)
 
     return recent_writer
@@ -76,54 +75,38 @@ def find_recent_writers(graph: TaskMap) -> DataWriters:
     return recent_writers
 
 
-SimulatedTaskMap = Dict[TaskID, SimulatedTask]
-SimulatedComputeTaskMap = Dict[TaskID, SimulatedComputeTask]
-SimulatedDataTaskMap = Dict[TaskID, SimulatedDataTask]
-NameToTask = Dict[str, SimulatedTask]
-
-
-def create_compute_tasks(graph: TaskMap) -> Tuple[SimulatedComputeTaskMap, NameToTask]:
+def create_compute_tasks(graph: TaskMap) -> SimulatedComputeTaskMap:
     """
     Create compute tasks for each task in the graph.
     """
     compute_tasks = dict()
-    # This is used by graph sorting
-    name_to_task = dict()
 
     for task in graph.values():
         compute_tasks[task.id] = SimulatedComputeTask(task.id, task)
-        name_to_task[str(task.id)] = compute_tasks[task.id]
 
-    return compute_tasks, name_to_task
+    return compute_tasks
 
 
 def create_data_tasks(
     graph: SimulatedComputeTaskMap, recent_writers: DataWriters
-) -> Tuple[SimulatedDataTaskMap, NameToTask]:
+) -> SimulatedDataTaskMap:
     """
     Create data tasks for each data item in the task.
     """
     data_tasks = dict()
-    # This is used by graph sorting
-    name_to_task = dict()
 
     for task in graph.values():
         task_info = task.info
         recent_writer = recent_writers[task_info.id]
         for i, (data, writer) in enumerate(recent_writer.items()):
             dependencies = [writer] if isinstance(writer, TaskID) else []
-            dependents = [task_info.id]
 
-            data_task_id = TaskID(taskspace=f"{task_info.id}.data", task_idx=i)
-            runtime = TaskRuntimeInfo(task_time=0)
-            # Adding read data is sufficient since
-            # (1) By this point rw/r should already be merged into the read
-            # list and filtered for unique.
-            # (2) There is /only/ read-only data tasks.
-            # There is no such thing as a "write" data task
-            # (the parla model is wrong for this).
-            # Compute tasks write to data, data tasks only read data.
+            data_task_id = TaskID(taskspace=f"{task_info.id}.data", task_idx=data.idx)
+
+            runtime = TaskPlacementInfo()
+            runtime.add(Device(Architecture.ANY, -1), TaskRuntimeInfo())
             data_info = TaskDataInfo(read=[DataAccess(id=data)])
+
             data_task_info = TaskInfo(
                 id=data_task_id,
                 dependencies=dependencies,
@@ -131,40 +114,76 @@ def create_data_tasks(
                 data_dependencies=data_info,
             )
 
-        data_task = SimulatedDataTask(name=data_task_id, info=data_task_info)
-        data_tasks[data_task_id] = data_task
-        task.add_data_dependency(data_task_id)
-        name_to_task[str(data_task_id)] = data_task
+            data_task = SimulatedDataTask(name=data_task_id, info=data_task_info)
+            data_tasks[data_task_id] = data_task
+            task.add_data_dependency(data_task_id)
 
-    return data_tasks, name_to_task
+    return data_tasks
 
 
 def create_task_graph(
     graph: TaskMap,
-) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap, NameToTask]:
+) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap]:
     """
     Create a task graph from a task map.
     """
-    compute_tasks, name_to_compute_task = create_compute_tasks(graph)
-
-    from rich import print
-
-    print(compute_tasks)
-
+    compute_tasks = create_compute_tasks(graph)
     recent_writers = find_recent_writers(graph)
+    data_tasks = create_data_tasks(compute_tasks, recent_writers)
 
-    data_tasks, name_to_data_task = create_data_tasks(compute_tasks, recent_writers)
-    name_to_task = dict(name_to_compute_task, **name_to_data_task)
-
-    return compute_tasks, data_tasks, name_to_task
+    return compute_tasks, data_tasks
 
 
 def read_graph(
     graph_name: str,
-) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap, DataMap, NameToTask]:
+) -> Tuple[List[TaskID], SimulatedTaskMap, DataMap]:
     tasks = read_tasks_from_yaml(graph_name)
-    data = read_data_from_yaml(graph_name)
+    datamap = read_data_from_yaml(graph_name)
 
-    compute_tasks, data_tasks, name_to_task = create_task_graph(tasks)
+    compute_tasks, data_tasks = create_task_graph(tasks)
+    taskmap = {**compute_tasks, **data_tasks}
+    tasklist = list(compute_tasks.keys())
 
-    return compute_tasks, data_tasks, data, name_to_task
+    return tasklist, taskmap, datamap
+
+
+def build_networkx_graph(
+    tasks: SimulatedTaskMap,
+) -> Tuple[nx.DiGraph, Dict[TaskID, str]]:
+    G = nx.DiGraph()
+    labels = {}
+
+    color_map = ["red", "blue"]
+
+    for name, info in tasks.items():
+        color_idx = 0 if isinstance(info, SimulatedComputeTask) else 1
+        color = color_map[color_idx]
+
+        G.add_node(name, label=name, color=color, info=info)
+        for dependency in info.dependencies:
+            G.add_edge(dependency, name, color=color)
+
+        labels[name] = str(name)
+
+    return G, labels
+
+
+def apply_networkx_order(G: nx.DiGraph, tasks: SimulatedTaskMap) -> List[TaskID]:
+    """
+    Sort a graph by a topology, and return a valid order of the graph.
+    """
+    import networkx as nx
+
+    nodes = list(nx.topological_sort(G))
+
+    for i, node in enumerate(nodes):
+        tasks[node].info.order = i
+
+    return nodes
+
+
+def sort_tasks_by_order(tasklist: List[TaskID], taskmap: SimulatedTaskMap):
+    """
+    Sort a list of tasks by their order in the taskmap.
+    """
+    return sorted(tasklist, key=lambda task: taskmap[task].info.order)

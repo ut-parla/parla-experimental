@@ -1,5 +1,5 @@
-from typing import List, Dict, Tuple, Union, Optional, Callable
-from dataclasses import dataclass, field
+from typing import List, Dict, Tuple, Union, Optional, Callable, Self
+from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 
 from collections import defaultdict
@@ -8,6 +8,56 @@ from fractions import Fraction
 from decimal import Decimal
 
 from ast import literal_eval as make_tuple
+
+#########################################
+# Time Information
+#########################################
+
+
+@dataclass(slots=True)
+class Time:
+    duration: int = 0
+    base = "us"
+
+    def __str__(self):
+        return f"{self.duration}{self.base}"
+
+    def __repr__(self):
+        return str(self)
+
+    def __add__(self, other):
+        if isinstance(other, Time):
+            if self.base == other.base:
+                return Time(self.duration + other.duration)
+            else:
+                raise ValueError(
+                    f"Cannot add times with different bases: {self.base} and {other.base}"
+                )
+        elif isinstance(other, int):
+            return Time(self.duration + other)
+
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, Time):
+            return self.duration == __value.duration
+        elif isinstance(__value, int):
+            return self.duration == __value
+        else:
+            return False
+
+    def __lt__(self, __value: object) -> bool:
+        if isinstance(__value, Time):
+            return self.duration < __value.duration
+        elif isinstance(__value, int):
+            return self.duration < __value
+        else:
+            return False
+
+    def __hash__(self) -> int:
+        return hash(self.duration)
+
+    def __bool__(self) -> bool:
+        return self.duration > 0
+
 
 #########################################
 # Device Information
@@ -60,9 +110,26 @@ class AccessType(IntEnum):
     READ_WRITE = 2
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class DataID:
-    id: int
+    idx: Tuple[int, ...] = (0,)
+
+    def __init__(self, idx: Tuple[int, ...] | int):
+        if isinstance(idx, int):
+            idx = (idx,)
+        self.idx = idx
+
+    def __str__(self):
+        return f"{self.idx}"
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self) -> int:
+        return hash(self.idx)
+
+    def __eq__(self, other: Self) -> bool:
+        return self.idx == other.idx
 
 
 @dataclass(slots=True)
@@ -79,7 +146,20 @@ class DataInfo:
 
     id: DataID
     size: int
-    location: Device | Tuple[Device]
+    location: Device | Tuple[Device, ...]
+
+    def __init__(
+        self,
+        id: DataID | Tuple[int, ...] | int,
+        size: int,
+        location: Device | Tuple[Device, ...],
+    ):
+        if not isinstance(id, DataID):
+            id = DataID(id)
+
+        self.id = id
+        self.size = size
+        self.location = location
 
 
 @dataclass(slots=True)
@@ -97,6 +177,19 @@ class DataAccess:
     pattern: slice | list[int] | int | None = None
     device: int = 0
 
+    def __init__(
+        self,
+        id: DataID | Tuple[int, ...] | int,
+        pattern: slice | list[int] | int | None = None,
+        device: int = 0,
+    ):
+        if not isinstance(id, DataID):
+            id = DataID(id)
+
+        self.id = id
+        self.pattern = pattern
+        self.device = device
+
 
 @dataclass(slots=True)
 class TaskDataInfo:
@@ -108,9 +201,9 @@ class TaskDataInfo:
     @field read_write: The list of data objects that are read and written by the task
     """
 
-    read: list[DataID | DataAccess] = field(default_factory=list)
-    write: list[DataID | DataAccess] = field(default_factory=list)
-    read_write: list[DataID | DataAccess] = field(default_factory=list)
+    read: list[DataAccess] = field(default_factory=list)
+    write: list[DataAccess] = field(default_factory=list)
+    read_write: list[DataAccess] = field(default_factory=list)
 
     def __getitem__(self, access: AccessType):
         if access == AccessType.READ:
@@ -123,7 +216,7 @@ class TaskDataInfo:
             raise ValueError(f"Invalid access type: {access}")
 
 
-DataMap = Dict[int, DataInfo]
+DataMap = Dict[DataID, DataInfo]
 
 #########################################
 # Task Graph Information
@@ -159,7 +252,7 @@ class TaskID:
     """
 
     taskspace: str = "T"  # The task space the task belongs to
-    task_idx: Tuple[int] = (0,)  # The index of the task in the task space
+    task_idx: Tuple[int, ...] = (0,)  # The index of the task in the task space
     # How many times the task has been spawned (continuation number)
     instance: int = 0
 
@@ -173,7 +266,7 @@ class TaskRuntimeInfo:
     The collection of important runtime information / constraints for a task in a synthetic task graph.
     """
 
-    task_time: float = 0
+    task_time: int = 0
     device_fraction: Union[float, Fraction] = 0
     gil_accesses: int = 0
     gil_fraction: Union[float, Fraction] = 0
@@ -182,10 +275,10 @@ class TaskRuntimeInfo:
 
 @dataclass(slots=True)
 class TaskPlacementInfo:
-    locations: list[Device | Tuple[Device]] = field(default_factory=list)
+    locations: list[Device | Tuple[Device, ...]] = field(default_factory=list)
     # info: Dict[NDevices, Dict[LocalIdx, Dict[Device, TaskRuntimeInfo]]]
     info: Dict[
-        Device | Tuple[Device], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]
+        Device | Tuple[Device, ...], TaskRuntimeInfo | Dict[Device, TaskRuntimeInfo]
     ] = field(default_factory=dict)
     lookup: defaultdict[defaultdict[dict]] = field(
         default_factory=lambda: defaultdict(lambda: defaultdict(dict))
@@ -193,7 +286,7 @@ class TaskPlacementInfo:
 
     def add(
         self,
-        placement: Device | Tuple[Device],
+        placement: Device | Tuple[Device, ...],
         runtime_info: TaskRuntimeInfo
         | Dict[Device, TaskRuntimeInfo]
         | List[TaskRuntimeInfo],
@@ -223,7 +316,7 @@ class TaskPlacementInfo:
         self.locations.append(placement)
         self.info[placement] = runtime_info
 
-    def remove(self, placement: Device | Tuple[Device]):
+    def remove(self, placement: Device | Tuple[Device, ...]):
         if isinstance(placement, Device):
             placement = (placement,)
 
@@ -284,7 +377,9 @@ class TaskPlacementInfo:
 
         return None
 
-    def __getitem__(self, placement: Device | Tuple[Device]) -> List[TaskRuntimeInfo]:
+    def __getitem__(
+        self, placement: Device | Tuple[Device, ...]
+    ) -> List[TaskRuntimeInfo]:
         if placement is None:
             raise KeyError("Placement query cannot be None.")
 
@@ -306,7 +401,7 @@ class TaskPlacementInfo:
 
         return runtime_info_list
 
-    def __contains__(self, placement: Device | Tuple[Device]) -> bool:
+    def __contains__(self, placement: Device | Tuple[Device, ...]) -> bool:
         if placement is None:
             return False
 
@@ -336,7 +431,7 @@ class TaskInfo:
     runtime: TaskPlacementInfo
     dependencies: list[TaskID]
     data_dependencies: TaskDataInfo
-    mapping: Device | Tuple[Device] | None = None
+    mapping: Device | Tuple[Device, ...] | None = None
     order: int = 0
 
 
@@ -549,7 +644,7 @@ class RunConfig:
 
 
 def apply_mapping(
-    mapping: Dict[TaskID, Device | Tuple[Device]], tasks: TaskMap
+    mapping: Dict[TaskID, Device | Tuple[Device, ...]], tasks: TaskMap
 ) -> TaskMap:
     """
     Apply the mapping to the tasks
@@ -564,13 +659,13 @@ def apply_order(order: Dict[TaskID, int], tasks: TaskMap) -> TaskMap:
     """
     Apply the order to the tasks
     """
-    for task_id, order in order.items():
-        tasks[task_id].order = order
+    for task_id, v in order.items():
+        tasks[task_id].order = v
 
     return tasks
 
 
-def extract_mapping(tasks: TaskMap) -> Dict[TaskID, Device | Tuple[Device]]:
+def extract_mapping(tasks: TaskMap) -> Dict[TaskID, Device | Tuple[Device, ...]]:
     """
     Extract the mapping from the tasks
     """
@@ -641,28 +736,33 @@ def sizeof_fmt(num, suffix="B"):
 
 
 def make_data_info(data_info: Dict) -> DataInfo:
-    data_idx = int(data_info["id"])
+    data_idx = make_tuple(data_info["id"])
+    assert isinstance(data_idx, tuple)
     data_size = int(data_info["size"])
     data_location = device_from_string(data_info["location"])
 
-    return DataInfo(data_idx, data_size, data_location)
+    return DataInfo(DataID(data_idx), data_size, data_location)
 
 
 def make_task_id_from_dict(task_id: Dict) -> TaskID:
     taskspace = task_id["taskspace"]
     task_idx = make_tuple(task_id["task_idx"])
+    assert isinstance(task_idx, tuple)
+
     task_instance = int(task_id["instance"])
     return TaskID(taskspace, task_idx, task_instance)
 
 
 def make_data_access_from_dict(data_access: Dict) -> DataAccess:
-    data_idx = int(data_access["id"])
+    data_idx = make_tuple(data_access["id"])
+    assert isinstance(data_idx, tuple)
 
     if "pattern" in data_access:
         data_pattern = data_access["pattern"]
         if data_pattern is not None:
             raise NotImplementedError("Access patterns currently not supported.")
-    return DataAccess(id=data_idx)
+
+    return DataAccess(id=DataID(data_idx))
 
 
 def make_data_dependencies_from_dict(data_dependencies: Dict) -> TaskDataInfo:
@@ -686,7 +786,7 @@ def make_task_runtime_from_dict(task_runtime: Dict) -> TaskRuntimeInfo:
     )
 
 
-def device_from_string(device_str: str) -> Device | Tuple[Device]:
+def device_from_string(device_str: str) -> Device | Tuple[Device, ...]:
     """
     Convert a device string (or string of a device tuple) to a device set
     """
@@ -726,10 +826,7 @@ def device_from_string(device_str: str) -> Device | Tuple[Device]:
 
 def make_task_placement_from_dict(
     task_runtime: Dict,
-) -> Dict[
-    Device | Tuple[Device],
-    TaskRuntimeInfo | Dict[Device | Tuple[Device], TaskRuntimeInfo],
-]:
+) -> TaskPlacementInfo:
     """
     Parse the device runtime from a dictionary
     """

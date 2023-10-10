@@ -1,10 +1,10 @@
-from ..types import TaskID, TaskInfo, TaskState
-from dataclasses import dataclass
+from ..types import TaskID, TaskInfo, TaskState, Optional
+from dataclasses import dataclass, field
 
 
 @dataclass(slots=True)
-class Event():
-    func: str = None
+class Event:
+    func: str
 
 
 @dataclass(slots=True)
@@ -14,7 +14,7 @@ class PhaseEvent(Event):
 
 @dataclass(slots=True)
 class TaskEvent(Event):
-    task: TaskID | None = None
+    task: TaskID = field(default_factory=TaskID)
 
 
 @dataclass(slots=True)
