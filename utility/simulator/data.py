@@ -18,6 +18,7 @@ class DataPhase(IntEnum):
     MOVING = 3
     ACTIVE = 4
 
+
 # TODO(WILL): ENDED HERE Sept. 26, 2022
 # Next step: Implement these states in Data and DataPool
 #            Make check_resources/reserve_resources in task
@@ -27,7 +28,7 @@ class DataPhase(IntEnum):
 
 
 @dataclass(slots=True)
-class DataStatus():
+class DataStatus:
     mapped_tasks: Set[TaskID] = field(default_factory=set)
     reserved_tasks: Set[TaskID] = field(default_factory=set)
     moving_tasks: Set[TaskID] = field(default_factory=set)
@@ -65,7 +66,8 @@ class SimulatedData:
     info: DataInfo
 
     status: Dict[Device, DataStatus] = field(
-        default_factory=DefaultDict(lambda x: DataStatus()))
+        default_factory=DefaultDict(lambda x: DataStatus())
+    )
 
     def __post_init__(self):
         devices = DataInfo.location
@@ -77,7 +79,6 @@ class SimulatedData:
             self.status[device] = DataStatus()
 
     def acquire(self, devices: List[Device] | Device):
-
         if isinstance(devices, Device):
             devices = [devices]
 
@@ -85,16 +86,17 @@ class SimulatedData:
             if device in self.status:
                 if self.status[device].is_stale():
                     raise RuntimeError(
-                        "Attempting to acquire stale data: {self.name} on {device}")
+                        "Attempting to acquire stale data: {self.name} on {device}"
+                    )
 
                 self.status[device].used_counter += 1
-                assert (self.status[device].used_counter >= 0)
+                assert self.status[device].used_counter >= 0
             else:
                 raise RuntimeError(
-                    "Attempting to acquire non-existent data: {self.name} on {device}")
+                    "Attempting to acquire non-existent data: {self.name} on {device}"
+                )
 
     def release(self, devices: List[Device] | Device):
-
         if isinstance(devices, Device):
             devices = [devices]
 
@@ -102,13 +104,15 @@ class SimulatedData:
             if device in self.status:
                 if self.status[device].is_stale():
                     raise RuntimeError(
-                        "Attempting to release stale data: {self.name} on {device}")
+                        "Attempting to release stale data: {self.name} on {device}"
+                    )
 
                 self.status[device].used_counter -= 1
-                assert (self.status[device].used_counter >= 0)
+                assert self.status[device].used_counter >= 0
             else:
                 raise RuntimeError(
-                    "Attempting to release non-existent data: {self.name} on {device}")
+                    "Attempting to release non-existent data: {self.name} on {device}"
+                )
 
     def evict(self, devices: List[Device] | Device):
         if isinstance(devices, Device):
@@ -116,14 +120,15 @@ class SimulatedData:
 
         for device in devices:
             if device in self.status:
-
                 if not self.status.is_stale():
                     raise RuntimeError(
-                        f"Attempting to evict non-stale data: {self.name} on {device}")
+                        f"Attempting to evict non-stale data: {self.name} on {device}"
+                    )
 
                 elif self.status.is_used():
                     raise RuntimeError(
-                        f"Attempting to evict used data: {self.name} on {device}")
+                        f"Attempting to evict used data: {self.name} on {device}"
+                    )
                 del self.status[device]
 
                 # Device.delete_data should be called here
@@ -145,8 +150,7 @@ class SimulatedData:
                 sources.append(device)
 
         if len(sources) == 0:
-            raise RuntimeError(
-                "No valid sources found for: {self.name}")
+            raise RuntimeError("No valid sources found for: {self.name}")
         return sources
 
     def __str__(self):
@@ -160,3 +164,6 @@ class SimulatedData:
 
     def __eq__(self, other):
         return self.name == other.name
+
+
+SimulatedDataMap = Dict[DataID, SimulatedData]
