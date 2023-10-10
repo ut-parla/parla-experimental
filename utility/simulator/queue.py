@@ -1,7 +1,8 @@
 import heapq
 from ..types import TaskID, Time
 from .events import Event
-from typing import Tuple, TypeVar, Optional
+from typing import Tuple, TypeVar, Optional, Self
+from .task import SimulatedTask
 
 # (completion_time, event)
 EventPair = Tuple[Time, Event]
@@ -33,22 +34,23 @@ class QueueDrainer(object):
         self.maxiter = maxiter
 
     def __iter__(self):
-        while True:
-            try:
-                if len(self.q) == 0:
-                    break
-                if self.maxiter != -1 and self.iter >= self.maxiter:
-                    break
+        return self
 
-                self.iter += 1
-                yield self.q.get()
-            except IndexError:
-                break
+    def __next__(self):
+        if len(self.q) == 0:
+            raise StopIteration
+
+        if self.maxiter != -1 and self.iter >= self.maxiter:
+            self.iter = 0
+            raise StopIteration
+
+        self.iter += 1
+        return self.q.get()
 
 
 class TaskQueue(PriorityQueue):
-    def put(self, task: TaskID):
-        super().put((task.info.order, task))
+    def put(self, task: SimulatedTask):
+        super().put((task.info.order, task.name))
 
     def get(self) -> Optional[TaskID]:
         pair = super().get()
@@ -66,7 +68,10 @@ class TaskQueue(PriorityQueue):
 
 
 class GetNextTask(QueueDrainer):
-    def __iter__(self) -> TaskPair:
+    def __init__(self, q: TaskQueue, maxiter: int = -1):
+        super().__init__(q, maxiter)
+
+    def __iter__(self) -> Self:
         return super().__iter__()
 
     def __next__(self) -> TaskPair:
@@ -89,7 +94,10 @@ class EventQueue(PriorityQueue):
 
 
 class GetNextEvent(QueueDrainer):
-    def __iter__(self) -> EventPair:
+    def __init__(self, q: EventQueue, maxiter: int = -1):
+        super().__init__(q, maxiter)
+
+    def __iter__(self) -> Self:
         return super().__iter__()
 
     def __next__(self) -> EventPair:
