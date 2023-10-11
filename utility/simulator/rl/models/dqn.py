@@ -17,6 +17,8 @@ class DQNAgent:
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
                                        lr=0.002)
         self.replay_memory = ReplayMemory(1000)
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
         # RL parameter setup
         self.n_actions = out_dim
         self.steps = 1
@@ -53,10 +55,37 @@ class DQNAgent:
 
     def optimize_model(self):
         # TODO(hc): Check if the current mode is the training mode.
-        # TODO(hc): Check if the current replay memory size is less than the
-        #           batch size.
-        # TODO(hc): Then, do optimization.
-        pass
+
+        if len(self.replay_memory) < self.batch_size:
+            return
+
+        transitions = self.replay_memory.sample(self.batch_size)
+        batch = Transition(*zip(*transitions))
+
+        # Perform DQN optimization:
+        # (reward + gamma * (Q values from the target network with next states))
+        # - Q values from the policy network with the current states
+
+        # Make each next state in transitions as a separete element in a list.
+        # Then, `target_network` will produce an output for each next state.
+        next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state
+                                 if s is not None])
+        next_states_qvals = self.target_network(next_states).max(1)[0].detach()
+        print("Next states qvals?", next_states_qvals)
+        # States should be [[state1], [state2], ..]
+        states = torch.cat([s.unsqueeze(0) for s in batch.state])
+        # Actions should be [[action1], [action2], ..]
+        actions = torch.cat([b.unsqueeze(0) for b in batch.action]).to(self.device)
+        # Rewards should be [reward1, reward2, ..]
+        rewards = torch.cat([r for r in batch.reward]).to(self.device)
+        print("reward:", rewards)
+        # Get Q values of the chosen action from `policy_network`.
+        states_qvals = self.policy_network(states).gather(1, actions)
+        # This is expectated Q value calculation by using the bellmann equation.
+        expected_qvals = self.gamma * next_states_qvals + rewards
+        loss = torch.nn.SmoothL1Loss()(states_qvals, expected_qvals.unsqueeze(1))
+        self.optimizer.zero_grad()
+        loss.backward()
 
     def update_target_network(self):
         pass
@@ -73,7 +102,8 @@ class DQNAgent:
     def save_optimizer(self):
         pass
 
-    def append_transition(self, state, action, next_state, reward):
+    def append_transition(self, state: torch.tensor, action: torch.tensor,
+                          next_state: torch.tensor, reward: torch.tensor):
         """ Append (S, A, S', R) to the experience replay memory.
         """
         self.replay_memory.push(state, action, next_state, reward)
