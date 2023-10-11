@@ -28,4 +28,6 @@ class FCN(torch.nn.Module):
         x = F.leaky_relu(self.fc1(x))
         x = F.leaky_relu(self.fc2(x))
         x = F.log_softmax(self.out(x), 0)
-        return x.squeeze(0)
+        # If `out_dim` is 1, only one action is available.
+        # Do not squeeze the output in this case.
+        return x if self.outdim == 1 else x.squeeze(0)
