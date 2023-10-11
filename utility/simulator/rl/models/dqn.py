@@ -85,7 +85,13 @@ class DQNAgent:
         expected_qvals = self.gamma * next_states_qvals + rewards
         loss = torch.nn.SmoothL1Loss()(states_qvals, expected_qvals.unsqueeze(1))
         self.optimizer.zero_grad()
+        # Perform gradient descent.
         loss.backward()
+        # Clamp gradients to stablize optimization.
+        for param in self.policy_network.parameters():
+            param.grad.data.clamp_(-1, 1)
+        # Update the network parameters.
+        self.optimizer.step()
 
     def update_target_network(self):
         pass
