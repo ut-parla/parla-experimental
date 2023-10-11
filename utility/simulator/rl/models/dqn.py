@@ -29,12 +29,13 @@ class DQNAgent:
         self.gamma = gamma
 
     def select_device(self, x):
+        """ Select a device (action) with a state `x` and `policy_network`.
+        """
         sample = random.random()
         eps_threshold = self.eps_end + (self.eps_start - self.eps_end) * \
                         math.exp(-1. * self.steps / self.eps_decay)
         self.steps += 1
         if sample > eps_threshold:
-            print("Policy network is used", flush=True)
             # TODO(hc): Always use this condition if test mode is enabled
             with torch.no_grad():
                 out = self.policy_network(x)
@@ -44,7 +45,6 @@ class DQNAgent:
                     # resource available devices.
                     return max_action_pair[1]
         else:
-            print("Random generator is used", flush=True)
             # TODO(hc): Check mask; the mask is marked if that device does not
             # have sufficient resources.
             out = torch.tensor(
@@ -54,6 +54,8 @@ class DQNAgent:
         return out
 
     def optimize_model(self):
+        """ Optimize DQN model.
+        """
         # TODO(hc): Check if the current mode is the training mode.
 
         if len(self.replay_memory) < self.batch_size:
@@ -71,14 +73,12 @@ class DQNAgent:
         next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state
                                  if s is not None])
         next_states_qvals = self.target_network(next_states).max(1)[0].detach()
-        print("Next states qvals?", next_states_qvals)
         # States should be [[state1], [state2], ..]
         states = torch.cat([s.unsqueeze(0) for s in batch.state])
         # Actions should be [[action1], [action2], ..]
         actions = torch.cat([b.unsqueeze(0) for b in batch.action]).to(self.device)
         # Rewards should be [reward1, reward2, ..]
         rewards = torch.cat([r for r in batch.reward]).to(self.device)
-        print("reward:", rewards)
         # Get Q values of the chosen action from `policy_network`.
         states_qvals = self.policy_network(states).gather(1, actions)
         # This is expectated Q value calculation by using the bellmann equation.
