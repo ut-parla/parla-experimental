@@ -5,6 +5,7 @@ import torch.nn
 import torch.optim as optim
 
 from ..networks.fcn import *
+from .replay_memory import *
 
 class DQNAgent:
 
@@ -15,6 +16,7 @@ class DQNAgent:
         self.target_network = FCN(in_dim, out_dim)
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
                                        lr=0.002)
+        self.replay_memory = ReplayMemory(1000)
         # RL parameter setup
         self.n_actions = out_dim
         self.steps = 1
@@ -70,3 +72,8 @@ class DQNAgent:
 
     def save_optimizer(self):
         pass
+
+    def append_transition(self, state, action, next_state, reward):
+        """ Append (S, A, S', R) to the experience replay memory.
+        """
+        self.replay_memory.push(state, action, next_state, reward)
