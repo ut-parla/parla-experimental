@@ -14,14 +14,15 @@ from typing import List, Dict, Set, Tuple, Optional, Callable
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
-from schedulers.scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
+from .schedulers.scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
 
 from rich import print
 
 
 @dataclass(slots=True)
 class SimulatedScheduler:
-    topology: SimulatedTopology
+    topology: InitVar[SimulatedTopology]
+    scheduler_type: InitVar[str] = "parla"
     tasks: List[SimulatedTask] = field(default_factory=list)
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
@@ -31,8 +32,8 @@ class SimulatedScheduler:
     events: EventQueue = EventQueue()
     time: Time = field(default_factory=Time)
 
-    def __post_init__(self, scheduler_type: str = "parla"):
-        self.state = SystemState(topology=self.topology)
+    def __post_init__(self, topology, scheduler_type: str = "parla"):
+        self.state = SystemState(topology=topology)
         self.mechanisms = SchedulerOptions.get_scheduler(scheduler_type)
 
     def __str__(self):

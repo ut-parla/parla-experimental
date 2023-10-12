@@ -57,6 +57,7 @@ class SimulatedTask:
     state: TaskState = TaskState.SPAWNED
     times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters = field(init=False)
+    dependents: List[TaskID] = field(default_factory=list)
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)

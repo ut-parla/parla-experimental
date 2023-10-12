@@ -187,3 +187,13 @@ def sort_tasks_by_order(tasklist: List[TaskID], taskmap: SimulatedTaskMap):
     Sort a list of tasks by their order in the taskmap.
     """
     return sorted(tasklist, key=lambda task: taskmap[task].info.order)
+
+
+def populate_dependents(taskmap: SimulatedTaskMap):
+    """
+    Populate the dependents field of each task.
+    @param taskmap: SimulatedTaskMap
+    """
+    for task in taskmap.values():
+        for dependency in task.dependencies:
+            taskmap[dependency].dependents.append(task.name)
