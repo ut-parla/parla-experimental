@@ -26,6 +26,7 @@ class SimulatedScheduler:
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
     state: SystemState = field(init=False)
+    log_level: int = 0
 
     events: EventQueue = EventQueue()
     time: Time = field(default_factory=Time)
@@ -45,6 +46,9 @@ class SimulatedScheduler:
 
     def add_initial_tasks(self, tasks: List[SimulatedTask]):
         self.tasks.extend(tasks)
+
+    def record():
+        pass
 
     def process_event(self, event: Event):
         # New events are created from the current event.
@@ -68,3 +72,4 @@ class SimulatedScheduler:
                 # Advance time
                 self.time = max(self.time, completion_time)
                 # Update Log
+                self.record()

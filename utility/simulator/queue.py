@@ -30,6 +30,9 @@ class PriorityQueue:
     def __str__(self):
         return f"PriorityQueue({self.queue})"
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class QueueIterator(object):
     def __init__(self, q: PriorityQueue, maxiter: int = -1, peek: bool = False):
@@ -39,15 +42,32 @@ class QueueIterator(object):
         self.peek = peek
         self.success_count = 0
 
+        self.failed_count = 0
+        self.fail_threshold = 1
+
     def __iter__(self):
         return self
 
     def __next__(self):
         if len(self.q) == 0:
+            self.iter = 0
+            self.failed_count = 0
+            self.success_count = 0
+            # print("Queue is empty!")
+            raise StopIteration
+
+        if self.failed_count >= self.fail_threshold:
+            self.iter = 0
+            self.failed_count = 0
+            self.success_count = 0
+            # print("Queue failed!", self.q)
             raise StopIteration
 
         if self.maxiter != -1 and self.iter >= self.maxiter:
             self.iter = 0
+            self.failed_count = 0
+            self.success_count = 0
+            # print("Queue reached maxiter!")
             raise StopIteration
 
         self.iter += 1
@@ -58,9 +78,13 @@ class QueueIterator(object):
             self.success_count += 1
             return self.q.get()
 
-    def pop(self):
+    def success(self):
         self.success_count += 1
         return self.q.get()
+
+    def fail(self):
+        self.failed_count += 1
+        return self.q.peek()
 
     def __len__(self):
         return len(self.q)
@@ -70,6 +94,91 @@ class QueueIterator(object):
 
     def __repr__(self):
         return self.__str__()
+
+
+class MultiQueueIterator(object):
+    @staticmethod
+    def make_iterator(q: PriorityQueue | Dict, maxiter: int = -1, peek: bool = False):
+        if isinstance(q, PriorityQueue):
+            return QueueIterator(q, maxiter, peek)
+        elif isinstance(q, Dict):
+            return MultiQueueIterator(q, maxiter, peek)
+
+    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = False):
+        self.dict = queues
+        self.keys = list(queues.keys())
+        self.iterators = [
+            MultiQueueIterator.make_iterator(q, -1, peek) for q in queues.values()
+        ]
+
+        self.iter = 0
+        self.maxiter = maxiter
+        self.peek = peek
+
+        self.current_idx = 0
+        self.success_count = 0
+        self.failed_count = 0
+
+    def __iter__(self):
+        return self
+
+    @property
+    def current_iterator(self):
+        return self.iterators[self.current_idx]
+
+    @property
+    def current_key(self):
+        return self.keys[self.current_idx]
+
+    def get_current_keys(self):
+        current_key = self.current_key
+        if isinstance(self.current_iterator, MultiQueueIterator):
+            return current_key, self.current_iterator.get_current_keys()
+        else:
+            return current_key
+
+    def __len__(self):
+        return sum([len(q) for q in self.iterators])
+
+    def __next__(self):
+        if self.maxiter != -1 and self.iter >= self.maxiter:
+            self.iter = 0
+            raise StopIteration
+
+        self.iter += 1
+        next = None
+        while len(self.iterators) > 0 and next is None:
+            try:
+                next = self.iterators[self.current_idx].__next__()
+
+            except StopIteration:
+                self.iterators.pop(self.current_idx)
+                self.keys.pop(self.current_idx)
+                if len(self.iterators) > 0:
+                    self.current_idx = self.iter % len(self.iterators)
+
+        if len(self.iterators) == 0 or next is None:
+            raise StopIteration
+
+        if not self.peek:
+            self.current_idx = self.iter % len(self.iterators)
+
+        return next
+
+    def success(self):
+        popped = self.iterators[self.current_idx].success()
+        self.success_count += 1
+        self.current_idx = self.iter % len(self.iterators)
+        return popped
+
+    def fail(self):
+        peeked = self.iterators[self.current_idx].fail()
+        self.failed_count += 1
+        self.current_idx = self.iter % len(self.iterators)
+        return peeked
+
+    def __str__(self):
+        return f"MultiQueueIterator({self.dict}, ITER={self.iter}, MAXITER={self.maxiter}, PEEK={self.peek})"
 
 
 class TaskQueue(PriorityQueue):
@@ -104,28 +213,34 @@ class TaskIterator(QueueIterator):
     def __next__(self) -> TaskPair:
         return super().__next__()
 
-    def pop(self) -> TaskPair:
-        return super().pop()
+    def success(self) -> TaskPair:
+        return super().success()
+
+    def fail(self) -> TaskPair:
+        return super().fail()
 
     def __str__(self):
         return f"TaskIterator({self.q}, ITER={self.iter}, MAXITER={self.maxiter}, PEEK={self.peek})"
 
 
-# class MultiTaskIterator:
-#     def __init__(
-#         self, multiq: Dict[object, TaskQueue], maxiter: int = -1, peek: bool = False
-#     ):
-#         self.multiq = multiq
-#         self.iter = 0
-#         self.maxiter = maxiter
-#         self.peek = peek
-#         self.success_count = 0
+class MultiTaskIterator(MultiQueueIterator):
+    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = False):
+        super().__init__(queues, maxiter, peek)
 
-#     def __iter__(self):
-#         return self
+    def __iter__(self) -> Self:
+        return super().__iter__()
 
-#     def __next__(self):
-#         return
+    def __next__(self) -> TaskPair:
+        return super().__next__()
+
+    def success(self) -> TaskPair:
+        return super().success()
+
+    def fail(self) -> TaskPair:
+        return super().fail()
+
+    def __str__(self):
+        return f"MultiTaskIterator({self.dict}, ITER={self.iter}, MAXITER={self.maxiter}, PEEK={self.peek})"
 
 
 class EventQueue(PriorityQueue):
@@ -157,7 +272,7 @@ class EventIterator(QueueIterator):
         return super().__next__()
 
     def pop(self) -> EventPair:
-        return super().pop()
+        return super().success()
 
     def __str__(self):
         return f"EventIterator({self.q}, ITER={self.iter}, MAXITER={self.maxiter}, PEEK={self.peek})"
