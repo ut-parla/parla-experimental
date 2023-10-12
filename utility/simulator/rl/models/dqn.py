@@ -27,6 +27,7 @@ class DQNAgent:
         self.eps_decay = eps_decay
         self.batch_size = batch_size
         self.gamma = gamma
+        self.episode = 0
 
     def select_device(self, x):
         """ Select a device (action) with a state `x` and `policy_network`.
@@ -113,3 +114,13 @@ class DQNAgent:
         """ Append (S, A, S', R) to the experience replay memory.
         """
         self.replay_memory.push(state, action, next_state, reward)
+
+    def start_episode(self):
+        """ Start a new episode, and update (or initialize) the current state.
+        """
+        self.episode += 1
+
+    def finalize_episode(self):
+        """ Finalize the current episode.
+        """
+        pass
