@@ -9,9 +9,10 @@ from .replay_memory import *
 
 class DQNAgent:
 
-    def __init__(self, in_dim: int, out_dim: int,
+    # TODO(hc): execution mode would be enum, instead of string.
+    def __init__(self, in_dim: int, out_dim: int, execution_mode: str = "test",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
-                 batch_size = 516, gamma = 0.999):
+                 batch_size = 10, gamma = 0.999):
         self.policy_network = FCN(in_dim, out_dim)
         self.target_network = FCN(in_dim, out_dim)
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
@@ -19,6 +20,7 @@ class DQNAgent:
         self.replay_memory = ReplayMemory(1000)
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
+        self.execution_mode = execution_mode
         # RL parameter setup
         self.n_actions = out_dim
         self.steps = 1
@@ -29,6 +31,9 @@ class DQNAgent:
         self.gamma = gamma
         self.episode = 0
 
+    def is_training_mode(self):
+        return "training" in self.execution_mode
+
     def select_device(self, x):
         """ Select a device (action) with a state `x` and `policy_network`.
         """
@@ -36,8 +41,7 @@ class DQNAgent:
         eps_threshold = self.eps_end + (self.eps_start - self.eps_end) * \
                         math.exp(-1. * self.steps / self.eps_decay)
         self.steps += 1
-        if sample > eps_threshold:
-            # TODO(hc): Always use this condition if test mode is enabled
+        if (not self.is_training_mode()) or sample > eps_threshold:
             with torch.no_grad():
                 out = self.policy_network(x)
                 for action in range(self.n_actions):
@@ -57,7 +61,9 @@ class DQNAgent:
     def optimize_model(self):
         """ Optimize DQN model.
         """
-        # TODO(hc): Check if the current mode is the training mode.
+
+        if not self.is_training_mode():
+            return
 
         if len(self.replay_memory) < self.batch_size:
             return
@@ -101,12 +107,25 @@ class DQNAgent:
         pass
 
     def save_networks(self):
+        if is_training_mode():
+            pass
+
         pass
 
     def load_optimizer(self):
         pass
 
     def save_optimizer(self):
+        if is_training_mode():
+            pass
+
+    def load_best_networks(self):
+        pass
+
+    def save_best_networks(self):
+        if is_training_mode():
+            pass
+
         pass
 
     def append_transition(self, state: torch.tensor, action: torch.tensor,
