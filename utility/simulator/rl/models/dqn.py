@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import torch
 import torch.nn
@@ -10,7 +11,7 @@ from .replay_memory import *
 class DQNAgent:
 
     # TODO(hc): execution mode would be enum, instead of string.
-    def __init__(self, in_dim: int, out_dim: int, execution_mode: str = "test",
+    def __init__(self, in_dim: int, out_dim: int, execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 10, gamma = 0.999):
         self.policy_network = FCN(in_dim, out_dim)
@@ -30,6 +31,13 @@ class DQNAgent:
         self.batch_size = batch_size
         self.gamma = gamma
         self.episode = 0
+        # File names for loading & storing models.
+        self.policynet_fname = "policy_network.pt"
+        self.targetnet_fname = "target_network.pt"
+        self.optimizer_fname = "optimizer.pt"
+        self.best_policynet_fname = "best_policy_network.pt"
+        self.best_targetnet_fname = "best_target_network.pt"
+        self.best_optimizer_fname = "best_optimizer.pt"
 
     def is_training_mode(self):
         return "training" in self.execution_mode
@@ -103,21 +111,38 @@ class DQNAgent:
     def update_target_network(self):
         pass
 
-    def load_networks(self):
-        pass
+    def load_models(self):
+        """ Load policy_network, target_network, and optimizer
+            parameters from files; if a file doesn't exist, skip reading
+            and use default parameters. """
+        print("Load models..", flush=True)
+        if os.path.exists(self.policynet_fname):
+            self.policy_network = torch.load(self.policynet_fname)
+        else:
+            print("Policy network does not exist, and so, not loaded",
+                  flush=True)
+        if os.path.exists(self.targetnet_fname):
+            self.target_network = torch.load(self.targetnet_fname)
+        else:
+            print("Target network does not exist, and so, not loaded",
+                  flush=True)
+        if os.path.exists(self.optimizer_fname):
+            # The optimizer needs to do two phases to correctly link it
+            # to the policy network, and load parameters.
+            loaded_optimizer = torch.load(self.optimizer_fname)
+            self.optimizer.load_state_dict(loaded_optimizer.state_dict())
+        else:
+            print("Optimizer  does not exist, and so, not loaded", flush=True)
 
-    def save_networks(self):
-        if is_training_mode():
-            pass
-
-        pass
-
-    def load_optimizer(self):
-        pass
-
-    def save_optimizer(self):
-        if is_training_mode():
-            pass
+    def save_models(self):
+        """ Save policy_network, target_network, and optimizer
+            parameters to files. """
+        if not is_training_mode():
+            return
+        print("Save models..", flush=True)
+        torch.save(self.policy_network, self.policynet_fname)
+        torch.save(self.target_network, self.targetnet_fname)
+        torch.save(self.optimizer, self.optimizer_fname)
 
     def load_best_networks(self):
         pass
@@ -138,8 +163,20 @@ class DQNAgent:
         """ Start a new episode, and update (or initialize) the current state.
         """
         self.episode += 1
+        self.print_model("started")
 
     def finalize_episode(self):
         """ Finalize the current episode.
         """
-        pass
+        self.print_model("finished")
+
+    def print_model(self, prefix: str):
+        with open("models/" + prefix + ".policy_network.str", "w") as fp:
+            for key, param in self.policy_network.named_parameters():
+                fp.write(key + " = " + str(param))
+        with open("models/" + prefix + ".target_network.str", "w") as fp:
+            for key, param in self.target_network.named_parameters():
+                fp.write(key + " = " + str(param))
+        with open("models/" + prefix + ".optimizer.str", "w") as fp:
+            for key, param in self.optimizer.state_dict().items():
+                fp.write(key + " = " + str(param))
