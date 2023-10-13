@@ -184,3 +184,33 @@ class DQNAgent:
         with open("models/" + prefix + ".optimizer.str", "w") as fp:
             for key, param in self.optimizer.state_dict().items():
                 fp.write(key + " = " + str(param))
+
+
+class A2CAgent:
+
+    def __init__(self):
+        # Actor = network1 (policy network)
+        # Critic = network2 (value function network)
+        pass
+
+
+    def select_device(self):
+        # If the current selection is < batch size, choose action and accumulate
+        # (value, reward, log probability).
+        # 1. Get a probabiliy of actions on the current state through actor. 
+        # 2. Sample an action by using Categorical random distribution.
+        # 3. Get log probability of the action over the 1's probabilities.
+        # 4. Append (V, LP, R)
+        #
+        # If the current selection is >= batch size, calculate advantage value, and
+        # update models.
+        # 1. Calculate next state, and its next value from the critic network.
+        # 2. Calculate advantages (G = reward + gamma * value) - values (Vs)
+        # 3. actor loss = - (log_probs * advantage).mean()
+        # 4. critic loss = advantage^2; since advantage is already TD, and so on MSE,
+        # advantage^2.
+
+        # 5. loss = actor_loss + 0.5 * critic_loss - 0.001 * entropy
+
+        # 6. optimize model.
+        pass
