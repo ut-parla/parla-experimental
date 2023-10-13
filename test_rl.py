@@ -23,4 +23,9 @@ for i in range(1000):
 #t = agent.replay_memory.sample(10)
 #print(t)
 
+agent.start_episode()
+agent.finalize_episode()
 agent.optimize_model()
+agent.print_model("optimization")
+agent.load_models()
+agent.print_model("load")

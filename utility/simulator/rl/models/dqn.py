@@ -69,7 +69,6 @@ class DQNAgent:
     def optimize_model(self):
         """ Optimize DQN model.
         """
-
         if not self.is_training_mode():
             return
 
@@ -109,7 +108,12 @@ class DQNAgent:
         self.optimizer.step()
 
     def update_target_network(self):
-        pass
+        """ In DQN, the target network needs to update its parameters
+            by the policy network for each inverval. This function
+            performs this. """
+        if self.episode != 0 and episode % 100 == 0:
+            self.target_network.load_state_dict(
+                self.policy_network.state_dict())
 
     def load_models(self):
         """ Load policy_network, target_network, and optimizer
