@@ -1,5 +1,5 @@
 from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Set, Tuple, Optional, Callable
 from .device import SimulatedDevice, ResourceSet
 from dataclasses import dataclass
 from .utility import parse_size
@@ -11,7 +11,7 @@ NamedDevice = Device | SimulatedDevice
 
 
 @dataclass(slots=True)
-class SimulatedTopology():
+class SimulatedTopology:
     devices: List[SimulatedDevice]
     name: str = "SimulatedTopology"
     id_map: Dict[Device, int] = None
@@ -31,18 +31,21 @@ class SimulatedTopology():
                 self.host = device
         # greater than 0 if used.
         self.connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32)
+            (len(self.devices), len(self.devices)), dtype=np.int32
+        )
         # greater than 0 if used.
         self.active_connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32)
+            (len(self.devices), len(self.devices)), dtype=np.int32
+        )
         # Bandwidth between devices.
         self.bandwidth = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.float32)
-        self.active_copy_engines = {
-            device.name: 0 for device in self.devices}
+            (len(self.devices), len(self.devices)), dtype=np.float32
+        )
+        self.active_copy_engines = {device.name: 0 for device in self.devices}
         self.max_copy_engines = {
-            device.name: device.resources.store[ResourceType.COPY] \
-            for device in self.devices}
+            device.name: device.resources.store[ResourceType.COPY]
+            for device in self.devices
+        }
 
     def __str__(self) -> str:
         repr_str = "[[HW Topology]]\n"
@@ -60,7 +63,7 @@ class SimulatedTopology():
         repr_str += "[Connections]\n"
         for d1 in range(len(self.devices)):
             for d2 in range(len(self.devices)):
-                if self.connections[d1,d2] == 1:
+                if self.connections[d1, d2] == 1:
                     repr_str += str(self.devices[d1].name) + ","
                     repr_str += str(self.devices[d2].name)
                     repr_str += " bandwidth: " + str(self.bandwidth[d1][d2])
@@ -76,8 +79,13 @@ class SimulatedTopology():
             device = device.name
         return self.id_map[device]
 
-    def add_bandwidth(self, src: NamedDevice, dst: NamedDevice, bandwidth: float, bidirectional: bool = True):
-
+    def add_bandwidth(
+        self,
+        src: NamedDevice,
+        dst: NamedDevice,
+        bandwidth: float,
+        bidirectional: bool = True,
+    ):
         src_idx = self.get_index(src)
         dst_idx = self.get_index(dst)
 
@@ -86,7 +94,9 @@ class SimulatedTopology():
         if bidirectional:
             self.bandwidth[dst_idx, src_idx] = bandwidth
 
-    def add_connection(self, src: NamedDevice, dst: NamedDevice, bidirectional: bool = True):
+    def add_connection(
+        self, src: NamedDevice, dst: NamedDevice, bidirectional: bool = True
+    ):
         src_idx = self.get_index(src)
         dst_idx = self.get_index(dst)
 
@@ -95,7 +105,13 @@ class SimulatedTopology():
         if bidirectional:
             self.connections[dst_idx, src_idx] = 1
 
-    def update_connections(self, src: NamedDevice, dst: NamedDevice, value: int, bidirectional: bool = False):
+    def update_connections(
+        self,
+        src: NamedDevice,
+        dst: NamedDevice,
+        value: int,
+        bidirectional: bool = False,
+    ):
         src_idx = self.get_index(src)
         dst_idx = self.get_index(dst)
 
@@ -136,7 +152,13 @@ class SimulatedTopology():
     def release_connection(self, src: NamedDevice, dst: NamedDevice):
         self.update_connections(src, dst, -1)
 
-    def check_connection(self, src: NamedDevice, dst: NamedDevice, require_engines: bool = True, require_symmetric=True) -> bool:
+    def check_connection(
+        self,
+        src: NamedDevice,
+        dst: NamedDevice,
+        require_engines: bool = True,
+        require_symmetric=True,
+    ) -> bool:
         src_idx = self.get_index(src)
         dst_idx = self.get_index(dst)
 
@@ -156,14 +178,53 @@ class SimulatedTopology():
                 return False
 
         if require_symmetric:
-            return (self.active_connections[src_idx, dst_idx] == 0) \
-                and (self.active_connections[dst_idx, src_idx] == 0)
+            return (self.active_connections[src_idx, dst_idx] == 0) and (
+                self.active_connections[dst_idx, src_idx] == 0
+            )
         else:
-            return (self.active_connections[src_idx, dst_idx] == 0)
+            return self.active_connections[src_idx, dst_idx] == 0
 
 
+class TopologyManager:
+    generator_map: Dict[str, Callable[[Optional[Dict]], SimulatedTopology]] = {}
 
-def create_4gpus_1cpu_hwtopo():
+    @staticmethod
+    def read_from_yaml(topology_name: str) -> SimulatedTopology:
+        """
+        Read topology from a YAML file.
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def register_generator(topology_name: str):
+        """
+        Register a topology generator.
+        """
+
+        def decorator(cls):
+            if topology_name in TopologyManager.generator_map:
+                raise ValueError(
+                    f"Topology {topology_name} has already been registered."
+                )
+            TopologyManager.generator_map[topology_name] = cls
+            return cls
+
+        return decorator
+
+    @staticmethod
+    def get_generator(
+        name: str,
+    ) -> Callable[[Optional[Dict]], SimulatedTopology]:
+        """
+        Get a topology generator.
+        """
+        if name not in TopologyManager.generator_map:
+            raise ValueError(f"Topology {name} is not registered.")
+        return TopologyManager.generator_map[name]
+
+
+@TopologyManager.register_generator("4gpus-1cpu")
+def generate_4gpus_1cpu_toplogy(config: Optional[Dict[str, int]]) -> SimulatedTopology:
     """
     This function creates 4 GPUs and 1 CPU architecture.
 
@@ -182,63 +243,54 @@ def create_4gpus_1cpu_hwtopo():
     All GPUs are connected to CPU by connections having bandwidth of 100.
     Each GPU is equipped with 16GB DRAM, and CPU is equipped with 130GB.
     """
+
+    if config is not None:
+        P2P_BW = config["P2P_BW"]
+        H2D_BW = config["H2D_BW"]
+        D2H_BW = config["D2H_BW"]
+
+        GPU_MEM = config["GPU_MEM"]
+        CPU_MEM = config["CPU_MEM"]
+
+        GPU_COPY_ENGINES = config["GPU_COPY_ENGINES"]
+        CPU_COPY_ENGINES = config["CPU_COPY_ENGINES"]
+    else:
+        # Default configuration for testing
+        P2P_BW = 200
+        H2D_BW = 100
+        D2H_BW = 100
+
+        GPU_MEM = parse_size("16GB")
+        CPU_MEM = parse_size("130GB")
+
+        GPU_COPY_ENGINES = 3
+        CPU_COPY_ENGINES = 3
+
     # Create devices
-    gpu0 = SimulatedDevice(
-        Device(Architecture.GPU, 0), 
-        ResourceSet(1, parse_size("16 GB"), 3))
-    gpu1 = SimulatedDevice(
-        Device(Architecture.GPU, 1), 
-        ResourceSet(1, parse_size("16 GB"), 3))
-    gpu2 = SimulatedDevice(
-        Device(Architecture.GPU, 2), 
-        ResourceSet(1, parse_size("16 GB"), 3))
-    gpu3 = SimulatedDevice(
-        Device(Architecture.GPU, 3), 
-        ResourceSet(1, parse_size("16 GB"), 3))
-    cpu = SimulatedDevice(
-        Device(Architecture.CPU, 0), 
-        ResourceSet(1, parse_size("130 GB"), 3))
+    gpus = [
+        SimulatedDevice(
+            Device(Architecture.GPU, i), ResourceSet(1, GPU_MEM, GPU_COPY_ENGINES)
+        )
+        for i in range(4)
+    ]
+    cpus = [
+        SimulatedDevice(
+            Device(Architecture.CPU, 0), ResourceSet(1, CPU_MEM, CPU_COPY_ENGINES)
+        )
+    ]
 
     # Create device topology
-    topology = SimulatedTopology([gpu0, gpu1, gpu2, gpu3, cpu], "Topo4G-1C")
+    topology = SimulatedTopology(gpus + cpus, "Topology::4G-1C")
 
-    bw = 100
-    topology.add_connection(gpu0, gpu1, bidirectional=True)
-    topology.add_connection(gpu0, gpu2, bidirectional=True)
-    topology.add_connection(gpu0, gpu3, bidirectional=True)
-    topology.add_connection(gpu0, cpu, bidirectional=True)
+    for gpu in gpus:
+        topology.add_connection(gpu, cpus[0], bidirectional=True)
+        topology.add_bandwidth(gpu, cpus[0], D2H_BW)
+        topology.add_bandwidth(cpus[0], gpu, H2D_BW)
 
-    topology.add_connection(gpu1, gpu2, bidirectional=True)
-    topology.add_connection(gpu1, gpu3, bidirectional=True)
-    topology.add_connection(gpu1, cpu, bidirectional=True)
+    topology.add_connection(gpus[0], gpus[1], bidirectional=True)
+    topology.add_bandwidth(gpus[0], gpus[1], P2P_BW)
 
-    topology.add_connection(gpu2, gpu3, bidirectional=True)
-    topology.add_connection(gpu2, cpu, bidirectional=True)
-
-    topology.add_connection(gpu3, cpu, bidirectional=True)
-
-    topology.add_bandwidth(gpu0, gpu1, 2*bw, bidirectional=bw)
-    topology.add_bandwidth(gpu0, gpu2, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu0, gpu3, bw, bidirectional=bw)
-
-    topology.add_bandwidth(gpu1, gpu2, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu1, gpu3, bw, bidirectional=bw)
-
-    topology.add_bandwidth(gpu2, gpu3, 2*bw, bidirectional=bw)
-
-    # Self copy (not used)
-    topology.add_bandwidth(gpu3, gpu3, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu2, gpu2, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu1, gpu1, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu0, gpu0, bw, bidirectional=bw)
-    topology.add_bandwidth(cpu, cpu, bw, bidirectional=bw)
-
-    # With CPU
-    topology.add_bandwidth(gpu0, cpu, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu1, cpu, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu2, cpu, bw, bidirectional=bw)
-    topology.add_bandwidth(gpu3, cpu, bw, bidirectional=bw)
-
-    print(topology)
+    topology.add_connection(gpus[2], gpus[3], bidirectional=True)
+    topology.add_bandwidth(gpus[2], gpus[3], P2P_BW)
 
     return topology

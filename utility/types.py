@@ -9,6 +9,8 @@ from decimal import Decimal
 
 from ast import literal_eval as make_tuple
 
+from rich.text import Text
+
 #########################################
 # Time Information
 #########################################
@@ -262,14 +264,21 @@ DataMap = Dict[DataID, DataInfo]
 
 
 class TaskState(IntEnum):
-    SPAWNED = 0
-    MAPPABLE = 1
-    MAPPED = 2
-    RESERVABLE = 3
-    RESERVED = 4
-    LAUNCHABLE = 5
-    LAUNCHED = 6
-    COMPLETED = 7
+    NONE = 0
+    SPAWNED = 1
+    MAPPABLE = 2
+    MAPPED = 3
+    RESERVABLE = 4
+    RESERVED = 5
+    LAUNCHABLE = 6
+    LAUNCHED = 7
+    COMPLETED = 8
+
+
+TaskTransitionMap: Dict[TaskState, TaskState] = dict()
+TaskTransitionMap[TaskState.MAPPABLE] = TaskState.MAPPED
+TaskTransitionMap[TaskState.RESERVABLE] = TaskState.RESERVED
+TaskTransitionMap[TaskState.LAUNCHABLE] = TaskState.LAUNCHED
 
 
 class TaskType(IntEnum):
@@ -295,7 +304,10 @@ class TaskID:
     instance: int = 0
 
     def __str__(self):
-        return f"{self.taskspace}[{self.task_idx}]"
+        return f"{self.taskspace}[{', '.join([str(x) for x in [*self.task_idx]])}]"
+
+    def __repr__(self):
+        return str(self)
 
 
 @dataclass(slots=True)
