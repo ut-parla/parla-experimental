@@ -4,7 +4,11 @@ import random
 
 
 Transition = namedtuple("Transition",
-                        ("state", "action", "next_state", "reward"))
+                        ("state", "action", "next_state", "reward",
+                         # We may store information for a GCN layer too.
+                         # If any GCN layer is not used, these should be `None`.
+                         "gcn_state", "gcn_edgeindex",
+                         "next_gcn_state", "next_gcn_edgeindex"))
 
 
 class ReplayMemory(object):

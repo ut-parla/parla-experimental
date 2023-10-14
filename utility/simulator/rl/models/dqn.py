@@ -6,7 +6,9 @@ import torch.nn
 import torch.optim as optim
 
 from ..networks.fcn import *
+from ..networks.gcn_fcn import *
 from .replay_memory import *
+from .globals import *
 
 class DQNAgent:
 
@@ -14,13 +16,16 @@ class DQNAgent:
     def __init__(self, in_dim: int, out_dim: int, execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 10, gamma = 0.999):
-        self.policy_network = FCN(in_dim, out_dim)
-        self.target_network = FCN(in_dim, out_dim)
+        if True: # Use GCN+FCN layers
+            self.policy_network = GCN_FCN_Type1(in_dim, out_dim)
+            self.target_network = GCN_FCN_Type1(in_dim, out_dim)
+        else: # Use pure FCN layers
+            self.policy_network = FCN(in_dim, out_dim)
+            self.target_network = FCN(in_dim, out_dim)
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
                                        lr=0.002)
         self.replay_memory = ReplayMemory(1000)
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.execution_mode = execution_mode
         # RL parameter setup
         self.n_actions = out_dim
@@ -42,7 +47,7 @@ class DQNAgent:
     def is_training_mode(self):
         return "training" in self.execution_mode
 
-    def select_device(self, x):
+    def select_device(self, x, gcn_x = None, gcn_edgeindex = None):
         """ Select a device (action) with a state `x` and `policy_network`.
         """
         sample = random.random()
@@ -51,7 +56,10 @@ class DQNAgent:
         self.steps += 1
         if (not self.is_training_mode()) or sample > eps_threshold:
             with torch.no_grad():
-                out = self.policy_network(x)
+                model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
+                print("model_input: ", model_input, flush=True)
+                out = self.policy_network(model_input)
+                print("out: ", out, flush=True)
                 for action in range(self.n_actions):
                     max_action_pair = out.max(0)
                     # TODO(hc): may need to check if max action is within
@@ -86,15 +94,42 @@ class DQNAgent:
         # Then, `target_network` will produce an output for each next state.
         next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state
                                  if s is not None])
-        next_states_qvals = self.target_network(next_states).max(1)[0].detach()
         # States should be [[state1], [state2], ..]
         states = torch.cat([s.unsqueeze(0) for s in batch.state])
         # Actions should be [[action1], [action2], ..]
         actions = torch.cat([b.unsqueeze(0) for b in batch.action]).to(self.device)
         # Rewards should be [reward1, reward2, ..]
         rewards = torch.cat([r for r in batch.reward]).to(self.device)
+        # GCN states should be [[state1], [state2], ..] or [].
+        # The latter case implies that either a GCN layer is not used, or none
+        # of the subgraph is visible.
+        lst_gcn_states = [s.unsqueeze(0) for s in batch.gcn_state
+                          if s is not None]
+        gcn_states = None if len(lst_gcn_states) == 0 \
+                     else torch.cat(lst_gcn_states)
+        lst_next_gcn_states = [s.unsqueeze(0) for s in
+                               batch.next_gcn_state if s is not None]
+        next_gcn_states = None if len(lst_next_gcn_states) == 0 else \
+                          torch.cat(lst_next_gcn_states)
+        print("gcn states:", gcn_states, " next gcn states:", next_gcn_states)
+        # GCN edge index should be [[src nodes], [dst nodes]] or [].
+        # The latter case implies that either a GCN layer is not used, or none
+        # of the subgraph is visible.
+        lst_gcn_edgeindex = [ei.unsqueeze(0) for ei in batch.gcn_edgeindex
+                             if ei is not None]
+        gcn_edgeindex = None if len(lst_gcn_edgeindex) == 0 else \
+                        torch.cat(lst_gcn_edgeindex)
+        lst_next_gcn_edgeindex = [ei.unsqueeze(0) for ei in
+                                  batch.next_gcn_edgeindex if ei is not None]
+        next_gcn_edgeindex = None if len(lst_next_gcn_edgeindex) == 0 \
+                             else torch.cat(lst_next_gcn_edgeindex)
+        next_model_inputs = NetworkInput(next_states, True, next_gcn_states,
+                                         next_gcn_edgeindex)
+        next_states_qvals = \
+            self.target_network(next_model_inputs).max(1)[0].detach()
+        model_inputs = NetworkInput(states, True, gcn_states, gcn_edgeindex)
         # Get Q values of the chosen action from `policy_network`.
-        states_qvals = self.policy_network(states).gather(1, actions)
+        states_qvals = self.policy_network(model_inputs).gather(1, actions)
         # This is expectated Q value calculation by using the bellmann equation.
         expected_qvals = self.gamma * next_states_qvals + rewards
         loss = torch.nn.SmoothL1Loss()(states_qvals, expected_qvals.unsqueeze(1))
@@ -158,10 +193,14 @@ class DQNAgent:
         pass
 
     def append_transition(self, state: torch.tensor, action: torch.tensor,
-                          next_state: torch.tensor, reward: torch.tensor):
+                          next_state: torch.tensor, reward: torch.tensor,
+                          gcn_state = None, gcn_edgeindex = None,
+                          next_gcn_state = None, next_gcn_edgeindex = None):
         """ Append (S, A, S', R) to the experience replay memory.
         """
-        self.replay_memory.push(state, action, next_state, reward)
+        self.replay_memory.push(state, action, next_state, reward,
+                                gcn_state, gcn_edgeindex,
+                                next_gcn_state, next_gcn_edgeindex)
 
     def start_episode(self):
         """ Start a new episode, and update (or initialize) the current state.
