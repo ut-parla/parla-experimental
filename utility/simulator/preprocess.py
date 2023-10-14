@@ -144,6 +144,8 @@ def read_graph(
     taskmap = {**compute_tasks, **data_tasks}
     tasklist = list(compute_tasks.keys())
 
+    populate_dependents(taskmap)
+
     return tasklist, taskmap, datamap
 
 

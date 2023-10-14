@@ -274,6 +274,44 @@ class TaskState(IntEnum):
     LAUNCHED = 7
     COMPLETED = 8
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def resolve_state_trigger(checked_state) -> Optional["TaskState"]:
+        if checked_state == TaskState.MAPPED:
+            return TaskState.MAPPABLE
+        elif checked_state == TaskState.RESERVED:
+            return TaskState.RESERVABLE
+        elif checked_state == TaskState.LAUNCHED:
+            return TaskState.LAUNCHABLE
+        else:
+            return None
+
+    @staticmethod
+    def check_valid_transition(new_state, old_state):
+        # Check if the transition is valid
+        # ~somewhat Parla specific checks
+        if new_state == TaskState.MAPPED:
+            assert old_state == TaskState.MAPPABLE
+        elif new_state == TaskState.RESERVED:
+            assert old_state == TaskState.RESERVABLE
+        elif new_state == TaskState.LAUNCHED:
+            assert old_state == TaskState.LAUNCHABLE
+        elif new_state == TaskState.COMPLETED:
+            assert old_state == TaskState.LAUNCHED
+
+        # ~very Parla specific checks
+        if new_state == TaskState.MAPPABLE:
+            assert old_state == TaskState.SPAWNED
+        elif new_state == TaskState.RESERVABLE:
+            assert old_state == TaskState.MAPPED
+        elif new_state == TaskState.LAUNCHABLE:
+            assert old_state == TaskState.RESERVED
+
 
 TaskTransitionMap: Dict[TaskState, TaskState] = dict()
 TaskTransitionMap[TaskState.MAPPABLE] = TaskState.MAPPED

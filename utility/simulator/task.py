@@ -46,19 +46,9 @@ class TaskCounters:
     def _can_transition(self, state: TaskState) -> bool:
         return self.remaining_deps[state] == 0
 
-    def _get_transition_state(self, state: TaskState) -> Optional[TaskState]:
-        if state == TaskState.MAPPED:
-            return TaskState.MAPPABLE
-        elif state == TaskState.RESERVED:
-            return TaskState.RESERVABLE
-        elif state == TaskState.LAUNCHED:
-            return TaskState.LAUNCHABLE
-        else:
-            return None
-
     def resolve_transition(self, state: TaskState) -> Optional[TaskState]:
         if self._can_transition(state):
-            return self._get_transition_state(state)
+            return TaskState.resolve_state_trigger(state)
         else:
             return None
 
@@ -76,24 +66,7 @@ class SimulatedTask:
         self.counters = TaskCounters(self.info)
 
     def set_state(self, new_state: TaskState, time: Time):
-        # Check if the transition is valid
-        # ~somewhat Parla specific checks
-        if new_state == TaskState.MAPPED:
-            assert self.state == TaskState.MAPPABLE
-        elif new_state == TaskState.RESERVED:
-            assert self.state == TaskState.RESERVABLE
-        elif new_state == TaskState.LAUNCHED:
-            assert self.state == TaskState.LAUNCHABLE
-        elif new_state == TaskState.COMPLETED:
-            assert self.state == TaskState.LAUNCHED
-
-        # ~very Parla specific checks
-        if new_state == TaskState.MAPPABLE:
-            assert self.state == TaskState.SPAWNED
-        elif new_state == TaskState.RESERVABLE:
-            assert self.state == TaskState.MAPPED
-        elif new_state == TaskState.LAUNCHABLE:
-            assert self.state == TaskState.RESERVED
+        TaskState.check_valid_transition(self.state, new_state)
 
         self.times[new_state] = time
         self.state = new_state
@@ -164,6 +137,16 @@ class SimulatedTask:
     def __eq__(self, other: Self) -> bool:
         return self.name == other.name
 
+    def get_runtime_info(
+        self, device: Device | Tuple[Device, ...]
+    ) -> List[TaskRuntimeInfo]:
+        return self.info.runtime[device]
+
+    def set_duration(
+        self, device: Device | Tuple[Device, ...], system_state: "SystemState"
+    ):
+        raise NotImplementedError
+
 
 @dataclass(slots=True)
 class SimulatedComputeTask(SimulatedTask):
@@ -172,10 +155,24 @@ class SimulatedComputeTask(SimulatedTask):
     def add_data_dependency(self, task: TaskID):
         self.add_dependency(task, states=[TaskState.COMPLETED])
 
+    def set_duration(
+        self, device: Device | Tuple[Device, ...], system_state: "SystemState"
+    ):
+        runtime_infos = self.get_runtime_info(device)
+        max_time = max([runtime_info.task_time for runtime_info in runtime_infos])
+        self.duration = Time(max_time)
+
 
 @dataclass(slots=True)
 class SimulatedDataTask(SimulatedTask):
-    pass
+    def set_duration(
+        self, device: Device | Tuple[Device, ...], system_state: "SystemState"
+    ):
+        # Data movement tasks are single device
+        assert isinstance(device, Device)
+
+        # TODO: This is the data movement time
+        raise NotImplementedError("TODO: implement set_duration for SimulatedDataTask")
 
 
 SimulatedTaskMap = Dict[

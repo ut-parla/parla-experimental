@@ -14,15 +14,21 @@ TaskPair = Tuple[int, TaskID]
 class PriorityQueue:
     def __init__(self):
         self.queue = []
+        self.tiebreaker = 0
 
     def put(self, item):
+        print("Putting", item)
+        self.tiebreaker += 1
+        item = (item[0], self.tiebreaker, item[1])
         heapq.heappush(self.queue, item)
 
     def get(self):
-        return heapq.heappop(self.queue)
+        result_with_tiebreaker = heapq.heappop(self.queue)
+        return (result_with_tiebreaker[0], result_with_tiebreaker[2])
 
     def peek(self):
-        return self.queue[0]
+        result_with_tiebreaker = self.queue[0]
+        return (result_with_tiebreaker[0], result_with_tiebreaker[2])
 
     def __len__(self):
         return len(self.queue)

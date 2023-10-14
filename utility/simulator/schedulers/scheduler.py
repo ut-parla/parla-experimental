@@ -10,7 +10,7 @@ from ..topology import *
 from ...types import Architecture, Device, TaskID, TaskState, TaskType, Time
 from ...types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
-from typing import List, Dict, Set, Tuple, Optional, Callable
+from typing import List, Dict, Set, Tuple, Optional, Callable, Type
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
@@ -127,8 +127,13 @@ class SystemState:
             self.objects.devicemap = devicemap
 
 
+@dataclass(slots=True)
 class SchedulerArchitecture:
-    completed_tasks: List[TaskID] = []
+    topology: InitVar[SimulatedTopology]
+    completed_tasks: List[TaskID] = field(default_factory=list)
+
+    def __post_init__(self, topology: SimulatedTopology):
+        assert topology is not None
 
     def __getitem__(self, event: Event) -> Callable[[SystemState], List[EventPair]]:
         try:
@@ -143,7 +148,9 @@ class SchedulerArchitecture:
 
         return wrapper
 
-    def initialize(self, tasks: List[SimulatedTask]) -> List[EventPair]:
+    def initialize(
+        self, tasks: List[TaskID], scheduler_state: SystemState
+    ) -> List[EventPair]:
         raise NotImplementedError()
         return []
 
@@ -173,15 +180,12 @@ class SchedulerArchitecture:
     def __repr__(self):
         self.__str__()
 
-    def __post_init__(self, topology=None):
-        pass
-
 
 class SchedulerOptions:
-    scheduler_map: Dict[str, SchedulerArchitecture] = dict()
+    scheduler_map: Dict[str, Type[SchedulerArchitecture]] = dict()
 
     @staticmethod
-    def register_scheduler(scheduler_type: str):
+    def register_scheduler(scheduler_type: str) -> Callable[[Type], Type]:
         def decorator(cls):
             if scheduler_type in SchedulerOptions.scheduler_map:
                 raise ValueError(
@@ -193,7 +197,7 @@ class SchedulerOptions:
         return decorator
 
     @staticmethod
-    def get_scheduler(scheduler_type: str) -> SchedulerArchitecture:
+    def get_scheduler(scheduler_type: str) -> Type[SchedulerArchitecture]:
         if scheduler_type not in SchedulerOptions.scheduler_map:
             raise ValueError(
                 f"Scheduler type `{scheduler_type}` is not registered. Registered types are: {list(SchedulerOptions.scheduler_map.keys())}"

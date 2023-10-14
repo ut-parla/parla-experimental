@@ -1,8 +1,3 @@
-from utility.simulator.data import List
-from utility.simulator.device import EventPair, List, SimulatedTask
-from utility.simulator.queue import EventPair, SimulatedTask
-from utility.simulator.resources import List
-from utility.simulator.topology import List
 from ..task import List, SimulatedTask, SimulatedDataTask, SimulatedComputeTask
 from ..data import *
 from ..device import *
@@ -27,7 +22,7 @@ from rich import print
 @SchedulerOptions.register_scheduler("minimal")
 @dataclass(slots=True)
 class MinimalArchitecture(SchedulerArchitecture):
-    topology: SimulatedTopology
+    topology: InitVar[SimulatedTopology]
 
     spawned_tasks: TaskQueue = TaskQueue()
     launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(
@@ -35,17 +30,24 @@ class MinimalArchitecture(SchedulerArchitecture):
     )
     launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
 
-    def __post_init__(self):
-        assert self.topology is not None
+    def __post_init__(self, topology: SimulatedTopology):
+        assert topology is not None
 
-        for device in self.topology.devices:
+        for device in topology.devices:
             self.launchable_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-    def initialize(self, tasks: List[SimulatedTask]) -> List[EventPair]:
+    def initialize(
+        self, tasks: List[TaskID], scheduler_state: SystemState
+    ) -> List[EventPair]:
+        objects = scheduler_state.objects
+        assert objects is not None
+
+        task_objects = [objects.get_task(task) for task in tasks]
+
         # Initialize the set of visible tasks
-        self.add_initial_tasks(tasks)
+        self.add_initial_tasks(task_objects)
 
         # Initialize the event queue
         next_event = Launcher()
@@ -53,6 +55,7 @@ class MinimalArchitecture(SchedulerArchitecture):
         return [(next_time, next_event)]
 
     def add_initial_tasks(self, tasks: List[SimulatedTask]):
+        print("Adding initial tasks", tasks)
         for task in tasks:
             self.spawned_tasks.put(task)
 

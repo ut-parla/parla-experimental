@@ -55,16 +55,25 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
-    def initialize(self, tasks: List[SimulatedTask]) -> List[EventPair]:
+    def initialize(
+        self, tasks: List[TaskID], scheduler_state: SystemState
+    ) -> List[EventPair]:
+        objects = scheduler_state.objects
+        assert objects is not None
+
+        task_objects = [objects.get_task(task) for task in tasks]
+
         # Initialize the set of visible tasks
-        self.add_initial_tasks(tasks)
+        self.add_initial_tasks(task_objects, scheduler_state)
 
         # Initialize the event queue
         next_event = Mapper()
         next_time = Time(0)
         return [(next_time, next_event)]
 
-    def add_initial_tasks(self, tasks: List[SimulatedTask]):
+    def add_initial_tasks(
+        self, tasks: List[SimulatedTask], scheduler_state: SystemState
+    ):
         """
         Append an initial task who does not have any dependency to
         a spawned task queue.

@@ -14,7 +14,7 @@ from typing import List, Dict, Set, Tuple, Optional, Callable
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
-from .schedulers.scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
+from .schedulers import *
 
 from rich import print
 
@@ -22,8 +22,8 @@ from rich import print
 @dataclass(slots=True)
 class SimulatedScheduler:
     topology: InitVar[SimulatedTopology]
-    scheduler_type: InitVar[str] = "parla"
-    tasks: List[SimulatedTask] = field(default_factory=list)
+    scheduler_type: InitVar[str] = "minimal"
+    tasks: List[TaskID] = field(default_factory=list)
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
     state: SystemState = field(init=False)
@@ -34,7 +34,9 @@ class SimulatedScheduler:
 
     def __post_init__(self, topology, scheduler_type: str = "parla"):
         self.state = SystemState(topology=topology)
-        self.mechanisms = SchedulerOptions.get_scheduler(scheduler_type)
+        schedeuler_arch = SchedulerOptions.get_scheduler(scheduler_type)
+        print(f"Scheduler Architecture: {schedeuler_arch}")
+        self.mechanisms = schedeuler_arch(topology=topology)
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
@@ -45,8 +47,17 @@ class SimulatedScheduler:
     def register_datamap(self, datamap: SimulatedDataMap):
         self.state.register_data(datamap)
 
-    def add_initial_tasks(self, tasks: List[SimulatedTask]):
+    def add_initial_tasks(self, tasks: List[TaskID]):
         self.tasks.extend(tasks)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __rich_repr__(self):
+        yield "name", self.name
+        yield "time", self.time
+        yield "architecture", self.mechanisms
+        yield "events", self.events
 
     def record():
         pass
@@ -60,9 +71,16 @@ class SimulatedScheduler:
             self.events.put(new_event, completion_time)
 
     def run(self):
-        new_event_pairs = self.mechanisms.initialize(self.tasks)
+        new_event_pairs = self.mechanisms.initialize(self.tasks, self.state)
         for completion_time, new_event in new_event_pairs:
             self.events.put(new_event, completion_time)
+
+        from rich import print
+
+        print(self)
+        import sys
+
+        sys.exit(0)
 
         next_events = EventIterator(self.events)
         for event_pair in next_events:

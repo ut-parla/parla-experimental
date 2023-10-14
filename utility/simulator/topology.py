@@ -223,7 +223,7 @@ class TopologyManager:
         return TopologyManager.generator_map[name]
 
 
-@TopologyManager.register_generator("4gpus-1cpu")
+@TopologyManager.register_generator("frontera")
 def generate_4gpus_1cpu_toplogy(config: Optional[Dict[str, int]]) -> SimulatedTopology:
     """
     This function creates 4 GPUs and 1 CPU architecture.
@@ -260,8 +260,8 @@ def generate_4gpus_1cpu_toplogy(config: Optional[Dict[str, int]]) -> SimulatedTo
         H2D_BW = 100
         D2H_BW = 100
 
-        GPU_MEM = parse_size("16GB")
-        CPU_MEM = parse_size("130GB")
+        GPU_MEM = parse_size("16 GB")
+        CPU_MEM = parse_size("130 GB")
 
         GPU_COPY_ENGINES = 3
         CPU_COPY_ENGINES = 3
