@@ -6,19 +6,20 @@ import torch.nn
 import torch.optim as optim
 
 from ..networks.fcn import *
-from ..networks.gcn_fcn import *
+from ..networks.gcn_fcn_leakyrelu_softmax import *
 from .replay_memory import *
 from .globals import *
 
 class DQNAgent:
 
     # TODO(hc): execution mode would be enum, instead of string.
-    def __init__(self, in_dim: int, out_dim: int, execution_mode: str = "training",
+    def __init__(self, gcn_indim: int, in_dim: int, out_dim: int,
+                 execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 10, gamma = 0.999):
         if True: # Use GCN+FCN layers
-            self.policy_network = GCN_FCN_Type1(in_dim, out_dim)
-            self.target_network = GCN_FCN_Type1(in_dim, out_dim)
+            self.policy_network = GCN_FCN_Type1(gcn_indim, in_dim, out_dim)
+            self.target_network = GCN_FCN_Type1(gcn_indim, in_dim, out_dim)
         else: # Use pure FCN layers
             self.policy_network = FCN(in_dim, out_dim)
             self.target_network = FCN(in_dim, out_dim)
@@ -57,9 +58,7 @@ class DQNAgent:
         if (not self.is_training_mode()) or sample > eps_threshold:
             with torch.no_grad():
                 model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
-                print("model_input: ", model_input, flush=True)
                 out = self.policy_network(model_input)
-                print("out: ", out, flush=True)
                 for action in range(self.n_actions):
                     max_action_pair = out.max(0)
                     # TODO(hc): may need to check if max action is within
@@ -111,7 +110,6 @@ class DQNAgent:
                                batch.next_gcn_state if s is not None]
         next_gcn_states = None if len(lst_next_gcn_states) == 0 else \
                           torch.cat(lst_next_gcn_states)
-        print("gcn states:", gcn_states, " next gcn states:", next_gcn_states)
         # GCN edge index should be [[src nodes], [dst nodes]] or [].
         # The latter case implies that either a GCN layer is not used, or none
         # of the subgraph is visible.
@@ -223,33 +221,3 @@ class DQNAgent:
         with open("models/" + prefix + ".optimizer.str", "w") as fp:
             for key, param in self.optimizer.state_dict().items():
                 fp.write(key + " = " + str(param))
-
-
-class A2CAgent:
-
-    def __init__(self):
-        # Actor = network1 (policy network)
-        # Critic = network2 (value function network)
-        pass
-
-
-    def select_device(self):
-        # If the current selection is < batch size, choose action and accumulate
-        # (value, reward, log probability).
-        # 1. Get a probabiliy of actions on the current state through actor. 
-        # 2. Sample an action by using Categorical random distribution.
-        # 3. Get log probability of the action over the 1's probabilities.
-        # 4. Append (V, LP, R)
-        #
-        # If the current selection is >= batch size, calculate advantage value, and
-        # update models.
-        # 1. Calculate next state, and its next value from the critic network.
-        # 2. Calculate advantages (G = reward + gamma * value) - values (Vs)
-        # 3. actor loss = - (log_probs * advantage).mean()
-        # 4. critic loss = advantage^2; since advantage is already TD, and so on MSE,
-        # advantage^2.
-
-        # 5. loss = actor_loss + 0.5 * critic_loss - 0.001 * entropy
-
-        # 6. optimize model.
-        pass
