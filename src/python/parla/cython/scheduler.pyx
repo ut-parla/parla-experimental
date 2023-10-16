@@ -195,8 +195,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.task = self.inner_worker.get_task()
                     if(self.task is None):
                         self.status = "Waiting"
-                        #print("WAITING", flush=True)
-
+                        # print("WAITING", flush=True)
                         #with self._monitor:
                         #    if not self.task:
                         #        self._monitor.wait()
@@ -216,9 +215,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         _global_data_tasks[id(self.task)] = self.task
 
                     nvtx.pop_range(domain="Python Runtime")
-
-                    #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
-
+                    # print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
                     self.status = "Running"
 
                     if isinstance(self.task, Task):
@@ -267,8 +264,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         device_context.record_events()
 
                         nvtx.pop_range(domain="Python Runtime")
-                        #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
-
+                        # print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
 
                         final_state  = active_task.state
@@ -283,7 +279,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         elif isinstance(final_state, tasks.TaskRunning):
                             nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
-                            #print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
+                            # print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
                             active_task.dependencies = active_task.state.dependencies
                             active_task.func = active_task.state.func
                             active_task.args = active_task.state.args
@@ -295,32 +291,39 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
-                        #print("Cleaning up Task", active_task, flush=True)
+                        # print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
-                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            if active_task.runahead != SyncType.NONE:
-                                device_context.synchronize(events=True)
-                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            #print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            if self._should_run:
+                                #print("In if", flush=True)
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            else:
+                                #print("In else", flush=True)
+                                self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                if active_task.runahead != SyncType.NONE:
+                                    device_context.synchronize(events=True)
+                                self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
                             #Handle synchronization in C++
                             # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                             # Adding wait here to reduce context switch between GIL
-                            print("Should run before cleanup_and_wait", self._should_run, task, flush=True)
+                            print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
                             if self._should_run:
                                 self.status = "Waiting"
-                                nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
                                 self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
                                 #self.task = self.inner_worker.get_task()
                             else:
                                 self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
-
-                        #print("Finished Cleaning up Task", active_task, flush=True)
-                        print("Should run before device_context", self._should_run, task, flush=True)
+                        # print("Finished Cleaning up Task", active_task, flush=True)
+                        #print("Should run before device_context", self._should_run, task, flush=True)
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
-                        print("Should run before final_state cleanup", self._should_run, task, flush=True)
+                        #print("Should run before final_state cleanup", self._should_run, task, flush=True)
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
@@ -328,7 +331,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
-                        print("Should run before reassigning active_task", self._should_run, task, flush=True)
+                        # print("Should run before reassigning active_task", self._should_run, task, flush=True)
                         active_task.state = final_state
                         self.task = None
 
@@ -458,7 +461,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         #print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
 
-    
+
     def assign_task(self, task, worker):
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)
         worker.assign_task(task)
@@ -478,7 +481,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         :param parray: Created Cython PArray instance
         :param global_dev_id: global logical device id that
-                              the PArray will be placed
+                            the PArray will be placed
         """
         self.inner_scheduler.reserve_parray(cy_parray, global_dev_id)
 
@@ -488,7 +491,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
         :param parray: Cython PArray instance to be evicted
         :param global_dev_id: global logical device id that
-                              the PArray will be evicted
+                            the PArray will be evicted
         """
         self.inner_scheduler.release_parray(cy_parray, global_dev_id)
 
@@ -499,7 +502,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         device.
 
         :param global_dev_id: global logical device id that 
-                              this function interests 
+                            this function interests 
         :param parray_parent_id: parent PArray ID
         """
         return self.inner_scheduler.get_parray_state( \
