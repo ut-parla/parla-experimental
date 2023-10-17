@@ -3,12 +3,24 @@ from __future__ import annotations
 import heapq
 from ..types import TaskID, Time
 from .events import Event
-from typing import Tuple, TypeVar, Optional, Self, Dict
+from typing import Tuple, TypeVar, Optional, Self, Dict, Iterable
 
 # (completion_time, event)
 EventPair = Tuple[Time, Event]
 # (order, task)
 TaskPair = Tuple[int, TaskID]
+
+
+def length(q: Iterable | PriorityQueue) -> int:
+    if isinstance(q, PriorityQueue):
+        return len(q)
+    elif isinstance(q, Iterable):
+        if isinstance(q, Dict):
+            return sum([length(qi) for qi in q.values()])
+        else:
+            return sum([length(qi) for qi in q])
+    else:
+        raise TypeError(f"Cannot get length of {q}")
 
 
 class PriorityQueue:

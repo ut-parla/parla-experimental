@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Union, Optional, Callable, Self
+from typing import List, Dict, Tuple, Union, Optional, Callable, Self, Set
 from dataclasses import dataclass, field, InitVar
 from enum import IntEnum
 
@@ -265,18 +265,9 @@ DataMap = Dict[DataID, DataInfo]
 
 class TaskStatus(IntEnum):
     NONE = 0
-    MAPPABLE = 2
-    RESERVED = 3
-    LAUNCHABLE = 4
-
-
-class TaskState(IntEnum):
-    NONE = 0
-    SPAWNED = 1
-    MAPPED = 2
-    RESERVED = 2
-    LAUNCHED = 3
-    COMPLETED = 4
+    MAPPABLE = 1
+    RESERVABLE = 2
+    LAUNCHABLE = 3
 
     def __str__(self):
         return self.name
@@ -284,38 +275,69 @@ class TaskState(IntEnum):
     def __repr__(self):
         return str(self)
 
-    # @staticmethod
-    # def resolve_state_trigger(checked_state) -> Optional["TaskState"]:
-    #     if checked_state == TaskState.MAPPED:
-    #         return TaskState.MAPPABLE
-    #     elif checked_state == TaskState.RESERVED:
-    #         return TaskState.RESERVABLE
-    #     elif checked_state == TaskState.COMPLETED:
-    #         return TaskState.LAUNCHABLE
-    #     else:
-    #         return None
+    @staticmethod
+    def matching_state(status: "TaskStatus") -> Optional["TaskState"]:
+        if status == TaskStatus.MAPPABLE:
+            return TaskState.MAPPED
+        elif status == TaskStatus.RESERVABLE:
+            return TaskState.RESERVED
+        elif status == TaskStatus.LAUNCHABLE:
+            return TaskState.COMPLETED
+        else:
+            return None
 
-    # @staticmethod
-    # def check_valid_transition(old_state, new_state):
-    #     print(f"Checking transition: {old_state} -> {new_state}")
-    #     # Check if the transition is valid
-    #     # ~somewhat Parla specific checks
-    #     if new_state == TaskState.MAPPED:
-    #         assert old_state == TaskState.MAPPABLE
-    #     elif new_state == TaskState.RESERVED:
-    #         assert old_state == TaskState.RESERVABLE
-    #     elif new_state == TaskState.LAUNCHED:
-    #         assert old_state == TaskState.LAUNCHABLE
-    #     elif new_state == TaskState.COMPLETED:
-    #         assert old_state == TaskState.LAUNCHED
+    @staticmethod
+    def check_valid_transition(
+        status_set: Set["TaskStatus"], new_state: "TaskState"
+    ) -> bool:
+        # ~very Parla specific checks
+        if new_state == TaskState.MAPPED:
+            return TaskStatus.MAPPABLE in status_set
+        elif new_state == TaskState.RESERVED:
+            return TaskStatus.RESERVABLE in status_set
+        elif new_state == TaskState.LAUNCHED:
+            return TaskStatus.LAUNCHABLE in status_set
+        else:
+            return True
 
-    #     # ~very Parla specific checks
-    #     if new_state == TaskState.MAPPABLE:
-    #         assert old_state == TaskState.SPAWNED
-    #     elif new_state == TaskState.RESERVABLE:
-    #         assert old_state == TaskState.MAPPED
-    #     elif new_state == TaskState.LAUNCHABLE:
-    #         assert old_state == TaskState.RESERVED
+
+class TaskState(IntEnum):
+    NONE = 0
+    SPAWNED = 1
+    MAPPED = 2
+    RESERVED = 3
+    LAUNCHED = 4
+    COMPLETED = 5
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def matching_status(state: "TaskState") -> Optional[TaskStatus]:
+        if state == TaskState.MAPPED:
+            return TaskStatus.MAPPABLE
+        elif state == TaskState.RESERVED:
+            return TaskStatus.RESERVABLE
+        elif state == TaskState.COMPLETED:
+            return TaskStatus.LAUNCHABLE
+        else:
+            return None
+
+    @staticmethod
+    def check_valid_transition(old_state, new_state) -> bool:
+        # ~very Parla specific checks
+        if new_state == TaskState.MAPPED:
+            return old_state == TaskState.SPAWNED
+        elif new_state == TaskState.RESERVED:
+            return old_state == TaskState.MAPPED
+        elif new_state == TaskState.LAUNCHED:
+            return old_state == TaskState.RESERVED
+        else:
+            # I am not sure how you got here, but I'm not going to stop you
+            return True
 
 
 class TaskType(IntEnum):

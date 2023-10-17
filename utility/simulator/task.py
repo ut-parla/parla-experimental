@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..types import TaskID, TaskInfo, TaskState, DataAccess, Time, TaskType
+from ..types import TaskID, TaskInfo, TaskState, TaskStatus, DataAccess, Time, TaskType
 
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 from ..types import Architecture, Device
@@ -16,16 +16,29 @@ from .datapool import DataPool
 @dataclass(slots=True)
 class TaskTimes:
     duration: Time = field(default_factory=Time)
-    transitions: Dict[TaskState, Time] = field(default_factory=dict)
+    state_times: Dict[TaskState, Time] = field(default_factory=dict)
+    status_times: Dict[TaskStatus, Time] = field(default_factory=dict)
 
     def __post_init__(self):
-        self.transitions = {state: Time(0) for state in TaskState}
+        self.state_times = {}
+        self.status_times = {}
 
-    def __getitem__(self, state: TaskState) -> Time:
-        return self.transitions[state]
+        for state in TaskState:
+            self.state_times[state] = Time(0)
+        for status in TaskStatus:
+            self.status_times[status] = Time(0)
 
-    def __setitem__(self, state: TaskState, time: Time):
-        self.transitions[state] = time
+    def __getitem__(self, state: TaskState | TaskStatus) -> Time:
+        if isinstance(state, TaskState):
+            return self.state_times[state]
+        else:
+            return self.status_times[state]
+
+    def __setitem__(self, state: TaskState | TaskStatus, time: Time):
+        if isinstance(state, TaskState):
+            self.state_times[state] = time
+        else:
+            self.status_times[state] = time
 
 
 @dataclass(slots=True, init=False)
@@ -34,29 +47,39 @@ class TaskCounters:
     remaining_deps_status: Dict[TaskStatus, int] = field(default_factory=dict)
 
     def __init__(self, info: TaskInfo):
-        self.remaining_deps_state = {}
+        self.remaining_deps_states = {}
         self.remaining_deps_status = {}
 
         for state in TaskState:
-            self.remaining_deps_state[state] = len(info.dependencies)
+            self.remaining_deps_states[state] = len(info.dependencies)
 
         for state in TaskStatus:
             self.remaining_deps_status[state] = len(info.dependencies)
 
     def __str__(self) -> str:
-        return f"TaskCounters({self.remaining_deps})"
+        return f"TaskCounters({self.remaining_deps_states})"
 
     def __repr__(self) -> str:
         return self.__str__()
 
-    def _can_transition(self, state: TaskState) -> bool:
-        return self.remaining_deps[state] == 0
-
-    def resolve_transition(self, state: TaskState) -> Optional[TaskState]:
-        if self._can_transition(state):
-            return TaskState.resolve_state_trigger(state)
+    def check_count(self, key: TaskStatus | TaskState) -> bool:
+        if isinstance(key, TaskState):
+            value = self.remaining_deps_states[key]
+            assert value >= 0
+            return value == 0
         else:
-            return None
+            value = self.remaining_deps_status[key]
+            assert value >= 0
+            return value == 0
+
+    def notified_state(self, new_state: TaskState) -> Optional[TaskStatus]:
+        self.remaining_deps_states[new_state] -= 1
+        if self.check_count(new_state):
+            if new_status := TaskState.matching_status(new_state):
+                return new_status
+
+    def notified_status(self, new_status: TaskStatus) -> None:
+        self.remaining_deps_status[new_status] -= 1
 
 
 @dataclass(slots=True)
@@ -64,7 +87,7 @@ class SimulatedTask:
     name: TaskID
     info: TaskInfo
     state: TaskState = TaskState.SPAWNED
-    status: set[TaskStatus] = field(default_factory=set)
+    status: Set[TaskStatus] = field(default_factory=set)
     times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters = field(init=False)
     dependents: List[TaskID] = field(default_factory=list)
@@ -72,8 +95,15 @@ class SimulatedTask:
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
 
+    def set_status(self, new_status: TaskStatus, time: Time):
+        print(f"Setting {self.name} to {new_status}. Status: {self.status}")
+        self.times[new_status] = time
+        self.status.add(new_status)
+
     def set_state(self, new_state: TaskState, time: Time):
-        print(f"Setting {self.name} to {new_state}")
+        print(f"Setting {self.name} to {new_state}. State: {self.state}")
+
+        TaskStatus.check_valid_transition(self.status, new_state)
         TaskState.check_valid_transition(self.state, new_state)
 
         self.times[new_state] = time
@@ -118,34 +148,50 @@ class SimulatedTask:
     def write_data_list(self) -> List[DataAccess]:
         return self.info.data_dependencies.write
 
-    def add_dependency(self, task: TaskID, states: List[TaskState] = []):
+    def add_dependency(
+        self,
+        task: TaskID,
+        states: List[TaskState] = [],
+        statuses: List[TaskStatus] = [],
+    ):
         self.info.dependencies.append(task)
         for state in states:
-            self.counters.remaining_deps[state] += 1
+            self.counters.remaining_deps_states[state] += 1
+        for status in statuses:
+            self.counters.remaining_deps_status[status] += 1
 
     def add_dependent(self, task: TaskID):
         self.dependents.append(task)
 
-    def notify(self, state: TaskState, taskmap: SimulatedTaskMap, time: Time):
+    def notify_state(self, state: TaskState, taskmap: SimulatedTaskMap, time: Time):
+        # Notify only if changed
+        print(f"Task {self.name} in state {self.state}. Notifying {state}")
+        if self.state == state:
+            print(f"Task {self.name} already in state {state}")
+            return
+
         for taskid in self.dependents:
             task = taskmap[taskid]
-            task.counters.remaining_deps[state] -= 1
-            print(f"Task {self.name} notifying {taskid}")
-            if new_state := task.counters.resolve_transition(state):
-                task.set_state(new_state, time)
-                print(f"Task {taskid} set to {new_state}")
+            if new_status := task.counters.notified_state(state):
+                task.notify_status(new_status, taskmap, time)
+
         self.set_state(state, time)
 
-    def check_and_set_state(
-        self, check_state: TaskState, new_state: TaskState, time: Time
+    def notify_status(self, status: TaskStatus, taskmap: SimulatedTaskMap, time: Time):
+        for taskid in self.dependents:
+            task = taskmap[taskid]
+            task.counters.notified_status(status)
+
+        self.set_status(status, time)
+
+    def check_status(
+        self, status: TaskStatus, taskmap: SimulatedTaskMap, time: Time
     ) -> bool:
-        print("Checking", self.name, check_state, new_state)
-        if self.state == new_state:
-            return True
-        if self.counters.remaining_deps[check_state] == 0:
-            self.set_state(new_state, time)
-            return True
-        return False
+        if checked_state := TaskStatus.matching_state(status):
+            if status not in self.status and self.counters.check_count(checked_state):
+                self.notify_status(status, taskmap, time)
+                return True
+        return status in self.status
 
     def __str__(self) -> str:
         return f"Task({self.name}, {self.state})"

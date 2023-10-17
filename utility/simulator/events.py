@@ -5,12 +5,16 @@ from dataclasses import dataclass, field
 @dataclass(slots=True)
 class Event:
     func: str
+    time: Optional[float] = None
 
-    def __str__(self):
-        return f"Event({self.func})"
+    def __eq__(self, other):
+        return self.func == other.func and self.time == other.time
 
-    def __repr__(self):
-        return self.__str__()
+    def __lt__(self, other):
+        return self.time < other.time
+
+    def __hash__(self):
+        return hash((self.func, self.time))
 
 
 @dataclass(slots=True)

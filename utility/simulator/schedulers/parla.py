@@ -10,7 +10,7 @@ from ..topology import *
 from ...types import Architecture, Device, TaskID, TaskState, TaskType, Time
 from ...types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
-from typing import List, Dict, Set, Tuple, Optional, Callable
+from typing import List, Dict, Set, Tuple, Optional, Callable, Sequence
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
@@ -57,7 +57,7 @@ class ParlaArchitecture(SchedulerArchitecture):
 
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         objects = scheduler_state.objects
         assert objects is not None
 
@@ -83,18 +83,20 @@ class ParlaArchitecture(SchedulerArchitecture):
 
     def launcher(
         self, scheduler_state: SystemState, event: Launcher
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         return []
 
     def complete_task(
         self, scheduler_state: SystemState, event: TaskCompleted
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         return []
 
-    def map_task(self, scheduler_state: SystemState, event: Mapper) -> List[EventPair]:
+    def map_task(
+        self, scheduler_state: SystemState, event: Mapper
+    ) -> Sequence[EventPair]:
         return []
 
     def reserve_task(
         self, scheduler_state: SystemState, event: Reserver
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         return []

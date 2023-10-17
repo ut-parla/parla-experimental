@@ -10,7 +10,7 @@ from ..topology import *
 from ...types import Architecture, Device, TaskID, TaskState, TaskType, Time
 from ...types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 
-from typing import List, Dict, Set, Tuple, Optional, Callable, Type
+from typing import List, Dict, Set, Tuple, Optional, Callable, Type, Sequence
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
@@ -136,7 +136,7 @@ class SchedulerArchitecture:
     def __post_init__(self, topology: SimulatedTopology):
         assert topology is not None
 
-    def __getitem__(self, event: Event) -> Callable[[SystemState], List[EventPair]]:
+    def __getitem__(self, event: Event) -> Callable[[SystemState], Sequence[EventPair]]:
         try:
             function = getattr(self, event.func)
         except AttributeError:
@@ -144,35 +144,39 @@ class SchedulerArchitecture:
                 f"SchedulerArchitecture does not implement function {event.func} for event {event}."
             )
 
-        def wrapper(scheduler_state: SystemState) -> List[EventPair]:
+        def wrapper(scheduler_state: SystemState) -> Sequence[EventPair]:
             return function(scheduler_state, event)
 
         return wrapper
 
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         raise NotImplementedError()
         return []
 
     def add_initial_tasks(self, task: SimulatedTask):
         pass
 
-    def mapper(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+    def mapper(self, scheduler_state: SystemState, event: Event) -> Sequence[EventPair]:
         raise NotImplementedError()
         return []
 
-    def reserver(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+    def reserver(
+        self, scheduler_state: SystemState, event: Event
+    ) -> Sequence[EventPair]:
         raise NotImplementedError()
         return []
 
-    def launcher(self, scheduler_state: SystemState, event: Event) -> List[EventPair]:
+    def launcher(
+        self, scheduler_state: SystemState, event: Event
+    ) -> Sequence[EventPair]:
         raise NotImplementedError()
         return []
 
     def complete_task(
         self, scheduler_state: SystemState, event: Event
-    ) -> List[EventPair]:
+    ) -> Sequence[EventPair]:
         return []
 
     def __str__(self):
