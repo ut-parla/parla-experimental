@@ -17,7 +17,6 @@ class PriorityQueue:
         self.tiebreaker = 0
 
     def put(self, item):
-        print("Putting", item)
         self.tiebreaker += 1
         item = (item[0], self.tiebreaker, item[1])
         heapq.heappush(self.queue, item)
@@ -39,9 +38,13 @@ class PriorityQueue:
     def __repr__(self):
         return self.__str__()
 
+    def remove(self, item):
+        self.queue.remove(item)
+        heapq.heapify(self.queue)
+
 
 class QueueIterator(object):
-    def __init__(self, q: PriorityQueue, maxiter: int = -1, peek: bool = False):
+    def __init__(self, q: PriorityQueue, maxiter: int = -1, peek: bool = True):
         self.q = q
         self.iter = 0
         self.maxiter = maxiter
@@ -104,13 +107,13 @@ class QueueIterator(object):
 
 class MultiQueueIterator(object):
     @staticmethod
-    def make_iterator(q: PriorityQueue | Dict, maxiter: int = -1, peek: bool = False):
+    def make_iterator(q: PriorityQueue | Dict, maxiter: int = -1, peek: bool = True):
         if isinstance(q, PriorityQueue):
             return QueueIterator(q, maxiter, peek)
         elif isinstance(q, Dict):
             return MultiQueueIterator(q, maxiter, peek)
 
-    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = False):
+    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = True):
         self.dict = queues
         self.keys = list(queues.keys())
         self.iterators = [
@@ -149,6 +152,7 @@ class MultiQueueIterator(object):
     def __next__(self):
         if self.maxiter != -1 and self.iter >= self.maxiter:
             self.iter = 0
+            self.failed_count = 0
             raise StopIteration
 
         self.iter += 1
@@ -191,26 +195,23 @@ class TaskQueue(PriorityQueue):
     def put(self, task: "SimulatedTask"):
         super().put((task.info.order, task.name))
 
-    def get(self) -> Optional[TaskID]:
-        pair = super().get()
-        if pair:
-            return pair[1]
-        else:
-            return None
+    def put_id(self, task_id: TaskID, priority: int | Time):
+        super().put((priority, task_id))
 
-    def peek(self) -> Optional[TaskID]:
+    def get(self) -> Optional[TaskPair]:
+        pair = super().get()
+        return pair
+
+    def peek(self) -> Optional[TaskPair]:
         pair = super().peek()
-        if pair:
-            return pair[1]
-        else:
-            return None
+        return pair
 
     def __str__(self):
         return f"TaskQueue({self.queue})"
 
 
 class TaskIterator(QueueIterator):
-    def __init__(self, q: TaskQueue, maxiter: int = -1, peek: bool = False):
+    def __init__(self, q: TaskQueue, maxiter: int = -1, peek: bool = True):
         super().__init__(q, maxiter, peek)
 
     def __iter__(self) -> Self:
@@ -230,7 +231,7 @@ class TaskIterator(QueueIterator):
 
 
 class MultiTaskIterator(MultiQueueIterator):
-    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = False):
+    def __init__(self, queues: Dict, maxiter: int = -1, peek: bool = True):
         super().__init__(queues, maxiter, peek)
 
     def __iter__(self) -> Self:
@@ -268,7 +269,7 @@ class EventQueue(PriorityQueue):
 
 
 class EventIterator(QueueIterator):
-    def __init__(self, q: EventQueue, maxiter: int = -1, peek: bool = False):
+    def __init__(self, q: EventQueue, maxiter: int = -1, peek: bool = True):
         super().__init__(q, maxiter, peek)
 
     def __iter__(self) -> Self:

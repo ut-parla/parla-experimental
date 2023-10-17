@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..types import TaskID, TaskInfo, TaskState, DataAccess, Time
+from ..types import TaskID, TaskInfo, TaskState, DataAccess, Time, TaskType
 
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 from ..types import Architecture, Device
@@ -30,12 +30,18 @@ class TaskTimes:
 
 @dataclass(slots=True, init=False)
 class TaskCounters:
-    remaining_deps: Dict[TaskState, int] = field(default_factory=dict)
+    remaining_deps_states: Dict[TaskState, int] = field(default_factory=dict)
+    remaining_deps_status: Dict[TaskStatus, int] = field(default_factory=dict)
 
     def __init__(self, info: TaskInfo):
-        self.remaining_deps = {}
+        self.remaining_deps_state = {}
+        self.remaining_deps_status = {}
+
         for state in TaskState:
-            self.remaining_deps[state] = len(info.dependencies)
+            self.remaining_deps_state[state] = len(info.dependencies)
+
+        for state in TaskStatus:
+            self.remaining_deps_status[state] = len(info.dependencies)
 
     def __str__(self) -> str:
         return f"TaskCounters({self.remaining_deps})"
@@ -58,6 +64,7 @@ class SimulatedTask:
     name: TaskID
     info: TaskInfo
     state: TaskState = TaskState.SPAWNED
+    status: set[TaskStatus] = field(default_factory=set)
     times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters = field(init=False)
     dependents: List[TaskID] = field(default_factory=list)
@@ -66,6 +73,7 @@ class SimulatedTask:
         self.counters = TaskCounters(self.info)
 
     def set_state(self, new_state: TaskState, time: Time):
+        print(f"Setting {self.name} to {new_state}")
         TaskState.check_valid_transition(self.state, new_state)
 
         self.times[new_state] = time
@@ -122,8 +130,22 @@ class SimulatedTask:
         for taskid in self.dependents:
             task = taskmap[taskid]
             task.counters.remaining_deps[state] -= 1
+            print(f"Task {self.name} notifying {taskid}")
             if new_state := task.counters.resolve_transition(state):
                 task.set_state(new_state, time)
+                print(f"Task {taskid} set to {new_state}")
+        self.set_state(state, time)
+
+    def check_and_set_state(
+        self, check_state: TaskState, new_state: TaskState, time: Time
+    ) -> bool:
+        print("Checking", self.name, check_state, new_state)
+        if self.state == new_state:
+            return True
+        if self.counters.remaining_deps[check_state] == 0:
+            self.set_state(new_state, time)
+            return True
+        return False
 
     def __str__(self) -> str:
         return f"Task({self.name}, {self.state})"
@@ -147,10 +169,15 @@ class SimulatedTask:
     ):
         raise NotImplementedError
 
+    @property
+    def type(self):
+        raise NotImplementedError
+
 
 @dataclass(slots=True)
 class SimulatedComputeTask(SimulatedTask):
     datatasks: List[Self] = field(default_factory=list)
+    type: TaskType = TaskType.COMPUTE
 
     def add_data_dependency(self, task: TaskID):
         self.add_dependency(task, states=[TaskState.COMPLETED])
@@ -165,6 +192,8 @@ class SimulatedComputeTask(SimulatedTask):
 
 @dataclass(slots=True)
 class SimulatedDataTask(SimulatedTask):
+    type: TaskType = TaskType.DATA
+
     def set_duration(
         self, device: Device | Tuple[Device, ...], system_state: "SystemState"
     ):

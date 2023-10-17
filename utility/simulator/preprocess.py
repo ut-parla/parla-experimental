@@ -122,26 +122,33 @@ def create_data_tasks(
 
 
 def create_task_graph(
-    graph: TaskMap,
+    graph: TaskMap, data=False
 ) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap]:
     """
     Create a task graph from a task map.
     """
     compute_tasks = create_compute_tasks(graph)
-    recent_writers = find_recent_writers(graph)
-    data_tasks = create_data_tasks(compute_tasks, recent_writers)
+    if data:
+        recent_writers = find_recent_writers(graph)
+        data_tasks = create_data_tasks(compute_tasks, recent_writers)
+    else:
+        data_tasks = False
 
     return compute_tasks, data_tasks
 
 
 def read_graph(
-    graph_name: str,
+    graph_name: str, data=False
 ) -> Tuple[List[TaskID], SimulatedTaskMap, DataMap]:
     tasks = read_tasks_from_yaml(graph_name)
     datamap = read_data_from_yaml(graph_name)
 
-    compute_tasks, data_tasks = create_task_graph(tasks)
-    taskmap = {**compute_tasks, **data_tasks}
+    compute_tasks, data_tasks = create_task_graph(tasks, data=False)
+    if data:
+        taskmap = {**compute_tasks, **data_tasks}
+    else:
+        taskmap = compute_tasks
+
     tasklist = list(compute_tasks.keys())
 
     populate_dependents(taskmap)
@@ -199,3 +206,13 @@ def populate_dependents(taskmap: SimulatedTaskMap):
     for task in taskmap.values():
         for dependency in task.dependencies:
             taskmap[dependency].dependents.append(task.name)
+
+
+def apply_mapping(taskmap: SimulatedTaskMap, device: Device):
+    """
+    Apply a mapping to a taskmap.
+    @param taskmap: SimulatedTaskMap
+    @param device: Device
+    """
+    for task in taskmap.values():
+        task.info.mapping = device

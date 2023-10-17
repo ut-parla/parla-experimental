@@ -30,7 +30,6 @@ class SimulatedScheduler:
     log_level: int = 0
 
     events: EventQueue = EventQueue()
-    time: Time = field(default_factory=Time)
 
     def __post_init__(self, topology, scheduler_type: str = "parla"):
         self.state = SystemState(topology=topology)
@@ -40,6 +39,14 @@ class SimulatedScheduler:
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
+
+    @property
+    def time(self):
+        return self.state.time
+
+    @time.setter
+    def time(self, time):
+        self.state.time = time
 
     def register_taskmap(self, taskmap: SimulatedTaskMap):
         self.state.register_tasks(taskmap)
@@ -59,7 +66,7 @@ class SimulatedScheduler:
         yield "architecture", self.mechanisms
         yield "events", self.events
 
-    def record():
+    def record(self):
         pass
 
     def process_event(self, event: Event):
@@ -77,18 +84,17 @@ class SimulatedScheduler:
 
         from rich import print
 
-        print(self)
-        import sys
-
-        sys.exit(0)
-
-        next_events = EventIterator(self.events)
+        next_events = EventIterator(self.events, peek=False)
         for event_pair in next_events:
             if event_pair:
                 completion_time, event = event_pair
-                # Process Event
-                new_events = self.process_event(event)
+                print(f"Event: {event} at {completion_time}")
+                print("State", self.mechanisms)
+
                 # Advance time
                 self.time = max(self.time, completion_time)
+
+                # Process Event
+                new_events = self.process_event(event)
                 # Update Log
                 self.record()

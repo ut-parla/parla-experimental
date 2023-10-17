@@ -6,6 +6,12 @@ from dataclasses import dataclass, field
 class Event:
     func: str
 
+    def __str__(self):
+        return f"Event({self.func})"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 @dataclass(slots=True)
 class PhaseEvent(Event):
@@ -34,4 +40,4 @@ class Launcher(PhaseEvent):
 
 @dataclass(slots=True)
 class TaskCompleted(TaskEvent):
-    func: str = "task_completed"
+    func: str = "complete_task"

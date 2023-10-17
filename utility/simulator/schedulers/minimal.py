@@ -38,6 +38,8 @@ class MinimalArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
+            self.launched_tasks[device.name] = TaskQueue()
+
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
     ) -> List[EventPair]:
@@ -50,19 +52,97 @@ class MinimalArchitecture(SchedulerArchitecture):
         self.add_initial_tasks(task_objects)
 
         # Initialize the event queue
-        next_event = Launcher()
+        next_event = Mapper()
         next_time = Time(0)
         return [(next_time, next_event)]
 
     def add_initial_tasks(self, tasks: List[SimulatedTask]):
         print("Adding initial tasks", tasks)
         for task in tasks:
+            # task.check_and_set_state(TaskState.MAPPED, Time(0))
             self.spawned_tasks.put(task)
+
+    def mapper(self, scheduler_state: SystemState, event: Mapper) -> List[EventPair]:
+        print("Mapping tasks...")
+        next_tasks = TaskIterator(self.spawned_tasks)
+
+        current_time = scheduler_state.time
+        assert current_time is not None
+
+        objects = scheduler_state.objects
+        assert objects is not None
+
+        for priority, taskid in next_tasks:
+            print(next_tasks)
+            print(taskid)
+            task = objects.get_task(taskid)
+            assert task is not None
+
+            task.check_and_set_state(TaskState.MAPPED, TaskState.MAPPABLE, current_time)
+
+            # Move task to mapped queue
+            devices = task.assigned_devices
+            if devices is None:
+                raise ValueError(
+                    f"Task {task.name} has no assigned devices. Minimal scheduler requires that all tasks have an assigned device at spawn."
+                )
+
+            device = devices[0]
+            self.launchable_tasks[device][task.type].put_id(taskid, priority=priority)
+            next_tasks.success()
+            task.notify(TaskState.MAPPED, objects.taskmap, current_time)
+
+        launcher_pair = (current_time, Launcher())
+        return [launcher_pair]
 
     def launcher(
         self, scheduler_state: SystemState, event: Launcher
     ) -> List[EventPair]:
-        return []
+        print("Launching tasks...")
+        objects = scheduler_state.objects
+        assert objects is not None
+
+        current_time = scheduler_state.time
+        assert current_time is not None
+
+        # Launch tasks up to max_tasks or resource limits
+
+        next_tasks = MultiTaskIterator(self.launchable_tasks)
+        next_events = []
+        for priority, taskid in next_tasks:
+            print(self)
+            print(f"Launching task: {taskid}")
+            task = objects.get_task(taskid)
+            assert task is not None
+            print(task)
+
+            # Launch task
+            task.check_and_set_state(
+                TaskState.RESERVED, TaskState.RESERVABLE, current_time
+            )
+            task.notify(TaskState.RESERVED, objects.taskmap, current_time)
+            task.check_and_set_state(
+                TaskState.COMPLETED, TaskState.LAUNCHABLE, current_time
+            )
+            if task.state == TaskState.LAUNCHABLE:
+                if task.assigned_devices is None:
+                    raise ValueError("Task has no assigned devices.")
+
+                device = task.assigned_devices[0]
+                task.set_duration(device, scheduler_state)
+                completion_time = current_time + task.duration
+                self.launched_tasks[device].put_id(taskid, completion_time)
+
+                # Create completion event
+                completion_event = TaskCompleted(task=taskid)
+                next_events.append((completion_time, completion_event))
+
+                next_tasks.success()
+                task.notify(TaskState.LAUNCHED, objects.taskmap, current_time)
+            else:
+                next_tasks.fail()
+
+        return next_events
         # i = 0
         # max_tasks = event.max_tasks
 
@@ -125,17 +205,30 @@ class MinimalArchitecture(SchedulerArchitecture):
     def complete_task(
         self, scheduler_state: SystemState, event: TaskCompleted
     ) -> List[EventPair]:
+        print(f"Completing task: {event.task}...")
         objects = scheduler_state.objects
         assert objects is not None
-        task = objects.get_task(event.task)
+        taskid = event.task
+        task = objects.get_task(taskid)
 
         # Stop reserving memory
         # recent_task.free_resources(self.resource_pool)
 
-        # Remove from active device queues
-        # for device in recent_task.locations:
-        #       self.devicespace[device].pop_local_active_task()
+        # Remove task from launched queues
+        devices = task.assigned_devices
+        if devices is None:
+            raise ValueError(f"Task {task.name} has no assigned devices.")
+        device = devices[0]
+
+        expected_completion_time, task_at_head = self.launched_tasks[device].peek()
+        if task_at_head == taskid:
+            self.launched_tasks[device].get()
+        else:
+            raise ValueError(
+                f"Invalid state: Task {task.name} is not at the head of the launched queue."
+            )
 
         # Update dependencies
-        # recent_task.finish()
+        task.notify(TaskState.COMPLETED, objects.taskmap, scheduler_state.time)
+
         return []

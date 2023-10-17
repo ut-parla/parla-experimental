@@ -40,8 +40,8 @@ class ParlaArchitecture(SchedulerArchitecture):
     )
     launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
 
-    def __post_init__(self):
-        assert self.topology is not None
+    def __post_init__(self, topology: SimulatedTopology):
+        assert topology is not None
 
         for device in self.topology.devices:
             self.mapped_tasks[device.name] = TaskQueue()

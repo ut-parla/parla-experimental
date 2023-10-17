@@ -94,6 +94,7 @@ class SystemState:
     data_pool: DataPool = field(init=False)
     resource_pool: ResourcePool = field(init=False)
     objects: ObjectRegistry = field(init=False)
+    time: Time = field(default_factory=Time)
 
     def __post_init__(self):
         assert self.topology is not None

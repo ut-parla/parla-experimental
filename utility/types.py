@@ -263,16 +263,20 @@ DataMap = Dict[DataID, DataInfo]
 #########################################
 
 
+class TaskStatus(IntEnum):
+    NONE = 0
+    MAPPABLE = 2
+    RESERVED = 3
+    LAUNCHABLE = 4
+
+
 class TaskState(IntEnum):
     NONE = 0
     SPAWNED = 1
-    MAPPABLE = 2
-    MAPPED = 3
-    RESERVABLE = 4
-    RESERVED = 5
-    LAUNCHABLE = 6
-    LAUNCHED = 7
-    COMPLETED = 8
+    MAPPED = 2
+    RESERVED = 2
+    LAUNCHED = 3
+    COMPLETED = 4
 
     def __str__(self):
         return self.name
@@ -280,43 +284,38 @@ class TaskState(IntEnum):
     def __repr__(self):
         return str(self)
 
-    @staticmethod
-    def resolve_state_trigger(checked_state) -> Optional["TaskState"]:
-        if checked_state == TaskState.MAPPED:
-            return TaskState.MAPPABLE
-        elif checked_state == TaskState.RESERVED:
-            return TaskState.RESERVABLE
-        elif checked_state == TaskState.LAUNCHED:
-            return TaskState.LAUNCHABLE
-        else:
-            return None
+    # @staticmethod
+    # def resolve_state_trigger(checked_state) -> Optional["TaskState"]:
+    #     if checked_state == TaskState.MAPPED:
+    #         return TaskState.MAPPABLE
+    #     elif checked_state == TaskState.RESERVED:
+    #         return TaskState.RESERVABLE
+    #     elif checked_state == TaskState.COMPLETED:
+    #         return TaskState.LAUNCHABLE
+    #     else:
+    #         return None
 
-    @staticmethod
-    def check_valid_transition(new_state, old_state):
-        # Check if the transition is valid
-        # ~somewhat Parla specific checks
-        if new_state == TaskState.MAPPED:
-            assert old_state == TaskState.MAPPABLE
-        elif new_state == TaskState.RESERVED:
-            assert old_state == TaskState.RESERVABLE
-        elif new_state == TaskState.LAUNCHED:
-            assert old_state == TaskState.LAUNCHABLE
-        elif new_state == TaskState.COMPLETED:
-            assert old_state == TaskState.LAUNCHED
+    # @staticmethod
+    # def check_valid_transition(old_state, new_state):
+    #     print(f"Checking transition: {old_state} -> {new_state}")
+    #     # Check if the transition is valid
+    #     # ~somewhat Parla specific checks
+    #     if new_state == TaskState.MAPPED:
+    #         assert old_state == TaskState.MAPPABLE
+    #     elif new_state == TaskState.RESERVED:
+    #         assert old_state == TaskState.RESERVABLE
+    #     elif new_state == TaskState.LAUNCHED:
+    #         assert old_state == TaskState.LAUNCHABLE
+    #     elif new_state == TaskState.COMPLETED:
+    #         assert old_state == TaskState.LAUNCHED
 
-        # ~very Parla specific checks
-        if new_state == TaskState.MAPPABLE:
-            assert old_state == TaskState.SPAWNED
-        elif new_state == TaskState.RESERVABLE:
-            assert old_state == TaskState.MAPPED
-        elif new_state == TaskState.LAUNCHABLE:
-            assert old_state == TaskState.RESERVED
-
-
-TaskTransitionMap: Dict[TaskState, TaskState] = dict()
-TaskTransitionMap[TaskState.MAPPABLE] = TaskState.MAPPED
-TaskTransitionMap[TaskState.RESERVABLE] = TaskState.RESERVED
-TaskTransitionMap[TaskState.LAUNCHABLE] = TaskState.LAUNCHED
+    #     # ~very Parla specific checks
+    #     if new_state == TaskState.MAPPABLE:
+    #         assert old_state == TaskState.SPAWNED
+    #     elif new_state == TaskState.RESERVABLE:
+    #         assert old_state == TaskState.MAPPED
+    #     elif new_state == TaskState.LAUNCHABLE:
+    #         assert old_state == TaskState.RESERVED
 
 
 class TaskType(IntEnum):
