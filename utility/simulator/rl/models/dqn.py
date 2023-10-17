@@ -6,7 +6,7 @@ import torch.nn
 import torch.optim as optim
 
 from ..networks.fcn import *
-from ..networks.gcn_fcn_leakyrelu_softmax import *
+from ..networks.dqn_gcn_fcn import *
 from .replay_memory import *
 from .globals import *
 
@@ -18,8 +18,8 @@ class DQNAgent:
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 10, gamma = 0.999):
         if True: # Use GCN+FCN layers
-            self.policy_network = GCN_FCN_Type1(gcn_indim, in_dim, out_dim)
-            self.target_network = GCN_FCN_Type1(gcn_indim, in_dim, out_dim)
+            self.policy_network = DQNNetwork(gcn_indim, in_dim, out_dim)
+            self.target_network = DQNNetwork(gcn_indim, in_dim, out_dim)
         else: # Use pure FCN layers
             self.policy_network = FCN(in_dim, out_dim)
             self.target_network = FCN(in_dim, out_dim)

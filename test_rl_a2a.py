@@ -9,15 +9,16 @@ st = PseudoTask()
 st.creates_dummy_task()
 tg = TaskGraph()
 tg.construct_embedding(st, 2)
-gcn = GCN_FCN_Type2(2, 4, 2)
-x = torch.zeros(2)
-x[0] = 1
-x[1] = 2
-print("tgx:", tg.x)
-print("tg ei:", tg.edge_index)
-model_input = NetworkInput(x, False, tg.x, tg.edge_index)
-x = agent.select_device(x, tg.x, tg.edge_index)
-print("x:", x)
+
+for i in range(10):
+  x = torch.zeros(2)
+  x[0] = 1
+  x[1] = 2
+  print("tgx:", tg.x)
+  print("tg ei:", tg.edge_index)
+  model_input = NetworkInput(x, False, tg.x, tg.edge_index)
+  x = agent.select_device(x, tg.x, tg.edge_index)
+  print("x:", x)
 """
 x = gcn(model_input)
 print("x:", x)

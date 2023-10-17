@@ -3,13 +3,12 @@ import torch.nn
 import torch.nn.functional as F
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv
-from torch_geometric.data import Data
 
 
 """
 3 Graph Convolutional Networks (GCNs) + 1 Fully-Conneceted Network (FCN).
 """
-class GCN_FCN_Type1(torch.nn.Module):
+class DQNNetwork(torch.nn.Module):
 
     def __init__(self, gcn_indim: int, in_dim: int, out_dim: int):
         super().__init__()
