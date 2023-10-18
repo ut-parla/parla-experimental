@@ -98,12 +98,12 @@ class SimulatedTask:
         self.counters = TaskCounters(self.info)
 
     def set_status(self, new_status: TaskStatus, time: Time):
-        print(f"Setting {self.name} to {new_status}. Status: {self.status}")
+        # print(f"Setting {self.name} to {new_status}. Status: {self.status}")
         self.times[new_status] = time
         self.status.add(new_status)
 
     def set_state(self, new_state: TaskState, time: Time):
-        print(f"Setting {self.name} to {new_state}. State: {self.state}")
+        # print(f"Setting {self.name} to {new_state}. State: {self.state}")
 
         TaskStatus.check_valid_transition(self.status, new_state)
         TaskState.check_valid_transition(self.state, new_state)
@@ -132,14 +132,15 @@ class SimulatedTask:
         self.info.dependencies = deps
 
     @property
-    def assigned_devices(self) -> Optional[Tuple[Device]]:
+    def assigned_devices(self) -> Optional[Tuple[Device, ...]]:
         if isinstance(self.info.mapping, Device):
             return (self.info.mapping,)
         else:
-            self.info.mapping
+            return self.info.mapping
 
     @assigned_devices.setter
-    def assigned_devices(self, devices: Tuple[Device]):
+    def assigned_devices(self, devices: Tuple[Device, ...]):
+        print(f"Setting {self.name} to {devices}")
         self.info.mapping = devices
 
     @property
@@ -167,9 +168,9 @@ class SimulatedTask:
 
     def notify_state(self, state: TaskState, taskmap: SimulatedTaskMap, time: Time):
         # Notify only if changed
-        print(f"Task {self.name} in state {self.state}. Notifying {state}")
+        # print(f"Task {self.name} in state {self.state}. Notifying {state}")
         if self.state == state:
-            print(f"Task {self.name} already in state {state}")
+            # print(f"Task {self.name} already in state {state}")
             return
 
         for taskid in self.dependents:

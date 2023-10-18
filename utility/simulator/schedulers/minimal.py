@@ -55,7 +55,9 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Devi
     if check_status := task.check_status(
         TaskStatus.MAPPABLE, objects.taskmap, current_time
     ):
+        task.assigned_devices = (Device(Architecture.GPU, np.random.randint(0, 4)),)
         devices = task.assigned_devices
+        print(f"Task {task.name} assigned to device {devices}")
         assert devices is not None
 
         if devices is None:
@@ -222,7 +224,7 @@ class MinimalArchitecture(SchedulerArchitecture):
     def add_initial_tasks(
         self, tasks: Sequence[SimulatedTask], scheduler_state: SystemState
     ):
-        print("Spawning initial tasks...", tasks)
+        # print("Spawning initial tasks...", tasks)
 
         current_time = scheduler_state.time
         assert current_time is not None
@@ -237,14 +239,14 @@ class MinimalArchitecture(SchedulerArchitecture):
     def mapper(
         self, scheduler_state: SystemState, event: Mapper
     ) -> Sequence[EventPair]:
-        print("Mapping tasks...")
+        # print("Mapping tasks...")
         next_tasks = TaskIterator(self.spawned_tasks)
 
         current_time = scheduler_state.time
         objects = scheduler_state.objects
 
         for priority, taskid in next_tasks:
-            print(f"Processing task {taskid}")
+            # print(f"Processing task {taskid}")
 
             task = objects.get_task(taskid)
             assert task is not None
@@ -265,24 +267,24 @@ class MinimalArchitecture(SchedulerArchitecture):
     def launcher(
         self, scheduler_state: SystemState, event: Launcher
     ) -> Sequence[EventPair]:
-        print("Launching tasks...")
+        # print("Launching tasks...")
 
         objects = scheduler_state.objects
         current_time = scheduler_state.time
 
         next_events: Sequence[EventPair] = []
         if remaining_tasks := length(self.launchable_tasks):
-            mapping_pair = (current_time + 10, Mapper())
+            mapping_pair = (current_time + 100, Mapper())
             next_events.append(mapping_pair)
 
-        print(f"Remaining tasks: {remaining_tasks}")
+        # print(f"Remaining tasks: {remaining_tasks}")
 
         next_tasks = MultiTaskIterator(self.launchable_tasks)
         for priority, taskid in next_tasks:
             task = objects.get_task(taskid)
             assert task is not None
 
-            print(f"Processing task {taskid}...")
+            # print(f"Processing task {taskid}...")
 
             if reserve_success := reserve_task(task, scheduler_state):
                 task.notify_state(TaskState.RESERVED, objects.taskmap, current_time)
@@ -344,14 +346,15 @@ class MinimalArchitecture(SchedulerArchitecture):
         assert objects is not None
         task = objects.get_task(event.task)
         assert task is not None
-        print(task)
-        print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
+        # print(task)
+        # print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
+        print(self)
 
         self._verify_correct_task_completed(task, scheduler_state)
         complete_task(task, scheduler_state)
 
         # Update status of dependencies
         task.notify_state(TaskState.COMPLETED, objects.taskmap, scheduler_state.time)
-        print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
+        # print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
 
         return []
