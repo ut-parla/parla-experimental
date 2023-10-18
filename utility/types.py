@@ -349,6 +349,7 @@ class ResourceType(IntEnum):
     VCU = 0
     MEMORY = 1
     COPY = 2
+    ALL = 3
 
 
 @dataclass(frozen=True, slots=True)

@@ -20,9 +20,166 @@ from typing import List, Dict, Set, Tuple, Optional, Callable, Sequence
 from dataclasses import dataclass, InitVar
 from collections import defaultdict as DefaultDict
 
-from .scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
+from .scheduler import (
+    SchedulerArchitecture,
+    SystemState,
+    SchedulerOptions,
+    ObjectRegistry,
+)
 
 from rich import print
+
+StatesToResources: Dict[TaskState, list[ResourceType]] = {}
+StatesToResources[TaskState.MAPPED] = [
+    ResourceType.VCU,
+    ResourceType.MEMORY,
+    ResourceType.COPY,
+]
+StatesToResources[TaskState.LAUNCHED] = [ResourceType.VCU, ResourceType.COPY]
+StatesToResources[TaskState.RESERVED] = [ResourceType.MEMORY]
+StatesToResources[TaskState.COMPLETED] = []
+AllResources = StatesToResources[TaskState.MAPPED]
+
+
+def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Device]:
+    objects = scheduler_state.objects
+    assert objects is not None
+
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+
+    current_time = scheduler_state.time
+    assert current_time is not None
+
+    # Check if task is mappable
+    if check_status := task.check_status(
+        TaskStatus.MAPPABLE, objects.taskmap, current_time
+    ):
+        devices = task.assigned_devices
+        assert devices is not None
+
+        if devices is None:
+            raise ValueError(
+                f"Task {task.name} has no assigned devices. Minimal scheduler requires that all tasks have an assigned device at spawn."
+            )
+        device = devices[0]
+        task.set_resources(device)
+
+        # Update MAPPED resources (for policy and metadata)
+        resource_pool.add_resources(
+            devices=devices,
+            state=TaskState.MAPPED,
+            types=AllResources,
+            resources=task.resources,
+        )
+
+        return device
+    return None
+
+
+def reserve_task(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    objects = scheduler_state.objects
+    assert objects is not None
+
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+
+    current_time = scheduler_state.time
+    assert current_time is not None
+
+    if check_reservable := task.check_status(
+        TaskStatus.RESERVABLE, objects.taskmap, current_time
+    ):
+        devices = task.assigned_devices
+        assert devices is not None
+
+        resources_to_update = StatesToResources[TaskState.RESERVED]
+
+        if can_fit := resource_pool.check_resources(
+            devices=devices,
+            state=TaskState.RESERVED,
+            types=resources_to_update,
+            resources=task.resources,
+        ):
+            resource_pool.add_resources(
+                devices=devices,
+                state=TaskState.RESERVED,
+                types=resources_to_update,
+                resources=task.resources,
+            )
+            return True
+    return False
+
+
+def launch_task(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    objects = scheduler_state.objects
+    assert objects is not None
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+    current_time = scheduler_state.time
+    assert current_time is not None
+
+    # Process LAUNCHABLE state
+    if check_launchable_status := task.check_status(
+        TaskStatus.LAUNCHABLE, objects.taskmap, current_time
+    ):
+        assert task.assigned_devices is not None
+        resources_to_update = StatesToResources[TaskState.LAUNCHED]
+
+        if check_launchable_resources := resource_pool.check_resources(
+            devices=task.assigned_devices,
+            state=TaskState.RESERVED,
+            types=resources_to_update,
+            resources=task.resources,
+        ):
+            # Update resource pool for RESERVED resources (for correctness)
+            resource_pool.add_resources(
+                devices=task.assigned_devices,
+                state=TaskState.RESERVED,
+                types=resources_to_update,
+                resources=task.resources,
+            )
+            # Update resource pool for LAUNCHED resources (for metadata) (Tracks resources that are currently use)
+            resource_pool.add_resources(
+                devices=task.assigned_devices,
+                state=TaskState.LAUNCHED,
+                types=AllResources,
+                resources=task.resources,
+            )
+            task.set_duration(task.assigned_devices, scheduler_state)
+            return True
+    return False
+
+
+def complete_task(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+
+    devices = task.assigned_devices
+    assert devices is not None
+
+    # Free resources from all pools
+    resource_pool.remove_resources(
+        devices=devices,
+        state=TaskState.MAPPED,
+        types=AllResources,
+        resources=task.resources,
+    )
+    resource_pool.remove_resources(
+        devices=devices,
+        state=TaskState.RESERVED,
+        types=AllResources,
+        resources=task.resources,
+    )
+
+    resource_pool.remove_resources(
+        devices=devices,
+        state=TaskState.LAUNCHED,
+        types=AllResources,
+        resources=task.resources,
+    )
+
+    return True
 
 
 @SchedulerOptions.register_scheduler("minimal")
@@ -84,34 +241,23 @@ class MinimalArchitecture(SchedulerArchitecture):
         next_tasks = TaskIterator(self.spawned_tasks)
 
         current_time = scheduler_state.time
-        assert current_time is not None
-
         objects = scheduler_state.objects
-        assert objects is not None
 
         for priority, taskid in next_tasks:
-            print(next_tasks)
             print(f"Processing task {taskid}")
+
             task = objects.get_task(taskid)
             assert task is not None
 
-            # Check if task is mappable
-            if check_status := task.check_status(
-                TaskStatus.MAPPABLE, objects.taskmap, current_time
-            ):
-                # Map task
-                devices = task.assigned_devices
-                if devices is None:
-                    raise ValueError(
-                        f"Task {task.name} has no assigned devices. Minimal scheduler requires that all tasks have an assigned device at spawn."
-                    )
-
-                device = devices[0]
+            if device := map_task(task, scheduler_state):
                 self.launchable_tasks[device][task.type].put_id(
-                    taskid, priority=priority
+                    task_id=taskid, priority=priority
                 )
-                next_tasks.success()
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
+                next_tasks.success()
+            else:
+                next_tasks.fail()
+                continue
 
         launcher_pair = (current_time, Launcher())
         return [launcher_pair]
@@ -120,11 +266,9 @@ class MinimalArchitecture(SchedulerArchitecture):
         self, scheduler_state: SystemState, event: Launcher
     ) -> Sequence[EventPair]:
         print("Launching tasks...")
-        objects = scheduler_state.objects
-        assert objects is not None
 
+        objects = scheduler_state.objects
         current_time = scheduler_state.time
-        assert current_time is not None
 
         next_events: Sequence[EventPair] = []
         if remaining_tasks := length(self.launchable_tasks):
@@ -135,58 +279,39 @@ class MinimalArchitecture(SchedulerArchitecture):
 
         next_tasks = MultiTaskIterator(self.launchable_tasks)
         for priority, taskid in next_tasks:
-            print(self)
-            print(f"Launching task: {taskid}")
             task = objects.get_task(taskid)
             assert task is not None
-            print(task)
 
-            # Process RESERVABLE state (all tasks should be reservable in minimal scheduler)
-            if check_reservable := task.check_status(
-                TaskStatus.RESERVABLE, objects.taskmap, current_time
-            ):
-                print(f"Task {task.name} is reservable.")
+            print(f"Processing task {taskid}...")
+
+            if reserve_success := reserve_task(task, scheduler_state):
                 task.notify_state(TaskState.RESERVED, objects.taskmap, current_time)
             else:
                 next_tasks.fail()
                 continue
 
             # Process LAUNCHABLE state
-            if check_launchable := task.check_status(
-                TaskStatus.LAUNCHABLE, objects.taskmap, current_time
-            ):
-                if task.assigned_devices is None:
-                    raise ValueError("Task has no assigned devices.")
-
-                device = task.assigned_devices[0]
-                task.set_duration(device, scheduler_state)
+            if launch_success := launch_task(task, scheduler_state):
+                task.notify_state(TaskState.LAUNCHED, objects.taskmap, current_time)
                 completion_time = current_time + task.duration
+
+                device = task.assigned_devices[0]  # type: ignore
                 self.launched_tasks[device].put_id(taskid, completion_time)
 
                 # Create completion event
                 completion_event = TaskCompleted(task=taskid)
                 next_events.append((completion_time, completion_event))
-
                 next_tasks.success()
-                task.notify_state(TaskState.LAUNCHED, objects.taskmap, current_time)
             else:
                 next_tasks.fail()
                 continue
 
         return next_events
 
-    def complete_task(
-        self, scheduler_state: SystemState, event: TaskCompleted
-    ) -> Sequence[EventPair]:
-        print(f"Completing task: {event.task}...")
-        objects = scheduler_state.objects
-        assert objects is not None
-        taskid = event.task
-        task = objects.get_task(taskid)
-
-        # Stop reserving memory
-        # recent_task.free_resources(self.resource_pool)
-
+    def _verify_correct_task_completed(
+        self, task: SimulatedTask, scheduler_state: SystemState
+    ):
+        taskid = task.name
         # Remove task from launched queues
         devices = task.assigned_devices
         if devices is None:
@@ -205,12 +330,28 @@ class MinimalArchitecture(SchedulerArchitecture):
                 )
             # Remove task from launched queue (it has completed)
             self.launched_tasks[device].get()
+            self.completed_tasks.append(taskid)
         else:
             raise ValueError(
                 f"Invalid state: Launch queue for device {device} is empty."
             )
 
+    def complete_task(
+        self, scheduler_state: SystemState, event: TaskCompleted
+    ) -> Sequence[EventPair]:
+        print(f"Completing task: {event.task}...")
+        objects = scheduler_state.objects
+        assert objects is not None
+        task = objects.get_task(event.task)
+        assert task is not None
+        print(task)
+        print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
+
+        self._verify_correct_task_completed(task, scheduler_state)
+        complete_task(task, scheduler_state)
+
         # Update status of dependencies
         task.notify_state(TaskState.COMPLETED, objects.taskmap, scheduler_state.time)
+        print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
 
         return []

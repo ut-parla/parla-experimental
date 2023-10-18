@@ -20,7 +20,7 @@ def run():
 
     task_configs = TaskPlacementInfo()
 
-    runtime_info = TaskRuntimeInfo(task_time=1000, gil_accesses=1)
+    runtime_info = TaskRuntimeInfo(task_time=1000, device_fraction=1)
     task_configs.add((gpu), runtime_info)
 
     data_config = DataGraphConfig(pattern=1)

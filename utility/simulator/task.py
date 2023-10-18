@@ -4,12 +4,13 @@ from ..types import TaskID, TaskInfo, TaskState, TaskStatus, DataAccess, Time, T
 from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
 from ..types import Architecture, Device
 from ..types import DataInfo
-from typing import List, Dict, Set, Tuple, Optional, Self
+from typing import List, Dict, Set, Tuple, Optional, Self, Sequence
 
 from .queue import PriorityQueue
 from dataclasses import dataclass, field
 
 from .resources import ResourcePool
+from .device import ResourceSet
 from .datapool import DataPool
 
 
@@ -91,6 +92,7 @@ class SimulatedTask:
     times: TaskTimes = field(default_factory=TaskTimes)
     counters: TaskCounters = field(init=False)
     dependents: List[TaskID] = field(default_factory=list)
+    resources: List[ResourceSet] = field(default_factory=list)
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
@@ -193,6 +195,9 @@ class SimulatedTask:
                 return True
         return status in self.status
 
+    def set_resources(self, devices: Device | Tuple[Device, ...]):
+        raise NotImplementedError
+
     def __str__(self) -> str:
         return f"Task({self.name}, {self.state})"
 
@@ -235,6 +240,17 @@ class SimulatedComputeTask(SimulatedTask):
         max_time = max([runtime_info.task_time for runtime_info in runtime_infos])
         self.duration = Time(max_time)
 
+    def set_resources(
+        self, devices: Device | Tuple[Device, ...], data_inputs: bool = False
+    ):
+        if isinstance(devices, Device):
+            devices = (devices,)
+        runtime_info_list = self.get_runtime_info(devices)
+        for runtime_info in runtime_info_list:
+            vcus = runtime_info.device_fraction
+            memory = runtime_info.memory
+            self.resources.append(ResourceSet(vcus=vcus, memory=memory, copy=0))
+
 
 @dataclass(slots=True)
 class SimulatedDataTask(SimulatedTask):
@@ -248,6 +264,11 @@ class SimulatedDataTask(SimulatedTask):
 
         # TODO: This is the data movement time
         raise NotImplementedError("TODO: implement set_duration for SimulatedDataTask")
+
+    def set_resources(
+        self, devices: Device | Tuple[Device, ...], data_inputs: bool = False
+    ):
+        raise NotImplementedError("TODO: implement set_resources for SimulatedDataTask")
 
 
 SimulatedTaskMap = Dict[
