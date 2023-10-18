@@ -174,7 +174,7 @@ class DQNAgent:
     def save_models(self):
         """ Save policy_network, target_network, and optimizer
             parameters to files. """
-        if not is_training_mode():
+        if not self.is_training_mode():
             return
         print("Save models..", flush=True)
         torch.save(self.policy_network, self.policynet_fname)
@@ -185,7 +185,7 @@ class DQNAgent:
         pass
 
     def save_best_networks(self):
-        if is_training_mode():
+        if self.is_training_mode():
             pass
 
         pass
