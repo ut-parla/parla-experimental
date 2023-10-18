@@ -116,6 +116,14 @@ class SimulatedTask:
             self.set_state(state, time)
 
     @property
+    def priority(self) -> int:
+        return self.info.order
+
+    @priority.setter
+    def priority(self, priority: int):
+        self.info.order = priority
+
+    @property
     def duration(self) -> Time:
         return self.times.duration
 
@@ -201,6 +209,14 @@ class SimulatedTask:
 
     def __str__(self) -> str:
         return f"Task({self.name}, {self.state})"
+
+    def __rich_repr__(self):
+        yield "name", self.name
+        yield "state", self.state
+        yield "status", self.status
+        yield "duration", self.duration
+        yield "dependencies", self.dependencies
+        yield "assigned_devices", self.assigned_devices
 
     def __repr__(self) -> str:
         return self.__str__()

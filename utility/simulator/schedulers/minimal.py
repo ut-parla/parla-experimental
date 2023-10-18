@@ -38,7 +38,7 @@ StatesToResources[TaskState.MAPPED] = [
 StatesToResources[TaskState.LAUNCHED] = [ResourceType.VCU, ResourceType.COPY]
 StatesToResources[TaskState.RESERVED] = [ResourceType.MEMORY]
 StatesToResources[TaskState.COMPLETED] = []
-AllResources = StatesToResources[TaskState.MAPPED]
+AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
 
 def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Device]:

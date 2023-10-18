@@ -84,12 +84,15 @@ class SimulatedScheduler:
 
         from rich import print
 
+        event_count = 0
+
         next_events = EventIterator(self.events, peek=False)
         for event_pair in next_events:
             if event_pair:
+                event_count += 1
                 completion_time, event = event_pair
-                print(f"Event: {event} at {completion_time}")
-                print("State", self.mechanisms)
+                # print(f"Event: {event} at {completion_time}")
+                # print("State", self.mechanisms)
 
                 # Advance time
                 self.time = max(self.time, completion_time)
@@ -98,3 +101,6 @@ class SimulatedScheduler:
                 new_events = self.process_event(event)
                 # Update Log
                 self.record()
+
+        print(f"Event Count: {event_count}")
+        # print(self.mechanisms)
