@@ -6,16 +6,12 @@ from ..types import (
     DataInfo,
     TaskState,
     TaskStatus,
+    AccessType,
 )
 from typing import List, Dict, Set, Tuple, Optional, Sequence
 from dataclasses import dataclass, field, InitVar
 from collections import defaultdict as DefaultDict
 from enum import IntEnum
-
-
-class DataOperation(IntEnum):
-    READ = 0
-    WRITE = 1
 
 
 class DataMovementFlags(IntEnum):
@@ -33,6 +29,8 @@ class DataState(IntEnum):
     """ Data is in transit to the device """
     VALID = 2
     """ Data is valid on the device """
+    EVICTABLE = 3
+    """ Data is evictable from the device """
     STALE = 3
     """ Data is stale on the device """
 
@@ -93,6 +91,9 @@ class DataUse:
         self.tasks[use].remove(task)
         self.counters[use] -= 1
 
+    def __rich_repr__(self):
+        yield "tasks", self.tasks
+
 
 @dataclass(slots=True)
 class DataStatus:
@@ -117,9 +118,12 @@ class DataStatus:
         for device in devices:
             self.device2uses[device] = DataUse()
 
-    def set_state(self, device: Device, state: TaskState, data_state: DataState):
-        prior_state = self.device2state[state][device]
-        self.state2device[state][prior_state].remove(device)
+    def set_state(
+        self, device: Device, state: TaskState, data_state: DataState, initial=False
+    ):
+        if not initial:
+            prior_state = self.device2state[state][device]
+            self.state2device[state][prior_state].remove(device)
 
         self.device2state[state][device] = data_state
         self.state2device[state][data_state].add(device)
@@ -128,6 +132,12 @@ class DataStatus:
         self, device: Device, state: TaskState, data_state: DataState
     ) -> bool:
         return self.device2state[state][device] == data_state
+
+    def get_state(self, device: Device, state: TaskState) -> DataState:
+        return self.device2state[state][device]
+
+    def get_use(self, device: Device) -> DataUse:
+        return self.device2uses[device]
 
     def get_devices(
         self, state: TaskState, data_states: Sequence[DataState]
@@ -171,38 +181,65 @@ class DataStatus:
                     )
 
     def write(
-        self, task: TaskID, target_device: Device, state: TaskState, verify=False
+        self,
+        task: TaskID,
+        target_device: Device,
+        state: TaskState,
+        verify: bool = False,
+        update: bool = False,
     ):
+        if verify:
+            # Assumes that this happens before the task is added to the device uses list
+            self.verify_write(target_device, state)
+
         # Invalidate all other devices and check that the target device is valid
         status = self.device2state[state]
         for device in status.keys():
             if device == target_device:
-                if not self.check_state(device, state, DataState.VALID):
-                    raise RuntimeError(
-                        f"Task {task} cannot write to data that is not valid. Status: {status}"
-                    )
+                if update:
+                    self.set_state(device, state, DataState.VALID)
+                else:
+                    if not self.check_state(device, state, DataState.VALID):
+                        raise RuntimeError(
+                            f"Task {task} cannot write to data that is not valid. Status: {status}"
+                        )
             else:
                 self.set_state(device, state, DataState.NONE)
 
-    def read(self, task: TaskID, target_device: Device, state: TaskState):
+    def read(
+        self,
+        task: TaskID,
+        target_device: Device,
+        state: TaskState,
+        update: bool = False,
+    ):
         # Ensure that the target device is valid
         status = self.device2state[state]
-        if not self.check_state(target_device, state, DataState.VALID):
-            raise RuntimeError(
-                f"Task {task} cannot read from data that is not valid. Status: {status}"
-            )
+
+        if update:
+            self.set_state(target_device, state, DataState.VALID)
+        else:
+            if not self.check_state(target_device, state, DataState.VALID):
+                raise RuntimeError(
+                    f"Task {task} cannot read from data that is not valid. Status: {status}"
+                )
 
     def start_use(
         self,
         task: TaskID,
         target_device: Device,
         state: TaskState,
-        operation: DataOperation,
+        operation: AccessType,
+        update: bool = False,
     ):
-        if operation == DataOperation.READ:
-            self.read(task, target_device, state)
+        if operation == AccessType.READ:
+            self.read(
+                task=task, target_device=target_device, state=state, update=update
+            )
         else:
-            self.write(task, target_device, state)
+            self.write(
+                task=task, target_device=target_device, state=state, update=update
+            )
 
         self.add_task(target_device, task, TaskStateToUse[state])
 
@@ -216,6 +253,8 @@ class DataStatus:
             raise RuntimeError(
                 f"Task {task} cannot move data from a device that is not valid."
             )
+
+        old_state = self.get_state(target_device, TaskState.LAUNCHED)
 
         if self.check_state(target_device, TaskState.LAUNCHED, DataState.VALID):
             movement_flag = DataMovementFlags.ALREADY_THERE
@@ -237,7 +276,7 @@ class DataStatus:
             movement_flag = DataMovementFlags.ALREADY_THERE
         elif self.check_state(target_device, TaskState.LAUNCHED, DataState.MOVING):
             self.set_state(target_device, TaskState.LAUNCHED, DataState.VALID)
-            movement_flag = DataMovementFlags.ALREADY_MOVING
+            movement_flag = DataMovementFlags.FIRST_MOVE
         else:
             raise RuntimeError(
                 f"Task {task} cannot finish moving data to a device that is not moving."
@@ -248,18 +287,22 @@ class DataStatus:
 
         return movement_flag
 
+    def __rich_repr__(self):
+        yield "MAPPED", self.device2state[TaskState.MAPPED]
+        yield "RESERVED", self.device2state[TaskState.RESERVED]
+        yield "LAUNCHED", self.device2state[TaskState.LAUNCHED]
+
 
 @dataclass(slots=True)
 class SimulatedData:
-    devices: InitVar[Sequence[Device]]
-    name: DataID
+    system_devices: InitVar[Sequence[Device]]
     info: DataInfo
     status: DataStatus = field(init=False)
 
     def __post_init__(self, system_devices: Sequence[Device]):
         self.status = DataStatus(system_devices)
 
-        starting_devices = DataInfo.location
+        starting_devices = self.info.location
         assert starting_devices is not None
 
         if isinstance(starting_devices, Device):
@@ -267,41 +310,51 @@ class SimulatedData:
 
         for device in starting_devices:
             for state in TaskState:
-                self.status.set_state(device, state, DataState.VALID)
+                self.status.set_state(device, state, DataState.VALID, initial=True)
 
-    def use(self, task: TaskID, devices: Sequence[Device], use: DataUses):
-        for device in devices:
-            self.status.add_task(device, task, use)
+    @property
+    def name(self) -> DataID:
+        return self.info.id
 
-    def release(self, task: TaskID, devices: Sequence[Device], use: DataUses):
-        for device in devices:
-            self.status.remove_task(device, task, use)
+    @property
+    def size(self) -> int:
+        return self.info.size
 
-    def is_valid(self, device: Device, allow_moving=False) -> bool:
-        if device in self.status:
-            if self.status[device].is_stale():
-                return False
-            elif not allow_moving and self.status[device].is_moving():
-                return False
-            else:
-                return True
-        return False
+    def get_state(self, device: Device, state: TaskState) -> DataState:
+        return self.status.get_state(device, state)
 
-    def valid_sources(self, allow_moving=False) -> List[Device]:
-        sources = []
-        for device, status in self.status.items():
-            if self.is_valid(device, allow_moving):
-                sources.append(device)
+    def start_use(
+        self,
+        task: TaskID,
+        target_device: Device,
+        state: TaskState,
+        operation: AccessType,
+    ):
+        self.status.start_use(task, target_device, state, operation)
 
-        if len(sources) == 0:
-            raise RuntimeError("No valid sources found for: {self.name}")
-        return sources
+    def finish_use(self, task: TaskID, target_device: Device, state: TaskState):
+        self.status.finish_use(task, target_device, state)
+
+    def start_move(
+        self, task: TaskID, source_device: Device, target_device: Device
+    ) -> DataMovementFlags:
+        return self.status.start_move(task, source_device, target_device)
+
+    def finish_move(
+        self, task: TaskID, source_device: Device, target_device: Device
+    ) -> DataMovementFlags:
+        return self.status.finish_move(task, source_device, target_device)
 
     def __str__(self):
         return f"Data({self.name}) | Status: {self.status}"
 
     def __repr__(self):
         return self.__str__()
+
+    def __rich_repr__(self):
+        yield "info", self.info
+        yield "status", self.status
+        yield "used_by", self.status.device2uses
 
     def __hash__(self):
         return hash(self.name)

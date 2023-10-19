@@ -95,11 +95,7 @@ class ResourceSet:
         return True
 
 
-class DataPool:
-    pass
-
-
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class SimulatedDevice:
     name: Device
     resources: ResourceSet
@@ -118,3 +114,6 @@ class SimulatedDevice:
 
     def __lt__(self, other):
         return self.name < other.name
+
+    def __getitem__(self, key: ResourceType) -> Numeric:
+        return self.resources[key]

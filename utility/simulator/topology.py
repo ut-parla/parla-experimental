@@ -1,7 +1,7 @@
 from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType
-from typing import List, Dict, Set, Tuple, Optional, Callable
+from typing import List, Dict, Set, Tuple, Optional, Callable, Sequence, Type
 from .device import SimulatedDevice, ResourceSet
-from dataclasses import dataclass
+from dataclasses import dataclass, field, InitVar
 from .utility import parse_size
 
 import numpy as np
@@ -11,178 +11,288 @@ NamedDevice = Device | SimulatedDevice
 
 
 @dataclass(slots=True)
-class SimulatedTopology:
-    devices: List[SimulatedDevice]
-    name: str = "SimulatedTopology"
-    id_map: Dict[Device, int] = None
-    bandwidth: np.ndarray = None
-    host: SimulatedDevice = None
+class ConnectionPool:
+    host: SimulatedDevice
+    devices: InitVar[Sequence[Device]]
+    devices2index: Dict[Device, int] = field(init=False)
+    connections: np.ndarray = field(init=False)
+    active_connections: np.ndarray = field(init=False)
+    bandwidth: np.ndarray = field(init=False)
 
-    connections: np.ndarray = None
-    active_connections: np.ndarray = None
-    active_copy_engines: Dict[Device, int] = None
-    max_copy_engines: Dict[Device, int] = None
+    def __post_init__(self, devices: Sequence[Device]):
+        self.devices2index = {}
+        for i, device in enumerate(devices):
+            self.devices2index[device] = i
 
-    def __post_init__(self):
-        self.id_map = {}
-        for i, device in enumerate(self.devices):
-            self.id_map[device.name] = i
-            if device.name.architecture == Architecture.CPU:
-                self.host = device
-        # greater than 0 if used.
-        self.connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32
-        )
-        # greater than 0 if used.
+        self.connections = np.zeros((len(devices), len(devices)), dtype=np.bool_)
         self.active_connections = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.int32
+            (len(devices), len(devices)), dtype=np.uint32
         )
-        # Bandwidth between devices.
-        self.bandwidth = np.zeros(
-            (len(self.devices), len(self.devices)), dtype=np.float32
-        )
-        self.active_copy_engines = {device.name: 0 for device in self.devices}
-        self.max_copy_engines = {
-            device.name: device.resources.store[ResourceType.COPY]
-            for device in self.devices
-        }
-
-    def __str__(self) -> str:
-        repr_str = "[[HW Topology]]\n"
-        repr_str += self.name + "\n"
-        for d in self.devices:
-            repr_str += str(d.name) + "\n"
-            repr_str += "[Resource]\n"
-            repr_str += "Memory: "
-            repr_str += str(d.resources[ResourceType.MEMORY]) + "\n"
-            repr_str += "VCU: "
-            repr_str += str(d.resources[ResourceType.VCU]) + "\n"
-            repr_str += "COPY: "
-            repr_str += str(d.resources[ResourceType.COPY]) + "\n\n"
-
-        repr_str += "[Connections]\n"
-        for d1 in range(len(self.devices)):
-            for d2 in range(len(self.devices)):
-                if self.connections[d1, d2] == 1:
-                    repr_str += str(self.devices[d1].name) + ","
-                    repr_str += str(self.devices[d2].name)
-                    repr_str += " bandwidth: " + str(self.bandwidth[d1][d2])
-                    repr_str += "\n"
-
-        return repr_str
-
-    def __repr__(self) -> str:
-        return self.__str__()
+        self.bandwidth = np.zeros((len(devices), len(devices)), dtype=np.float32)
 
     def get_index(self, device: NamedDevice) -> int:
         if isinstance(device, SimulatedDevice):
             device = device.name
-        return self.id_map[device]
+        return self.devices2index[device]
+
+    def get_indicies(self, devices: Sequence[NamedDevice]) -> Sequence[int]:
+        return [self.get_index(device) for device in devices]
+
+    def check_connection_exists(self, source: NamedDevice, target: NamedDevice):
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
+        return self.connections[source_idx, target_idx]
+
+    def check_bandwidth_exists(self, source: NamedDevice, target: NamedDevice):
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
+        return self.bandwidth[source_idx, target_idx] > 0
+
+    def get_bandwidth(self, source: NamedDevice, target: NamedDevice):
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
+        return self.bandwidth[source_idx, target_idx]
+
+    def count_active_connections(
+        self, source: NamedDevice, target: Optional[NamedDevice] = None
+    ):
+        source_idx = self.get_index(source)
+
+        if target is not None:
+            target_idx = self.get_index(target)
+            return self.active_connections[source_idx, target_idx]
+        else:
+            return np.sum(self.active_connections[source_idx, :])
 
     def add_bandwidth(
         self,
-        src: NamedDevice,
-        dst: NamedDevice,
+        source: NamedDevice,
+        target: NamedDevice,
         bandwidth: float,
         bidirectional: bool = True,
     ):
-        src_idx = self.get_index(src)
-        dst_idx = self.get_index(dst)
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
 
-        self.bandwidth[src_idx, dst_idx] = bandwidth
+        self.bandwidth[source_idx, target_idx] = bandwidth
 
         if bidirectional:
-            self.bandwidth[dst_idx, src_idx] = bandwidth
+            self.bandwidth[source_idx, target_idx] = bandwidth
 
     def add_connection(
-        self, src: NamedDevice, dst: NamedDevice, bidirectional: bool = True
+        self, source: NamedDevice, target: NamedDevice, bidirectional: bool = True
     ):
-        src_idx = self.get_index(src)
-        dst_idx = self.get_index(dst)
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
 
-        self.connections[src_idx, dst_idx] = 1
+        self.connections[source_idx, target_idx] = True
 
         if bidirectional:
-            self.connections[dst_idx, src_idx] = 1
+            self.connections[source_idx, target_idx] = True
 
-    def update_connections(
+    def update_connection_usage(
         self,
-        src: NamedDevice,
-        dst: NamedDevice,
+        source: NamedDevice,
+        target: NamedDevice,
         value: int,
         bidirectional: bool = False,
-    ):
-        src_idx = self.get_index(src)
-        dst_idx = self.get_index(dst)
+    ) -> bool:
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
 
-        if isinstance(src, SimulatedDevice):
-            src = src.name
-        if isinstance(dst, SimulatedDevice):
-            dst = dst.name
+        if source_idx == target_idx:
+            # No connections needed
+            return False
 
-        self.active_connections[src_idx, dst_idx] += value
+        if isinstance(source, SimulatedDevice):
+            source = source.name
+        if isinstance(target, SimulatedDevice):
+            target = target.name
+
+        self.active_connections[source_idx, target_idx] += value
 
         if bidirectional:
-            self.active_connections[dst_idx, src_idx] += value
+            self.active_connections[source_idx, target_idx] += value
 
-        if src_idx == dst_idx:
-            # No copy engine needed
-            return
-
-        self.active_copy_engines[src.name] += value
-        self.active_copy_engines[dst.name] += value
-
-        if self.connections[src_idx, dst_idx] <= 0:
-            # Assume transfer is through CPU
-            # Acquire connections on both ends
+        if self.connections[source_idx, target_idx] <= 0:
+            # If no direct connection, route through the host device
             host_idx = self.get_index(self.host)
 
-            self.active_connections[src_idx, host_idx] += value
-            self.active_connections[host_idx, dst_idx] += value
+            self.active_connections[source_idx, host_idx] += value
+            self.active_connections[host_idx, target_idx] += value
 
             if bidirectional:
-                self.active_connections[dst_idx, host_idx] += value
-                self.active_connections[host_idx, src_idx] += value
+                self.active_connections[target_idx, host_idx] += value
+                self.active_connections[host_idx, source_idx] += value
 
-            self.num_active_copy_engines[self.host.name] += value
+        return True
 
     def acquire_connection(self, src: NamedDevice, dst: NamedDevice):
-        self.update_connections(src, dst, 1)
+        self.update_connection_usage(src, dst, 1)
 
     def release_connection(self, src: NamedDevice, dst: NamedDevice):
-        self.update_connections(src, dst, -1)
+        self.update_connection_usage(src, dst, -1)
 
-    def check_connection(
+    def check_connection_available(
         self,
-        src: NamedDevice,
-        dst: NamedDevice,
-        require_engines: bool = True,
+        source: SimulatedDevice,
+        target: SimulatedDevice,
+        require_copy_engines: bool = True,
         require_symmetric=True,
     ) -> bool:
-        src_idx = self.get_index(src)
-        dst_idx = self.get_index(dst)
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
 
-        if isinstance(src, SimulatedDevice):
-            src = src.name
-        if isinstance(dst, SimulatedDevice):
-            dst = dst.name
-
-        if src_idx == dst_idx:
-            # No connection needed
+        if source_idx == target_idx:
+            # No connection needed for a self copy
             return True
 
-        if require_engines:
-            if self.active_copy_engines[src] >= self.max_copy_engines[src]:
+        # Is there a direct connection?
+        direct_connection = self.check_connection_exists(source, target)
+
+        # Check if copy engines are available (if required)
+        if require_copy_engines:
+            if (
+                self.count_active_connections(source)
+                >= source.resources.store[ResourceType.COPY]
+            ):
                 return False
-            if self.active_copy_engines[dst] >= self.max_copy_engines[dst]:
+            if (
+                require_symmetric
+                and self.count_active_connections(target)
+                >= target.resources.store[ResourceType.COPY]
+            ):
                 return False
 
-        if require_symmetric:
-            return (self.active_connections[src_idx, dst_idx] == 0) and (
-                self.active_connections[dst_idx, src_idx] == 0
-            )
-        else:
-            return self.active_connections[src_idx, dst_idx] == 0
+            if not direct_connection:
+                if not self.check_connection_exists(source, self.host):
+                    return False
+                if not self.check_connection_exists(target, self.host):
+                    return False
+
+                if (
+                    self.count_active_connections(self.host)
+                    >= self.host[ResourceType.COPY]
+                ):
+                    return False
+        return False
+
+    def sort_by_bandwidth(
+        self, target: NamedDevice, devices: Sequence[NamedDevice]
+    ) -> Sequence[NamedDevice]:
+        """
+        Return a sorted list of devices by the bandwidth of the connection to the target
+        """
+        target_idx = self.get_index(target)
+        bandwidths = self.bandwidth[target_idx, self.get_indicies(devices)]
+        return [devices[i] for i in np.argsort(bandwidths)]
+
+    def get_connection_string(self, source: NamedDevice, target: NamedDevice) -> str:
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
+        return f"{source} -> {target} (bw={self.bandwidth[source_idx, target_idx]}, active={self.active_connections[source_idx, target_idx]})"
+
+    def __str__(self) -> str:
+        s = "ConnectionPool:\n"
+        for source in self.devices2index.keys():
+            for target in self.devices2index.keys():
+                if self.check_connection_exists(source, target):
+                    s += self.get_connection_string(source, target) + "\n"
+        return s
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+
+@dataclass(slots=True)
+class SimulatedTopology:
+    devices: List[SimulatedDevice]
+    name: str = "SimulatedTopology"
+    connection_pool: ConnectionPool = field(init=False)
+
+    def __post_init__(self):
+        device_names = [device.name for device in self.devices]
+        self.connection_pool = ConnectionPool(self.devices[0], device_names)
+
+    def add_connection(
+        self, source: NamedDevice, target: NamedDevice, bidirectional: bool = True
+    ):
+        self.connection_pool.add_connection(source, target, bidirectional)
+
+    def add_bandwidth(
+        self,
+        source: NamedDevice,
+        target: NamedDevice,
+        bandwidth: float,
+        bidirectional: bool = True,
+    ):
+        self.connection_pool.add_bandwidth(source, target, bandwidth, bidirectional)
+
+    def check_connection_exists(self, source: NamedDevice, target: NamedDevice):
+        return self.connection_pool.check_connection_exists(source, target)
+
+    def check_bandwidth_exists(self, source: NamedDevice, target: NamedDevice):
+        return self.connection_pool.check_bandwidth_exists(source, target)
+
+    def get_bandwidth(self, source: NamedDevice, target: NamedDevice):
+        return self.connection_pool.get_bandwidth(source, target)
+
+    def count_active_connections(
+        self, source: NamedDevice, target: Optional[NamedDevice] = None
+    ):
+        return self.connection_pool.count_active_connections(source, target)
+
+    def acquire_connection(self, src: NamedDevice, dst: NamedDevice):
+        self.connection_pool.acquire_connection(src, dst)
+
+    def release_connection(self, src: NamedDevice, dst: NamedDevice):
+        self.connection_pool.release_connection(src, dst)
+
+    def check_connection_available(
+        self,
+        source: SimulatedDevice,
+        target: SimulatedDevice,
+        require_copy_engines: bool = True,
+        require_symmetric=True,
+    ) -> bool:
+        return self.connection_pool.check_connection_available(
+            source, target, require_copy_engines, require_symmetric
+        )
+
+    def nearest_valid_connection(
+        self,
+        target: SimulatedDevice,
+        sources: Sequence[SimulatedDevice],
+        require_copy_engines: bool = True,
+        require_symmetric=True,
+    ) -> Optional[NamedDevice]:
+        sorted_sources = self.connection_pool.sort_by_bandwidth(target, sources)
+        for source in sorted_sources:
+            assert isinstance(source, SimulatedDevice)
+
+            if self.check_connection_available(
+                source, target, require_copy_engines, require_symmetric
+            ):
+                return source
+        return None
+
+    def get_devices(self, device_type: Architecture) -> List[SimulatedDevice]:
+        return [
+            device for device in self.devices if device.name.architecture == device_type
+        ]
+
+    def get_device_string(self, device: SimulatedDevice) -> str:
+        return f"{device} (mem={device[ResourceType.MEMORY]})"
+
+    def __str__(self) -> str:
+        s = f"Topology: {self.name}\n"
+        for device in self.devices:
+            s += self.get_device_string(device) + "\n"
+        s += str(self.connection_pool)
+        return s
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class TopologyManager:
