@@ -22,7 +22,7 @@ from rich import print
 @dataclass(slots=True)
 class SimulatedScheduler:
     topology: InitVar[SimulatedTopology]
-    scheduler_type: InitVar[str] = "minimal"
+    scheduler_type: InitVar[str] = "parla"
     tasks: List[TaskID] = field(default_factory=list)
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
@@ -31,11 +31,11 @@ class SimulatedScheduler:
 
     events: EventQueue = EventQueue()
 
-    def __post_init__(self, topology, scheduler_type: str = "parla"):
+    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla"):
         self.state = SystemState(topology=topology)
-        schedeuler_arch = SchedulerOptions.get_scheduler(scheduler_type)
-        print(f"Scheduler Architecture: {schedeuler_arch}")
-        self.mechanisms = schedeuler_arch(topology=topology)
+        scheduler_arch = SchedulerOptions.get_scheduler(scheduler_type)
+        print(f"Scheduler Architecture: {scheduler_arch}")
+        self.mechanisms = scheduler_arch(topology=topology)
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"

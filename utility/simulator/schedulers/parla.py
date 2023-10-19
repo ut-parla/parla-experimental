@@ -176,18 +176,14 @@ def complete_task(task: SimulatedTask, scheduler_state: SystemState) -> bool:
 @SchedulerOptions.register_scheduler("parla")
 @dataclass(slots=True)
 class ParlaArchitecture(SchedulerArchitecture):
-    topology: SimulatedTopology
+    topology: InitVar[SimulatedTopology]
 
     spawned_tasks: TaskQueue = TaskQueue()
 
     # Mapping Phase
     mappable_tasks: TaskQueue = TaskQueue()
-    mapped_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
     # Reserving Phase
     reservable_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
-    reserved_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(
-        default_factory=dict
-    )
     # Launching Phase
     launchable_tasks: Dict[Device, Dict[TaskType, TaskQueue]] = field(
         default_factory=dict
@@ -197,17 +193,14 @@ class ParlaArchitecture(SchedulerArchitecture):
     def __post_init__(self, topology: SimulatedTopology):
         assert topology is not None
 
-        for device in self.topology.devices:
-            self.mapped_tasks[device.name] = TaskQueue()
+        for device in topology.devices:
             self.reservable_tasks[device.name] = TaskQueue()
-
-            self.reserved_tasks[device.name] = dict()
-            self.reserved_tasks[device.name][TaskType.DATA] = TaskQueue()
-            self.reserved_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
             self.launchable_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
+
+            self.launched_tasks[device.name] = TaskQueue()
 
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
