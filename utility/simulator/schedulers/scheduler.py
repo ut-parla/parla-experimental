@@ -127,6 +127,30 @@ class SystemState:
         else:
             self.objects.devicemap = devicemap
 
+    def check_resources(self, task: TaskID, state: TaskState):
+        # Check that the resources are available
+        pass
+
+    def acquire_resources(self, task: TaskID, state: TaskState):
+        # Reserve the resources
+        pass
+
+    def release_resources(self, task: TaskID, state: TaskState):
+        # Release the resources
+        pass
+
+    def use_data(
+        self, task: TaskID, state: TaskState, data: DataID, access: AccessType
+    ):
+        # Update data tracking
+        pass
+
+    def release_data(
+        self, task: TaskID, state: TaskState, data: DataID, access: AccessType
+    ):
+        # Update data tracking
+        pass
+
 
 @dataclass(slots=True)
 class SchedulerArchitecture:

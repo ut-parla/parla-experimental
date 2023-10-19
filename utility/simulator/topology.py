@@ -1,4 +1,4 @@
-from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType
+from ..types import Architecture, Device, TaskID, DataID, DataInfo, ResourceType, Time
 from typing import List, Dict, Set, Tuple, Optional, Callable, Sequence, Type
 from .device import SimulatedDevice, ResourceSet
 from dataclasses import dataclass, field, InitVar
@@ -186,6 +186,16 @@ class ConnectionPool:
         target_idx = self.get_index(target)
         bandwidths = self.bandwidth[target_idx, self.get_indicies(devices)]
         return [devices[i] for i in np.argsort(bandwidths)]
+
+    def get_transfer_time(
+        self, source: NamedDevice, target: NamedDevice, data_size: int
+    ) -> Time:
+        source_idx = self.get_index(source)
+        target_idx = self.get_index(target)
+        bandwidth = self.bandwidth[source_idx, target_idx]
+        time_in_seconds = data_size / bandwidth
+        time_in_microseconds = int(time_in_seconds * 1e6)
+        return Time(time_in_microseconds)
 
     def get_connection_string(self, source: NamedDevice, target: NamedDevice) -> str:
         source_idx = self.get_index(source)

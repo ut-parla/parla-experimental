@@ -156,12 +156,12 @@ class DeviceDataPool:
 
 @dataclass(slots=True)
 class DataPool:
-    devices: InitVar[Sequence[Device]]
+    devices: InitVar[Sequence[SimulatedDevice]]
     devices2pools: Dict[Device, DeviceDataPool] = field(default_factory=dict)
 
-    def __post_init__(self, devices: Sequence[Device]):
+    def __post_init__(self, devices: Sequence[SimulatedDevice]):
         for device in devices:
-            self.devices2pools[device] = DeviceDataPool()
+            self.devices2pools[device.name] = DeviceDataPool()
 
     def add_data(
         self, device: Device, data: SimulatedData, state: DataState, inital=False
