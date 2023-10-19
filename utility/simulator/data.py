@@ -15,16 +15,28 @@ from enum import IntEnum
 
 
 class DataMovementFlags(IntEnum):
+    """
+    Status of data movement to a device
+    """
+
     FIRST_MOVE = 0
+    """ Data is being moved to the device for the first time """
     ALREADY_MOVING = 1
+    """ Data is already being moved to the device """
     ALREADY_THERE = 2
+    """ Data is already on the device due to a previous move """
 
 
 class DataState(IntEnum):
+    """
+    Internal state of data on a device (not all states are used)
+    Note: Not to be confused with TaskState
+    """
+
     NONE = -1
     """ Data is not present on the device """
     PLANNED = 0
-    """ Data is planned to be present on the device """
+    """ Data is planned to be present on the device (not on the device yet, but requested by a task)"""
     MOVING = 1
     """ Data is in transit to the device """
     VALID = 2
@@ -36,6 +48,10 @@ class DataState(IntEnum):
 
 
 class DataUses(IntEnum):
+    """
+    State representing how data is being used by a task
+    """
+
     MAPPED = 1
     """ A mapped compute task is using the data """
     RESERVED = 2
@@ -52,13 +68,6 @@ TaskStateToUse[TaskState.RESERVED] = DataUses.RESERVED
 TaskStateToUse[TaskState.LAUNCHED] = DataUses.USED
 
 NonEvictableUses = [DataUses.RESERVED, DataUses.MOVING, DataUses.USED]
-
-# TODO(WILL): ENDED HERE Sept. 26, 2022
-# Next step: Implement these states in Data and DataPool
-#            Make check_resources/reserve_resources in task
-#            Make acquire/release/evict in datapool/data
-#              - DataPool is the caller of data.evict (reverse of old code)
-#
 
 
 @dataclass(slots=True)

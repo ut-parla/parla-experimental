@@ -171,6 +171,9 @@ class DataID:
     def __eq__(self, other: Self) -> bool:
         return self.idx == other.idx
 
+    def __lt__(self, other: Self) -> bool:
+        return self.idx < other.idx
+
 
 @dataclass(slots=True)
 class DataInfo:
