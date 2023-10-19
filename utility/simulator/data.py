@@ -162,6 +162,23 @@ class DataStatus:
     def get_use_count(self, device: Device, use: DataUses) -> int:
         return self.device2uses[device].get_use_count(use)
 
+    def advance_state(
+        self,
+        device: Device,
+        state: TaskState,
+        new_data_state: DataState,
+        force: bool = False,
+    ) -> bool:
+        if force:
+            self.set_state(device, state, new_data_state)
+            return True  # Change
+        else:
+            prior_data_state = self.get_state(device, state)
+            if new_data_state > prior_data_state:
+                self.set_state(device, state, new_data_state)
+                return True  # Change
+        return False  # No change
+
     def verify_write(self, device: Device, state: TaskState, check_use: bool = True):
         status = self.device2state[state]
 
