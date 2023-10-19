@@ -20,6 +20,9 @@ class ConnectionPool:
     bandwidth: np.ndarray = field(init=False)
 
     def __post_init__(self, devices: Sequence[Device]):
+        """
+        Create a connection pool for a set of devices.
+        """
         self.devices2index = {}
         for i, device in enumerate(devices):
             self.devices2index[device] = i
@@ -77,7 +80,7 @@ class ConnectionPool:
         self.bandwidth[source_idx, target_idx] = bandwidth
 
         if bidirectional:
-            self.bandwidth[source_idx, target_idx] = bandwidth
+            self.bandwidth[target_idx, source_idx] = bandwidth
 
     def add_connection(
         self, source: NamedDevice, target: NamedDevice, bidirectional: bool = True
@@ -88,7 +91,7 @@ class ConnectionPool:
         self.connections[source_idx, target_idx] = True
 
         if bidirectional:
-            self.connections[source_idx, target_idx] = True
+            self.connections[target_idx, source_idx] = True
 
     def update_connection_usage(
         self,
@@ -221,8 +224,14 @@ class SimulatedTopology:
     connection_pool: ConnectionPool = field(init=False)
 
     def __post_init__(self):
+        """
+        Create a simulated topology.
+        Assumes that the first device is the host device.
+        """
         device_names = [device.name for device in self.devices]
-        self.connection_pool = ConnectionPool(self.devices[0], device_names)
+        self.connection_pool = ConnectionPool(
+            host=self.devices[0], devices=device_names
+        )
 
     def add_connection(
         self, source: NamedDevice, target: NamedDevice, bidirectional: bool = True
@@ -400,7 +409,7 @@ def generate_4gpus_1cpu_toplogy(config: Optional[Dict[str, int]]) -> SimulatedTo
     ]
 
     # Create device topology
-    topology = SimulatedTopology(gpus + cpus, "Topology::4G-1C")
+    topology = SimulatedTopology(cpus + gpus, "Topology::4G-1C")
 
     for gpu in gpus:
         topology.add_connection(gpu, cpus[0], bidirectional=True)

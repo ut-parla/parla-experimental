@@ -104,7 +104,7 @@ class SystemState:
         for device in self.topology.devices:
             self.objects.add_device(device)
 
-        self.data_pool = DataPool()
+        self.data_pool = DataPool(devices=self.topology.devices)
         self.resource_pool = ResourcePool(devices=self.topology.devices)
 
     def register_tasks(self, taskmap: SimulatedTaskMap, copy: bool = False):
