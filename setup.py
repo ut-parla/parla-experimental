@@ -29,7 +29,6 @@ def main():
 
     skbuild.setup(
         name="parla",
-        version="0.0.0",
         description="Parla: A Python Parallel Programming Framework",
         author='UT Austin Parla Team',
         author_email="",
@@ -41,7 +40,6 @@ def main():
                      "parla.array": "src/python/parla/array",
                      "parla.tasks": "src/python/parla/tasks", 
                      "parla.devices": "src/python/parla/devices"},
-        python_requires=">=3.8",
         cmake_args=cmake_args
     )
 
