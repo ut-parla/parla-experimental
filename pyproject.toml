@@ -14,10 +14,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parla"
-version = "0.3.0"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["cupy>=9.2", "psutil", "pyyaml", "cython<=0.29.36"]
+dependencies = ["psutil", "pyyaml", "cython<=0.29.36"]
+dynamic = ["version", "authors", "description"]
+
+[project.optional-dependencies]
+gpu = ["cupy>=9.2"]
 
 [tool.ruff]
 extend-ignore = ["F841", "401"]

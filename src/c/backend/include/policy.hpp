@@ -152,7 +152,7 @@ public:
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
       const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
-      std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec);
+      std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) override;
 };
 
 #endif

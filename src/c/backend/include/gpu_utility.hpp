@@ -21,7 +21,6 @@
 using namespace std;
 using namespace chrono;
 
-
 /***
  * @brief Busy sleep on the GPU machine for a given number of cycles
  */
