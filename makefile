@@ -1,11 +1,14 @@
 all:
-	pip install . --verbose
+	python3 -m pip install . --verbose
 
 clean:
-	python setup.py clean --all
+	python2 setup.py clean --all
+	rm -rf .mkdoxy
+	rm -rf docs/doxygen
+	rm -rf site
 
 local:
-	python setup.py build_ext --inplace
+	python3 setup.py build_ext --inplace
 
 test: local
 	. testing/run_tests.sh

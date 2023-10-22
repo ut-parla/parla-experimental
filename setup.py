@@ -29,6 +29,7 @@ def main():
 
     skbuild.setup(
         name="parla",
+	version="0.3.0",
         description="Parla: A Python Parallel Programming Framework",
         author='UT Austin Parla Team',
         author_email="",
