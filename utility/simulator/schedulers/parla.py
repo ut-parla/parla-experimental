@@ -16,6 +16,8 @@ from collections import defaultdict as DefaultDict
 
 from .scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
 
+from ..rl.rl_environment import *
+
 from rich import print
 
 StatesToResources: Dict[TaskState, list[ResourceType]] = {}
@@ -189,6 +191,9 @@ class ParlaArchitecture(SchedulerArchitecture):
         default_factory=dict
     )
     launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    # List of Devices
+    devices: List = field(default_factory=list)
+
 
     success_count: int = 0
     active_scheduler: int = 0
@@ -204,6 +209,8 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
 
             self.launched_tasks[device.name] = TaskQueue()
+
+            self.devices.append(device)
 
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
@@ -248,6 +255,21 @@ class ParlaArchitecture(SchedulerArchitecture):
             assert task is not None
 
             if device := map_task(task, scheduler_state):
+                create_state(task, self.devices, objects.taskmap)
+                print("Task name:", task, " device:", device)
+                # TODO(hc): Get the number of mapped tasks for each device
+                print("Reservable tasks:", len(self.reservable_tasks[device]))
+                print("Launchable tasks:", len(self.launchable_tasks[device]))
+                print("Launched tasks:", len(self.launched_tasks[device]))
+                # TODO(hc): Get the number of parent tasks per each state.
+                for dependencyId in task.dependencies:
+                    dependency = objects.taskmap[dependencyId]
+                    print("Dependency:", dependency, " state:", dependency.state, " device:", dependency.assigned_devices)
+
+                # TODO(hc): Get the number of parent tasks per each device
+
+                # TODO(hc): GNN over dependency/dependent tasks.
+
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
