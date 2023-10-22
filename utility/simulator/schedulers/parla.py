@@ -16,7 +16,7 @@ from collections import defaultdict as DefaultDict
 
 from .scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
 
-from ..rl.rl_environment import *
+from ..rl.models.a2c import A2CAgent
 
 from rich import print
 
@@ -194,6 +194,12 @@ class ParlaArchitecture(SchedulerArchitecture):
     # List of Devices
     devices: List = field(default_factory=list)
 
+    # Current state:
+    # 1. dependency per device (5)
+    # 2. dependency per state (3)
+    # 3. device per-state load (4 * 5)
+    # 4. num. of visible dependents (1)
+    rl_mapper: A2CAgent = A2CAgent(9, 29, 4)
 
     success_count: int = 0
     active_scheduler: int = 0
@@ -210,7 +216,7 @@ class ParlaArchitecture(SchedulerArchitecture):
 
             self.launched_tasks[device.name] = TaskQueue()
 
-            self.devices.append(device)
+            self.devices.append(device.name)
 
     def initialize(
         self, tasks: List[TaskID], scheduler_state: SystemState
@@ -254,22 +260,9 @@ class ParlaArchitecture(SchedulerArchitecture):
             task = objects.get_task(taskid)
             assert task is not None
 
+            self.rl_mapper.create_state(task, self.devices, objects.taskmap, self.reservable_tasks,
+                                        self.launchable_tasks, self.launched_tasks)
             if device := map_task(task, scheduler_state):
-                create_state(task, self.devices, objects.taskmap)
-                print("Task name:", task, " device:", device)
-                # TODO(hc): Get the number of mapped tasks for each device
-                print("Reservable tasks:", len(self.reservable_tasks[device]))
-                print("Launchable tasks:", len(self.launchable_tasks[device]))
-                print("Launched tasks:", len(self.launched_tasks[device]))
-                # TODO(hc): Get the number of parent tasks per each state.
-                for dependencyId in task.dependencies:
-                    dependency = objects.taskmap[dependencyId]
-                    print("Dependency:", dependency, " state:", dependency.state, " device:", dependency.assigned_devices)
-
-                # TODO(hc): Get the number of parent tasks per each device
-
-                # TODO(hc): GNN over dependency/dependent tasks.
-
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()

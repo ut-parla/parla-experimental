@@ -6,7 +6,11 @@ import torch.optim as optim
 
 from torch.distributions import Categorical
 
+from typing import Dict, List, Tuple
+
 from ..networks.a2c_gcn_fcn import *
+from ...task import SimulatedTask
+from ....types import TaskState, TaskType
 from .globals import *
 
 class A2CAgent:
@@ -14,6 +18,16 @@ class A2CAgent:
 
     def __init__(self, gcn_indim: int, in_dim: int, out_dim: int,
                  execution_mode: str = "training", gamma: float = 0.999):
+        self.gcn_indim = gcn_indim
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        # Current state
+        self.current_gcn_state = torch.zeros(gcn_indim)
+        self.current_state = torch.zeros(in_dim - gcn_indim)
+        # Next state
+        self.next_gcn_state = torch.zeros(gcn_indim)
+        self.next_state = torch.zeros(in_dim - gcn_indim)
+
         # Actor: Policy network that selects an action.
         # Critic: Value network that evaluates an action from the policy network.
         self.a2c_model = A2CNetwork(gcn_indim, in_dim, out_dim)
@@ -203,3 +217,40 @@ class A2CAgent:
             for key, param in self.optimizer.state_dict().items():
                 fp.write(key + " = " + str(param))
 
+    def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
+                     reservable_tasks: Dict, launchable_tasks: Dict,
+                     launched_tasks: Dict) -> torch.tensor:
+        print("******** Create states:", target_task)
+        # Per-state load per-device
+        idx = 0
+        for device in devices:
+            print("  ", idx, " = ", len(reservable_tasks[device]), ", ", device)
+            print(launchable_tasks[device])
+            print("  ", idx + 1, " = ", len(launchable_tasks[device][TaskType.COMPUTE]), ", ", device)
+            print("  ", idx + 2, " = ", len(launchable_tasks[device][TaskType.DATA]), ", ", device)
+            print("  ", idx + 3, " = ", len(launched_tasks[device]), ", ", device)
+            self.current_state[idx] = len(reservable_tasks[device])
+            self.current_state[idx + 1] = len(launchable_tasks[device][TaskType.COMPUTE])
+            self.current_state[idx + 2] = len(launchable_tasks[device][TaskType.DATA])
+            self.current_state[idx + 3] = len(launched_tasks[device])
+            idx += 4
+        # Dependency per-state (4): MAPPED ~ COMPLETED
+        # Dependency per-device (4): 0 ~ 4
+        print("******** Create GCN states:", target_task)
+        device_state_offset = TaskState.COMPLETED - TaskState.MAPPED
+        for dependency_id in target_task.dependencies:
+            dependency = taskmap[dependency_id]
+            assigned_device_to_dependency = dependency.assigned_devices
+            dependency_state = dependency.state
+            dependency_state_offset = (dependency_state - TaskState.MAPPED)
+            print("  state: ", dependency_state_offset, " = ", self.current_gcn_state[dependency_state_offset], ", ", dependency_state)
+            self.current_gcn_state[dependency_state_offset] = \
+                self.current_gcn_state[dependency_state_offset] + 1
+            for assigned_device in dependency.assigned_devices:
+                print("  device: ", device_state_offset + assigned_device.device_id, " = ", self.current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
+                self.current_gcn_state[device_state_offset + assigned_device.device_id] = \
+                    self.current_gcn_state[device_state_offset + assigned_device.device_id] + 1
+        self.current_gcn_state[device_state_offset + len(devices)] = len(target_task.dependents)
+        print(" dependents: ", device_state_offset + len(devices), " = ", self.current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
+        print("state:", self.current_state)
+        print("gcn state:", self.current_gcn_state)
