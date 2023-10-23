@@ -195,10 +195,10 @@ class ParlaArchitecture(SchedulerArchitecture):
     devices: List = field(default_factory=list)
 
     # Current state:
-    # 1. dependency per device (5)
-    # 2. dependent/dependency per state (6 due to dependents)
-    # 3. device per-state load (4 * 5)
-    # 4. num. of visible dependents (1)
+    # 1. dependency per device (5, gcn)
+    # 2. dependent/dependency per state (6 due to dependents, gcn)
+    # 3. num. of visible dependents (1, gcn)
+    # 4. device per-state load (4 * 5)
     rl_mapper: A2CAgent = A2CAgent(12, 32, 4)
 
     success_count: int = 0
@@ -265,6 +265,8 @@ class ParlaArchitecture(SchedulerArchitecture):
                 self.launchable_tasks, self.launched_tasks)
             action = self.rl_mapper.select_device(current_device_load_state, node_features, edge_index)
             print("action:", action)
+            next_device_load_state, next_edge_index, next_node_features = self.rl_mapper.create_next_state(
+                current_device_load_state, edge_index, node_features, action.item()) 
             if device := map_task(task, scheduler_state):
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)

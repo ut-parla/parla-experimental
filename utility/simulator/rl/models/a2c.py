@@ -21,6 +21,7 @@ class A2CAgent:
         self.gcn_indim = gcn_indim
         self.in_dim = in_dim
         self.out_dim = out_dim
+        self.num_device_load_features = 4
         # Current state
         self.current_gcn_state = torch.zeros(gcn_indim)
         # Next state
@@ -307,12 +308,19 @@ class A2CAgent:
             current_state[idx + 1] = len(launchable_tasks[device][TaskType.COMPUTE])
             current_state[idx + 2] = len(launchable_tasks[device][TaskType.DATA])
             current_state[idx + 3] = len(launched_tasks[device])
-            idx += 4
+            idx += self.num_device_load_features
         return current_state
 
     def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
                      reservable_tasks: Dict, launchable_tasks: Dict,
                      launched_tasks: Dict):
+        """
+        Create teh current state.
+        The state consists of two feature types:
+        1) Device load state: How many tasks of each state are mapped to each device
+        2) Task workload state: How many dependencies are on each state, and how many
+                                dependent tasks this task has?
+        """
         current_device_load_state = self.create_device_load_state(
             target_task, devices, reservable_tasks, launchable_tasks, launched_tasks)
         edge_index, node_features = self.create_gcn_task_workload_state(
@@ -321,3 +329,35 @@ class A2CAgent:
         print("Node features:", node_features)
         return current_device_load_state, edge_index, node_features
 
+    def create_next_state(self, current_device_load_state, edge_index, node_features, action):
+         """
+         Create the next state since RL uses a time-difference method to evaluate
+         the current model.
+         This function increases a chosen device's load by 1, and
+         increases the mapped dependency count feature by 1 and decreases the
+         spawned dependency count feature by 1.
+         """
+         next_device_load_state = torch.clone(current_device_load_state)
+         next_node_features = torch.clone(node_features)
+         num_reservable_task_offset = action * self.num_device_load_features
+         # Increase device load
+         next_device_load_state[num_reservable_task_offset] = \
+             next_device_load_state[num_reservable_task_offset] + 1
+         # Increase dependents' states; outgoing edge destinations from the node 0
+         # are the dependent tasks.
+         # 0th element of the edge_index is a list of the source tasks.
+         for i in range(len(edge_index[0])): 
+             if edge_index[0][i] == 0:
+                 assert node_features[edge_index[1][i]][TaskState.SPAWNED] != 0
+                 print("dependent:", edge_index[1][i])
+                 # One spawned dependency became mapped.
+                 next_node_features[edge_index[1][i]][TaskState.SPAWNED] = \
+                     next_node_features[edge_index[1][i]][TaskState.SPAWNED] - 1
+                 next_node_features[edge_index[1][i]][TaskState.MAPPED] = \
+                     next_node_features[edge_index[1][i]][TaskState.MAPPED] + 1
+                 # One device selected its device.
+                 next_node_features[edge_index[1][i]][TaskState.COMPLETED + action] = \
+                     next_node_features[edge_index[1][i]][TaskState.COMPLETED + action] + 1
+                 print("  vs ", node_features)
+                 print("  ", next_node_features)
+         return next_device_load_state, edge_index, next_node_features
