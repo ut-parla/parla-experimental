@@ -23,7 +23,6 @@ class A2CAgent:
         self.out_dim = out_dim
         # Current state
         self.current_gcn_state = torch.zeros(gcn_indim)
-        self.current_state = torch.zeros(in_dim - gcn_indim)
         # Next state
         self.next_gcn_state = torch.zeros(gcn_indim)
         self.next_state = torch.zeros(in_dim - gcn_indim)
@@ -50,6 +49,7 @@ class A2CAgent:
         self.optimizer_fname = "optimizer.pt"
         self.best_a2cnet_fname = "best_a2c_network.pt"
         self.best_optimizer_fname = "best_optimizer.pt"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def construct_next_state(self, x: torch.tensor, gcn_x = None, gcn_edgeindex = None):
         x[0] = x[0] + 1
@@ -217,9 +217,83 @@ class A2CAgent:
             for key, param in self.optimizer.state_dict().items():
                 fp.write(key + " = " + str(param))
 
-    def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
-                     reservable_tasks: Dict, launchable_tasks: Dict,
-                     launched_tasks: Dict) -> torch.tensor:
+    def create_gcn_task_workload_state(self, node_id_offset, target_task: SimulatedTask, devices: List, taskmap: Dict) -> Tuple[torch.tensor, torch.tensor]:
+        """
+        Create a state that shows task workload states.
+        This function creates states not only of the current target task, but also
+        its adjacent (possibly k-hops in the future) tasks, and its edge list.
+        This state will be an input of the GCN layer.
+        """
+        lst_node_features = []
+        lst_src_edge_index = []
+        lst_dst_edge_index = []
+        # Create a state of the current task, and append it to the features list.
+        lst_node_features.append(
+            self.create_task_workload_state(target_task, devices, taskmap))
+        # This function temporarily assigns an index to each task.
+        # This should match the index on the node feature list and the edge list.
+        node_id_offset += 1
+        for dependency_id in target_task.dependencies:
+            dependency = taskmap[dependency_id]
+            # Add a dependency to the edge list
+            lst_src_edge_index.append(node_id_offset)
+            # 0th task is the target task
+            lst_dst_edge_index.append(0)
+            lst_node_features.append(
+                self.create_task_workload_state(dependency, devices, taskmap))
+            node_id_offset += 1
+        for dependent_id in target_task.dependents:
+            dependent = taskmap[dependent_id]
+            # 0th task is the target task
+            lst_src_edge_index.append(0)
+            # Add a dependent to the edge list
+            lst_dst_edge_index.append(node_id_offset)
+            lst_node_features.append(
+                self.create_task_workload_state(dependent, devices, taskmap))
+            node_id_offset += 1
+        edge_index = torch.Tensor([lst_src_edge_index, lst_dst_edge_index])
+        edge_index = edge_index.to(torch.int64).to(device=self.device)
+        node_features = torch.cat(lst_node_features).to(device=self.device)
+        # Src/dst lists
+        assert len(edge_index) == 2
+        assert len(node_features) == node_id_offset
+        return edge_index, node_features
+
+    def create_task_workload_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict) -> torch.tensor:
+        # The number of dependencies per-state (dim: 4): MAPPED ~ COMPLETED
+        # Then, # of the dependencies per-devices
+        # (dim: # of devices): 0 ~ # of devices
+        current_gcn_state = torch.zeros(self.gcn_indim)
+        print("******** Create GCN states:", target_task)
+        # Need to consider the None state due to dependent tasks
+        device_state_offset = TaskState.COMPLETED - TaskState.NONE
+        for dependency_id in target_task.dependencies:
+            dependency = taskmap[dependency_id]
+            assigned_device_to_dependency = dependency.assigned_devices
+            dependency_state = dependency.state
+            dependency_state_offset = (dependency_state - TaskState.NONE)
+            print("  state: ", dependency_state_offset, " = ", current_gcn_state[dependency_state_offset], ", ", dependency_state)
+            # The number of the dependencies per state
+            current_gcn_state[dependency_state_offset] = \
+                current_gcn_state[dependency_state_offset] + 1
+            for assigned_device in dependency.assigned_devices:
+                print("  device: ", device_state_offset + assigned_device.device_id, " = ", current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
+                # The number of the dependencies per device
+                current_gcn_state[device_state_offset + assigned_device.device_id] = \
+                    current_gcn_state[device_state_offset + assigned_device.device_id] + 1
+        # The number of the dependent tasks
+        current_gcn_state[device_state_offset + len(devices)] = len(target_task.dependents)
+        print(" dependents: ", device_state_offset + len(devices), " = ", current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
+        print("gcn state:", current_gcn_state)
+        return current_gcn_state.unsqueeze(0)
+
+    def create_device_load_state(self, target_task: SimulatedTask, devices: List, reservable_tasks: Dict,
+                                 launchable_tasks: Dict, launched_tasks: Dict) -> torch.tensor:
+        """
+        Create a state that shows devices' workload states.
+        This state will be an input of the fully-connected layer.
+        """
+        current_state = torch.zeros(self.in_dim - self.gcn_indim)
         print("******** Create states:", target_task)
         # Per-state load per-device
         idx = 0
@@ -229,28 +303,21 @@ class A2CAgent:
             print("  ", idx + 1, " = ", len(launchable_tasks[device][TaskType.COMPUTE]), ", ", device)
             print("  ", idx + 2, " = ", len(launchable_tasks[device][TaskType.DATA]), ", ", device)
             print("  ", idx + 3, " = ", len(launched_tasks[device]), ", ", device)
-            self.current_state[idx] = len(reservable_tasks[device])
-            self.current_state[idx + 1] = len(launchable_tasks[device][TaskType.COMPUTE])
-            self.current_state[idx + 2] = len(launchable_tasks[device][TaskType.DATA])
-            self.current_state[idx + 3] = len(launched_tasks[device])
+            current_state[idx] = len(reservable_tasks[device])
+            current_state[idx + 1] = len(launchable_tasks[device][TaskType.COMPUTE])
+            current_state[idx + 2] = len(launchable_tasks[device][TaskType.DATA])
+            current_state[idx + 3] = len(launched_tasks[device])
             idx += 4
-        # Dependency per-state (4): MAPPED ~ COMPLETED
-        # Dependency per-device (4): 0 ~ 4
-        print("******** Create GCN states:", target_task)
-        device_state_offset = TaskState.COMPLETED - TaskState.MAPPED
-        for dependency_id in target_task.dependencies:
-            dependency = taskmap[dependency_id]
-            assigned_device_to_dependency = dependency.assigned_devices
-            dependency_state = dependency.state
-            dependency_state_offset = (dependency_state - TaskState.MAPPED)
-            print("  state: ", dependency_state_offset, " = ", self.current_gcn_state[dependency_state_offset], ", ", dependency_state)
-            self.current_gcn_state[dependency_state_offset] = \
-                self.current_gcn_state[dependency_state_offset] + 1
-            for assigned_device in dependency.assigned_devices:
-                print("  device: ", device_state_offset + assigned_device.device_id, " = ", self.current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
-                self.current_gcn_state[device_state_offset + assigned_device.device_id] = \
-                    self.current_gcn_state[device_state_offset + assigned_device.device_id] + 1
-        self.current_gcn_state[device_state_offset + len(devices)] = len(target_task.dependents)
-        print(" dependents: ", device_state_offset + len(devices), " = ", self.current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
-        print("state:", self.current_state)
-        print("gcn state:", self.current_gcn_state)
+        return current_state
+
+    def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
+                     reservable_tasks: Dict, launchable_tasks: Dict,
+                     launched_tasks: Dict):
+        current_device_load_state = self.create_device_load_state(
+            target_task, devices, reservable_tasks, launchable_tasks, launched_tasks)
+        edge_index, node_features = self.create_gcn_task_workload_state(
+            0, target_task, devices, taskmap)
+        print("Edge index:", edge_index)
+        print("Node features:", node_features)
+        return current_device_load_state, edge_index, node_features
+
