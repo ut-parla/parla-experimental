@@ -1,124 +1,47 @@
 
-set(CYTHON_FLAGS "${CYTHON_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}")
-set(CMAKE_SHARED_MODULE_PREFIX "")
+set(CYTHON_FLAGS "--cplus --gdb")
 
 if (PARLA_ENABLE_CUDA)
     find_package(CUDAToolkit REQUIRED)
-    #set(CYTHON_FLAGS "${CYTHON_FLAGS} -DPARLA_ENABLE_CUDA")
 endif()
 
-#add_compile_options("-fsanitize=address")
+set(PYX_FILES 
+    cyparray_state.pyx
+    cyparray.pyx
+    core.pyx
+    device.pyx
+    device_manager.pyx
+    tasks.pyx
+    scheduler.pyx
+    variants.pyx
+)
 
-add_cython_target(core core.pyx CXX PY3)
-add_cython_target(tasks tasks.pyx CXX PY3)
-add_cython_target(scheduler scheduler.pyx CXX PY3)
-add_cython_target(device device.pyx CXX PY3)
-add_cython_target(device_manager device_manager.pyx CXX PY3)
-add_cython_target(cyparray_state cyparray_state.pyx CXX PY3)
-add_cython_target(cyparray cyparray.pyx CXX PY3)
-add_cython_target(variants variants.pyx CXX PY3)
+foreach(PYX_FILE ${PYX_FILES})
+    get_filename_component(CY_NAME ${PYX_FILE} NAME_WE)
+    message("Name without extension: ${CY_NAME}")
+    set(CPP_FILE "${CMAKE_CURRENT_BINARY_DIR}/${CY_NAME}.cpp")
+    set(CY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${CY_NAME}.pyx")
 
-add_library(core MODULE ${core})
-add_library(tasks MODULE ${tasks})
-add_library(scheduler MODULE ${scheduler})
-add_library(device MODULE ${device})
-add_library(device_manager MODULE ${device_manager})
-add_library(cyparray_state MODULE ${cyparray_state})
-add_library(cyparray MODULE ${cyparray})
-add_library(variants MODULE ${variants})
+    add_custom_command(
+        OUTPUT ${CPP_FILE}
+        DEPENDS ${CY_FILE}
+        VERBATIM
+        COMMAND ${CYTHON} ${CY_FILE} --cplus --include-dir ${CMAKE_CURRENT_SOURCE_DIR} --include-dir ${PROJECT_SOURCE_DIR}/src/c/backend/include -o ${CPP_FILE}
+        COMMENT "Cythonizing ${PYX_FILE}..."
+    )
 
+    python_add_library(${CY_NAME} MODULE "${CPP_FILE}" WITH_SOABI)
+    target_link_libraries(${CY_NAME} PRIVATE backend)
+    target_link_directories(${CY_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-
-message(STATUS "PYTHON_RELATIVE_SITE_PACKAGES_DIR: ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}")
-message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-
-install(TARGETS core LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS tasks LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS scheduler LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS device LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS device_manager LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS cyparray_state LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS cyparray LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-install(TARGETS variants LIBRARY DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/parla/cython/)
-
-
-
-target_link_libraries(core ${PYTHON_LIBRARIES})
-target_link_libraries(core backend)
-target_include_directories(core PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(core PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(core PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(core PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-if(PARLA_ENABLE_CUDA)
-target_link_libraries(core CUDA::cudart CUDA::cublas CUDA::nvToolsExt CUDA::cublasLt)
-endif(PARLA_ENABLE_CUDA)
-
-
-target_link_libraries(tasks ${PYTHON_LIBRARIES})
-target_link_libraries(tasks backend)
-target_include_directories(tasks PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(tasks PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(tasks PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(tasks PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(tasks PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(scheduler ${PYTHON_LIBRARIES})
-target_link_libraries(scheduler backend)
-target_include_directories(scheduler PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(scheduler PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(scheduler PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(scheduler PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(scheduler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(device ${PYTHON_LIBRARIES})
-target_link_libraries(device backend)
-target_include_directories(device PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(device PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(device PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(device PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(device PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(device_manager ${PYTHON_LIBRARIES})
-target_link_libraries(device_manager backend)
-target_include_directories(device_manager PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(device_manager PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(device_manager PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(device_manager PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(device_manager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(cyparray_state ${PYTHON_LIBRARIES})
-target_link_libraries(cyparray_state backend)
-target_include_directories(cyparray_state PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(cyparray_state PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(cyparray_state PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(cyparray_state PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(cyparray_state PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(cyparray ${PYTHON_LIBRARIES})
-target_link_libraries(cyparray backend)
-target_include_directories(cyparray PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(cyparray PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(cyparray PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(cyparray PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(cyparray PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(variants ${PYTHON_LIBRARIES})
-target_link_libraries(variants backend)
-target_include_directories(variants PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend)
-target_include_directories(variants PUBLIC ${PROJECT_SOURCE_DIR}/src/c/backend/include)
-target_include_directories(variants PUBLIC ${NumPy_INCLUDE_DIRS})
-target_include_directories(variants PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(variants PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-
-python_extension_module(core)
-python_extension_module(tasks)
-python_extension_module(scheduler)
-python_extension_module(device)
-python_extension_module(device_manager)
-python_extension_module(cyparray_state)
-python_extension_module(cyparray)
-python_extension_module(variants)
+    target_include_directories(${CY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/c/backend)
+    target_include_directories(${CY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/c/backend/include)
+    target_include_directories(${CY_NAME} PRIVATE ${NumPy_INCLUDE_DIRS})
+    target_include_directories(${CY_NAME} PRIVATE ${PYTHON_INCLUDE_DIRS})
+    target_include_directories(${CY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${CY_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    if(PARLA_ENABLE_CUDA)
+        target_link_libraries(${CY_NAME} PRIVATE CUDA::cudart CUDA::cublas CUDA::nvToolsExt CUDA::cublasLt)
+    endif(PARLA_ENABLE_CUDA)
+    install(TARGETS ${CY_NAME} DESTINATION ${CMAKE_PROJECT_NAME}/cython/.)
+endforeach()

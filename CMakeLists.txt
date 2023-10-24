@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
 
-project(parla LANGUAGES C CXX)
+project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 
 set(3RD_PARTY_DIR ${PROJECT_SOURCE_DIR}/3rd_party)
 option(PARLA_BUILD_TESTS "Enables building of C++ tests" OFF)
@@ -20,20 +20,38 @@ message(STATUS "PARLA_ENABLE_CUDA: " ${PARLA_ENABLE_CUDA})
 set(CMAKE_VERBOSE_MAKEFILE ON)
 include(CTest)
 
-find_package(PythonExtensions REQUIRED)
-find_package(Cython REQUIRED)
+find_package(
+  Python
+  COMPONENTS Interpreter Development.Module
+  REQUIRED
+  )
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-# include_directories(${NumPy_INCLUDE_DIRS})
+set(CYTHON cython)
+message(STATUS "Cython: " ${CYTHON})
+#Test if cython is installed
+if(NOT CYTHON)
+  message(
+    FATAL_ERROR
+      "Cython is required to build Parla. Please install cython and try again."
+    )
+endif()
+#Test if cython exists
+execute_process(COMMAND ${CYTHON} --version ERROR_QUIET OUTPUT_VARIABLE CYTHON_VERSION)
+if(NOT CYTHON_VERSION)
+  message(
+    FATAL_ERROR
+      "Cython is required to build Parla. Please install cython and try again."
+    )
+endif()
+
+message(STATUS "Python: " ${Python_EXECUTABLE})
 include_directories(${NUMPY_INCLUDE})
 
 if(PARLA_DEBUG)
   set(PARLA_DEBUG_C_COMPILE_FLAGS "-fno-omit-frame-pointer -O0 -g")
-  set(PARLA_DEBUG_CYTHON_COMPILE_FLAGS "--gdb")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PARLA_DEBUG_C_COMPILE_FLAGS}")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PARLA_DEBUG_C_COMPILE_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-  set(CYTHON_FLAGS "${CYTHON_FLAGS} ${PARLA_DEBUG_CYTHON_COMPILE_FLAGS}")
 endif(PARLA_DEBUG)
 
 if(UNIX)
@@ -91,11 +109,11 @@ endif(PARLA_ENABLE_LOGGING)
 add_subdirectory(src/c/backend)
 add_subdirectory(src/python/parla)
 
-if(PARLA_BUILD_TESTS)
-  add_subdirectory(testing)
-endif(PARLA_BUILD_TESTS)
+# if(PARLA_BUILD_TESTS)
+#   add_subdirectory(testing)
+# endif(PARLA_BUILD_TESTS)
 
-set(test_path_file ${CMAKE_SOURCE_DIR}/testing/run_tests.sh)
-file(WRITE ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/testing\n")
-file(APPEND ${test_path_file} "py.test $PARLA_TESTS\n")
-file(APPEND ${test_path_file} "ctest --test-dir $PARLA_TESTS\n")
+# set(test_path_file ${CMAKE_SOURCE_DIR}/testing/run_tests.sh)
+# file(WRITE ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/testing\n")
+# file(APPEND ${test_path_file} "py.test $PARLA_TESTS\n")
+# file(APPEND ${test_path_file} "ctest --test-dir $PARLA_TESTS\n")

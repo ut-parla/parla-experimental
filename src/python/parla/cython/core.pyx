@@ -1,3 +1,5 @@
+#cython: language_level=3
+#cython: language=c++
 """!
 @file core.pyx
 @brief Contains the core intermediate cython wrapper classes for Task, Workers, and Scheduler.
@@ -132,7 +134,7 @@ cpdef gpu_bsleep_nogil(dev, t, stream):
 # Define callbacks for C++ to call back into Python
 
 cdef void callback_launch(void* python_scheduler, void* python_task, void*
-        python_worker) nogil:
+        python_worker) noexcept nogil:
     with gil:
         #print("Inside callback to cython", flush=True)
         task = <object>python_task

@@ -1,10 +1,12 @@
+#cython: language_level=3
+#cython: language=c++
 """!
 @file device_manager.pyx
 @brief Contains the cython wrapper and python layer DeviceManager and StreamPool classes.
 """
 
-from parla.cython import device
-from parla.cython.device cimport Device
+from . import device
+from .device cimport Device
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List

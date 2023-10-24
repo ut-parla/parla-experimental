@@ -1,4 +1,6 @@
 
+#cython: language_level=3
+#cython: language=c++
 """!
 @file tasks.pyx
 @brief Contains the Task and TaskEnvironment classes, which are used to represent tasks and their execution environments.
@@ -9,29 +11,20 @@ import functools
 
 from parla.utility.threads import Propagate
 
-cimport core
-from parla.cython import core
-from parla.cython import device
+from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
 
-from parla.common.globals import _Locals as Locals
-from parla.common.globals import get_stream_pool, get_scheduler
-from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import AccessMode, Storage
+from .device import PyDevice, PyCPUDevice, PyCUDADevice, DeviceResourceRequirement
 
-from parla.common.parray.core import PArray
-from parla.common.globals import SynchronizationType as SyncType 
+from ..common.globals import _Locals as Locals
+from ..common.globals import get_stream_pool, get_scheduler
+from ..common.globals import DeviceType
+from ..common.globals import AccessMode, Storage
 
-PyDevice = device.PyDevice
-PyCUDADevice = device.PyCUDADevice
-PyCPUDevice = device.PyCPUDevice
-PyArchitecture = device.PyArchitecture
-PyCUDAArchitecture = device.PyCUDAArchitecture
-
-DeviceType = PyDeviceType
+from ..common.parray.core import PArray
+from ..common.globals import SynchronizationType as SyncType 
 
 from abc import abstractmethod, ABCMeta
-from typing import Optional, List, Iterable, Union
-from typing import Awaitable, Collection, Iterable, FrozenSet
+from typing import Optional, List, Iterable, FrozenSet
 from copy import copy
 import threading
 
@@ -40,11 +33,6 @@ import sys
 
 import cython 
 cimport cython
-
-from parla.cython import device, device_manager
-
-DeviceResourceRequirement = device.DeviceResourceRequirement 
-cpu = device_manager.cpu
 
 
 class TaskState(object, metaclass=ABCMeta):
@@ -154,7 +142,7 @@ class TaskRunning(TaskState):
 
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[List] = None):
+    def __init__(self, func, args, dependencies: Optional[Iterable] = None):
         #print("TaskRunning init", flush=True)
         if dependencies is not None:
             # d could be one of four types: Task, DataMovementTask, TaskID or other types.
@@ -316,7 +304,7 @@ class Task:
             #Allow user to specify a name (used for testing and debugging)
             self.name = name
 
-        self.inner_task = core.PyInnerTask(self.id, self)
+        self.inner_task = PyInnerTask(self.id, self)
         self.update_name()
         self._env = None
 
@@ -712,7 +700,7 @@ class DataMovementTask(Task):
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
-    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
+    def instantiate(self, attrs: DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
         """!
         @brief Instantiate the data movement task with attributes from the C++ runtime.
         @param attrs The attributes of the data movement task.
@@ -1578,7 +1566,7 @@ class TaskList(TaskCollection):
 
 cpdef wait(barrier):
 
-    if isinstance(barrier, core.CyTaskList):
+    if isinstance(barrier, CyTaskList):
         barrier = BackendTaskList(barrier)
 
     barrier.wait()
@@ -1587,7 +1575,7 @@ class AtomicTaskList(TaskList):
 
     def __init__(self, tasks, name=None, flatten=True):
         super().__init__(tasks, name, flatten)
-        self.inner_barrier = core.PyTaskBarrier(self.tasks)
+        self.inner_barrier = PyTaskBarrier(self.tasks)
 
     def __repr__(self):
         return "AtomicTaskList: {}".format(self.tasks)
@@ -1604,7 +1592,7 @@ class AtomicTaskList(TaskList):
 class BackendTaskList(TaskList):
 
     def __init__(self, tasks, name=None, flatten=True):
-        self.inner_barrier = core.PyTaskBarrier(tasks)
+        self.inner_barrier = PyTaskBarrier(tasks)
         self._tasks = None
         self._name = name 
 
@@ -1709,7 +1697,7 @@ class AtomicTaskSpace(TaskSpace):
 
     def __init__(self, name="", create=True, shape=None, start=None):
         super().__init__(name, create, shape, start)
-        self.inner_space = core.PyTaskBarrier()
+        self.inner_space = PyTaskBarrier()
 
     def __repr__(self):
         return f"AtomicTaskSpace({self._name}, ntasks={len(self)})"
@@ -1771,7 +1759,7 @@ class BackendTaskSpace(TaskSpace):
 
     def __init__(self, name="", create=True, shape=None, start=None):
         super().__init__(name, create, shape, start)
-        self.inner_space = core.PyTaskSpace()
+        self.inner_space = PyTaskSpace()
 
     def __repr__(self):
         return f"BackendTaskspace({self._name}, ntasks={len(self)})"
@@ -1794,7 +1782,7 @@ class BackendTaskSpace(TaskSpace):
             #self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
-            return_list = core.CyTaskList()
+            return_list = CyTaskList()
             self.inner_space.get_tasks(index_list, return_list)
             return return_list
 
@@ -1804,7 +1792,7 @@ class BackendTaskSpace(TaskSpace):
             #self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
-            return_list = core.CyTaskList()
+            return_list = CyTaskList()
             self.inner_space.get_tasks(index_list, return_list)
             return return_list
 
@@ -1818,7 +1806,7 @@ class BackendTaskSpace(TaskSpace):
         #self.inner_space.add_tasks(new_idx, new_tasks)
         self.inner_space.add_tasks(new_tasks)
 
-        return_list = core.CyTaskList()
+        return_list = CyTaskList()
         self.inner_space.get_tasks(index_list, return_list)
         return return_list
 
