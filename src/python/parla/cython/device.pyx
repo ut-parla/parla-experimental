@@ -11,10 +11,10 @@ cimport cython
 @brief Contains the user-facing device and architectures classes.
 """
 
-from parla.common.globals import _Locals as Locals
-from parla.common.globals import cupy, CUPY_ENABLED
-from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import VCU_BASELINE, get_device_manager
+from ..common.globals import _Locals as Locals
+from ..common.globals import cupy, CUPY_ENABLED
+from ..common.globals import DeviceType as PyDeviceType
+from ..common.globals import VCU_BASELINE, get_device_manager
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass

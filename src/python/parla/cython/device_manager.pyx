@@ -7,7 +7,7 @@
 
 from . import device
 from .device cimport Device
-from parla.common.globals import DeviceType, cupy, VCU_BASELINE
+from ..common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
 

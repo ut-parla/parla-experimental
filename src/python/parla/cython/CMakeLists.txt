@@ -16,15 +16,49 @@ set(PYX_FILES
     variants.pyx
 )
 
-foreach(PYX_FILE ${PYX_FILES})
+set(FILE_MAP
+    "cyparray_state.pxd"
+    "cyparray.pxd cyparray_state.pxd"
+    "core.pxd device.pxd device_manager.pxd resources.pxd cyparray.pxd"
+    "device.pxd"
+    "device_manager.pxd device.pxd"
+    "core.pxd"
+    "core.pxd"
+    ""
+)
+
+set(index 0)
+foreach(PYX_FILE DEPEND_STRING IN ZIP_LISTS PYX_FILES FILE_MAP)
+    message("PYX_FILE: ${PYX_FILE}")
+    message("DEPEND_FILES: ${DEPEND_STRING}")
     get_filename_component(CY_NAME ${PYX_FILE} NAME_WE)
+
+    if (PYX_FILE STREQUAL "")
+        break()
+    endif()
+
+    if (DEPEND_STRING STREQUAL "")
+        set(DEPEND_NAMES "")
+    else()
+        string(REPLACE " " ";" DEPEND_FILES ${DEPEND_STRING})
+        set(DEPEND_NAMES "")
+        foreach(DEPEND_FILE ${DEPEND_FILES})
+            message("DEPEND_FILE: ${DEPEND_FILE}")
+            set(DEPEND_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${DEPEND_FILE}")
+            list(APPEND DEPEND_NAMES ${DEPEND_NAME})
+        endforeach()
+    endif()
+
+
     message("Name without extension: ${CY_NAME}")
+    message("Depend files: ${DEPEND_NAMES}")
+
     set(CPP_FILE "${CMAKE_CURRENT_BINARY_DIR}/${CY_NAME}.cpp")
     set(CY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${CY_NAME}.pyx")
 
     add_custom_command(
         OUTPUT ${CPP_FILE}
-        DEPENDS ${CY_FILE}
+        DEPENDS ${CY_FILE} ${DEPEND_NAMES}
         VERBATIM
         COMMAND ${CYTHON} ${CY_FILE} --cplus --include-dir ${CMAKE_CURRENT_SOURCE_DIR} --include-dir ${PROJECT_SOURCE_DIR}/src/c/backend/include -o ${CPP_FILE}
         COMMENT "Cythonizing ${PYX_FILE}..."
@@ -43,5 +77,5 @@ foreach(PYX_FILE ${PYX_FILES})
     if(PARLA_ENABLE_CUDA)
         target_link_libraries(${CY_NAME} PRIVATE CUDA::cudart CUDA::cublas CUDA::nvToolsExt CUDA::cublasLt)
     endif(PARLA_ENABLE_CUDA)
-    install(TARGETS ${CY_NAME} DESTINATION ${CMAKE_PROJECT_NAME}/cython/.)
+    install(TARGETS ${CY_NAME} DESTINATION ${CMAKE_PROJECT_NAME}/cython)
 endforeach()

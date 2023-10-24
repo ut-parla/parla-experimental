@@ -7,16 +7,16 @@
 
 import cython 
 
-from parla.common.parray.core import PArray
-from parla.common.dataflow import Dataflow
-from parla.common.globals import AccessMode
+from ..common.parray.core import PArray
+from ..common.dataflow import Dataflow
+from ..common.globals import AccessMode, cupy
 
-from parla.cython.device cimport Device
-from parla.cython.cyparray cimport CyPArray
-from parla.cython.device_manager cimport CyDeviceManager, DeviceManager
+from .device cimport Device
+from .cyparray cimport CyPArray
+from .device_manager cimport CyDeviceManager, DeviceManager
 import threading
 from enum import IntEnum, auto
-from parla.common.globals import cupy
+from ..common.globals import cupy
 from libc.stdint cimport uintptr_t
 
 #Resource Types
