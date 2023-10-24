@@ -211,7 +211,7 @@ class PyDeviceManager:
         if num_cores:
             num_cores = int(num_cores)
         else:
-            num_cores = len(os.sched_getaffinity(0))
+            num_cores = psutil.cpu_count(logical=False)
         if num_cores == 0:
             raise RuntimeError("No CPU cores available for Parla.")
 

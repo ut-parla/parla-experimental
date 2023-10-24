@@ -1,6 +1,3 @@
-
-set(CYTHON_FLAGS "--cplus --gdb")
-
 if (PARLA_ENABLE_CUDA)
     find_package(CUDAToolkit REQUIRED)
 endif()
@@ -29,8 +26,6 @@ set(FILE_MAP
 
 set(index 0)
 foreach(PYX_FILE DEPEND_STRING IN ZIP_LISTS PYX_FILES FILE_MAP)
-    message("PYX_FILE: ${PYX_FILE}")
-    message("DEPEND_FILES: ${DEPEND_STRING}")
     get_filename_component(CY_NAME ${PYX_FILE} NAME_WE)
 
     if (PYX_FILE STREQUAL "")
@@ -43,15 +38,10 @@ foreach(PYX_FILE DEPEND_STRING IN ZIP_LISTS PYX_FILES FILE_MAP)
         string(REPLACE " " ";" DEPEND_FILES ${DEPEND_STRING})
         set(DEPEND_NAMES "")
         foreach(DEPEND_FILE ${DEPEND_FILES})
-            message("DEPEND_FILE: ${DEPEND_FILE}")
             set(DEPEND_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${DEPEND_FILE}")
             list(APPEND DEPEND_NAMES ${DEPEND_NAME})
         endforeach()
     endif()
-
-
-    message("Name without extension: ${CY_NAME}")
-    message("Depend files: ${DEPEND_NAMES}")
 
     set(CPP_FILE "${CMAKE_CURRENT_BINARY_DIR}/${CY_NAME}.cpp")
     set(CY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${CY_NAME}.pyx")
@@ -60,7 +50,7 @@ foreach(PYX_FILE DEPEND_STRING IN ZIP_LISTS PYX_FILES FILE_MAP)
         OUTPUT ${CPP_FILE}
         DEPENDS ${CY_FILE} ${DEPEND_NAMES}
         VERBATIM
-        COMMAND ${CYTHON} ${CY_FILE} --cplus --include-dir ${CMAKE_CURRENT_SOURCE_DIR} --include-dir ${PROJECT_SOURCE_DIR}/src/c/backend/include -o ${CPP_FILE}
+        COMMAND ${CYTHON} ${CY_FILE} ${CYTHON_FLAGS} --include-dir ${CMAKE_CURRENT_SOURCE_DIR} --include-dir ${PROJECT_SOURCE_DIR}/src/c/backend/include -o ${CPP_FILE}
         COMMENT "Cythonizing ${PYX_FILE}..."
     )
 

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.5", "pyyaml", "cython"]
+requires = ["scikit-build-core>=0.5", "pyyaml", "cython", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -12,7 +12,7 @@ maintainers = [
 description = ""
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["psutil", "pyyaml", "cython"]
+dependencies = ["psutil", "pyyaml", "cython", "numpy"]
 
 [tool.scikit-build]
 minimum-version = "0.5"
@@ -20,6 +20,8 @@ build-dir = "build"
 wheel.packages = ["src/python/parla"]
 wheel.license-files = []
 cmake.minimum-version = "3.22.1"
+cmake.build-type = "Debug"
+cmake.verbose = true
 cmake.args = []
 cmake.define = {}
 ninja.minimum-version = "1.11"
@@ -27,6 +29,4 @@ ninja.minimum-version = "1.11"
 
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]
-
-[tool.ruff]
-extend-ignore = ["F841", "401"]
+crosspy = ["crosspy", "cupy>=9.2"]
