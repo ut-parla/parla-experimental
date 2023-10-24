@@ -25,9 +25,9 @@ cmake.verbose = true
 ninja.minimum-version = "1.11"
 
 [tool.scikit-build.cmake.define]
-PARLA_ENABLE_NVTX = "ON"
+PARLA_ENABLE_NVTX = "OFF"
 PARLA_ENABLE_LOGGING = "OFF"
-PARLA_ENABLE_CUDA = "ON"
+PARLA_ENABLE_CUDA = "OFF"
 
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]
