@@ -41,6 +41,11 @@ if(PARLA_ENABLE_CUDA)
         message("SPEC_G: ${SPEC}")
         list(APPEND BACKEND_SRC impl_cuda/${SPEC}.cu)
     endforeach()
+elseif(PARLA_ENABLE_HIP)
+    foreach(SPEC ${SPECIALIZATIONS})
+        message("SPEC_C: ${SPEC}")
+        list(APPEND BACKEND_SRC impl_hip/${SPEC}.hip)
+    endforeach()
 else()
     foreach(SPEC ${SPECIALIZATIONS})
         message("SPEC_C: ${SPEC}")
@@ -65,6 +70,7 @@ if(PARLA_ENABLE_LOGGING)
 endif(PARLA_ENABLE_LOGGING)
 
 set_target_properties(backend PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 if(PARLA_ENABLE_CUDA)
     

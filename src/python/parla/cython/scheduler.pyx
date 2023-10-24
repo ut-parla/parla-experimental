@@ -14,6 +14,11 @@ import os
 from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
 from parla.common.globals import SynchronizationType as SyncType
 
+if cupy is not None:
+    import cupy_backends
+else:
+    cupy_backends = None
+
 import traceback
 import sys
 
@@ -154,8 +159,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         cupy.asnumpy(cupy.sqrt(a))
                         device.cublas_handle
                         device.cusolver_handle
-                        device.cusolver_sp_handle
+
+                        try:
+                            device.cusolver_sp_handle
+                        except cupy_backends.cuda.libs.cusolver.CUSOLVERError:
+                            pass
+
                         device.cusparse_handle
+                        
                         stream.synchronize()
                         device.synchronize()
 

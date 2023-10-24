@@ -28,6 +28,7 @@ ninja.minimum-version = "1.11"
 PARLA_ENABLE_NVTX = "OFF"
 PARLA_ENABLE_LOGGING = "OFF"
 PARLA_ENABLE_CUDA = "OFF"
+PARLA_ENABLE_HIP = "OFF"
 
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]
