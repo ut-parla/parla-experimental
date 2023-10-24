@@ -3,7 +3,7 @@
 import cython
 cimport cython
 
-from ..cython.device cimport CUDADevice, CPUDevice, Device, CyDevice 
+from parla.cython.device cimport CUDADevice, CPUDevice, Device, CyDevice 
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector

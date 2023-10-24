@@ -15,13 +15,13 @@ from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovem
 
 from .device import PyDevice, PyCPUDevice, PyCUDADevice, DeviceResourceRequirement
 
-from ..common.globals import _Locals as Locals
-from ..common.globals import get_stream_pool, get_scheduler
-from ..common.globals import DeviceType
-from ..common.globals import AccessMode, Storage
+from parla.common.globals import _Locals as Locals
+from parla.common.globals import DeviceType
+from parla.common.globals import get_stream_pool, get_scheduler
+from parla.common.globals import AccessMode, Storage
 
-from ..common.parray.core import PArray
-from ..common.globals import SynchronizationType as SyncType 
+from parla.common.parray.core import PArray
+from parla.common.globals import SynchronizationType as SyncType 
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, FrozenSet

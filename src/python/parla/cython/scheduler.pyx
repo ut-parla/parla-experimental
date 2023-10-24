@@ -24,9 +24,9 @@ from . cimport core
 from . import core
 from .cyparray import CyPArray
 
-from ..common.globals import _Locals as Locals 
-from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
-from ..common.parray.core import PArray
+from parla.common.globals import _Locals as Locals 
+from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
+from parla.common.parray.core import PArray
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
