@@ -22,10 +22,12 @@ wheel.license-files = []
 cmake.minimum-version = "3.22.1"
 cmake.build-type = "Debug"
 cmake.verbose = true
-cmake.args = []
-cmake.define = {}
 ninja.minimum-version = "1.11"
 
+[tool.scikit-build.cmake.define]
+PARLA_ENABLE_NVTX = "ON"
+PARLA_ENABLE_LOGGING = "OFF"
+PARLA_ENABLE_CUDA = "ON"
 
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]

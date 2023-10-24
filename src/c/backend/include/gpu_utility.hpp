@@ -13,11 +13,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#if defined(PARLA_ENABLE_CUDA)
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#endif
-
 using namespace std;
 using namespace chrono;
 

@@ -34,13 +34,21 @@ foreach(HEADER ${BACKEND_HDR})
     set(BACKEND_HDR_INCLUDE ${BACKEND_HDR_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}/include/${HEADER})
 endforeach()
 
-#TODO(wlr): Fix this to be less hacky and cleaner :)
+set(SPECIALIZATIONS "utility")
+
 if(PARLA_ENABLE_CUDA)
-    file(GLOB BACKEND_SRC ${BACKEND_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/impl_cuda/*.cu)
-    file(GLOB BACKEND_SRC ${BACKEND_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/impl_cuda/*.cpp)
+    foreach(SPEC ${SPECIALIZATIONS})
+        message("SPEC_G: ${SPEC}")
+        list(APPEND BACKEND_SRC impl_cuda/${SPEC}.cu)
+    endforeach()
 else()
-    file(GLOB BACKEND_SRC ${BACKEND_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/impl_none/*.cpp)
+    foreach(SPEC ${SPECIALIZATIONS})
+        message("SPEC_C: ${SPEC}")
+        list(APPEND BACKEND_SRC impl_none/${SPEC}.cpp)
+    endforeach()
 endif(PARLA_ENABLE_CUDA)
+
+message(STATUS "ALL FILES: ${BACKEND_SRC}")
 
 add_library(backend STATIC ${BACKEND_SRC})
 
@@ -62,6 +70,8 @@ if(PARLA_ENABLE_CUDA)
     
     set_target_properties(backend PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(backend PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
+    target_compile_definitions(backend PUBLIC PARLA_ENABLE_CUDA)
 
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})
     target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})

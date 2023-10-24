@@ -89,7 +89,7 @@ if(PARLA_ENABLE_LOGGING)
 
   if(binlog_FOUND)
     install(IMPORTED_RUNTIME_ARTIFACTS binlog::bread binlog::brecovery
-            DESTINATION bin)
+            DESTINATION ${SKBUILD_SCRIPTS_DIR})
     install(RUNTIME_DEPENDENCY_SET binlog::binlog DESTINATION lib)
   endif(binlog_FOUND)
 
