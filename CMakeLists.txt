@@ -81,6 +81,11 @@ if(PARLA_ENABLE_CUDA)
   find_package(CUDAToolkit REQUIRED)
 endif(PARLA_ENABLE_CUDA)
 
+if(PARLA_ENABLE_HIP)
+    enable_language(HIP)
+endif(PARLA_ENABLE_HIP)
+
+
 if(PARLA_ENABLE_LOGGING)
   # TODO: figure out binlog cmake support
   message(STATUS "Finding binlog...")
