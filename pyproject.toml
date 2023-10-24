@@ -1,26 +1,34 @@
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-    "scikit-build",
-    "cmake",
-    "pip>=21",
-    "cython<=0.29.36",
-    "ninja",
-    "numpy",
-    "pyyaml"
-]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.5", "pyyaml", "cython", "numpy"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "parla"
+version = "0.3.1"
+maintainers = [
+    { name = "William Ruys", email = "will.ruys@gmail.com" },
+    { name = "Hochan Lee", email = "hochan@utexas.edu" },
+]
+description = ""
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["psutil", "pyyaml", "cython<=0.29.36"]
-dynamic = ["version", "authors", "description"]
+dependencies = ["psutil", "pyyaml", "cython", "numpy"]
+
+[tool.scikit-build]
+minimum-version = "0.5"
+build-dir = "build"
+wheel.packages = ["src/python/parla"]
+wheel.license-files = []
+cmake.minimum-version = "3.22.1"
+cmake.build-type = "Debug"
+cmake.verbose = true
+ninja.minimum-version = "1.11"
+
+[tool.scikit-build.cmake.define]
+PARLA_ENABLE_NVTX = "OFF"
+PARLA_ENABLE_LOGGING = "OFF"
+PARLA_ENABLE_CUDA = "OFF"
 
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]
-
-[tool.ruff]
-extend-ignore = ["F841", "401"]
+crosspy = ["crosspy", "cupy>=9.2"]

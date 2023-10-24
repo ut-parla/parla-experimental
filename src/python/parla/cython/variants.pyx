@@ -1,4 +1,6 @@
 
+#cython: language_level=3
+#cython: language=c++
 """!
 @file variants.pyx
 @brief Provides decorators for dispatching functions based on the active TaskEnvironment.

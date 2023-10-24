@@ -1,10 +1,12 @@
+#cython: language_level=3
+#cython: language=c++
 """!
 @file device_manager.pyx
 @brief Contains the cython wrapper and python layer DeviceManager and StreamPool classes.
 """
 
-from parla.cython import device
-from parla.cython.device cimport Device
+from . import device
+from .device cimport Device
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
@@ -209,7 +211,7 @@ class PyDeviceManager:
         if num_cores:
             num_cores = int(num_cores)
         else:
-            num_cores = len(os.sched_getaffinity(0))
+            num_cores = psutil.cpu_count(logical=False)
         if num_cores == 0:
             raise RuntimeError("No CPU cores available for Parla.")
 

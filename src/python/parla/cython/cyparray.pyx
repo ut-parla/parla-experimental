@@ -1,5 +1,5 @@
-# distutils: language=c++
-
+#cython: language_level=3
+#cython: language=c++
 """!
 @file cyparray.pyx
 @brief Contains the core intermediate cython wrapper classes for PArray.

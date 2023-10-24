@@ -1,9 +1,12 @@
+#cython: language_level=3
+#cython: language=c++
 import cython
 cimport cython
 
-from parla.cython.device_manager cimport DeviceManager
-from parla.cython.device cimport Device, CyDevice
-from parla.cython.cyparray cimport InnerPArray
+from .device_manager cimport DeviceManager
+from .cyparray cimport InnerPArray
+from .device cimport Device, DeviceType, CyDevice
+from .resources cimport Resource
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
@@ -12,22 +15,17 @@ from libcpp.vector cimport vector
 
 from libc.stdint cimport uintptr_t
 
-cdef extern from "include/resources.hpp" nogil:
-    cdef enum Resource:
-        MEMORY = 0,
-        VCUS = 1,
-
 cdef extern from "include/gpu_utility.hpp" nogil:
-    void cpu_busy_sleep(unsigned int microseconds)
+    void cpu_busy_sleep(unsigned int microseconds) noexcept
     void gpu_busy_sleep(const int device, const unsigned long cycles,
-                    uintptr_t stream_ptr)
+                    uintptr_t stream_ptr) noexcept 
 
 cdef extern from "include/runtime.hpp" nogil:
-    ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
-    ctypedef void (*stopfunc_t)(void*)
+    ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker) noexcept 
+    ctypedef void (*stopfunc_t)(void*) noexcept 
 
-    void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
-    void stop_callback(stopfunc_t func, void* scheduler)
+    void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker) noexcept
+    void stop_callback(stopfunc_t func, void* scheduler) noexcept
 
     #ctypedef void* Ptr_t
     #ctypedef InnerTask* InnerTaskPtr_t

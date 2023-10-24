@@ -1,3 +1,5 @@
+#cython: language_level=3
+#cython: language=c++
 """!
 @file scheduler.pyx
 @brief Contains the core Python logic to manage workers and launch tasks.
@@ -16,11 +18,11 @@ import traceback
 import sys
 
 #cimport tasks
-from parla.cython import tasks
+from . import tasks
 
-cimport core
-from parla.cython import core
-from parla.cython.cyparray import CyPArray
+from . cimport core
+from . import core
+from .cyparray import CyPArray
 
 from parla.common.globals import _Locals as Locals 
 from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
