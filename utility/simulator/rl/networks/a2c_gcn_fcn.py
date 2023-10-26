@@ -40,11 +40,14 @@ class A2CNetwork(torch.nn.Module):
     def forward(self, model_input):
         is_batch = model_input.is_batch
         x = model_input.x.to(self.device)
-        gcn_x = model_input.gcn_x.to(self.device)
-        gcn_edge_index = model_input.gcn_edge_index.to(self.device)
+        gcn_x = model_input.gcn_x
+        gcn_edge_index = model_input.gcn_edge_index
         if is_batch:
             lst_y = []
             for i in range(len(gcn_x)):
+                gcn_x[i] = gcn_x[i].to(self.device)
+                gcn_edge_index[i] = gcn_edge_index[i].to(self.device)
+                print(i, " input:", gcn_x[i], ", ei:", gcn_edge_index[i], flush=True)
                 gcn_out = self.gcn(gcn_x[i], gcn_edge_index[i])
                 # Only aggregate gcn output tensors.
                 gcn_out = torch.mean(gcn_out, dim=0)
@@ -52,6 +55,8 @@ class A2CNetwork(torch.nn.Module):
                 lst_y.append(y)
             x = torch.stack(lst_y)
         else:
+            gcn_x = gcn_x.to(self.device)
+            gcn_edge_index = gcn_edge_index.to(self.device)
             gcn_out = self.gcn(gcn_x, gcn_edge_index)
             gcn_out = torch.mean(gcn_out, dim=0)
             # Concatenate a gcn tensor and a normal state.
@@ -66,5 +71,4 @@ class A2CNetwork(torch.nn.Module):
         c = F.leaky_relu(self.critic_fcn1(x))
         c = F.leaky_relu(self.critic_fcn2(c))
         c = self.critic_out(c)
-
         return a,c

@@ -9,27 +9,32 @@ from ..networks.fcn import *
 from ..networks.dqn_gcn_fcn import *
 from .replay_memory import *
 from .globals import *
+from .env import *
 
 class DQNAgent:
 
     # TODO(hc): execution mode would be enum, instead of string.
-    def __init__(self, gcn_indim: int, in_dim: int, out_dim: int,
-                 execution_mode: str = "training",
+    def __init__(self, execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
-                 batch_size = 10, gamma = 0.999):
+                 batch_size = 5, gamma = 0.999):
+        self.gcn_indim = gcn_indim
+        self.indim = fcn_indim + gcn_indim
+        self.outdim = outdim
         if True: # Use GCN+FCN layers
-            self.policy_network = DQNNetwork(gcn_indim, in_dim, out_dim)
-            self.target_network = DQNNetwork(gcn_indim, in_dim, out_dim)
+            self.policy_network = DQNNetwork(gcn_indim, self.indim, outdim)
+            self.target_network = DQNNetwork(gcn_indim, self.indim, outdim)
         else: # Use pure FCN layers
-            self.policy_network = FCN(in_dim, out_dim)
-            self.target_network = FCN(in_dim, out_dim)
+            self.policy_network = FCN(indim, outdim)
+            self.target_network = FCN(indim, outdim)
+        self.mapping_transition_buffer = dict()
+        self.complete_transition_list = list()
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
                                        lr=0.002)
         self.replay_memory = ReplayMemory(1000)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.execution_mode = execution_mode
         # RL parameter setup
-        self.n_actions = out_dim
+        self.n_actions = outdim
         self.steps = 1
         self.eps_start = eps_start
         self.eps_end = eps_end
@@ -48,7 +53,7 @@ class DQNAgent:
     def is_training_mode(self):
         return "training" in self.execution_mode
 
-    def select_device(self, x, gcn_x = None, gcn_edgeindex = None):
+    def select_device(self, task, x, gcn_x = None, gcn_edgeindex = None):
         """ Select a device (action) with a state `x` and `policy_network`.
         """
         sample = random.random()
@@ -59,6 +64,7 @@ class DQNAgent:
             with torch.no_grad():
                 model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
                 out = self.policy_network(model_input)
+                print("Out:", out)
                 for action in range(self.n_actions):
                     max_action_pair = out.max(0)
                     # TODO(hc): may need to check if max action is within
@@ -69,7 +75,7 @@ class DQNAgent:
             # have sufficient resources.
             out = torch.tensor(
                   random.choice([d for d in range(self.n_actions)]),
-                  dtype=torch.float)
+                  dtype=torch.int64)
 
         return out
 
@@ -82,8 +88,17 @@ class DQNAgent:
         if len(self.replay_memory) < self.batch_size:
             return
 
+        print("Optimization starts\n")
+
         transitions = self.replay_memory.sample(self.batch_size)
         batch = Transition(*zip(*transitions))
+
+        print("batch next states:", batch.next_state)
+        print("states:", batch.state)
+        print("action:", batch.action)
+        print("reward:", batch.reward)
+        print("gcn states:", batch.gcn_state)
+        print("next gcn state:", batch.next_gcn_state)
 
         # Perform DQN optimization:
         # (reward + gamma * (Q values from the target network with next states))
@@ -91,45 +106,58 @@ class DQNAgent:
 
         # Make each next state in transitions as a separete element in a list.
         # Then, `target_network` will produce an output for each next state.
-        next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state
-                                 if s is not None])
+        next_states = torch.cat([s.unsqueeze(0) for s in \
+                           batch.next_state if s is not None])
         # States should be [[state1], [state2], ..]
         states = torch.cat([s.unsqueeze(0) for s in batch.state])
         # Actions should be [[action1], [action2], ..]
-        actions = torch.cat([b.unsqueeze(0) for b in batch.action]).to(self.device)
+        actions = [b.unsqueeze(0) for b in batch.action]
+
+        print("first actions:",actions)
+        actions = torch.cat(actions, dim=0)
         # Rewards should be [reward1, reward2, ..]
-        rewards = torch.cat([r for r in batch.reward]).to(self.device)
+        rewards = torch.cat([r.squeeze(0) for r in batch.reward]).to(self.device)
+        print("rewars:", rewards)
         # GCN states should be [[state1], [state2], ..] or [].
         # The latter case implies that either a GCN layer is not used, or none
         # of the subgraph is visible.
-        lst_gcn_states = [s.unsqueeze(0) for s in batch.gcn_state
+        lst_gcn_states = [s for s in batch.gcn_state \
                           if s is not None]
-        gcn_states = None if len(lst_gcn_states) == 0 \
-                     else torch.cat(lst_gcn_states)
-        lst_next_gcn_states = [s.unsqueeze(0) for s in
+        lst_next_gcn_states = [s for s in \
                                batch.next_gcn_state if s is not None]
-        next_gcn_states = None if len(lst_next_gcn_states) == 0 else \
-                          torch.cat(lst_next_gcn_states)
         # GCN edge index should be [[src nodes], [dst nodes]] or [].
         # The latter case implies that either a GCN layer is not used, or none
         # of the subgraph is visible.
-        lst_gcn_edgeindex = [ei.unsqueeze(0) for ei in batch.gcn_edgeindex
-                             if ei is not None]
-        gcn_edgeindex = None if len(lst_gcn_edgeindex) == 0 else \
-                        torch.cat(lst_gcn_edgeindex)
-        lst_next_gcn_edgeindex = [ei.unsqueeze(0) for ei in
+        lst_gcn_edgeindex = [ei for ei in \
+                             batch.gcn_edgeindex if ei is not None]
+        lst_next_gcn_edgeindex = [ei for ei in \
                                   batch.next_gcn_edgeindex if ei is not None]
-        next_gcn_edgeindex = None if len(lst_next_gcn_edgeindex) == 0 \
-                             else torch.cat(lst_next_gcn_edgeindex)
-        next_model_inputs = NetworkInput(next_states, True, next_gcn_states,
-                                         next_gcn_edgeindex)
+        print("lst next states;", next_states)
+        print("lst gcn edgeindex:", lst_gcn_edgeindex)
+        print("lst gcn states:", lst_next_gcn_states)
+        print("lst next gcn ei:", lst_next_gcn_edgeindex)
+        print("actions:", actions)
+        next_model_inputs = NetworkInput(next_states, True,
+                                         lst_next_gcn_states,
+                                         lst_next_gcn_edgeindex)
         next_states_qvals = \
             self.target_network(next_model_inputs).max(1)[0].detach()
-        model_inputs = NetworkInput(states, True, gcn_states, gcn_edgeindex)
+        model_inputs = NetworkInput(
+            states, True, lst_gcn_states, lst_gcn_edgeindex)
         # Get Q values of the chosen action from `policy_network`.
         states_qvals = self.policy_network(model_inputs).gather(1, actions)
+
+        print("optimize model..")
+        print("actions:", actions)
+        print("state qvals:", states_qvals)
+        print("states:", states)
+        print("next states:", next_states)
+        print("next states qvals:", next_states_qvals)
+        print("rewards:", rewards)
         # This is expectated Q value calculation by using the bellmann equation.
         expected_qvals = self.gamma * next_states_qvals + rewards
+        print("gamma:", self.gamma * next_states_qvals)
+        print("expected qvals:", expected_qvals.unsqueeze(1))
         loss = torch.nn.SmoothL1Loss()(states_qvals, expected_qvals.unsqueeze(1))
         self.optimizer.zero_grad()
         # Perform gradient descent.
@@ -139,6 +167,7 @@ class DQNAgent:
             param.grad.data.clamp_(-1, 1)
         # Update the network parameters.
         self.optimizer.step()
+        print("Optimization done\n")
 
     def update_target_network(self):
         """ In DQN, the target network needs to update its parameters
@@ -221,3 +250,34 @@ class DQNAgent:
         with open("models/" + prefix + ".optimizer.str", "w") as fp:
             for key, param in self.optimizer.state_dict().items():
                 fp.write(key + " = " + str(param))
+
+    def append_statetransition(self, target_task, curr_deviceload_state,
+                               edge_index, curr_workload_state,
+                               next_deviceload_state, next_workload_state,
+                               action):
+        """
+        Reward is decided when a task is launched while all the other states and the action are
+        decided when a task is mapped. So temporarily holds state transition information.
+        """
+        curr_deviceload_state = curr_deviceload_state.to(device=self.device)
+        edge_index = edge_index.to(device=self.device)
+        curr_workload_state = curr_workload_state.to(device=self.device)
+        next_deviceload_state = next_deviceload_state.to(device=self.device)
+        next_workload_state = next_workload_state.to(device=self.device)
+        action = action.to(device=self.device).to(dtype=torch.int64).unsqueeze(0)
+        new_transition = Transition(curr_deviceload_state, action,
+                                    next_deviceload_state, None,
+                                    curr_workload_state, edge_index,
+                                    next_workload_state, edge_index)
+        self.mapping_transition_buffer[target_task.name] = new_transition
+        print(target_task, "'s new_transtition is added:", new_transition)
+
+    def complete_statetransition(self, target_task, reward: torch.tensor):
+        # TODO(hc): Check if the current mode is the training mode
+        complete_transition = self.mapping_transition_buffer[target_task.name]
+        print("Complete transition:", complete_transition)
+        complete_transition = complete_transition._replace(reward = reward)
+        #self.complete_transition_list.append((target_task.name, complete_transition))
+        self.replay_memory.push_transition(complete_transition)
+        del self.mapping_transition_buffer[target_task.name]
+        self.optimize_model()

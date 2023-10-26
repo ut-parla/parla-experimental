@@ -1,6 +1,7 @@
 import torch
 
 from dataclasses import dataclass, field
+from typing import List
 
 """
 Input data class for network classes such as FCN, GCN, etc.
@@ -22,6 +23,6 @@ class NetworkInput:
     # not match to the DQN model.
     is_batch: bool = False
     # Vertex feature
-    gcn_x: torch.Tensor = None
+    gcn_x: List | torch.Tensor = None
     # Pairs of the edge index in a COO format
-    gcn_edge_index: torch.Tensor = None
+    gcn_edge_index: List | torch.Tensor = None

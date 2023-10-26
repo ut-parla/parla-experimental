@@ -13,6 +13,14 @@ from ...task import SimulatedTask
 from ....types import TaskState, TaskType
 from .globals import *
 
+
+A2CTransition = namedtuple("A2CTransition",
+                          ("state", "action", "next_state", "reward",
+                           # We may store information for a GCN layer too.
+                           # If any GCN layer is not used, these should be `None`.
+                           "gcn_state", "gcn_edgeindex", "next_gcn_state",
+                           "next_gcn_edgeindex"))
+
 class A2CAgent:
     # TODO(hc): if testing mode is enabled, skip the model optimization.
 
@@ -22,24 +30,12 @@ class A2CAgent:
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.num_device_load_features = 4
-        # Current state
-        self.current_gcn_state = torch.zeros(gcn_indim)
-        # Next state
-        self.next_gcn_state = torch.zeros(gcn_indim)
-        self.next_state = torch.zeros(in_dim - gcn_indim)
 
         # Actor: Policy network that selects an action.
         # Critic: Value network that evaluates an action from the policy network.
         self.a2c_model = A2CNetwork(gcn_indim, in_dim, out_dim)
         self.optimizer = optim.RMSprop(self.a2c_model.parameters(),
                                        lr=0.002)
-        # Store log probabilty; later elements are concatenated to a tensor.
-        self.lst_log_probs = []
-        # Store values from the critic network; to be concatenated to a tensor.
-        self.lst_values = []
-        # Store rewards; to be concatenated to a tensor
-        self.lst_rewards = []
-        self.entropy = 0
         self.steps = 0
         self.execution_mode = execution_mode
         # Interval to update the actor network parameter
@@ -51,6 +47,9 @@ class A2CAgent:
         self.best_a2cnet_fname = "best_a2c_network.pt"
         self.best_optimizer_fname = "best_optimizer.pt"
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.mapping_transition_buffer = dict()
+        self.task_mapping_decision = dict()
+        self.complete_transition_list = list()
 
     def construct_next_state(self, x: torch.tensor, gcn_x = None, gcn_edgeindex = None):
         x[0] = x[0] + 1
@@ -68,99 +67,126 @@ class A2CAgent:
             returns.insert(0, R)
         return returns
 
-    def select_device(self, x: torch.tensor, gcn_x = None, gcn_edgeindex = None):
-        # Different from DQN, A2C requires gradient tracking.
-        model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
-        # This gets two values:
-        # 1) transition probability of all the actions from the current state
-        # 2) state value that evaluates the actor's policy;
-        #    if a state value and probability distribution are corresponding,
-        #    it is a good model.
-        actions, value = self.a2c_model(model_input)
-        print("model input:", model_input)
-        print("gcn input:", gcn_x)
-        print("gcn edgeindex:", gcn_edgeindex)
-        print("actions:", actions)
-        print("value:", value)
-        action_probabilities = F.softmax(actions, dim=0)
-        # Sample an action by using Categorical random distribution
-        dist = Categorical(action_probabilities)
-        action = dist.sample()
-        # Get log probability of the action
-        log_prob = dist.log_prob(action)
-        # TODO(hc): replace it with the actual reward.
-        reward = torch.tensor([10], dtype=torch.float)
+    def select_device(self, target_task: SimulatedTask, x: torch.tensor, gcn_x = None, gcn_edgeindex = None):
+        with torch.autograd.set_detect_anomaly(True):
+            with torch.no_grad():
+                # Different from DQN, A2C requires gradient tracking.
+                model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
+                # This gets two values:
+                # 1) transition probability of all the actions from the current state
+                # 2) state value that evaluates the actor's policy;
+                #    if a state value and probability distribution are corresponding,
+                #    it is a good model.
+                actions, value = self.a2c_model(model_input)
+                print("Target task:", target_task)
+                print("select device:", target_task)
+                print("model input:", model_input)
+                print("gcn input:", gcn_x)
+                print("gcn edgeindex:", gcn_edgeindex)
+                print("actions:", actions)
+                print("value:", value)
+                action_probabilities = F.softmax(actions, dim=0)
+                # Sample an action by using Categorical random distribution
+                dist = Categorical(action_probabilities)
+                action = dist.sample()
+                return action
 
-        print("action porbs:", action_probabilities)
-        print("log prob:", log_prob)
-        print("reward:", reward)
-
-        self.lst_log_probs.append(log_prob)
-        self.lst_values.append(value)
-        self.lst_rewards.append(reward)
-
-        assert len(self.lst_log_probs) <= self.step_for_optim 
-        assert len(self.lst_values) <= self.step_for_optim 
-        assert len(self.lst_rewards) <= self.step_for_optim 
-
-        self.entropy += dist.entropy().mean()
-        self.print_model(str(self.steps))
+    def optimize_model(self):
         self.steps += 1
-
-
-        print("steps:", self.steps, " entropy:", self.entropy)
-        # Update the actor network
         if self.steps == self.step_for_optim:
-            assert len(self.lst_log_probs) == self.step_for_optim 
-            assert len(self.lst_values) == self.step_for_optim 
-            assert len(self.lst_rewards) == self.step_for_optim 
+            with torch.autograd.set_detect_anomaly(True):
+                assert len(self.complete_transition_list) == self.step_for_optim
+                _, transition = self.complete_transition_list[-1]
+                next_x = transition.next_state
+                next_gcn_x = transition.next_gcn_state
+                next_gcn_edgeindex = transition.next_gcn_edgeindex
 
-            # TODO(hc): replace it with the actual next state
-            next_x, next_gcn_x, next_gcn_edgeindex = \
-                self.construct_next_state(x, gcn_x, gcn_edgeindex)
-            # To perform TD to optimize the model, get a state value
-            # of the expected next state from the critic network
-            _, next_value = self.a2c_model(
-                NetworkInput(next_x, False, next_gcn_x, next_gcn_edgeindex))
-            cat_log_probs = torch.cat(
-                [lp.unsqueeze(0) for lp in self.lst_log_probs])
-            cat_values = torch.cat([v for v in self.lst_values])
-            cat_rewards = torch.cat([r for r in self.lst_rewards])
-            returns = self.compute_returns(next_value, cat_rewards)
-            returns = torch.cat(returns).detach()
-            print("\t log probs:", cat_log_probs)
-            print("\t values:", cat_values)
-            print("\t rewards:", cat_rewards)
-            print("\t return:", returns)
-            print("\t next value:", next_value)
-            print("\t next x:", next_x)
+                lst_log_probs = []
+                lst_values = []
+                lst_rewards = []
+                entropy_sum = 0
+                for target_task, transition_info in self.complete_transition_list:
+                    model_input = NetworkInput(
+                        transition_info.state, False, transition_info.gcn_state,
+                        transition_info.gcn_edgeindex)
+                    actions, value = self.a2c_model(model_input)
+                    print("optimization task:", target_task)
+                    print("states:", transition_info.state)
+                    print("gcn states:", transition_info.gcn_state)
+                    print("gcn ei:", transition_info.gcn_edgeindex)
+                    print("actions:", actions)
+                    action_probabilities = F.softmax(actions, dim=0)
+                    dist = Categorical(action_probabilities)
+                    action = transition_info.action
+                    log_prob = dist.log_prob(action)
+                    entropy_sum += dist.entropy().mean()
+                    lst_log_probs.append(log_prob)
+                    lst_values.append(value)
+                    lst_rewards.append(transition_info.reward)
 
-            advantage = returns - cat_values
-            print("\t advantage:", advantage)
+                    """
+                    previous_task_mapping_decision = self.task_mapping_decision[target_task]
+                    print("target task:", target_task)
+                    print("action:", action, " previous action:", previous_task_mapping_decision.action)
+                    print("state:", transition_info.gcn_state, " previous state:",
+                        previous_task_mapping_decision.gcn_state)
+                    with torch.no_grad():
+                        print("sum:", torch.sum(torch.eq(transition_info.gcn_state,
+                                previous_task_mapping_decision.gcn_state)))
+                        assert torch.sum(
+                            torch.eq(
+                              transition_info.state,
+                              previous_task_mapping_decision.state)) == \
+                            len(transition_info.state)
+                        assert torch.sum(
+                            torch.eq(
+                              transition_info.gcn_state,
+                              purevious_task_mapping_decision.gcn_state)) == \
+                            len(transition_info.gcn_state) * self.gcn_indim
+                        assert action.item() == previous_task_mapping_decision.action.item()
+                    """
 
-            actor_loss = -(cat_log_probs * advantage.detach())
-            print("\t actor loss:", actor_loss)
-            actor_loss = actor_loss.mean()
-            print("\t actor loss mean:", actor_loss)
+                assert len(lst_log_probs) == self.step_for_optim
+                assert len(lst_values) == self.step_for_optim
+                assert len(lst_rewards) == self.step_for_optim
 
-            critic_loss = advantage.pow(2).mean()
-            print("\t critic loss:", critic_loss)
+                # To perform TD to optimize the model, get a state value
+                # of the expected next state from the critic netowrk
+                _, next_value = self.a2c_model(
+                    NetworkInput(next_x, False, next_gcn_x, next_gcn_edgeindex))
+                cat_rewards = torch.cat(lst_rewards)
+                returns = self.compute_returns(next_value, cat_rewards)
+                cat_log_probs = torch.cat([lp.unsqueeze(0) for lp in lst_log_probs])
+                print("lst_log_probs:", lst_log_probs)
+#cat_log_probs = torch.cat(lst_log_probs)
+                print("lst values:", lst_values)
+#cat_values = torch.cat([v for v in lst_values])
+                cat_values = torch.cat(lst_values)
+#cat_rewards = torch.cat([r for r in lst_rewards])
+                print("lst log probs:", cat_log_probs)
+                print("lst values:", cat_values)
+                print("lst rewards:", cat_rewards)
 
-            loss = actor_loss + 0.5 * critic_loss - 0.001 * self.entropy
-            print("\t loss:", loss)
-            self.steps = 0
-            self.entropy = 0
-            self.lst_log_probs = []
-            self.lst_values = []
-            self.lst_rewards = []
-
-            self.optimizer.zero_grad()
-            loss.backward()
-            for param in self.a2c_model.parameters():
-                param.grad.data.clamp_(-1, 1)
-            self.optimizer.step()
-            self.print_model("optimization")
-        return action
+                returns = torch.cat(returns).detach() 
+                advantage = returns - cat_values
+                actor_loss = -(cat_log_probs * advantage.detach())
+                actor_loss = actor_loss.mean()
+                critic_loss = advantage.pow(2).mean()
+                print("actor loss:", actor_loss, ", and critic loss:", critic_loss, " advantage:", advantage)
+                loss = actor_loss + 0.5 * critic_loss - 0.001 * entropy_sum
+                print("loss;", loss)
+                self.steps = 0
+                self.optimizer.zero_grad()
+                print("last values:", cat_values)
+                loss.backward()
+                """
+                for param in self.a2c_model.parameters():
+                    print("\t parma:", param)
+                    param.grad.data.clamp_(-1, 1)
+                """
+                self.optimizer.step()
+                self.print_model("optimization")
+                self.complete_transition_list = list()
 
     def load_models(self):
         """ Load a2c model and optimizer parameters from files;
@@ -267,7 +293,7 @@ class A2CAgent:
         current_gcn_state = torch.zeros(self.gcn_indim)
         print("******** Create GCN states:", target_task)
         # Need to consider the None state due to dependent tasks
-        device_state_offset = TaskState.COMPLETED - TaskState.NONE
+        device_state_offset = TaskState.COMPLETED - TaskState.NONE + 1
         for dependency_id in target_task.dependencies:
             dependency = taskmap[dependency_id]
             assigned_device_to_dependency = dependency.assigned_devices
@@ -323,13 +349,13 @@ class A2CAgent:
         """
         current_device_load_state = self.create_device_load_state(
             target_task, devices, reservable_tasks, launchable_tasks, launched_tasks)
-        edge_index, node_features = self.create_gcn_task_workload_state(
+        edge_index, current_workload_features = self.create_gcn_task_workload_state(
             0, target_task, devices, taskmap)
         print("Edge index:", edge_index)
-        print("Node features:", node_features)
-        return current_device_load_state, edge_index, node_features
+        print("Node features:", current_workload_features)
+        return current_device_load_state, edge_index, current_workload_features
 
-    def create_next_state(self, current_device_load_state, edge_index, node_features, action):
+    def create_next_state(self, current_device_load_state, edge_index, current_workload_features, action):
          """
          Create the next state since RL uses a time-difference method to evaluate
          the current model.
@@ -338,7 +364,7 @@ class A2CAgent:
          spawned dependency count feature by 1.
          """
          next_device_load_state = torch.clone(current_device_load_state)
-         next_node_features = torch.clone(node_features)
+         next_current_workload_features = torch.clone(current_workload_features)
          num_reservable_task_offset = action * self.num_device_load_features
          # Increase device load
          next_device_load_state[num_reservable_task_offset] = \
@@ -348,16 +374,42 @@ class A2CAgent:
          # 0th element of the edge_index is a list of the source tasks.
          for i in range(len(edge_index[0])): 
              if edge_index[0][i] == 0:
-                 assert node_features[edge_index[1][i]][TaskState.SPAWNED] != 0
+                 assert current_workload_features[edge_index[1][i]][TaskState.SPAWNED] != 0
                  print("dependent:", edge_index[1][i])
                  # One spawned dependency became mapped.
-                 next_node_features[edge_index[1][i]][TaskState.SPAWNED] = \
-                     next_node_features[edge_index[1][i]][TaskState.SPAWNED] - 1
-                 next_node_features[edge_index[1][i]][TaskState.MAPPED] = \
-                     next_node_features[edge_index[1][i]][TaskState.MAPPED] + 1
+                 next_current_workload_features[edge_index[1][i]][TaskState.SPAWNED] = \
+                     next_current_workload_features[edge_index[1][i]][TaskState.SPAWNED] - 1
+                 next_current_workload_features[edge_index[1][i]][TaskState.MAPPED] = \
+                     next_current_workload_features[edge_index[1][i]][TaskState.MAPPED] + 1
                  # One device selected its device.
-                 next_node_features[edge_index[1][i]][TaskState.COMPLETED + action] = \
-                     next_node_features[edge_index[1][i]][TaskState.COMPLETED + action] + 1
-                 print("  vs ", node_features)
-                 print("  ", next_node_features)
-         return next_device_load_state, edge_index, next_node_features
+                 next_current_workload_features[edge_index[1][i]][TaskState.COMPLETED + action] = \
+                     next_current_workload_features[edge_index[1][i]][TaskState.COMPLETED + action] + 1
+         return next_device_load_state, edge_index, next_current_workload_features
+
+    def append_statetransition(self, target_task, curr_deviceload_state, edge_index,
+                               curr_workload_state, next_deviceload_state, next_workload_state,
+                               action):
+        """
+        Reward is decided when a task is launched while all the other states and the action are
+        decided when a task is mapped. So temporarily holds state transition information.
+        """
+        new_transition = A2CTransition(curr_deviceload_state, action,
+                                       next_deviceload_state, None,
+                                       curr_workload_state, edge_index,
+                                       next_workload_state, edge_index)
+        self.mapping_transition_buffer[target_task.name] = new_transition
+        print(target_task, "'s new_transtition is added:", new_transition)
+
+
+    def complete_statetransition(self, target_task, reward: torch.tensor):
+        # TODO(hc): Check if the current mode is the training mode
+        complete_transition = self.mapping_transition_buffer[target_task.name]
+        print("Complete transition:", complete_transition)
+        complete_transition = complete_transition._replace(reward = reward)
+        self.complete_transition_list.append((target_task.name, complete_transition))
+        del self.mapping_transition_buffer[target_task.name]
+        self.optimize_model()
+
+
+def calculate_reward():
+    return torch.tensor([[10]], dtype=torch.float, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))

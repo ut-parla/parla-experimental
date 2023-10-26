@@ -1,4 +1,4 @@
-from collections import namedtuple, deque
+from collections import deque, namedtuple
 
 import random
 
@@ -25,6 +25,9 @@ class ReplayMemory(object):
         """ Push a new transition.
         """
         self.memory.append(Transition(*args))
+
+    def push_transition(self, transition):
+        self.memory.append(transition)
 
     def sample(self, batch_size: int):
         """ Sample `batch_size` transitions.

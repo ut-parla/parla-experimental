@@ -91,11 +91,11 @@ class SimulatedScheduler:
             if event_pair:
                 event_count += 1
                 completion_time, event = event_pair
-                # print(f"Event: {event} at {completion_time}")
-                # print("State", self.mechanisms)
+                print(f"Event: {event} at {completion_time}")
 
                 # Advance time
                 self.time = max(self.time, completion_time)
+                print("State", self.mechanisms)
 
                 # Process Event
                 new_events = self.process_event(event)
