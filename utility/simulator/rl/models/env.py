@@ -152,8 +152,8 @@ def create_next_state(current_device_load_state, edge_index,
      # 0th element of the edge_index is a list of the source tasks.
      for i in range(len(edge_index[0])): 
          if edge_index[0][i] == 0:
-             assert current_workload_features[edge_index[1][i]][TaskState.SPAWNED] != 0
-             print("dependent:", edge_index[1][i])
+             # This is not true since dependent task can be on "not-spanwed" state.
+             #assert current_workload_features[edge_index[1][i]][TaskState.SPAWNED] != 0
              # One spawned dependency became mapped.
              next_current_workload_features[edge_index[1][i]][TaskState.SPAWNED] = \
                  next_current_workload_features[edge_index[1][i]][TaskState.SPAWNED] - 1

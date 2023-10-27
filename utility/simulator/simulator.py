@@ -18,11 +18,14 @@ from .schedulers import *
 
 from rich import print
 
+from .rl.models.dqn import DQNAgent
+
 
 @dataclass(slots=True)
 class SimulatedScheduler:
     topology: InitVar[SimulatedTopology]
     scheduler_type: InitVar[str] = "parla"
+    rl_mapper: InitVar[DQNAgent] = None
     tasks: List[TaskID] = field(default_factory=list)
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
@@ -31,11 +34,11 @@ class SimulatedScheduler:
 
     events: EventQueue = EventQueue()
 
-    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla"):
+    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla", rl_mapper: DQNAgent = None):
         self.state = SystemState(topology=topology)
         scheduler_arch = SchedulerOptions.get_scheduler(scheduler_type)
         print(f"Scheduler Architecture: {scheduler_arch}")
-        self.mechanisms = scheduler_arch(topology=topology)
+        self.mechanisms = scheduler_arch(topology=topology, rl_mapper=rl_mapper)
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"

@@ -199,7 +199,7 @@ class ParlaArchitecture(SchedulerArchitecture):
     # List of Devices
     devices: List = field(default_factory=list)
 
-    rl_mapper: DQNAgent = DQNAgent()
+    rl_mapper: DQNAgent = None
 
     success_count: int = 0
     active_scheduler: int = 0
@@ -266,7 +266,6 @@ class ParlaArchitecture(SchedulerArchitecture):
                 self.launchable_tasks, self.launched_tasks)
             action = self.rl_mapper.select_device(
                 task, current_deviceload_state, node_features, edge_index)
-            print("action:", action)
             next_deviceload_state, next_edge_index, next_node_features = \
                 create_next_state(
                     current_deviceload_state, edge_index, node_features,

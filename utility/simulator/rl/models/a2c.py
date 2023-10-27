@@ -7,6 +7,7 @@ import torch.optim as optim
 from torch.distributions import Categorical
 
 from typing import Dict, List, Tuple
+from collections import namedtuple
 
 from ..networks.a2c_gcn_fcn import *
 from ...task import SimulatedTask
