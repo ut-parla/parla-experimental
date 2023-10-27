@@ -46,7 +46,7 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Devi
     ):
         task.assigned_devices = (Device(Architecture.GPU, np.random.randint(0, 4)),)
         devices = task.assigned_devices
-        print(f"Task {task.name} assigned to device {devices}")
+        # print(f"Task {task.name} assigned to device {devices}")
         assert devices is not None
 
         if devices is None:
@@ -190,6 +190,9 @@ class ParlaArchitecture(SchedulerArchitecture):
     )
     launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
 
+    success_count: int = 0
+    active_scheduler: int = 0
+
     def __post_init__(self, topology: SimulatedTopology):
         assert topology is not None
 
@@ -215,6 +218,7 @@ class ParlaArchitecture(SchedulerArchitecture):
         # Initialize the event queue
         next_event = Mapper()
         next_time = Time(0)
+        self.active_scheduler += 1
         return [(next_time, next_event)]
 
     def add_initial_tasks(
@@ -231,6 +235,7 @@ class ParlaArchitecture(SchedulerArchitecture):
         self, scheduler_state: SystemState, event: Mapper
     ) -> Sequence[EventPair]:
         # print("Mapping tasks...")
+        self.success_count = 0
         next_tasks = TaskIterator(self.spawned_tasks)
 
         current_time = scheduler_state.time
@@ -246,6 +251,7 @@ class ParlaArchitecture(SchedulerArchitecture):
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
+                self.success_count += 1
             else:
                 next_tasks.fail()
                 continue
@@ -273,6 +279,7 @@ class ParlaArchitecture(SchedulerArchitecture):
                 )
                 task.notify_state(TaskState.RESERVED, objects.taskmap, current_time)
                 next_tasks.success()
+                self.success_count += 1
             else:
                 next_tasks.fail()
                 continue
@@ -289,9 +296,6 @@ class ParlaArchitecture(SchedulerArchitecture):
         current_time = scheduler_state.time
 
         next_events: Sequence[EventPair] = []
-        if remaining_tasks := length(self.launchable_tasks):
-            mapping_pair = (current_time + 100, Mapper())
-            next_events.append(mapping_pair)
 
         # print(f"Remaining tasks: {remaining_tasks}")
 
@@ -312,9 +316,17 @@ class ParlaArchitecture(SchedulerArchitecture):
                 completion_event = TaskCompleted(task=taskid)
                 next_events.append((completion_time, completion_event))
                 next_tasks.success()
+                self.success_count += 1
             else:
                 next_tasks.fail()
                 continue
+
+        self.active_scheduler -= 1
+
+        if remaining_tasks := length(self.launchable_tasks) and self.success_count:
+            mapping_pair = (current_time + 100, Mapper())
+            next_events.append(mapping_pair)
+            self.active_scheduler += 1
 
         return next_events
 
@@ -349,14 +361,15 @@ class ParlaArchitecture(SchedulerArchitecture):
     def complete_task(
         self, scheduler_state: SystemState, event: TaskCompleted
     ) -> Sequence[EventPair]:
-        print(f"Completing task: {event.task}...")
+        # print(f"Completing task: {event.task}...")
         objects = scheduler_state.objects
-        assert objects is not None
         task = objects.get_task(event.task)
-        assert task is not None
+        current_time = scheduler_state.time
+        next_events: Sequence[EventPair] = []
+
         # print(task)
         # print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
-        print(self)
+        # print(self)
 
         self._verify_correct_task_completed(task, scheduler_state)
         complete_task(task, scheduler_state)
@@ -365,4 +378,10 @@ class ParlaArchitecture(SchedulerArchitecture):
         task.notify_state(TaskState.COMPLETED, objects.taskmap, scheduler_state.time)
         # print(scheduler_state.resource_pool[Device(Architecture.GPU, 1)])
 
-        return []
+        self.success_count += 1
+        if self.active_scheduler == 0:
+            mapping_pair = (current_time + 100, Mapper())
+            next_events.append(mapping_pair)
+            self.active_scheduler += 1
+
+        return next_events

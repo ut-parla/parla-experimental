@@ -148,7 +148,7 @@ class SimulatedTask:
 
     @assigned_devices.setter
     def assigned_devices(self, devices: Tuple[Device, ...]):
-        print(f"Setting {self.name} to {devices}")
+        # print(f"Setting {self.name} to {devices}")
         self.info.mapping = devices
 
     @property

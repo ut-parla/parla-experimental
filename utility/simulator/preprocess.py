@@ -121,6 +121,22 @@ def create_data_tasks(
     return data_tasks
 
 
+def filter_data_dependenices(task: SimulatedTask):
+    data_info = task.info.data_dependencies
+    read = data_info.read
+    write = data_info.write
+    read_write = data_info.read_write
+
+    read_set = set([d for d in read]).union([d for d in read_write])
+    write_set = set([d for d in write]).union([d for d in read_write])
+
+    read = list(read_set)
+    write = list(write_set)
+
+    data_info.read = read
+    data_info.write = write
+
+
 def create_task_graph(
     graph: TaskMap, data=False
 ) -> Tuple[SimulatedComputeTaskMap, SimulatedDataTaskMap]:
