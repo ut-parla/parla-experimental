@@ -41,6 +41,97 @@ StatesToResources[TaskState.COMPLETED] = []
 AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
 
+def check_mapped_resources(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    return True
+
+
+def check_reserved_resources(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    assert isinstance(task, SimulatedComputeTask)
+    rp = scheduler_state.resource_pool
+    devices = task.assigned_devices
+    if devices is None:
+        raise ValueError(f"Task {task.name} does not have assigned devices.")
+
+    resources_to_update = StatesToResources[TaskState.RESERVED]
+
+    can_fit = rp.check_resources(
+        devices=devices,
+        state=TaskState.RESERVED,
+        types=resources_to_update,
+        resources=task.resources,
+    )
+
+    if can_fit:
+        # Get size of data dependencies
+        data_dependencies = task.info.data_dependencies
+        read_data = data_dependencies.read
+
+    return can_fit
+
+
+def check_launched_resources(task: SimulatedTask, scheduler_state: SystemState) -> bool:
+    assert isinstance(task, SimulatedComputeTask)
+    rp = scheduler_state.resource_pool
+    devices = task.assigned_devices
+    if devices is None:
+        raise ValueError(f"Task {task.name} does not have assigned devices.")
+
+    resources_to_update = StatesToResources[TaskState.LAUNCHED]
+
+    can_fit = rp.check_resources(
+        devices=devices,
+        state=TaskState.LAUNCHED,
+        types=resources_to_update,
+        resources=task.resources,
+    )
+
+    return can_fit
+
+
+@dataclass(slots=True)
+class MinimalState(SystemState):
+    def check_resources(self, taskid: TaskID, state: TaskState) -> bool:
+        # Check that the resources are available
+        rp = self.resource_pool
+        task = self.objects.get_task(taskid)
+        assert task is not None
+
+        if state == TaskState.MAPPED:
+            return True
+
+        if task.resources is None:
+            raise ValueError(f"Task {taskid} does not have resources.")
+
+        devices = task.assigned_devices
+        if devices is None:
+            raise ValueError(f"Task {taskid} does not have assigned devices.")
+
+        task_requirements_check = rp.check_resources(
+            devices=devices,
+            state=TaskState,
+        )
+
+    def acquire_resources(self, taskid: TaskID, state: TaskState):
+        # Reserve the resources
+        pass
+
+    def release_resources(self, taskid: TaskID, state: TaskState):
+        # Release the resources
+        pass
+
+    def use_data(
+        self, taskid: TaskID, state: TaskState, data: DataID, access: AccessType
+    ):
+        # Update data tracking
+        pass
+
+    def release_data(
+        self, taskid: TaskID, state: TaskState, data: DataID, access: AccessType
+    ):
+        # Update data tracking
+        pass
+
+
 def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Device]:
     objects = scheduler_state.objects
     assert objects is not None
@@ -209,7 +300,6 @@ class MinimalArchitecture(SchedulerArchitecture):
         self, tasks: List[TaskID], scheduler_state: SystemState
     ) -> Sequence[EventPair]:
         objects = scheduler_state.objects
-        assert objects is not None
 
         task_objects = [objects.get_task(task) for task in tasks]
 

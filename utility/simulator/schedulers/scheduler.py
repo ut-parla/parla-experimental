@@ -127,29 +127,29 @@ class SystemState:
         else:
             self.objects.devicemap = devicemap
 
-    def check_resources(self, task: TaskID, state: TaskState):
+    def check_resources(self, taskid: TaskID, state: TaskState) -> bool:
         # Check that the resources are available
-        pass
+        raise NotImplementedError()
 
-    def acquire_resources(self, task: TaskID, state: TaskState):
+    def acquire_resources(self, taskid: TaskID, state: TaskState):
         # Reserve the resources
-        pass
+        raise NotImplementedError()
 
-    def release_resources(self, task: TaskID, state: TaskState):
+    def release_resources(self, taskid: TaskID, state: TaskState):
         # Release the resources
-        pass
+        raise NotImplementedError()
 
     def use_data(
-        self, task: TaskID, state: TaskState, data: DataID, access: AccessType
+        self, taskid: TaskID, state: TaskState, data: DataID, access: AccessType
     ):
         # Update data tracking
-        pass
+        raise NotImplementedError()
 
     def release_data(
-        self, task: TaskID, state: TaskState, data: DataID, access: AccessType
+        self, taskid: TaskID, state: TaskState, data: DataID, access: AccessType
     ):
         # Update data tracking
-        pass
+        raise NotImplementedError()
 
 
 @dataclass(slots=True)

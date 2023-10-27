@@ -20,13 +20,13 @@ def run():
 
     task_configs = TaskPlacementInfo()
 
-    runtime_info = TaskRuntimeInfo(task_time=1000, device_fraction=1)
+    runtime_info = TaskRuntimeInfo(task_time=100000, device_fraction=1)
     task_configs.add((gpu), runtime_info)
 
     data_config = DataGraphConfig(pattern=1)
 
     config = SerialConfig(
-        steps=3, chains=3, task_config=task_configs, data_config=data_config
+        steps=1, chains=1000, task_config=task_configs, data_config=data_config
     )
 
     tasks, data = make_serial_graph(config)
@@ -39,12 +39,21 @@ def run():
 
     topology = TopologyManager.get_generator("frontera")(None)
 
-    scheduler = SimulatedScheduler(topology=topology)
+    scheduler = SimulatedScheduler(topology=topology, scheduler_type="parla")
     scheduler.register_taskmap(taskmap)
     # scheduler.register_datamap(datamap)
-    print("Tasklist", tasklist)
+    # print("Tasklist", tasklist)
     scheduler.add_initial_tasks(tasklist)
+
+    start_t = time.perf_counter()
     scheduler.run()
+    end_t = time.perf_counter()
+    print("Time taken", end_t - start_t)
+
+    print(scheduler.mechanisms)
+    print(scheduler.time)
+
+    print(topology)
 
 
 run()
