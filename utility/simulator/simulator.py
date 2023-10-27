@@ -16,7 +16,7 @@ from collections import defaultdict as DefaultDict
 
 from .schedulers import *
 
-from rich import print
+#from rich import print
 
 from .rl.models.dqn import DQNAgent
 
@@ -98,7 +98,7 @@ class SimulatedScheduler:
 
                 # Advance time
                 self.time = max(self.time, completion_time)
-                print("State", self.mechanisms)
+                # print("State", self.mechanisms)
 
                 # Process Event
                 new_events = self.process_event(event)
@@ -106,4 +106,5 @@ class SimulatedScheduler:
                 self.record()
 
         print(f"Event Count: {event_count}")
+        print(f"Execution time: {self.time}")
         # print(self.mechanisms)

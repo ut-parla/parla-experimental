@@ -16,11 +16,11 @@ from collections import defaultdict as DefaultDict
 
 from .scheduler import SchedulerArchitecture, SystemState, SchedulerOptions
 
-from ..rl.models.a2c import A2CAgent, calculate_reward
+from ..rl.models.a2c import A2CAgent
 from ..rl.models.dqn import DQNAgent
 from ..rl.models.env import *
 
-from rich import print
+#from rich import print
 
 StatesToResources: Dict[TaskState, list[ResourceType]] = {}
 StatesToResources[TaskState.MAPPED] = [
@@ -35,6 +35,7 @@ AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
 
 def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Device]:
+
     objects = scheduler_state.objects
     assert objects is not None
 
@@ -48,9 +49,34 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Devi
     if check_status := task.check_status(
         TaskStatus.MAPPABLE, objects.taskmap, current_time
     ):
-        task.assigned_devices = (Device(Architecture.GPU, np.random.randint(0, 4)),)
-        print("scheduler state:", scheduler_state)
-        print("Current time:", current_time)
+
+#print("RL part starts..\n")
+
+        # RL part.
+        current_deviceload_state, edge_index, node_features = \
+            create_state(
+            task, parla_arch.devices, objects.taskmap,
+            parla_arch.reservable_tasks,
+            parla_arch.launchable_tasks, parla_arch.launched_tasks)
+#print("RL state construction completes..\n")
+        action = parla_arch.rl_mapper.select_device(
+            task, current_deviceload_state, node_features, edge_index)
+#print("RL selected device..\n")
+        next_deviceload_state, next_edge_index, next_node_features = \
+            create_next_state(
+                current_deviceload_state, edge_index, node_features,
+                int(action.item()))
+        # Buffer all state information as its reward is decided at the launching phase.
+        # Note that this call assumes the A2C model.
+        parla_arch.rl_mapper.append_statetransition(
+            task, current_deviceload_state, edge_index,
+            node_features, next_deviceload_state,
+            next_node_features, action)
+
+        """
+        task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
+        """
+        task.assigned_devices = (Device(Architecture.GPU, action.item()),)
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
         # print(f"Task {task.name} assigned to device {devices}")
@@ -260,16 +286,6 @@ class ParlaArchitecture(SchedulerArchitecture):
             task = objects.get_task(taskid)
             assert task is not None
 
-            current_deviceload_state, edge_index, node_features = \
-                create_state(
-                task, self.devices, objects.taskmap, self.reservable_tasks,
-                self.launchable_tasks, self.launched_tasks)
-            action = self.rl_mapper.select_device(
-                task, current_deviceload_state, node_features, edge_index)
-            next_deviceload_state, next_edge_index, next_node_features = \
-                create_next_state(
-                    current_deviceload_state, edge_index, node_features,
-                    int(action.item()))
             if device := map_task(task, scheduler_state):
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
@@ -284,7 +300,6 @@ class ParlaArchitecture(SchedulerArchitecture):
             else:
                 next_tasks.fail()
                 continue
-
         reserver_pair = (current_time, Reserver())
         return [reserver_pair]
 
@@ -319,7 +334,7 @@ class ParlaArchitecture(SchedulerArchitecture):
     def launcher(
         self, scheduler_state: SystemState, event: Launcher
     ) -> Sequence[EventPair]:
-        # print("Launching tasks...")
+        print("Launching tasks...")
 
         objects = scheduler_state.objects
         current_time = scheduler_state.time
@@ -334,12 +349,13 @@ class ParlaArchitecture(SchedulerArchitecture):
             assert task is not None
 
             # Process LAUNCHABLE state
+            print(task.name, " is on next_tasks")
             if launch_success := launch_task(task, scheduler_state):
-                print("Wait time of ", task, " = ", task.times[TaskState.MAPPED], ", launched times:", current_time)
-                reward = calculate_reward()
-                self.rl_mapper.complete_statetransition(task, reward)
                 task.notify_state(TaskState.LAUNCHED, objects.taskmap, current_time)
                 completion_time = current_time + task.duration
+                reward = calculate_reward(task, completion_time)
+                self.rl_mapper.complete_statetransition(task, reward)
+                print(task.name, " is launched")
 
                 device = task.assigned_devices[0]  # type: ignore
                 self.launched_tasks[device].put_id(taskid, completion_time)
