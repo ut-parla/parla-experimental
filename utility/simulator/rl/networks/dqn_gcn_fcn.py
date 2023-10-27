@@ -12,14 +12,14 @@ class DQNNetwork(torch.nn.Module):
 
     def __init__(self, gcn_indim: int, in_dim: int, out_dim: int):
         super().__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available()
+        self.device = torch.device("cpu" if torch.cuda.is_available()
                                    else "cpu")
         self.gcn_indim = gcn_indim
         self.fcn1_indim = in_dim
         self.fcn1_outdim = in_dim * 4
         self.fcn2_outdim = in_dim * 8
         self.outdim = out_dim
-        self.gcn = GCNConv(self.gcn_indim, self.gcn_indim).to(device=self.device)
+        self.gcn = GCNConv(self.gcn_indim, self.gcn_indim)#.to(device=self.device)
 
         # Actor configuration
         self.fcn1 = Linear(self.fcn1_indim, self.fcn1_outdim,
@@ -31,15 +31,14 @@ class DQNNetwork(torch.nn.Module):
 
     def forward(self, model_input):
         is_batch = model_input.is_batch
-        x = model_input.x.to(self.device)
+        x = model_input.x#.to(self.device)
         gcn_x = model_input.gcn_x
         gcn_edge_index = model_input.gcn_edge_index
         if is_batch:
             lst_y = []
             for i in range(len(gcn_x)):
-                gcn_x[i] = gcn_x[i].to(self.device)
-                gcn_edge_index[i] = gcn_edge_index[i].to(self.device)
-                print(i, " input:", gcn_x[i], ", ei:", gcn_edge_index[i], flush=True)
+                gcn_x[i] = gcn_x[i]#.to(self.device)
+                gcn_edge_index[i] = gcn_edge_index[i]#.to(self.device)
                 gcn_out = self.gcn(gcn_x[i], gcn_edge_index[i])
                 # Only aggregate gcn output tensors.
                 gcn_out = torch.mean(gcn_out, dim=0)
@@ -47,15 +46,14 @@ class DQNNetwork(torch.nn.Module):
                 lst_y.append(y)
             x = torch.stack(lst_y)
         else:
-            gcn_x = gcn_x.to(self.device)
-            gcn_edge_index = gcn_edge_index.to(self.device)
+            gcn_x = gcn_x#.to(self.device)
+            gcn_edge_index = gcn_edge_index#.to(self.device)
             gcn_out = self.gcn(gcn_x, gcn_edge_index)
             gcn_out = torch.mean(gcn_out, dim=0)
             # Concatenate a gcn tensor and a normal state.
             # Expected dimension: [gcn tensor values, normal state values]
             x = torch.cat((gcn_out, x), dim=0)
         # Actor forward
-        print("first layer;",x)
         x = F.leaky_relu(self.fcn1(x))
         x = F.leaky_relu(self.fcn2(x))
         x = self.out(x)

@@ -410,7 +410,3 @@ class A2CAgent:
         self.complete_transition_list.append((target_task.name, complete_transition))
         del self.mapping_transition_buffer[target_task.name]
         self.optimize_model()
-
-
-def calculate_reward():
-    return torch.tensor([[10]], dtype=torch.float, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))

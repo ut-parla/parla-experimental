@@ -6,6 +6,9 @@ from ...task import SimulatedTask
 from ....types import TaskState, TaskType
 from .globals import *
 
+# TODO(hc): make this an rl environment class
+
+task_execution_map = dict()
 
 # [Features]
 # 1. dependency per device (5, GCN)
@@ -68,7 +71,7 @@ def create_task_workload_state(
     # Then, # of the dependencies per-devices
     # (dim: # of devices): 0 ~ # of devices
     current_gcn_state = torch.zeros(gcn_indim)
-    print("******** Create GCN states:", target_task)
+    #print("******** Create GCN states:", target_task)
     # Need to consider the None state due to dependent tasks
     device_state_offset = TaskState.COMPLETED - TaskState.NONE + 1
     for dependency_id in target_task.dependencies:
@@ -76,19 +79,19 @@ def create_task_workload_state(
         assigned_device_to_dependency = dependency.assigned_devices
         dependency_state = dependency.state
         dependency_state_offset = (dependency_state - TaskState.NONE)
-        print("  state: ", dependency_state_offset, " = ", current_gcn_state[dependency_state_offset], ", ", dependency_state)
+        # print("  state: ", dependency_state_offset, " = ", current_gcn_state[dependency_state_offset], ", ", dependency_state)
         # The number of the dependencies per state
         current_gcn_state[dependency_state_offset] = \
             current_gcn_state[dependency_state_offset] + 1
         for assigned_device in dependency.assigned_devices:
-            print("  device: ", device_state_offset + assigned_device.device_id, " = ", current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
+            # print("  device: ", device_state_offset + assigned_device.device_id, " = ", current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
             # The number of the dependencies per device
             current_gcn_state[device_state_offset + assigned_device.device_id] = \
                 current_gcn_state[device_state_offset + assigned_device.device_id] + 1
     # The number of the dependent tasks
     current_gcn_state[device_state_offset + len(devices)] = len(target_task.dependents)
-    print(" dependents: ", device_state_offset + len(devices), " = ", current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
-    print("gcn state:", current_gcn_state)
+    # print(" dependents: ", device_state_offset + len(devices), " = ", current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
+    # print("gcn state:", current_gcn_state)
     return current_gcn_state.unsqueeze(0)
 
 def create_device_load_state(target_task: SimulatedTask, devices: List,
@@ -99,15 +102,15 @@ def create_device_load_state(target_task: SimulatedTask, devices: List,
     This state will be an input of the fully-connected layer.
     """
     current_state = torch.zeros(fcn_indim)
-    print("******** Create states:", target_task)
+    # print("******** Create states:", target_task)
     # Per-state load per-device
     idx = 0
     for device in devices:
-        print("  ", idx, " = ", len(reservable_tasks[device]), ", ", device)
-        print(launchable_tasks[device])
-        print("  ", idx + 1, " = ", len(launchable_tasks[device][TaskType.COMPUTE]), ", ", device)
-        print("  ", idx + 2, " = ", len(launchable_tasks[device][TaskType.DATA]), ", ", device)
-        print("  ", idx + 3, " = ", len(launched_tasks[device]), ", ", device)
+        # print("  ", idx, " = ", len(reservable_tasks[device]), ", ", device)
+        # print(launchable_tasks[device])
+        # print("  ", idx + 1, " = ", len(launchable_tasks[device][TaskType.COMPUTE]), ", ", device)
+        # print("  ", idx + 2, " = ", len(launchable_tasks[device][TaskType.DATA]), ", ", device)
+        # print("  ", idx + 3, " = ", len(launched_tasks[device]), ", ", device)
         current_state[idx] = len(reservable_tasks[device])
         current_state[idx + 1] = len(launchable_tasks[device][TaskType.COMPUTE])
         current_state[idx + 2] = len(launchable_tasks[device][TaskType.DATA])
@@ -163,3 +166,15 @@ def create_next_state(current_device_load_state, edge_index,
              next_current_workload_features[edge_index[1][i]][TaskState.COMPLETED + action] = \
                  next_current_workload_features[edge_index[1][i]][TaskState.COMPLETED + action] + 1
      return next_device_load_state, edge_index, next_current_workload_features
+
+
+def calculate_reward(task, completion_time):
+    if task.name not in task_execution_map:
+        # print(task.name, "'s completion time:", completion_time)
+        task_execution_map[task.name] = completion_time
+        return torch.tensor([[0]], dtype=torch.float)
+    else:
+        old_completion_time =  task_execution_map[task.name]
+        # print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time)
+        reward = 1 if old_completion_time > completion_time else 0
+        return torch.tensor([[reward]], dtype=torch.float)
