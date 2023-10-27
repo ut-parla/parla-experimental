@@ -34,7 +34,7 @@ StatesToResources[TaskState.COMPLETED] = []
 AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
 
-def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Device]:
+def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> Optional[Device]:
 
     objects = scheduler_state.objects
     assert objects is not None
@@ -72,6 +72,14 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState) -> Optional[Devi
             task, current_deviceload_state, edge_index,
             node_features, next_deviceload_state,
             next_node_features, action)
+
+        # Buffer all state information as its reward is decided at the launching phase.
+        # Note that this call assumes the A2C model.
+        parla_arch.rl_mapper.append_statetransition(
+            task, current_deviceload_state, edge_index,
+            node_features, next_deviceload_state,
+            next_node_features, action)
+
 
         """
         task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
@@ -286,17 +294,11 @@ class ParlaArchitecture(SchedulerArchitecture):
             task = objects.get_task(taskid)
             assert task is not None
 
-            if device := map_task(task, scheduler_state):
+            if device := map_task(task, scheduler_state, self):
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
                 self.success_count += 1
-                # Buffer all state information as its reward is decided at the launching phase.
-                # Note that this call assumes the A2C model.
-                self.rl_mapper.append_statetransition(
-                    task, current_deviceload_state, edge_index,
-                    node_features, next_deviceload_state,
-                    next_node_features, action)
             else:
                 next_tasks.fail()
                 continue
