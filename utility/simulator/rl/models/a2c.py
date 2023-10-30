@@ -1,9 +1,3 @@
-import os
-import torch
-import torch.nn
-import torch.nn.functional as F
-import torch.optim as optim
-
 from torch.distributions import Categorical
 
 from typing import Dict, List, Tuple
@@ -13,6 +7,7 @@ from ..networks.a2c_gcn_fcn import *
 from ...task import SimulatedTask
 from ....types import TaskState, TaskType
 from .globals import *
+from .model import *
 
 
 A2CTransition = namedtuple("A2CTransition",
@@ -22,7 +17,7 @@ A2CTransition = namedtuple("A2CTransition",
                            "gcn_state", "gcn_edgeindex", "next_gcn_state",
                            "next_gcn_edgeindex"))
 
-class A2CAgent:
+class A2CAgent(RLModel):
     # TODO(hc): if testing mode is enabled, skip the model optimization.
 
     def __init__(self, gcn_indim: int, in_dim: int, out_dim: int,
@@ -189,7 +184,7 @@ class A2CAgent:
                 self.print_model("optimization")
                 self.complete_transition_list = list()
 
-    def load_models(self):
+    def load_model(self):
         """ Load a2c model and optimizer parameters from files;
             if a file doesn't exist, skip reading and use default parameters.
         """
@@ -207,7 +202,7 @@ class A2CAgent:
         else:
             print("Optimizer  does not exist, and so, not loaded", flush=True)
 
-    def save_models(self):
+    def save_model(self):
         """ Save a2c model and optimizer parameters to files. """
         if not self.is_training_mode():
             return
@@ -215,10 +210,10 @@ class A2CAgent:
         torch.save(self.a2c_model, self.a2cnet_fname)
         torch.save(self.optimizer, self.optimizer_fname)
 
-    def load_best_networks(self):
+    def load_best_network(self):
         pass
 
-    def save_best_networks(self):
+    def save_best_network(self):
         if self.is_training_mode():
             pass
         pass

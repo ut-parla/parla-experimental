@@ -73,18 +73,10 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> O
             node_features, next_deviceload_state,
             next_node_features, action)
 
-        # Buffer all state information as its reward is decided at the launching phase.
-        # Note that this call assumes the A2C model.
-        parla_arch.rl_mapper.append_statetransition(
-            task, current_deviceload_state, edge_index,
-            node_features, next_deviceload_state,
-            next_node_features, action)
-
-
-        """
         task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
         """
         task.assigned_devices = (Device(Architecture.GPU, action.item()),)
+        """
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
         # print(f"Task {task.name} assigned to device {devices}")

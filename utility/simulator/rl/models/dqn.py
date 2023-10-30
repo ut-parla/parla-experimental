@@ -1,17 +1,15 @@
 import math
-import os
 import random
-import torch
-import torch.nn
-import torch.optim as optim
 
 from ..networks.fcn import *
 from ..networks.dqn_gcn_fcn import *
 from .replay_memory import *
 from .globals import *
 from .env import *
+from .model import *
 
-class DQNAgent:
+
+class DQNAgent(RLModel):
 
     # TODO(hc): execution mode would be enum, instead of string.
     def __init__(self, execution_mode: str = "training",
@@ -31,7 +29,7 @@ class DQNAgent:
         self.optimizer = optim.RMSprop(self.policy_network.parameters(),
                                        lr=0.001)
         self.replay_memory = ReplayMemory(256)
-        self.device = torch.device("cpu" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.execution_mode = execution_mode
         # RL parameter setup
         self.n_actions = outdim
@@ -75,7 +73,7 @@ class DQNAgent:
             # have sufficient resources.
             out = torch.tensor(
                   random.choice([d for d in range(self.n_actions)]),
-                  dtype=torch.int64)
+                  dtype=torch.int64).to(self.device)
 
         return out
 
@@ -113,11 +111,10 @@ class DQNAgent:
         # States should be [[state1], [state2], ..]
         states = torch.cat([s.unsqueeze(0) for s in batch.state])
         # Actions should be [[action1], [action2], ..]
-        actions = [b.unsqueeze(0) for b in batch.action]
+        actions = torch.cat(batch.action, dim=0)
 
-        actions = torch.cat(actions, dim=0)
         # Rewards should be [reward1, reward2, ..]
-        rewards = torch.cat([r.squeeze(0) for r in batch.reward])#.to(self.device)
+        rewards = torch.cat([r.squeeze(0) for r in batch.reward]).to(self.device)
         # GCN states should be [[state1], [state2], ..] or [].
         # The latter case implies that either a GCN layer is not used, or none
         # of the subgraph is visible.
@@ -173,9 +170,6 @@ class DQNAgent:
             param.grad.data.clamp_(-1, 1)
         # Update the network parameters.
         self.optimizer.step()
-        """
-        print("Optimization done\n")
-        """
 
     def update_target_network(self):
         """ In DQN, the target network needs to update its parameters
@@ -185,7 +179,7 @@ class DQNAgent:
             self.target_network.load_state_dict(
                 self.policy_network.state_dict())
 
-    def load_models(self):
+    def load_model(self):
         """ Load policy_network, target_network, and optimizer
             parameters from files; if a file doesn't exist, skip reading
             and use default parameters. """
@@ -208,7 +202,7 @@ class DQNAgent:
         else:
             print("Optimizer  does not exist, and so, not loaded", flush=True)
 
-    def save_models(self):
+    def save_model(self):
         """ Save policy_network, target_network, and optimizer
             parameters to files. """
         if not self.is_training_mode():
@@ -263,16 +257,8 @@ class DQNAgent:
                                edge_index, curr_workload_state,
                                next_deviceload_state, next_workload_state,
                                action):
-        """
-        Reward is decided when a task is launched while all the other states and the action are
-        decided when a task is mapped. So temporarily holds state transition information.
-        curr_deviceload_state = curr_deviceload_state.to(device=self.device)
-        edge_index = edge_index.to(device=self.device)
-        curr_workload_state = curr_workload_state.to(device=self.device)
-        next_deviceload_state = next_deviceload_state.to(device=self.device)
-        next_workload_state = next_workload_state.to(device=self.device)
-        action = action.to(device=self.device).to(dtype=torch.int64).unsqueeze(0)
-        """
+        # Reward is decided when a task is launched while all the other states and the action are
+        # decided when a task is mapped. So temporarily holds state transition information.
         action = action.to(dtype=torch.int64).unsqueeze(0)
         new_transition = Transition(curr_deviceload_state, action,
                                     next_deviceload_state, None,
