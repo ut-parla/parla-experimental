@@ -12,7 +12,8 @@ from .model import *
 class DQNAgent(RLModel):
 
     # TODO(hc): execution mode would be enum, instead of string.
-    def __init__(self, execution_mode: str = "training",
+    def __init__(self, gcn_indim, fcn_indim, outdim,
+                 execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 128, gamma = 0.999):
         self.gcn_indim = gcn_indim
@@ -111,7 +112,7 @@ class DQNAgent(RLModel):
         # States should be [[state1], [state2], ..]
         states = torch.cat([s.unsqueeze(0) for s in batch.state])
         # Actions should be [[action1], [action2], ..]
-        actions = torch.cat(batch.action, dim=0)
+        actions = torch.cat([a.unsqueeze(0) for a in batch.action])
 
         # Rewards should be [reward1, reward2, ..]
         rewards = torch.cat([r.squeeze(0) for r in batch.reward]).to(self.device)

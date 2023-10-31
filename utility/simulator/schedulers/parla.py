@@ -54,7 +54,7 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> O
 
         # RL part.
         current_deviceload_state, edge_index, node_features = \
-            create_state(
+            parla_arch.rl_environment.create_state(
             task, parla_arch.devices, objects.taskmap,
             parla_arch.reservable_tasks,
             parla_arch.launchable_tasks, parla_arch.launched_tasks)
@@ -63,7 +63,7 @@ def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> O
             task, current_deviceload_state, node_features, edge_index)
 #print("RL selected device..\n")
         next_deviceload_state, next_edge_index, next_node_features = \
-            create_next_state(
+            parla_arch.rl_environment.create_next_state(
                 current_deviceload_state, edge_index, node_features,
                 int(action.item()))
         # Buffer all state information as its reward is decided at the launching phase.
@@ -226,6 +226,7 @@ class ParlaArchitecture(SchedulerArchitecture):
     devices: List = field(default_factory=list)
 
     rl_mapper: DQNAgent = None
+    rl_environment: ParlaRLEnvironment = None
 
     success_count: int = 0
     active_scheduler: int = 0
@@ -347,7 +348,7 @@ class ParlaArchitecture(SchedulerArchitecture):
             if launch_success := launch_task(task, scheduler_state):
                 task.notify_state(TaskState.LAUNCHED, objects.taskmap, current_time)
                 completion_time = current_time + task.duration
-                reward = calculate_reward(task, completion_time)
+                reward = self.rl_environment.calculate_reward(task, completion_time)
                 self.rl_mapper.complete_statetransition(task, reward)
                 print(task.name, " is launched")
 
