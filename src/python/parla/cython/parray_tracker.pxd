@@ -15,7 +15,3 @@ This is implemented for moduel testing.
 cdef extern from "include/parray_tracker.hpp" nogil:
     cdef cppclass PArrayTracker:
         PArrayTracker(DeviceManager*) except +
-        void track_parray(InnerPArray&, uint32_t) except +
-        void untrack_parray(InnerPArray&, uint32_t) except +
-        void reserve_parray(InnerPArray&, Device*) except +
-        void release_parray(InnerPArray&, Device*) except +
