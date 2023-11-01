@@ -10,7 +10,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.11"
+        python-version: '3.11'
     - name: Install ruff
       run: pip install ruff
     - name: Check code formatting
@@ -22,6 +22,6 @@ jobs:
       run: |
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
-        git commit -am "FORMAT: apply ruff formatting" --allow-empty
+        git commit -am "style: apply ruff formatting" --allow-empty
         git push
       if: success()  # Only push if formatting was applied
