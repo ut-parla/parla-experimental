@@ -5,12 +5,18 @@ on: [pull_request]
 jobs:
   format:
     runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Setup Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.11"
+        python-version: '3.11'
     - name: Install ruff
       run: pip install ruff
     - name: Check code formatting
@@ -18,10 +24,6 @@ jobs:
     - name: Format code
       run: ruff format src
       if: failure()  # Only format if the check fails
-    - name: Commit changes
-      run: |
-        git config --global user.name 'github-actions'
-        git config --global user.email 'github-actions@github.com'
-        git commit -am "FORMAT: apply ruff formatting" --allow-empty
-        git push
-      if: success()  # Only push if formatting was applied
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: style: apply ruff format
