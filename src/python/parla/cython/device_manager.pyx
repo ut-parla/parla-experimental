@@ -296,7 +296,6 @@ class PyDeviceManager:
                         py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus, \
                                                     gpu_mem_sizes[dev_id], \
                                                     VCU_BASELINE)
-                    
                     else:
                         py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
 
@@ -377,8 +376,9 @@ class PyDeviceManager:
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
-        assert(isinstance(placement_components, List) or \
-            isinstance(placement_components, Tuple))
+        assert(isinstance(placement_components, List) or
+                isinstance(placement_components, Tuple)
+        )
         # Multi-device resource requirement or
         # a list of devices, architectures, or multi-device 
         # requirements.

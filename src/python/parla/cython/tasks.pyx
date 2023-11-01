@@ -726,20 +726,11 @@ class DataMovementTask(Task):
 
         #TODO: Get device manager from task environment instead of scheduler at creation time
         device_manager = self.scheduler.device_manager
-        """
-        for device in self.assigned_devices:
-            global_device_id = device.get_global_id()
-            self.parray._auto_move(device_manager.get_parray_id(global_device_id),
-                                   write_flag)
-        """
-#self.parray._auto_move(device_manager.get_parray_id(self.dev_id), write_flag)
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
-        # print("Attempt to Move: ", self.parray.name, " to a device ", parray_id, flush=True)
+
         self.parray._auto_move(parray_id, write_flag)
-        #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
-        #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
 
     def cleanup(self):

@@ -223,11 +223,8 @@ class PyDevice:
     def id(self):
         return self._device_id
 
-
-"""
-Device instances in Python manage resource status.
-TODO(hc): the device configuration will be packed in a data class soon.
-"""
+#Device instances in Python manage resource status.
+#TODO(hc): the device configuration will be packed in a data class soon.
 
 class PyCUDADevice(PyDevice):
     """

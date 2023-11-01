@@ -11,7 +11,6 @@ Task = tasks.ComputeTask
 
 
 class TaskSet(Awaitable, Collection):
-
     def __init__(self, tasks):
         self._tasks = tasks
 
@@ -49,7 +48,6 @@ class TaskSet(Awaitable, Collection):
 
 
 class Tasks(TaskSet):
-
     @property
     def _tasks(self):
         return self.args
@@ -58,7 +56,7 @@ class Tasks(TaskSet):
         self.args = args
 
 
-def parse_index(prefix, index,  step,  stop):
+def parse_index(prefix, index, step, stop):
     """Traverse :param:`index`, update :param:`prefix` by applying :param:`step`, :param:`stop` at leaf calls.
 
     :param prefix: the initial state
@@ -84,7 +82,6 @@ _task_space_globals = {}
 
 
 class TaskSpace(TaskSet):
-
     @property
     def _tasks(self):
         return self._data.values()
@@ -98,13 +95,16 @@ class TaskSpace(TaskSet):
         _task_space_globals[self._id] = self
 
     def __getitem__(self, index):
-
         if not isinstance(index, tuple):
             index = (index,)
         ret = []
 
-        parse_index((), index, lambda x, i: x + (i,),
-                    lambda x: ret.append(self._data.setdefault(x, Task(self, x))))
+        parse_index(
+            (),
+            index,
+            lambda x, i: x + (i,),
+            lambda x: ret.append(self._data.setdefault(x, Task(self, x))),
+        )
         # print("index ret", ret, flush=True)
         # self._data.setdefault(x, Task(self, x))
         if len(ret) == 1:
