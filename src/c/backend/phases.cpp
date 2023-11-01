@@ -63,8 +63,7 @@ void Mapper::run(SchedulerPhase *next_phase) {
     std::vector<std::shared_ptr<DeviceRequirement>> chosen_devices;
 
     policy_->run_task_mapping(task, *this, &chosen_devices, parray_list,
-        &placement_req_options_vec);
-
+                              &placement_req_options_vec);
 
     if (chosen_devices.empty()) {
       // It means that none of the devices is available for this task.
