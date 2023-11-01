@@ -1,0 +1,49 @@
+name: Build Matrix
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gcc: [10]
+        python: [3.8, 3.12]
+        cuda: ['11.4', '12.2']
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Install GCC
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc }} 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc }} 100
+
+    - run: gcc -v
+
+    - name: Install CUDA
+      - uses: Jimver/cuda-toolkit@v0.2.11
+        id: cuda-toolkit
+        with:
+          cuda: ${{ matrix.cuda }}
+
+    - run: echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
+
+    - run: echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+
+    - name: Build and Test
+      run: |
+        # Your build and test commands go here
+        gcc --version
+        python --version
+        nvcc --version
+
