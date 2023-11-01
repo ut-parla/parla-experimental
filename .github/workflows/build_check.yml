@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        gcc: [10, 12.2]
+        gcc: [10]
         python: [3.8, 3.12]
 
     steps:
@@ -32,5 +32,5 @@ jobs:
         # Your build and test commands go here
         gcc --version
         python --version
-        nvcc --version
+        pip install . --verbose 
 
