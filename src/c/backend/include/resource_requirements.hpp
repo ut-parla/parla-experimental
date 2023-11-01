@@ -80,4 +80,4 @@ private:
   std::vector<std::shared_ptr<DeviceRequirement>> placement_reqs_;
 };
 
-#endif
+#endif // PARLA_RESOURCE_REQUIREMENTS_HPP

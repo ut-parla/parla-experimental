@@ -2,7 +2,6 @@
  *  @brief Provides interface for device initialization and management.
  */
 
-#pragma once
 #ifndef PARLA_DEVICE_MANAGER_HPP
 #define PARLA_DEVICE_MANAGER_HPP
 

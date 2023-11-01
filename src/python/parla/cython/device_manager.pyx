@@ -78,47 +78,6 @@ class PrintableFrozenSet(frozenset):
     def __repr__(self):
         return self.get_name()
 
-class StreamPool:
-
-    def __init__(self, device_list, per_device=8):
-
-        if CUPY_ENABLED:
-            self.StreamClass = CupyStream 
-        else:
-            self.StreamClass = Stream
-
-        self._device_list = device_list
-        self._per_device = per_device
-        self._pool = {}
-
-        for device in self._device_list:
-            self._pool[device] = []
-            
-            with device.device as d:
-                for i in range(self._per_device):
-                    self._pool[device].append(self.StreamClass(device=device))
-
-    def get_stream(self, device):
-        if len(self._pool[device]) == 0:
-            #Create a new stream if the pool is empty.
-            new_stream = self.StreamClass(device=device)
-            return new_stream
-
-        return self._pool[device].pop()
-
-    def return_stream(self, stream):
-        self._pool[stream.device].append(stream)
-
-    def __summarize__(self):
-        summary  = ""
-        for device in self._device_list:
-            summary += f"({device} : {len(self._pool[device])})"
-
-        return summary
-
-    def __repr__(self):
-        return f"StreamPool({self.__summarize__()})"
-
 
 #TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
 #TODO(wlr):  - Provide a way to iterate over these real device ids

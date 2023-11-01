@@ -27,7 +27,7 @@ ninja.minimum-version = "1.11"
 [tool.scikit-build.cmake.define]
 PARLA_ENABLE_NVTX = "OFF"
 PARLA_ENABLE_LOGGING = "OFF"
-PARLA_ENABLE_CUDA = "OFF"
+PARLA_ENABLE_CUDA = "ON"
 PARLA_ENABLE_HIP = "OFF"
 
 [project.optional-dependencies]

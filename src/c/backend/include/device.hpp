@@ -2,7 +2,6 @@
  *  @brief Provides interface for abstract device object.
  */
 
-#pragma once
 #ifndef PARLA_DEVICE_HPP
 #define PARLA_DEVICE_HPP
 

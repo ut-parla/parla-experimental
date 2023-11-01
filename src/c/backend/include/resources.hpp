@@ -2,8 +2,8 @@
  *  @brief Provides a resource pool for tracking resource usage.
  */
 
-#ifndef RESOURCES_HPP
-#define RESOURCES_HPP
+#ifndef PARLA_RESOURCES_HPP
+#define PARLA_RESOURCES_HPP
 
 #include <array>
 #include <atomic>
@@ -247,4 +247,4 @@ protected:
   std::array<std::atomic<V>, resource_names.size()> resources = {0, 0, 0};
 };
 
-#endif // RESOURCES_HPP
+#endif // PARLA_RESOURCES_HPP

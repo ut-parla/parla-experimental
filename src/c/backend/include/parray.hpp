@@ -4,8 +4,8 @@
  * This file contains the inner C++ parray interface. Allows access to coherency
  * and parent/child relations without accessing the Python interpreter.
  */
-
-#pragma once
+#ifndef PARLA_PARRAY_HPP
+#define PARLA_PARRAY_HPP
 
 #include "containers.hpp"
 #include "include/atomic_wrapper.hpp"
@@ -96,3 +96,5 @@ private:
   void *_py_parray;
 };
 } // namespace parray
+
+#endif // PARLA_PARRAY_HPP

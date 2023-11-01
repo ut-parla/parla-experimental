@@ -1,4 +1,4 @@
-#include <gpu_utility.hpp>
+#include "../include/gpu_utility.hpp"
 
 void gpu_busy_sleep(const int device, const unsigned long t,
                     uintptr_t stream_ptr) {
@@ -8,3 +8,6 @@ void gpu_busy_sleep(const int device, const unsigned long t,
 void event_synchronize(uintptr_t event_ptr){};
 void event_wait(uintptr_t event_ptr, uintptr_t stream_ptr){};
 void stream_synchronize(uintptr_t stream_ptr){};
+void set_device(int device){};
+int get_device() { return 0; };
+int get_num_devices() { return 0; };

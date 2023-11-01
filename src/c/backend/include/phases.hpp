@@ -4,8 +4,6 @@
  * This file contains the interface for scheduler runtime phases. This includes
  * classes for Task Mapping, Task Resource Reservation, and Task Launching.
  */
-
-#pragma once
 #ifndef PARLA_PHASES_HPP
 #define PARLA_PHASES_HPP
 
@@ -166,7 +164,6 @@ public:
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();
-
 
   /// @brief Increase the count of tasks mapped to a device
   /// @param dev_id Device global ID where a task is mapped
