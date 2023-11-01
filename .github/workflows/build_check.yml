@@ -28,18 +28,12 @@ jobs:
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc }} 100
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc }} 100
 
-    - run: gcc -v
-
     - name: Install CUDA
       uses: Jimver/cuda-toolkit@v0.2.11
       id: cuda-toolkit
       with:
         cuda: ${{ matrix.cuda }}
-
-    - run: echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
-
-    - run: echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
-
+        
     - name: Build and Test
       run: |
         # Your build and test commands go here
