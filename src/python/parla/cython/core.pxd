@@ -148,13 +148,14 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void activate_wrapper()
 
-        void spawn_task(InnerTask* task)
+        void spawn_task(InnerTask* task) except +
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)
         void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup_and_wait_for_task(InnerWorker* worker, InnerTask* task, int state) except +
 
         void increase_num_active_tasks()
         void decrease_num_active_tasks()

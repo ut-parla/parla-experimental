@@ -14,7 +14,6 @@ from parla.utility.tracer import NVTXTracer
 from parla.common.globals import default_sync, VCU_BASELINE, SynchronizationType, crosspy, CROSSPY_ENABLED
 from crosspy import CrossPyArray
 import inspect
-
 from parla.cython import tasks
 
 from typing import Collection, Any, Union, List, Tuple
@@ -70,9 +69,7 @@ def spawn(task=None,
           runahead: SynchronizationType = default_sync
           ):
     nvtx.push_range(message="Spawn::spawn", domain="launch", color="blue")
-
     scheduler = get_scheduler_context().scheduler
-
     if not isinstance(task, tasks.Task):
         taskspace = scheduler.default_taskspace
 
@@ -146,8 +143,10 @@ def spawn(task=None,
                          dataflow=dataflow,
                          runahead=runahead
                          )
-
-        scheduler.spawn_task(task)
+        try:
+            scheduler.spawn_task(task)
+        except RuntimeError:
+            raise RuntimeError("Conflicting task state while spawning task. Possible duplicate TaskID: " + str(task))
         # scheduler.run_scheduler()
         nvtx.pop_range(domain="launch")
 

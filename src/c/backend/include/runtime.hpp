@@ -1070,6 +1070,8 @@ public:
   void task_cleanup_presync(InnerWorker *worker, InnerTask *task, int state);
   void task_cleanup_postsync(InnerWorker *worker, InnerTask *task, int state);
 
+  void task_cleanup_and_wait_for_task(InnerWorker *worker, InnerTask *task, int state);
+
   /* Get number of active tasks. A task is active if it is spawned but not
    * complete */
   int get_num_active_tasks();

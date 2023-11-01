@@ -196,16 +196,16 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.scheduler.start_monitor.notify_all()
 
                 while self._should_run:
-                    self.status = "Waiting"
-                    #print("WAITING", flush=True)
-
-                    #with self._monitor:
-                    #    if not self.task:
-                    #        self._monitor.wait()
-                    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
-                    self.inner_worker.wait_for_task()
-
                     self.task = self.inner_worker.get_task()
+                    if(self.task is None):
+                        self.status = "Waiting"
+                        # print("WAITING", flush=True)
+                        #with self._monitor:
+                        #    if not self.task:
+                        #        self._monitor.wait()
+                        nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        self.inner_worker.wait_for_task() # GIL Release
+                        self.task = self.inner_worker.get_task()
                     if isinstance(self.task, core.DataMovementTaskAttributes):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
@@ -219,9 +219,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         _global_data_tasks[id(self.task)] = self.task
 
                     nvtx.pop_range(domain="Python Runtime")
-
-                    #print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
-
+                    # print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
                     self.status = "Running"
 
                     if isinstance(self.task, Task):
@@ -270,8 +268,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         device_context.record_events()
 
                         nvtx.pop_range(domain="Python Runtime")
-                        #print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
-
+                        # print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
 
                         final_state  = active_task.state
@@ -286,7 +283,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                         elif isinstance(final_state, tasks.TaskRunning):
                             nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
-                            #print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
+                            # print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
                             active_task.dependencies = active_task.state.dependencies
                             active_task.func = active_task.state.func
                             active_task.args = active_task.state.args
@@ -298,33 +295,57 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
-                        #TODO(wlr): Add better exception handling
-                        #print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
                             #Handle synchronization in Python (for debugging, works!)
-                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            if active_task.runahead != SyncType.NONE:
-                                device_context.synchronize(events=True)
-                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            #print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            if self._should_run:
+                                #print("In if", flush=True)
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            else:
+                                #print("In else", flush=True)
+                                self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                if active_task.runahead != SyncType.NONE:
+                                    device_context.synchronize(events=True)
+                                self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
                             #Handle synchronization in C++
-                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
-
-                        #print("Finished Cleaning up Task", active_task, flush=True)
-
+                            # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            # Adding wait here to reduce context switch between GIL
+                            print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            if self._should_run:
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                #self.task = self.inner_worker.get_task()
+                            else:
+                                self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        # print("Finished Cleaning up Task", active_task, flush=True)
+                        #print("Should run before device_context", self._should_run, task, flush=True)
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
-
+                        #print("Should run before final_state cleanup", self._should_run, task, flush=True)
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
                         # print("Finished Task", active_task, flush=True)
+                        # print("Should run before reassigning active_task", self._should_run, task, flush=True)
                         active_task.state = final_state
                         self.task = None
                         nvtx.pop_range(domain="Python Runtime")
+
+
+                        # Adding wait here to reduce context switch between GIL
+                        # if self._should_run:
+                        #    self.status = "Waiting"
+                        #    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        #    self.inner_worker.wait_for_task() # GIL Release
+                        #    self.task = self.inner_worker.get_task()
+
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:
@@ -500,7 +521,7 @@ class Scheduler(ControllableThread, SchedulerContext):
     def spawn_task(self, task):
         #print("Scheduler: Spawning Task", task, flush=True)
         self.inner_scheduler.spawn_task(task.inner_task)
-    
+
     def assign_task(self, task, worker):
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)
         worker.assign_task(task)
@@ -556,7 +577,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         device.
 
         :param global_dev_id: global logical device id that 
-                              this function interests 
+                            this function interests 
         :param parray_parent_id: parent PArray ID
         """
         return self.inner_scheduler.get_mapped_parray_state( \

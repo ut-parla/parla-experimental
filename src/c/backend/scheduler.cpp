@@ -441,6 +441,17 @@ void InnerScheduler::task_cleanup(InnerWorker *worker, InnerTask *task,
   task_cleanup_postsync(worker, task, state);
 }
 
+void InnerScheduler::task_cleanup_and_wait_for_task(InnerWorker *worker, InnerTask *task,
+                                  int state) {
+  NVTX_RANGE("Scheduler::task_cleanup", NVTX_COLOR_MAGENTA)
+
+  task_cleanup(worker, task, state);
+  // wait for task
+  if(this->should_run)
+    worker->wait();
+  
+}
+
 int InnerScheduler::get_num_active_tasks() { return this->num_active_tasks; }
 
 void InnerScheduler::increase_num_active_tasks() {
