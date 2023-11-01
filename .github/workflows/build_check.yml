@@ -31,10 +31,10 @@ jobs:
     - run: gcc -v
 
     - name: Install CUDA
-      - uses: Jimver/cuda-toolkit@v0.2.11
-        id: cuda-toolkit
-        with:
-          cuda: ${{ matrix.cuda }}
+      uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+        cuda: ${{ matrix.cuda }}
 
     - run: echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
 
