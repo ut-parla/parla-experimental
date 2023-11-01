@@ -12,7 +12,7 @@ maintainers = [
 description = ""
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["psutil", "pyyaml", "cython", "numpy", "ruff"]
+dependencies = ["psutil", "pyyaml", "numpy"]
 
 [tool.scikit-build]
 minimum-version = "0.5"
@@ -33,6 +33,15 @@ PARLA_ENABLE_HIP = "OFF"
 [project.optional-dependencies]
 gpu = ["cupy>=9.2"]
 crosspy = ["crosspy", "cupy>=9.2"]
+dev = ["ruff", "cython-lint", "cython"]
 
 [tool.cython-lint]
-ignore = ['E503', 'E504', 'E501', 'E265', "F841", "F401", "F405", "F821", "F403", "E741", "W291", "E303", "E116", "E302", "E221", "E117", "W293", "E127", "E128"]
+ignore = [
+    'E504', # break after binary operator
+    'E501', # line too long
+    "F841", # local variable is assigned to but never used
+    "F405", # may be undefined, or defined from star imports: ...
+    "W291", # trailing whitespace
+    "E116", # unexpected indentation (comment)
+    "W293", # blank line contains whitespace
+]

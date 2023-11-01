@@ -1,5 +1,5 @@
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 """!
 @file core.pyx
 @brief Contains the core intermediate cython wrapper classes for Task, Workers, and Scheduler.
@@ -7,22 +7,14 @@
 
 import cython 
 
-from parla.common.parray.core import PArray
-from parla.common.dataflow import Dataflow
-from parla.common.globals import AccessMode, cupy
+from ..common.parray.core import PArray
+from ..common.globals import cupy
 
 from .device cimport Device
 from .cyparray cimport CyPArray
 from .device_manager cimport CyDeviceManager, DeviceManager
-import threading
-from enum import IntEnum, auto
-from parla.common.globals import cupy
+from ..common.globals import cupy
 from libc.stdint cimport uintptr_t
-
-#Resource Types
-#TODO: Python ENUM
-
-#Logging functions
 
 LOG_TRACE = 0
 LOG_DEBUG = 1
@@ -48,7 +40,7 @@ cpdef _log_task(logging_level, category, message, PyInnerTask obj):
     if category == "Worker":
         log_worker_1[InnerTask](logging_level, msg, _inner)
     if category == "Scheduler":
-            log_scheduler_1[InnerTask](logging_level, msg, _inner)
+        log_scheduler_1[InnerTask](logging_level, msg, _inner)
 
 cpdef _log_worker(logging_level, category, message, PyInnerWorker obj):
     cdef InnerWorker* _inner = <InnerWorker*> obj.inner_worker
@@ -69,19 +61,19 @@ cpdef _log_task_worker(logging_level, category, message1, PyInnerTask obj1, mess
 
     if  category == "Task":
         log_task_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
-    if category  == "Worker":
+    if category == "Worker":
         log_worker_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
     if category == "Scheduler":
         log_scheduler_2[InnerTask, InnerWorker](logging_level, msg1, _inner1, msg2, _inner2)
 
-inner_type1  = cython.fused_type(PyInnerTask, PyInnerWorker)
+inner_type1 = cython.fused_type(PyInnerTask, PyInnerWorker)
 inner_type2 = cython.fused_type(PyInnerTask, PyInnerWorker)
 
 cpdef binlog_0(category, message, logging_level=LOG_INFO):
     msg = message.encode('utf-8')
     if  category == "Task":
         log_task_msg(logging_level, msg)
-    if category  == "Worker":
+    if category == "Worker":
         log_worker_msg(logging_level, msg)
     if category == "Scheduler":
         log_scheduler_msg(logging_level, msg)
@@ -105,10 +97,6 @@ cpdef binlog_2(category, message1, inner_type1 obj1, message2, inner_type2 obj2,
     else:
         raise Exception("Unknown type combination in logger function")
 
-#cpdef log_2(category, message1, inner_type1  obj1,  message2, inner_type2 obj2):
-
-
-
 cpdef cpu_bsleep_gil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but don't release the GIL"""
     cpu_busy_sleep(microseconds)
@@ -131,33 +119,15 @@ cpdef gpu_bsleep_nogil(dev, t, stream):
     with nogil:
         gpu_busy_sleep(c_dev, c_t, c_stream)
 
-# Define callbacks for C++ to call back into Python
-
-cdef void callback_launch(void* python_scheduler, void* python_task, void*
-        python_worker) noexcept nogil:
-    with gil:
-        #print("Inside callback to cython", flush=True)
-        task = <object>python_task
-        scheduler = <object>python_scheduler
-        worker = <object>python_worker
-
-        scheduler.assign_task(task, worker)
-
-        #print("Done with callback", flush=True)
-        #(<object>python_function)(<object>python_input)
-
 ctypedef void(*f_type)(void*) 
+
 
 @cython.binding(False)
 cdef void callback_stop(void* python_function) noexcept nogil:
     with gil:
-        #print("Inside callback to cython (stop)", flush=True)
         scheduler = <object>python_function
         scheduler.stop_callback()
 
-        #(<object>python_function)(<object>python_input)
-
-#Define the Cython Wrapper Classes
 
 cdef class PyInnerTask:
     cdef InnerTask* c_task
@@ -392,7 +362,9 @@ cdef class PyTaskBarrier:
         _task_barrier = new TaskBarrier()
         self.c_task_barrier = _task_barrier
 
-    def __init__(self, task_list=[]):
+    def __init__(self, task_list=None):
+        if task_list is None:
+            task_list = []
 
         cdef TaskBarrier* c_self = self.c_task_barrier
 
@@ -448,7 +420,6 @@ cdef class PyTaskSpace:
     def __dealloc__(self):
         del self.c_task_space
 
-
     cpdef add_tasks(self, idx_list, task_list):
         cdef InnerTaskSpace* c_self = self.c_task_space
 
@@ -472,10 +443,6 @@ cdef class PyTaskSpace:
         cdef InnerTaskSpace* c_self = self.c_task_space
 
         cdef vector[int64_t] c_idx_list
-        cdef vector[InnerTask*] c_task_list
-
-        cdef PyInnerTask inner_task
-        cdef InnerTask* task
 
         for i in range(len(idx_list)):
             c_idx_list[i] = hash(idx_list[i])
@@ -506,7 +473,6 @@ cdef class PyInnerWorker:
         c_scheduler = python_scheduler.inner_scheduler
         _inner_worker.set_scheduler(c_scheduler)
 
-
     cpdef remove_task(self):
         cdef InnerWorker* _inner_worker
         _inner_worker = self.inner_worker
@@ -533,7 +499,7 @@ cdef class PyInnerWorker:
 
         if _inner_worker.ready:
             _inner_worker.get_task(&c_task, &is_data_task)
-            if is_data_task == True:
+            if is_data_task is True:
                 # This case is that the current task that
                 # this worker thread gets is a data movement task.
                 py_assigned_devices = []
@@ -559,9 +525,14 @@ cdef class PyInnerWorker:
                 # A C++ pointer cannot be held in Python object.
                 # Therefore, exploit a Cython class.
                 cy_data_attrs.set_c_task(c_data_task)
-                py_task = DataMovementTaskAttributes(name, py_parray, \
-                                  access_mode, py_assigned_devices, cy_data_attrs, \
-                                  dev_id)
+                py_task = DataMovementTaskAttributes(
+                                  name,
+                                  py_parray,
+                                  access_mode,
+                                  py_assigned_devices, 
+                                  cy_data_attrs,
+                                  dev_id
+                )
             else:
                 py_task = <object> c_task.get_py_task()
         else:
@@ -634,7 +605,7 @@ cdef class PyInnerScheduler:
         cdef InnerWorker* c_worker = worker.inner_worker
         c_self.enqueue_worker(c_worker)
 
-    #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
+    # TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
@@ -668,10 +639,6 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.decrease_num_active_tasks()
 
-    #cpdef get_num_active_workers(self):
-    #    cdef InnerScheduler* c_self = self.inner_scheduler
-    #    return c_self.get_num_active_workers()
-
     cpdef get_num_ready_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_num_ready_tasks()
@@ -697,8 +664,7 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.release_parray(cy_parray.get_cpp_parray(), global_dev_id)
 
-    cpdef get_parray_state(\
-        self, int global_dev_id, long long int parray_parent_id):
+    cpdef get_parray_state(self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
 
@@ -731,7 +697,7 @@ class DataMovementTaskAttributes:
     This is delcared to avoid circular imports that could happen
     when we import tasks.pyx in here.
     """
-    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices,
                  c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray
@@ -739,4 +705,3 @@ class DataMovementTaskAttributes:
         self.assigned_devices = assigned_devices
         self.c_attrs = c_attrs
         self.dev_id = dev_id
-
