@@ -27,10 +27,15 @@ jobs:
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ matrix.gcc }} 100
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc }} 100
 
-    - name: Build and Test
+    - name: Build
       run: |
         # Your build and test commands go here
         gcc --version
         python --version
-        pip install . --verbose 
+        pip install . --verbose
+
+    - name: Test Install
+      run:
+        python -c "from parla import Parla; from parla.tasks import TaskSpace"
+
 
