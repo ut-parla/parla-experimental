@@ -26,4 +26,4 @@ jobs:
       if: failure()  # Only format if the check fails
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: style: apply ruff format
+        commit_message: "style: apply ruff format"
