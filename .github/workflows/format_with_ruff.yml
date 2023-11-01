@@ -1,0 +1,27 @@
+name: Format Python Code
+
+on: [pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11"
+    - name: Install ruff
+      run: pip install ruff
+    - name: Check code formatting
+      run: ruff check src
+    - name: Format code
+      run: ruff format src
+      if: failure()  # Only format if the check fails
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git commit -am "FORMAT: apply ruff formatting" --allow-empty
+        git push
+      if: success()  # Only push if formatting was applied
