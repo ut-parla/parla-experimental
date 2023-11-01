@@ -657,7 +657,7 @@ def generate_serial_graph(config: SerialConfig) -> str:
         for i in range(config.data_partitions):
             data_config_string += f"{{ {single_data_block_size} : -1}}"
             if i+1 < config.data_partitions:
-                data_config_string += f" , "
+                data_config_string += " , "
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         raise NotImplementedError("[Serial] Data patterns not implemented")
     else:
@@ -794,14 +794,14 @@ def generate_independent_graph(config: IndependentConfig) -> str:
     data_config_string = ""
     # TODO(hc): for now, assume that data allocation starts from cpu.
     if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = f"{{1 : -1}}"
+        data_config_string = "{1 : -1}"
     elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
         single_data_block_size = config.total_data_width
         config.data_partitions = 64
         for i in range(config.data_partitions):
             data_config_string += f"{{{single_data_block_size} : -1}}"
             if i+1 < config.data_partitions:
-                data_config_string += f", "
+                data_config_string += ", "
     elif config.data_pattern == DataInitType.OVERLAPPED_DATA:
         raise NotImplementedError(
             "[Independent] Data patterns not implemented")
@@ -875,7 +875,7 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
     data_config_string = ""
     # TODO(hc): for now, assume that data allocation starts from cpu.
     if tgraph_config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = f"{{1 : -1}}"
+        data_config_string = "{1 : -1}"
     elif tgraph_config.data_pattern == DataInitType.OVERLAPPED_DATA:
         # Each bulk task takes an individual (non-overlapped) data block.
         # A bridge task reduces all data blocks from the bulk tasks in the previous level.
@@ -964,6 +964,5 @@ def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> s
 __all__ = [DeviceType, LogState, MovementType, DataInitType, TaskID, TaskRuntimeInfo,
            TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample, read_pgraph,
            parse_blog, TaskConfigs, RunConfig, shuffle_tasks,
-           generate_independent_graph, generate_serial_graph, generate_reduction_graph]
-           generate_independent_graph, generate_serial_graph,
+           generate_independent_graph, generate_serial_graph, generate_reduction_graph,
            generate_reduction_scatter_graph]

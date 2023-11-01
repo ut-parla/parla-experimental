@@ -1,8 +1,8 @@
-from parla.cython import tasks
-from parla.cython import variants
-from parla.common.spawn import spawn
+from ..cython import tasks
+from ..cython import variants
+from ..common.spawn import spawn
 
-from parla.common.globals import *
+from ..common.globals import *
 
 
 Tasks = tasks.TaskCollection

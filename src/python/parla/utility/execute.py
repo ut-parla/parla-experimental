@@ -52,7 +52,7 @@ def estimate_frequency(n_samples=10, ticks=1900000000):
     cycles = ticks
     device_id = 0
 
-    print(f"Starting GPU Frequency benchmark.")
+    print("Starting GPU Frequency benchmark.")
     times = np.zeros(n_samples)
     for i in range(n_samples):
 
@@ -121,37 +121,6 @@ def get_placement_set_from(ps_str_set, num_gpus):
         else:
             raise ValueError("Does not support this placement:", dev_type)
     return tuple(ps_set)
-
-
-def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
-    value = 0
-    data_list = []
-    # If data does not exist, this loop will not be iterated.
-    for data_idx in data_config:
-
-        data_info = data_config[data_idx]
-
-        data_location = data_info.location
-        data_size = data_info.size
-
-        if data_location == DeviceType.CPU_DEVICE:
-            data = np.zeros([data_size, data_scale],
-                            dtype=np.float32) + value + 1
-            data_list.append(data)
-
-        elif data_location > DeviceType.ANY_GPU_DEVICE:
-            import cupy as cp
-            with cp.cuda.Device(data_location - 1) as device:
-                data = cp.zeros([data_size, data_scale],
-                                dtyp=np.float32) + value + 1
-                device.synchronize()
-                data_list.append(data)
-        else:
-            raise NotImplementedError("This device is not supported for data")
-        value += 1
-
-        
-    return data_list
 
 
 #TODO(wlr): Rewrite this supporting multiple device placement.

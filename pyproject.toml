@@ -12,7 +12,7 @@ maintainers = [
 description = ""
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["psutil", "pyyaml", "cython", "numpy"]
+dependencies = ["psutil", "pyyaml", "cython", "numpy", "ruff"]
 
 [tool.scikit-build]
 minimum-version = "0.5"
