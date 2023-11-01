@@ -8,7 +8,6 @@
 
 import functools 
 from parla.common.globals import _Locals as Locals 
-from parla.cython.device import PyArchitecture
 
 class VariantDefinitionError(ValueError):
     """!
@@ -114,11 +113,3 @@ def specialize(func):
     The compiler will make the choice when it is compiling for a specific target.
     """
     return _VariantFunction(func)
-
-
-        
-
-        
-
-
-

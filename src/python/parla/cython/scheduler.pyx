@@ -5,12 +5,9 @@
 @brief Contains the core Python logic to manage workers and launch tasks.
 """
 
-from abc import abstractmethod, ABCMeta
-from typing import Collection, Optional, Union, List, Dict
+from abc import abstractmethod
 import threading
-from collections import deque, namedtuple, defaultdict
 import inspect 
-import os
 from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
 from parla.common.globals import SynchronizationType as SyncType
 
@@ -20,7 +17,6 @@ else:
     cupy_backends = None
 
 import traceback
-import sys
 
 #cimport tasks
 from . import tasks
@@ -29,9 +25,8 @@ from . cimport core
 from . import core
 from .cyparray import CyPArray
 
-from parla.common.globals import _Locals as Locals 
-from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
-from parla.common.parray.core import PArray
+from ..common.globals import _Locals as Locals 
+from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
@@ -70,6 +65,7 @@ class _SchedulerLocals(threading.local):
             return self._scheduler_context_stack[-1]
         else:
             raise Exception("No scheduler context")
+
 
 _scheduler_locals = _SchedulerLocals()
 
@@ -485,8 +481,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         self.inner_scheduler.release_parray(cy_parray, global_dev_id)
 
-    def get_parray_state(\
-        self, global_dev_id: int, parray_parent_id):
+    def get_parray_state(self, global_dev_id: int, parray_parent_id):
         """
         Return True if a parent PArray of the passed PArray exists on a
         device.
@@ -495,8 +490,7 @@ class Scheduler(ControllableThread, SchedulerContext):
                               this function interests 
         :param parray_parent_id: parent PArray ID
         """
-        return self.inner_scheduler.get_parray_state( \
-            global_dev_id, parray_parent_id)
+        return self.inner_scheduler.get_parray_state(global_dev_id, parray_parent_id)
 
 
 def _task_callback(task, body):

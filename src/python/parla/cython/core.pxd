@@ -109,8 +109,7 @@ cdef extern from "include/runtime.hpp" nogil:
         InnerWorker(void* py_worker)
 
         void set_py_worker(void* py_worker)
-        void set_scheduler(InnerScheduler* scheduler
-        )
+        void set_scheduler(InnerScheduler* scheduler)
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
         void get_task(InnerTask** task, bool* is_data_task)

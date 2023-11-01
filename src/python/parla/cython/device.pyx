@@ -1,11 +1,5 @@
 #cython: language_level=3
 #cython: language=c++
-################################################################################
-# Cython implementations (Declarations are in device.pxd)
-################################################################################
-import cython 
-cimport cython 
-
 """!
 @file device.pyx
 @brief Contains the user-facing device and architectures classes.
@@ -16,12 +10,9 @@ from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType
 from parla.common.globals import VCU_BASELINE, get_device_manager
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from dataclasses import dataclass
-from typing import Union, List, Iterable, Dict, Tuple
-from collections import defaultdict
-import os 
-from enum import IntEnum
+from typing import Union, Dict, Tuple
 
 cdef class CyDevice:
     """
@@ -53,8 +44,7 @@ cdef class CyCUDADevice(CyDevice):
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, \
-                                          <void *> py_device)
+        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -67,8 +57,7 @@ cdef class CyCPUDevice(CyDevice):
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, \
-                                         <void *> py_device)
+        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -286,7 +275,7 @@ class PyArchitecture(metaclass=ABCMeta):
             # If a requested device does not exist,
             # ignore that placement.
             error_msg = f"{self._name} does not have device({index})."
-            error_msg += f" Please specify existing devices."
+            error_msg += " Please specify existing devices."
             raise ValueError(error_msg)
 
     def __getitem__(self, param):
@@ -387,7 +376,7 @@ class ImportableArchitecture(PyArchitecture):
         if isinstance(o, int):
             return self.id == o
         elif isinstance(o, type(self)):
-            return ( (self.id == o.id) and (self._name == o.name) )
+            return ((self.id == o.id) and (self._name == o.name))
         else:
             return False
 
@@ -440,10 +429,10 @@ class DeviceResourceRequirement:
         self.res_req = res_req
 
     def __repr__(self):
-        return "("+self.device.get_name()+", memory:"+str(self.res_req.memory_sz)+ \
-               ", num_vcus:"+str(self.res_req.num_vcus)+")" 
+        return f"({self.device.get_name()}, memory:{self.res_req.memory_sz} bytes, vcus:{self.res_req.num_vcus})"
 
-PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource], \
+
+PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource],
                         Tuple[PyDevice, DeviceResource]]
 
 

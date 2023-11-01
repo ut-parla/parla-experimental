@@ -9,7 +9,7 @@ from . import device
 from .device cimport Device
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE
 
-from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
+from typing import Iterable, Tuple, List
 
 import os
 import psutil
@@ -98,10 +98,10 @@ class StreamPool:
                 for i in range(self._per_device):
                     self._pool[device].append(self.StreamClass(device=device))
 
-    def get_stream(self, device):
-        if len(self._pool[device]) == 0:
+    def get_stream(self, dev):
+        if len(self._pool[dev]) == 0:
             #Create a new stream if the pool is empty.
-            new_stream = self.StreamClass(device=device)
+            new_stream = self.StreamClass(device=dev)
             return new_stream
 
         return self._pool[device].pop()
@@ -147,7 +147,7 @@ class PyDeviceManager:
             self.num_real_gpus = 0
 
         # Initialize Devices
-        if dev_config == None or dev_config == "":
+        if dev_config is None or dev_config == "":
             self.register_cpu_devices()
             self.register_cupy_gpu_devices()
         else:
@@ -182,8 +182,7 @@ class PyDeviceManager:
 
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
-                mem_info = gpu_dev.mem_info # tuple of free and total memory
-                                            # in bytes.
+                mem_info = gpu_dev.mem_info  # tuple of free and total memory (in bytes)
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
 
@@ -293,8 +292,8 @@ class PyDeviceManager:
                 for dev_id in range(num_of_gpus):
 
                     if self.num_real_gpus > 0:
-                        py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus, \
-                                                    gpu_mem_sizes[dev_id], \
+                        py_cuda_device = PyCUDADevice(dev_id % self.num_real_gpus,
+                                                    gpu_mem_sizes[dev_id],
                                                     VCU_BASELINE)
                     else:
                         py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
@@ -376,9 +375,7 @@ class PyDeviceManager:
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
-        assert(isinstance(placement_components, List) or
-                isinstance(placement_components, Tuple)
-        )
+        assert(isinstance(placement_components, List) or isinstance(placement_components, Tuple))
         # Multi-device resource requirement or
         # a list of devices, architectures, or multi-device 
         # requirements.

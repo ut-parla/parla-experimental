@@ -7,16 +7,13 @@
 
 import cython 
 
-from parla.common.parray.core import PArray
-from parla.common.dataflow import Dataflow
-from parla.common.globals import AccessMode, cupy
+from ..common.parray.core import PArray
+from ..common.globals import cupy
 
 from .device cimport Device
 from .cyparray cimport CyPArray
 from .device_manager cimport CyDeviceManager, DeviceManager
-import threading
-from enum import IntEnum, auto
-from parla.common.globals import cupy
+from ..common.globals import cupy
 from libc.stdint cimport uintptr_t
 
 #Resource Types
@@ -392,7 +389,9 @@ cdef class PyTaskBarrier:
         _task_barrier = new TaskBarrier()
         self.c_task_barrier = _task_barrier
 
-    def __init__(self, task_list=[]):
+    def __init__(self, task_list=None):
+        if task_list is None:
+            task_list = []
 
         cdef TaskBarrier* c_self = self.c_task_barrier
 
@@ -472,10 +471,6 @@ cdef class PyTaskSpace:
         cdef InnerTaskSpace* c_self = self.c_task_space
 
         cdef vector[int64_t] c_idx_list
-        cdef vector[InnerTask*] c_task_list
-
-        cdef PyInnerTask inner_task
-        cdef InnerTask* task
 
         for i in range(len(idx_list)):
             c_idx_list[i] = hash(idx_list[i])
@@ -533,7 +528,7 @@ cdef class PyInnerWorker:
 
         if _inner_worker.ready:
             _inner_worker.get_task(&c_task, &is_data_task)
-            if is_data_task == True:
+            if is_data_task is True:
                 # This case is that the current task that
                 # this worker thread gets is a data movement task.
                 py_assigned_devices = []
@@ -559,8 +554,8 @@ cdef class PyInnerWorker:
                 # A C++ pointer cannot be held in Python object.
                 # Therefore, exploit a Cython class.
                 cy_data_attrs.set_c_task(c_data_task)
-                py_task = DataMovementTaskAttributes(name, py_parray, \
-                                  access_mode, py_assigned_devices, cy_data_attrs, \
+                py_task = DataMovementTaskAttributes(name, py_parray,
+                                  access_mode, py_assigned_devices, cy_data_attrs,
                                   dev_id)
             else:
                 py_task = <object> c_task.get_py_task()
@@ -697,8 +692,7 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.release_parray(cy_parray.get_cpp_parray(), global_dev_id)
 
-    cpdef get_parray_state(\
-        self, int global_dev_id, long long int parray_parent_id):
+    cpdef get_parray_state(self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_parray_state(global_dev_id, parray_parent_id)
 
@@ -731,7 +725,7 @@ class DataMovementTaskAttributes:
     This is delcared to avoid circular imports that could happen
     when we import tasks.pyx in here.
     """
-    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices, \
+    def __init__(self, name, py_parray: PArray, access_mode, assigned_devices,
                  c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray
@@ -739,4 +733,3 @@ class DataMovementTaskAttributes:
         self.assigned_devices = assigned_devices
         self.c_attrs = c_attrs
         self.dev_id = dev_id
-
