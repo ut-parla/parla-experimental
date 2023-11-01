@@ -23,7 +23,7 @@ jobs:
       run: ruff check src
     - name: Format code
       run: ruff format src
-      if: failure()  # Only format if the check fails
+      if: success()  # Only format if check success
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "style: apply ruff format"
