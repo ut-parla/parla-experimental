@@ -36,7 +36,9 @@ __all__ = [
     "sleep_gil",
     "sleep_nogil",
     "Tasks",
-    "parla_num_threads","parray"]
+    "parla_num_threads",
+    "parray",
+]
 
 
 def signal_handler(signal, frame):
