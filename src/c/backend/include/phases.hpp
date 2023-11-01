@@ -167,7 +167,6 @@ public:
   void run(SchedulerPhase *next_phase);
   size_t get_count();
 
-
   /// @brief Increase the count of tasks mapped to a device
   /// @param dev_id Device global ID where a task is mapped
   /// @return The number of the tasks mapped to a device

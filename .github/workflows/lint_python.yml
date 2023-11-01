@@ -1,4 +1,4 @@
-name: Format Python Code
+name: Python Linter & Format
 
 on: [pull_request]
 

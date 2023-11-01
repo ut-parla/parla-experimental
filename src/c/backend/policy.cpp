@@ -208,7 +208,8 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
     std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
     const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
         &parray_list,
-    std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) {
+    std::vector<std::shared_ptr<PlacementRequirementBase>>
+        *placement_req_options_vec) {
   // A set of chosen devices to a task.
   Score_t best_score{-1};
   // If any device was chosen as a candidate device,
@@ -242,8 +243,8 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
       std::shared_ptr<DeviceRequirement> dev_req =
           std::dynamic_pointer_cast<DeviceRequirement>(base_req);
       Score_t score{0};
-      bool is_req_available = calc_score_devplacement(
-          task, dev_req, mapper, &score, parray_list[0]);
+      bool is_req_available = calc_score_devplacement(task, dev_req, mapper,
+                                                      &score, parray_list[0]);
       if (!is_req_available) {
         continue;
       }
@@ -263,9 +264,9 @@ void LocalityLoadBalancingMappingPolicy::run_task_mapping(
       // std::cout << "[Mapper] Task name:" << task->get_name() << ", " <<
       // "Checking arch requirement."
       //           << "\n";
-      bool is_req_available = calc_score_archplacement(
-          task, arch_req, mapper, chosen_dev_req, &chosen_dev_score,
-          parray_list[0]);
+      bool is_req_available =
+          calc_score_archplacement(task, arch_req, mapper, chosen_dev_req,
+                                   &chosen_dev_score, parray_list[0]);
       if (!is_req_available) {
         continue;
       }
