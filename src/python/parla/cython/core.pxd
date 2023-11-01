@@ -1,5 +1,5 @@
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 import cython
 cimport cython
 
@@ -17,8 +17,7 @@ from libc.stdint cimport uintptr_t
 
 cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds) noexcept
-    void gpu_busy_sleep(const int device, const unsigned long cycles,
-                    uintptr_t stream_ptr) noexcept 
+    void gpu_busy_sleep(const int device, const unsigned long cycles, uintptr_t stream_ptr) noexcept 
 
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker) noexcept 
@@ -26,9 +25,6 @@ cdef extern from "include/runtime.hpp" nogil:
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker) noexcept
     void stop_callback(stopfunc_t func, void* scheduler) noexcept
-
-    #ctypedef void* Ptr_t
-    #ctypedef InnerTask* InnerTaskPtr_t
 
     cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
@@ -80,7 +76,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void handle_runahead_dependencies(int sync_type) except +
         void synchronize_events()   except +
 
-
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
@@ -118,8 +113,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void wait()
         void stop()
 
-    #ctypedef InnerWorker* InnerWorkerPtr_t
-
     cdef cppclass InnerScheduler:
 
         bool should_run
@@ -147,7 +140,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
-        #int get_num_active_workers()
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()
@@ -170,7 +162,6 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_1[T](int t, string msg, T* obj)
     void log_worker_1[T](int t, string msg, T* obj)
     void log_scheduler_1[T](int t, string msg, T* obj)
-
 
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)

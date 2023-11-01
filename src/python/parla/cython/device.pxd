@@ -1,5 +1,5 @@
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 from parla.cython.resources cimport Resource
 
 import cython

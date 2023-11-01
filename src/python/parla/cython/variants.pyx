@@ -1,6 +1,6 @@
 
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 """!
 @file variants.pyx
 @brief Provides decorators for dispatching functions based on the active TaskEnvironment.
@@ -9,11 +9,13 @@
 import functools 
 from parla.common.globals import _Locals as Locals 
 
+
 class VariantDefinitionError(ValueError):
     """!
     @brief Error for an invalid function variant definition.
     """
     pass
+
 
 class _VariantFunction(object):
     """!
@@ -28,7 +30,6 @@ class _VariantFunction(object):
         self._default = func 
         self._variants = {}
         functools.update_wrapper(self, func)
-
 
     def variant(self, spec_list, override=False, architecture=None, max_amount=8):
         """!

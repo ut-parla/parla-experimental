@@ -1,5 +1,5 @@
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 """!
 @file cyparray.pyx
 @brief Contains the core intermediate cython wrapper classes for PArray.
@@ -7,7 +7,7 @@
 
 from .cyparray cimport InnerPArray
 from .cyparray_state cimport CyPArrayState
-
+ 
 # a Cython wrapper class around C++ PArray
 cdef class CyPArray:
 
