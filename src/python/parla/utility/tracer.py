@@ -19,6 +19,7 @@ class NVTXTracer:
         if NVTXTracer.nvtx is None:
             try:
                 import nvtx as nvtx_module
+
                 NVTXTracer.nvtx = nvtx_module
                 # print("NVTX is enabled", flush=True)
             except ImportError:
