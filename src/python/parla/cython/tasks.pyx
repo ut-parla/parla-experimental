@@ -1272,7 +1272,7 @@ class GPUEnvironment(TerminalEnvironment):
         super(GPUEnvironment, self).__init__(device, blocking=blocking)
 
         stream_pool = get_stream_pool()
-        stream = stream_pool.get_stream(device=device)
+        stream = stream_pool.get_stream(dev=device)
         self.stream_list.append(stream)
 
         self.event_dict['default'] = stream.create_event()
