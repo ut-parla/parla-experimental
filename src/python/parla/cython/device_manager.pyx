@@ -92,12 +92,12 @@ class StreamPool:
         self._per_device = per_device
         self._pool = {}
 
-        for device in self._device_list:
-            self._pool[device] = []
+        for dev in self._device_list:
+            self._pool[dev] = []
             
-            with device.device as d:
+            with dev.device as d:
                 for i in range(self._per_device):
-                    self._pool[device].append(self.StreamClass(device=device))
+                    self._pool[dev].append(self.StreamClass(device=dev))
 
     def get_stream(self, dev):
         if len(self._pool[dev]) == 0:
@@ -105,15 +105,15 @@ class StreamPool:
             new_stream = self.StreamClass(device=dev)
             return new_stream
 
-        return self._pool[device].pop()
+        return self._pool[dev].pop()
 
     def return_stream(self, stream):
         self._pool[stream.device].append(stream)
 
     def __summarize__(self):
         summary = ""
-        for device in self._device_list:
-            summary += f"({device} : {len(self._pool[device])})"
+        for dev in self._device_list:
+            summary += f"({dev} : {len(self._pool[dev])})"
 
         return summary
 
