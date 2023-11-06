@@ -12,7 +12,7 @@ from .model import *
 class DQNAgent(RLModel):
 
     # TODO(hc): execution mode would be enum, instead of string.
-    def __init__(self, gcn_indim, fcn_indim, outdim,
+    def __init__(self, gcn_indim: int, fcn_indim: int, outdim: int,
                  execution_mode: str = "training",
                  eps_start = 0.9, eps_end = 0.05, eps_decay = 1000,
                  batch_size = 128, gamma = 0.999):
@@ -146,8 +146,6 @@ class DQNAgent(RLModel):
             states, True, lst_gcn_states, lst_gcn_edgeindex)
         # Get Q values of the chosen action from `policy_network`.
         states_qvals = self.policy_network(model_inputs).gather(1, actions)
-
-        """
         print("optimize model..")
         print("actions:", actions)
         print("state qvals:", states_qvals)
@@ -155,14 +153,14 @@ class DQNAgent(RLModel):
         print("next states:", next_states)
         print("next states qvals:", next_states_qvals)
         print("rewards:", rewards)
-        """
         # This is expectated Q value calculation by using the bellmann equation.
         expected_qvals = self.gamma * next_states_qvals + rewards
         """
         print("gamma:", self.gamma * next_states_qvals)
-        print("expected qvals:", expected_qvals.unsqueeze(1))
         """
+        print("expected qvals:", expected_qvals.unsqueeze(1))
         loss = torch.nn.SmoothL1Loss()(states_qvals, expected_qvals.unsqueeze(1))
+        print("loss:", loss)
         self.optimizer.zero_grad()
         # Perform gradient descent.
         loss.backward()

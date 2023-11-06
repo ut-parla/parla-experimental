@@ -178,6 +178,9 @@ class ParlaRLEnvironment:
           return torch.tensor([[0]], dtype=torch.float)
       else:
           old_completion_time =  self.task_execution_map[task.name]
+          reward = 0
+          if old_completion_time > completion_time:
+              self.task_execution_map[task.name] = completion_time
+              reward = 1
           # print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time)
-          reward = 1 if old_completion_time > completion_time else 0
           return torch.tensor([[reward]], dtype=torch.float)

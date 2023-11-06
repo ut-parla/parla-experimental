@@ -18,7 +18,7 @@ from .schedulers import *
 
 #from rich import print
 
-from .rl.models.dqn import DQNAgent
+from .rl.models.model import *
 from .rl.models.env import *
 
 
@@ -26,7 +26,7 @@ from .rl.models.env import *
 class SimulatedScheduler:
     topology: InitVar[SimulatedTopology]
     scheduler_type: InitVar[str] = "parla"
-    rl_mapper: InitVar[DQNAgent] = None
+    rl_mapper: InitVar[RLModel] = None
     rl_environment: InitVar[ParlaRLEnvironment] = None
     tasks: List[TaskID] = field(default_factory=list)
     name: str = "SimulatedScheduler"
@@ -36,7 +36,7 @@ class SimulatedScheduler:
 
     events: EventQueue = EventQueue()
 
-    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla", rl_mapper: DQNAgent = None, rl_environment: ParlaRLEnvironment = None):
+    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla", rl_mapper: RLModel = None, rl_environment: ParlaRLEnvironment = None):
         self.state = SystemState(topology=topology)
         scheduler_arch = SchedulerOptions.get_scheduler(scheduler_type)
         print(f"Scheduler Architecture: {scheduler_arch}")
