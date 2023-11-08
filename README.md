@@ -19,7 +19,7 @@ module load gcc/12
 make clean; CC=gcc CXX=g++ make
 ```
 
-This will populate a `build` directory and an install into your active Python environment's site-packages. 
+This will populate a `build` directory and an install into your active Python environment's `site-packages` folder. 
 If you are a developer, it may sometimes be necessary to remove the build directory manually to apply changes and remove the cached version.
 Changes to most files in the src tree will trigger a rebuild of the relevant files without needing to clear the build directory. 
 Additionally, `scikit-build-core` supports editable installations that recompile changes on each run, please see this documentation. 
