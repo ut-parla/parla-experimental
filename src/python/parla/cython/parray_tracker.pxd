@@ -3,9 +3,9 @@
 import cython
 cimport cython
 
-from parla.cython.device cimport Device
-from parla.cython.device_manager cimport DeviceManager
-from parla.cython.cyparray cimport InnerPArray
+from ..cython.device cimport Device
+from ..cython.device_manager cimport DeviceManager
+from ..cython.cyparray cimport InnerPArray
 
 from libc.stdint cimport uint32_t
 

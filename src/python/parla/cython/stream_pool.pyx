@@ -1,11 +1,20 @@
+cdef class Stream:
+    cdef object _stream
+    cdef int _device
+    
+    def __init__(self, device: int = 0, stream=None):
+        self._stream = stream
+        self._device = device
+
+cdef class CupyStream(Stream):
+    
+    def __init__(self, device: int = 0, stream = None):
+        super().__init__(device=device, stream=stream)
+
+
 
 
 cdef class CyStreamPool:
-
-    cdef InnerStreamPool* _c_pool
-    cdef dict _pool
-    cdef int _per_device
-    cdef list _device_list
 
     def __cinit__(self):
         self._c_pool = new InnerStreamPool()
@@ -59,9 +68,9 @@ cdef class CyStreamPool:
 
 class StreamPool:
 
-    def __init__(self, device_list, per_device=8):
+    def __init__(self, device_list, per_device=8, cupy_flag: bool = True):
 
-        if CUPY_ENABLED:
+        if cupy_flag:
             self.StreamClass = CupyStream 
         else:
             self.StreamClass = Stream

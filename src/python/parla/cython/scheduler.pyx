@@ -11,8 +11,10 @@ import threading
 from collections import deque, namedtuple, defaultdict
 import inspect 
 import os
-from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
-from parla.common.globals import SynchronizationType as SyncType
+from ..common.globals import DeviceType, cupy, CUPY_ENABLED
+from ..common.globals import SynchronizationType as SyncType
+from ..common.globals import _Locals as Locals 
+from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
 
 if cupy is not None:
     import cupy_backends
@@ -29,9 +31,8 @@ from . cimport core
 from . import core
 from .cyparray import CyPArray
 
-from parla.common.globals import _Locals as Locals 
-from parla.common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
-from parla.common.parray.core import PArray
+from ..common.parray.core import PArray
+from ..utility.tracer import NVTXTracer
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
@@ -39,8 +40,6 @@ DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
 AtomicTaskSpace = tasks.AtomicTaskSpace
 create_env = tasks.create_env
-
-from parla.utility.tracer import NVTXTracer
 
 PyInnerScheduler = core.PyInnerScheduler
 PyInnerWorker = core.PyInnerWorker
@@ -147,7 +146,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
         #TODO(wlr): Fix this in device_manager (see todo there)
 
         if CUPY_ENABLED:
-            gpu_arch = device_manager.py_registered_archs[DeviceType.CUDA]
+            gpu_arch = device_manager.py_registered_archs[DeviceType.GPU]
             ngpus = len(gpu_arch)
 
             for index in range(ngpus):
@@ -499,7 +498,7 @@ class Scheduler(ControllableThread, SchedulerContext):
             global_dev_id, parray_parent_id)
 
 
-def _task_callback(task, body):
+cdef _task_callback(task, body):
     """
     A function which forwards to a python function in the appropriate device context.
     """

@@ -1,1 +1,1 @@
-extend-ignore = ["F841", "401"]
+extend-ignore = ["F841", "F401"]

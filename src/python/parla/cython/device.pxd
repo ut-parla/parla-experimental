@@ -1,6 +1,6 @@
 #cython: language_level=3
 #cython: language=c++
-from parla.cython.resources cimport Resource
+from ..cython.resources cimport Resource
 
 import cython
 cimport cython
@@ -13,7 +13,7 @@ cdef extern from "include/device.hpp" nogil:
     cdef enum DeviceType:
         All "DeviceType::All"
         CPU "DeviceType::CPU"
-        CUDA "DeviceType::CUDA"
+        GPU "DeviceType::GPU"
         
     cdef cppclass Device:
         Device(string, int, long, long, void*) except +
@@ -27,8 +27,8 @@ cdef extern from "include/device.hpp" nogil:
         long long int query_reserved_resource(Resource) except +
         long long int query_mapped_resource(Resource) except +
 
-    cdef cppclass CUDADevice(Device):
-        CUDADevice(int, long, long, void*) except +
+    cdef cppclass GPUDevice(Device):
+        GPUDevice(int, long, long, void*) except +
 
     cdef cppclass CPUDevice(Device):
         CPUDevice(int, long, long, void*) except +

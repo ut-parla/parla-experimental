@@ -9,19 +9,18 @@
 from collections import namedtuple, defaultdict
 import functools 
 
-from parla.utility.threads import Propagate
+from ..utility.threads import Propagate
 
 from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
+from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement
 
-from .device import PyDevice, PyCPUDevice, PyCUDADevice, DeviceResourceRequirement
+from ..common.globals import _Locals as Locals
+from ..common.globals import DeviceType
+from ..common.globals import get_stream_pool, get_scheduler
+from ..common.globals import AccessMode, Storage
+from ..common.globals import SynchronizationType as SyncType 
 
-from parla.common.globals import _Locals as Locals
-from parla.common.globals import DeviceType
-from parla.common.globals import get_stream_pool, get_scheduler
-from parla.common.globals import AccessMode, Storage
-
-from parla.common.parray.core import PArray
-from parla.common.globals import SynchronizationType as SyncType 
+from ..common.parray.core import PArray
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, FrozenSet
@@ -33,7 +32,6 @@ import sys
 
 import cython 
 cimport cython
-
 
 class TaskState(object, metaclass=ABCMeta):
     """!
@@ -403,11 +401,7 @@ class Task:
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
-        #print("Trying to get dependencies: ", self.name)
-
         dependencies = self.get_dependencies()
-
-        #print("Dependencies: {}".format(dependencies), flush=True)
 
         for task in dependencies:
             assert(isinstance(task, Task))
@@ -756,8 +750,8 @@ def create_device_env(device):
     """
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
-    elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
+    elif isinstance(device, PyGPUDevice):
+        return GPUEnvironment(device), DeviceType.GPU
 
 def create_env(sources):
     """!
@@ -822,14 +816,14 @@ class TaskEnvironment:
         """
         Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
         """
-        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.GPU]]
 
     @property
     def gpu_id(self):
         """
         Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
         """
-        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+        return self.device_dict[DeviceType.GPU][0].get_parla_device().id
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
@@ -902,7 +896,7 @@ class TaskEnvironment:
         return self.devices[0]
 
     def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+        return [dev.device for dev in self.get_devices(DeviceType.GPU)]
 
     def synchronize(self, events=False, tags=['default'], return_to_pool=True):
         #print(f"Synchronizing {self}..", flush=True)

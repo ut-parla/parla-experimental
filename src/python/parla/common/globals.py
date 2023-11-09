@@ -3,7 +3,7 @@
 @brief Contains the core user-facing and internal global and configuration variables.
 """
 
-from __future__ import annotations # For type hints of unloaded classes
+from __future__ import annotations  # For type hints of unloaded classes
 
 
 from enum import IntEnum
@@ -12,8 +12,9 @@ import os
 
 try:
     import cupy
+
     num_gpu = cupy.cuda.runtime.getDeviceCount()
-    CUPY_ENABLED = (os.getenv("PARLA_ENABLE_CUPY", "1") == "1")
+    CUPY_ENABLED = os.getenv("PARLA_ENABLE_CUPY", "1") == "1"
 except Exception as e:
     cupy = None
     CUPY_ENABLED = False
@@ -21,7 +22,8 @@ except Exception as e:
 if CUPY_ENABLED:
     try:
         import crosspy
-        CROSSPY_ENABLED = (os.getenv("PARLA_ENABLE_CROSSPY", "1") == "1")
+
+        CROSSPY_ENABLED = os.getenv("PARLA_ENABLE_CROSSPY", "1") == "1"
     except ImportError:
         CROSSPY_ENABLED = False
         crosspy = None
@@ -30,8 +32,8 @@ else:
     crosspy = None
 
 
-USE_PYTHON_RUNAHEAD = (os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1")
-PREINIT_THREADS = (os.getenv("PARLA_PREINIT_THREADS", "1") == "1")
+USE_PYTHON_RUNAHEAD = os.getenv("PARLA_ENABLE_PYTHON_RUNAHEAD", "1") == "1"
+PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS", "1") == "1"
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
 print("CUPY_ENABLED: ", CUPY_ENABLED)
@@ -47,6 +49,7 @@ class SynchronizationType(IntEnum):
     """
     This class declares the type (if any) of runeahead synchronization
     """
+
     NONE = 0
     BLOCKING = 1
     NON_BLOCKING = 2
@@ -75,15 +78,16 @@ class DeviceType(IntEnum):
         between tasks and devices.
      2) Tasks hold resource requirements from mapped
         devices through a device set data class.
-        Device set data class instances hold resource 
+        Device set data class instances hold resource
         requirement for each device. This device class
         can be distinguished through these types.
      3) Device registration phase can utilize these types.
     """
+
     INVALID = -2
     ANY = -1
     CPU = 0
-    CUDA = 1
+    GPU = 1
 
 
 class AccessMode(IntEnum):
@@ -91,13 +95,13 @@ class AccessMode(IntEnum):
     This class declares PArray access modes that are used
     in @spawn.
     """
+
     IN = 0
     OUT = 1
     INOUT = 2
 
 
-class Storage():
-
+class Storage:
     # This is literally just a dictionary wrapper.
     # It's here to make it easier to swap out the storage implementation later or error handling.
     # Not sure if necessary, but it's here for now.
@@ -137,7 +141,6 @@ class LocalStorage(threading.local, Storage):
 
 
 class LocalStack(threading.local):
-
     def __init__(self):
         super(LocalStack, self).__init__()
         self._stack = []
@@ -162,7 +165,6 @@ class LocalStack(threading.local):
 
 
 class Locals(threading.local):
-
     def __init__(self):
         super(Locals, self).__init__()
         self._task_stack = LocalStack()
@@ -245,8 +247,10 @@ _Locals = Locals()
 def get_locals():
     return _Locals
 
+
 def get_current_task():
     return _Locals.task
+
 
 def get_current_devices():
     return _Locals.devices
@@ -258,6 +262,7 @@ def get_active_device():
 
 def get_current_stream():
     return _Locals.stream
+
 
 def get_default_taskspace():
     return _Locals.scheduler.default_taskspace
@@ -274,9 +279,12 @@ def get_scheduler():
 def get_device_manager():
     scheduler = get_scheduler()
     if scheduler is None:
-        raise RuntimeError("Attempted to access device manager, but no scheduler is active.")
+        raise RuntimeError(
+            "Attempted to access device manager, but no scheduler is active."
+        )
     else:
         return scheduler.device_manager
+
 
 def get_stream_pool():
     return get_device_manager().stream_pool
