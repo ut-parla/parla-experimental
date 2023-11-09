@@ -7,9 +7,9 @@
 #ifndef PARLA_PARRAY_HPP
 #define PARLA_PARRAY_HPP
 
+#include "atomic_wrapper.hpp"
 #include "containers.hpp"
-#include "include/atomic_wrapper.hpp"
-#include "include/device.hpp"
+#include "device.hpp"
 #include "parray_state.hpp"
 #include <cstdint>
 #include <unordered_map>

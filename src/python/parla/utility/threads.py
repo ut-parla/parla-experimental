@@ -7,7 +7,7 @@ import threading
 
 class Propagate(threading.Thread):
     """!
-    @brief threading.Thread wrapper that propagates caught exceptions back to the main thread. 
+    @brief threading.Thread wrapper that propagates caught exceptions back to the main thread.
 
     Useful for testing race conditions and timeouts in pytest.
     """

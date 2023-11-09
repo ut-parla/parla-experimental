@@ -4,36 +4,37 @@ Repository for refactoring Parla to a C++ runtime to avoid GIL during scheduling
 
 # Installation and Use
 
-Requires: 
-- psutil, cython, scikit-build, Python>=3.9, nvtx (python module)
-- CuPy>=9.2 (for GPU support)
-- A C++ compiler that supports C++20 float atomics
-- An internet connection. I don't know how to make scikit-build stop building in its own venv. 
-
 Note: Ensure that the Cupy version and your CUDA Toolkit are compatible with each other and the architecture of your machine.
+On TACC systems we recommend installing CuPy (and if needed numba) via pip against the system CUDA version instead of pulling in binaries from conda-forge's cudatoolkit.
 
 Can be built with:
 ```
     git submodule update --init --recursive
-    make clean; make
+    pip install .
 ```
 
-RUNNING `make clean` IS VERY IMPORTANT! 
 You may need to set C compilers explicily on Frontera. 
-
 ```
 module load gcc/12
 make clean; CC=gcc CXX=g++ make
 ```
 
-Build options are set through enviornment variables:
+This will populate a `build` directory and an install into your active Python environment's `site-packages` folder. 
+If you are a developer, it may sometimes be necessary to remove the build directory manually to apply changes and remove the cached version.
+Changes to most files in the src tree will trigger a rebuild of the relevant files without needing to clear the build directory. 
+Additionally, `scikit-build-core` supports editable installations that recompile changes on each run, please see this documentation. 
 
+You may need to set C compilers explicily on Frontera. 
+```
+module load gcc/12
+make clean; CC=gcc CXX=g++ make
+```
+
+Build options are set through the pyproject.toml:
 PARLA_ENABLE_NVTX=ON/OFF :   Enables NVTX hooks in the C++ backend.
-
 PARLA_ENABLE_LOGGING=ON/OFF : Enables Binlog hooks in the Python & C++ backend for logging. 
-
-There are currently no C++ tests for Parla but if there were, the CMAKE is configured to build and run them with `ctest`. 
-There is a pytest driven folder for tests from Python. 
+PARLA_ENABLE_CUDA=ON/OFF : Enables CUDA C++ backend for runahead scheduling
+PARLA_ENABLE_HIP=ON/OFF : Enables HIP C++ backend for runahead scheduling
 
 # Logging
 
@@ -44,11 +45,11 @@ Logs are dumped when the Parla runtime exits. The name of the log file defaults 
 
 If a Parla program is interrupted with a KeyboardInterrupt Exception (aka Ctrl+C) it should dump the log as the runtime exits gracefully. The same *should* hopefully now be true of exceptions raised within tasks or workers. But please raise an issue if you found one that isn't handled. 
  
-If a Parla program is interuppted with an error that causes a crash and core dump, the logfile can be recovered with `brecovery`. See the binlog documentation for more information. 
-
+If a Parla program is interuppted with an error that causes a crash and core dump, the logfile can be recovered from the coredump directly with `brecovery`. See the binlog documentation for more information. 
 
 To read a logfile run:
 `bread <logfile>`
+
 
 # Number of threads
 

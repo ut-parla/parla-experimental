@@ -19,8 +19,6 @@ from ..common.globals import (
     CROSSPY_ENABLED,
 )
 import inspect
-from ..cython import tasks
-
 from typing import Collection, Any, Union, List, Tuple
 
 ComputeTask = tasks.ComputeTask

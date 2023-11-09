@@ -1,5 +1,5 @@
-#cython: language_level=3
-#cython: language=c++
+# cython: language_level=3
+# cython: language=c++
 """!
 @file device_manager.pyx
 @brief Contains the cython wrapper and python layer DeviceManager and StreamPool classes.
@@ -9,7 +9,7 @@ from . import device
 from .device cimport Device
 from ..common.globals import DeviceType, cupy, VCU_BASELINE
 
-from typing import FrozenSet, Collection, Iterable, Set, Tuple, List
+from typing import Iterable, Tuple, List
 
 import os
 import psutil
@@ -82,8 +82,8 @@ class PrintableFrozenSet(frozenset):
         return self.get_name()
 
 
-#TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
-#TODO(wlr):  - Provide a way to iterate over these real device ids
+# TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
+# TODO(wlr):  - Provide a way to iterate over these real device ids
            
 
 class PyDeviceManager:
@@ -109,12 +109,12 @@ class PyDeviceManager:
             self.num_real_gpus = 0
 
         # Initialize Devices
-        if dev_config == None or dev_config == "":
+        if dev_config is None or dev_config == "":
             self.register_cpu_devices()
             self.register_cupy_gpu_devices()
         else:
             self.parse_config_and_register_devices(dev_config)
-        #self.register_devices_to_cpp()
+        # self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
         self.stream_pool = stream_pool.CyStreamPool(self.get_devices(DeviceType.GPU))
@@ -144,31 +144,21 @@ class PyDeviceManager:
 
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
-                mem_info = gpu_dev.mem_info # tuple of free and total memory
-                                            # in bytes.
+                mem_info = gpu_dev.mem_info  # tuple of free and total memory (in bytes)
                 mem_sz = long(mem_info[1])
                 py_cuda_device = PyGPUDevice(dev_id, mem_sz, VCU_BASELINE)
 
-                #Add device to the architecture
+                # Add device to the architecture
                 gpu_arch.add_device(py_cuda_device)
 
-                #Add device to the device manager (list of devices)
+                # Add device to the device manager (list of devices)
                 self.registered_devices.append(py_cuda_device)
 
-                #Register device to the C++ runtime
+                # Register device to the C++ runtime
                 cy_device = py_cuda_device.get_cy_device()
                 self.cy_device_manager.register_device(cy_device)
 
     def register_cpu_devices(self, register_to_cuda: bool = False):
-        #if register_to_cuda:
-        #    gpu.add_device(cpu(0))
-        #    self.registered_devices.append(cpu(0))
-        #    cy_device = cpu(0).get_cy_device()
-        #    self.cy_device_manager.register_device(cy_device)
-        #else:
-        # Get the number of usable CPUs from this process.
-        # This might not be equal to the number of CPUs in the system.
-
         num_cores = os.getenv("PARLA_NUM_CORES")
         if num_cores:
             num_cores = int(num_cores)
@@ -176,7 +166,6 @@ class PyDeviceManager:
             num_cores = psutil.cpu_count(logical=False)
         if num_cores == 0:
             raise RuntimeError("No CPU cores available for Parla.")
-
 
         mem_sz = os.getenv("PARLA_CPU_MEM")
         if mem_sz:
@@ -194,7 +183,6 @@ class PyDeviceManager:
         cy_device = py_cpu_device.get_cy_device()
         self.cy_device_manager.register_device(cy_device)
         
-
     def register_devices_to_cpp(self):
         """
         Register devices to the both Python/C++ runtime.
@@ -260,7 +248,11 @@ class PyDeviceManager:
                                                     VCU_BASELINE)
                     
                     else:
-                        py_cuda_device = PyCPUDevice(dev_id, gpu_mem_sizes[dev_id], VCU_BASELINE)
+                        py_cuda_device = PyCPUDevice(
+                                                dev_id,
+                                                gpu_mem_sizes[dev_id],
+                                                VCU_BASELINE
+                                            )
 
                     gpu_arch.add_device(py_cuda_device)
                     self.registered_devices.append(py_cuda_device)
@@ -290,32 +282,31 @@ class PyDeviceManager:
         return PrintableFrozenSet(arch_reqs)
 
     def construct_resource_requirements(self, placement_component, vcus, memory):
-        if isinstance(placement_component, Tuple) and \
-              not self.is_multidevice_placement(placement_component):
-                # In this case, the placement component consists of
-                # Device or Architecture, with its resource requirement.
-                placement, req = placement_component
-                req.memory = req.memory if req.memory is not None else  \
-                    (0 if memory is None else memory)
-                req.vcus = req.vcus if req.vcus is not None else  \
-                    (0 if vcus is not None else vcus)
-                # If a device specified by users does not exit 
-                # and was not registered to the Parla runtime,
-                # use CPU instead.
-                if isinstance(placement, PyArchitecture):
-                    # Architecture placement means that the task mapper
-                    # could choose one of the devices in the specified
-                    # architecture.
-                    # For example, if `gpu` is specified, all gpu devices
-                    # become target candidate devices and one of them
-                    # might be chosen as the final placement for a task.
-                    # To distinguish architecture placement from others,
-                    # it is converted to a frozen set of the entire devices.
-                    return self.construct_single_architecture_requirements(
-                        placement, req)
-                elif isinstance(placement, PyDevice):
-                    return self.construct_single_device_requirements(
-                        placement, req)
+        if isinstance(placement_component, Tuple) and not self.is_multidevice_placement(placement_component):
+            # In this case, the placement component consists of
+            # Device or Architecture, with its resource requirement.
+            placement, req = placement_component
+            req.memory = req.memory if req.memory is not None else  \
+                (0 if memory is None else memory)
+            req.vcus = req.vcus if req.vcus is not None else  \
+                (0 if vcus is not None else vcus)
+            # If a device specified by users does not exit 
+            # and was not registered to the Parla runtime,
+            # use CPU instead.
+            if isinstance(placement, PyArchitecture):
+                # Architecture placement means that the task mapper
+                # could choose one of the devices in the specified
+                # architecture.
+                # For example, if `gpu` is specified, all gpu devices
+                # become target candidate devices and one of them
+                # might be chosen as the final placement for a task.
+                # To distinguish architecture placement from others,
+                # it is converted to a frozen set of the entire devices.
+                return self.construct_single_architecture_requirements(
+                    placement, req)
+            elif isinstance(placement, PyDevice):
+                return self.construct_single_device_requirements(
+                    placement, req)
         elif isinstance(placement_component, PyArchitecture):
             vcus = vcus if vcus is not None else 0
             memory = memory if memory is not None else 0
@@ -331,7 +322,6 @@ class PyDeviceManager:
         else:
             raise TypeError("Incorrect placement")
 
-
     def unpack_placements(self, placement_components, vcus, memory):
         """ Unpack a placement parameter and return a list of
             a pair of devices and requirements in a proper hierarchy structure.
@@ -339,8 +329,7 @@ class PyDeviceManager:
             multi-device placements, a pair of architecture and
             resource requirement, or a pair of device and resource requirement.
         """
-        assert(isinstance(placement_components, List) or \
-            isinstance(placement_components, Tuple))
+        assert(isinstance(placement_components, List) or isinstance(placement_components, Tuple))
         # Multi-device resource requirement or
         # a list of devices, architectures, or multi-device 
         # requirements.
