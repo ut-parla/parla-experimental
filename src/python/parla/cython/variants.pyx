@@ -8,7 +8,7 @@
 
 import functools 
 from ..common.globals import _Locals as Locals 
-from .device import PyArchitecture
+
 
 class VariantDefinitionError(ValueError):
     """!
@@ -30,7 +30,6 @@ class _VariantFunction(object):
         self._default = func 
         self._variants = {}
         functools.update_wrapper(self, func)
-
 
     def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
         """!

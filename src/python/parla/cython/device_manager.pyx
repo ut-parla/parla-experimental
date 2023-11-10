@@ -34,7 +34,6 @@ gpu = ImportableGPUArchitecture()
 cpu = ImportableCPUArchitecture()
 
 from . import stream_pool
-from .stream_pool cimport CyStreamPool 
 
 cdef class CyDeviceManager:
     """
@@ -246,9 +245,11 @@ class PyDeviceManager:
                 for dev_id in range(num_of_gpus):
 
                     if self.num_real_gpus > 0:
-                        py_cuda_device = PyGPUDevice(dev_id % self.num_real_gpus, \
-                                                    gpu_mem_sizes[dev_id], \
-                                                    VCU_BASELINE)
+                        py_cuda_device = PyGPUDevice(
+                                                dev_id % self.num_real_gpus,
+                                                gpu_mem_sizes[dev_id],
+                                                VCU_BASELINE
+                                            )
                     
                     else:
                         py_cuda_device = PyCPUDevice(

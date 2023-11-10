@@ -10,7 +10,6 @@ cdef extern from "include/device_contexts.hpp":
 
         void push_event(int device_id, uintptr_t event)
         uintptr_t pop_event(int device_id)
-
         
 
 cdef class CyStreamPool:
@@ -18,4 +17,3 @@ cdef class CyStreamPool:
     cdef dict _pool
     cdef int _per_device
     cdef list _device_list
-

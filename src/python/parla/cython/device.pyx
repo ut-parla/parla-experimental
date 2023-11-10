@@ -35,8 +35,7 @@ cdef class CyGPUDevice(CyDevice):
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new GPUDevice(dev_id, mem_sz, num_vcus, \
-                                          <void *> py_device)
+        self._cpp_device = new GPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -197,11 +196,6 @@ class PyDevice:
         return self._device_id
 
 
-"""
-Device instances in Python manage resource status.
-TODO(hc): the device configuration will be packed in a data class soon.
-"""
-
 class PyGPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
@@ -209,7 +203,6 @@ class PyGPUDevice(PyDevice):
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.GPU, "GPU", dev_id)
-        #TODO(wlr): If we ever support VECs, we might need to move this device initialization
         self._cy_device = CyGPUDevice(dev_id, int(mem_sz*0.8), num_vcus, self)
 
     @property
@@ -391,6 +384,7 @@ class PyGPUArchitecture(PyArchitecture):
     def __init__(self):
         super().__init__("GPUArch", DeviceType.GPU)
 
+
 class ImportableGPUArchitecture(PyGPUArchitecture, ImportableArchitecture):
     def __init__(self):
         ImportableArchitecture.__init__(self, "GPUArch", DeviceType.GPU)
@@ -496,11 +490,11 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        #Set the device to the stream's device.
+        # Set the device to the stream's device.
         self.active_device = cupy.cuda.Device(self._device_id)
         self.active_device.__enter__()
 
-        #Set the stream to the current stream.
+        # Set the stream to the current stream.
         self._stream.__enter__()
 
         Locals.push_stream(self)

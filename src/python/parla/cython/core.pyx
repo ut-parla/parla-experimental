@@ -7,17 +7,13 @@
 
 import cython 
 
-from ..common.parray.core import PArray
-from ..common.dataflow import Dataflow
-from ..common.globals import AccessMode, cupy
+from ..common.globals import cupy
 
 from .device cimport Device
 from .cyparray cimport CyPArray
 from .device_manager cimport CyDeviceManager, DeviceManager
 
 from .mm cimport CyMM
-import threading
-from enum import IntEnum, auto
 from libc.stdint cimport uintptr_t
 
 LOG_TRACE = 0
@@ -627,7 +623,6 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.remove_parray_from_tracker(cy_parray.get_cpp_parray(), dev_id)
 
-    #TODO(wlr): Should we release the GIL here? Or is it better to keep it?
     cpdef task_cleanup(self, PyInnerWorker worker, PyInnerTask task, int state):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerWorker* c_worker = worker.inner_worker
@@ -689,13 +684,11 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.create_parray(cy_parray.get_cpp_parray(), parray_dev_id)
 
-    cpdef get_mapped_parray_state(\
-        self, int global_dev_id, long long int parray_parent_id):
+    cpdef get_mapped_parray_state(self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_mapped_parray_state(global_dev_id, parray_parent_id)
 
-    cpdef get_reserved_parray_state(\
-        self, int global_dev_id, long long int parray_parent_id):
+    cpdef get_reserved_parray_state(self, int global_dev_id, long long int parray_parent_id):
         cdef InnerScheduler* c_self = self.inner_scheduler
         return c_self.get_reserved_parray_state(global_dev_id, parray_parent_id)
 
@@ -744,8 +737,7 @@ class DataMovementTaskAttributes:
     This is delcared to avoid circular imports that could happen
     when we import tasks.pyx in here.
     """
-    def __init__(self, name, py_parray, access_mode, assigned_devices, \
-                 c_attrs: CyDataMovementTaskAttributes, dev_id):
+    def __init__(self, name, py_parray, access_mode, assigned_devices, c_attrs: CyDataMovementTaskAttributes, dev_id):
         self.name = name
         self.parray = py_parray
         self.access_mode = access_mode

@@ -11,9 +11,6 @@ cdef class CupyStream(Stream):
     def __init__(self, device: int = 0, stream = None):
         super().__init__(device=device, stream=stream)
 
-
-
-
 cdef class CyStreamPool:
 
     def __cinit__(self):
@@ -42,7 +39,7 @@ cdef class CyStreamPool:
 
     def get_stream(self, device):
         if len(self._pool[device]) == 0:
-            #Create a new stream if the pool is empty.
+            # Create a new stream if the pool is empty.
             new_stream = self.StreamClass(device=device)
             return new_stream
 
@@ -52,7 +49,7 @@ cdef class CyStreamPool:
         self._pool[stream.device].append(stream)
 
     def __summarize__(self):
-        summary  = ""
+        summary = ""
         for device in self._device_list:
             summary += f"({device} : {len(self._pool[device])})"
 
@@ -60,10 +57,6 @@ cdef class CyStreamPool:
 
     def __repr__(self):
         return f"StreamPool({self.__summarize__()})"
-
-
-
-
 
 
 class StreamPool:
@@ -88,7 +81,7 @@ class StreamPool:
 
     def get_stream(self, device):
         if len(self._pool[device]) == 0:
-            #Create a new stream if the pool is empty.
+            # Create a new stream if the pool is empty.
             new_stream = self.StreamClass(device=device)
             return new_stream
 
@@ -98,7 +91,7 @@ class StreamPool:
         self._pool[stream.device].append(stream)
 
     def __summarize__(self):
-        summary  = ""
+        summary = ""
         for device in self._device_list:
             summary += f"({device} : {len(self._pool[device])})"
 
@@ -106,4 +99,3 @@ class StreamPool:
 
     def __repr__(self):
         return f"StreamPool({self.__summarize__()})"
-

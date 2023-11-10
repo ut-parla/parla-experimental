@@ -20,8 +20,7 @@ cdef extern from "include/device_manager.hpp" nogil:
         void free_memory_by_parray_id(int parray_dev_id, unsigned long memory_size)
         void free_memory(unsigned int global_dev_id, unsigned long memory_size)
         
-
-
+        
 cdef class CyDeviceManager:
     cdef DeviceManager* cpp_device_manager_
     cpdef register_device(self, CyDevice cy_device)

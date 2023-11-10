@@ -8,7 +8,6 @@
 from abc import abstractmethod
 import threading
 import inspect 
-import os
 from ..common.globals import DeviceType, cupy, CUPY_ENABLED
 from ..common.globals import SynchronizationType as SyncType
 from ..common.globals import _Locals as Locals 
@@ -26,9 +25,6 @@ from . import tasks
 from . cimport core
 from . import core
 from .cyparray import CyPArray
-from .mm import PyMM
-
-from ..common.parray.core import PArray
 from ..utility.tracer import NVTXTracer
 
 Task = tasks.Task
@@ -208,12 +204,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.task = self.inner_worker.get_task()
                     if(self.task is None):
                         self.status = "Waiting"
-                        # print("WAITING", flush=True)
-                        #with self._monitor:
-                        #    if not self.task:
-                        #        self._monitor.wait()
                         nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
-                        self.inner_worker.wait_for_task() # GIL Release
+                        self.inner_worker.wait_for_task()  # GIL Release
                         self.task = self.inner_worker.get_task()
                     if isinstance(self.task, core.DataMovementTaskAttributes):
                         self.task_attrs = self.task
@@ -237,12 +229,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         # Save device_context with task object
                         active_task.environment = device_context
 
-                        #Writes all 'default' streams and event pointers to c++ task
-                        #This allows their synchronization without the GIL and faster iteration over them
-                        #(only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
+                        # Writes all 'default' streams and event pointers to c++ task
+                        # This allows their synchronization without the GIL and faster iteration over them
+                        # (only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
                         device_context.write_to_task(active_task)
-
-                        #print("Wrote enviornment to task", active_task, flush=True)
 
                         # Wait / Enqueue event for dependencies to complete
                         if USE_PYTHON_RUNAHEAD:
@@ -296,23 +286,22 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
-                        
                         if USE_PYTHON_RUNAHEAD:
-                            #Handle synchronization in Python (for debugging, works!)
-                            #print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            # Handle synchronization in Python (for debugging, works!)
+                            # print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
                             if self._should_run:
-                                #print("In if", flush=True)
+                                # print("In if", flush=True)
                                 self.status = "Waiting"
                                 nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
                                 self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
                             else:
-                                #print("In else", flush=True)
+                                # print("In else", flush=True)
                                 self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
                                 if active_task.runahead != SyncType.NONE:
                                     device_context.synchronize(events=True)
                                 self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
-                            #Handle synchronization in C++
+                            # Handle synchronization in C++
                             # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                             # Adding wait here to reduce context switch between GIL
                             print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
@@ -320,14 +309,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                                 self.status = "Waiting"
                                 nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
                                 self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
-                                #self.task = self.inner_worker.get_task()
+                                # self.task = self.inner_worker.get_task()
                             else:
                                 self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
                         # print("Finished Cleaning up Task", active_task, flush=True)
-                        #print("Should run before device_context", self._should_run, task, flush=True)
+                        # print("Should run before device_context", self._should_run, task, flush=True)
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
-                        #print("Should run before final_state cleanup", self._should_run, task, flush=True)
+                        # print("Should run before final_state cleanup", self._should_run, task, flush=True)
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
@@ -338,7 +327,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         active_task.state = final_state
                         self.task = None
                         nvtx.pop_range(domain="Python Runtime")
-
 
                         # Adding wait here to reduce context switch between GIL
                         # if self._should_run:
@@ -442,7 +430,7 @@ class Scheduler(ControllableThread, SchedulerContext):
 
     def parray_eviction(self):
         py_mm = self.memory_manager
-        print("Eviction policy is activated")
+        # print("Eviction policy is activated")
         for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
             global_id = cuda_device.get_global_id()
             parray_id = self.device_manager.globalid_to_parrayid(global_id)
@@ -453,31 +441,19 @@ class Scheduler(ControllableThread, SchedulerContext):
             # from Python eviction manager.
             num_evictable_parray = py_mm.size(global_id)
             # TODO(hc): remove this. this is for test.
-            #import cupy
+            # import cupy
             for i in range(0, num_evictable_parray):
                 try:
                     # Get a PArray from a memory manager to evict.
                     evictable_parray = \
                         py_mm.remove_and_return_head_from_zrlist(global_id)
                     if evictable_parray is not None:
-                        # TODO(hc): remove this. this is for test.
-                        #for k in range(0, 4):
-                        #    with cupy.cuda.Device(k):
-                        #        mempool = cupy.get_default_memory_pool()
-                        #        print(f"\t OK? {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
-
                         evictable_parray.evict(parray_id)
-
-                        # TODO(hc): remove this. this is for test.
-                        #for k in range(0, 4):
-                        #    with cupy.cuda.Device(k):
-                        #        mempool = cupy.get_default_memory_pool()
-                        #        print(f"\t OK {k} Used GPU{k}: {mempool.used_bytes()}, Free Mmeory: {mempool.free_bytes()}", flush=True) 
 
                         # Repeat eviction until it gets enough memory.
                         memory_size_to_evict -= \
                             evictable_parray.nbytes_at(parray_id)
-                        #print("\t Remaining size to evict:", memory_size_to_evict, flush=True)
+                        # print("\t Remaining size to evict:", memory_size_to_evict, flush=True)
                         if memory_size_to_evict <= 0:
                             break
                 except Exception as e:
@@ -490,7 +466,7 @@ class Scheduler(ControllableThread, SchedulerContext):
                 print("Scheduler: Running", flush=True)
                 self.inner_scheduler.run()
                 should_run = self.inner_scheduler.get_should_run()
-                if should_run == False:
+                if should_run is False:
                     break
                 # This case is executed if PArray eviction
                 # mechanism was invoked by C++ scheduler.

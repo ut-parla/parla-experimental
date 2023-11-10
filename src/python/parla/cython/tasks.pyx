@@ -17,11 +17,10 @@ from .cyparray import CyPArray
 
 from ..common.globals import _Locals as Locals
 from ..common.globals import DeviceType
-from ..common.globals import get_stream_pool, get_scheduler
+from ..common.globals import get_stream_pool
 from ..common.globals import AccessMode, Storage
 from ..common.globals import SynchronizationType as SyncType 
 from ..common.parray.core import PArray
-from ..common.globals import _global_data_tasks
 
 DeviceType = PyDeviceType
 
@@ -33,6 +32,7 @@ import traceback
 
 import cython 
 cimport cython
+
 
 class TaskState(object, metaclass=ABCMeta):
     """!

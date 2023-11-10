@@ -29,8 +29,6 @@ cdef extern from "include/runtime.hpp" nogil:
     void stop_callback(stopfunc_t func, void* scheduler) noexcept
 
     void create_parray(InnerPArray* parray, int parray_dev_id) noexcept 
-    #ctypedef void* Ptr_t
-    #ctypedef InnerTask* InnerTaskPtr_t
 
     cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
@@ -153,7 +151,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
-        #int get_num_active_workers()
         int get_num_active_tasks()
         int get_num_running_tasks()
         int get_num_ready_tasks()
