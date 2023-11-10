@@ -55,20 +55,11 @@ from parla.common.array import clone_here
 from parla.common.globals import (
     get_current_devices,
     get_current_stream,
-    cupy,
-    CUPY_ENABLED,
-    get_current_context,
-)
-from parla.common.globals import (
-    get_current_devices,
-    get_current_stream,
-    get_current_context,
 )
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla.cython.core import gpu_bsleep_nogil
-from typing import Tuple
 
 import numpy as np
 
@@ -137,7 +128,6 @@ def estimate_frequency(
     tol=10,
 ) -> int:
     import cupy as cp
-    import numpy as cp
 
     target_time = target_time / (1000 * 1000)
     tol = tol / (1000 * 1000)
