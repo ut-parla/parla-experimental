@@ -7,6 +7,7 @@ from .device_manager cimport DeviceManager
 from .cyparray cimport InnerPArray
 from .device cimport Device, DeviceType, CyDevice
 from .resources cimport Resource
+from .mm cimport LRUGlobalEvictionManager
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
@@ -19,12 +20,17 @@ cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds) noexcept
     void gpu_busy_sleep(const int device, const unsigned long cycles, uintptr_t stream_ptr) noexcept 
 
+
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker) noexcept 
     ctypedef void (*stopfunc_t)(void*) noexcept 
 
     void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker) noexcept
     void stop_callback(stopfunc_t func, void* scheduler) noexcept
+
+    void create_parray(InnerPArray* parray, int parray_dev_id) noexcept 
+    #ctypedef void* Ptr_t
+    #ctypedef InnerTask* InnerTaskPtr_t
 
     cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
@@ -76,6 +82,8 @@ cdef extern from "include/runtime.hpp" nogil:
         void handle_runahead_dependencies(int sync_type) except +
         void synchronize_events()   except +
 
+        void create_parray(InnerPArray* parray, int parray_dev_id)
+
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
@@ -117,14 +125,19 @@ cdef extern from "include/runtime.hpp" nogil:
 
         bool should_run
         
-        InnerScheduler(DeviceManager* cpp_device_manager)
+        # TODO(hc): Refactor this eviction manager parameter to hide its policy
+        InnerScheduler(LRUGlobalEvictionManager* cpp_memory_manager,  DeviceManager* cpp_device_manager)
 
         void set_num_workers(int num_workers)
         void set_py_scheduler(void* py_scheduler)
         void set_stop_callback(stopfunc_t func)
 
+        bool get_should_run()
+
         void run() except +
         void stop()
+
+        long long int get_memory_size_to_evict(int dev_id) except +
 
         void activate_wrapper()
 
@@ -135,21 +148,29 @@ cdef extern from "include/runtime.hpp" nogil:
         void task_cleanup(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_presync(InnerWorker* worker, InnerTask* task, int state) except +
         void task_cleanup_postsync(InnerWorker* worker, InnerTask* task, int state) except +
+        void task_cleanup_and_wait_for_task(InnerWorker* worker, InnerTask* task, int state) except +
 
-        int get_num_active_tasks()
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
+        #int get_num_active_workers()
+        int get_num_active_tasks()
         int get_num_running_tasks()
         int get_num_ready_tasks()
         int get_num_notified_workers()
-        bool get_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void spawn_wait() except +
+        bool get_mapped_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
+        bool get_reserved_parray_state(uint32_t global_dev_idx, uint64_t parray_parent_id)
 
-        void reserve_parray(InnerPArray* parray, int dev_id) except +
-        void release_parray(InnerPArray* parray, int dev_id) except +
+        size_t get_mapped_memory(uint32_t global_dev_idx)
+        size_t get_reserved_memory(uint32_t global_dev_idx)
+        size_t get_max_memory(uint32_t global_dev_idx)
 
+        void spawn_wait()
+
+        void create_parray(InnerPArray* parray, int parray_dev_id)
+        void remove_parray_from_tracker(InnerPArray* parray, int dev_id)
+        
 
 cdef extern from "include/profiling.hpp" nogil:
     void initialize_log(string filename)

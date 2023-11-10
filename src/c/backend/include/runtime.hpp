@@ -20,7 +20,9 @@
  * classes.
  */
 
+#include "device.hpp"
 #include "resources.hpp"
+#include <algorithm>
 #include <assert.h>
 #include <atomic>
 #include <chrono>
@@ -33,8 +35,6 @@
 #include <unordered_map>
 #include <utility>
 
-using namespace std::chrono_literals;
-
 #include "containers.hpp"
 
 #include "device_manager.hpp"
@@ -43,8 +43,15 @@ using namespace std::chrono_literals;
 #include "parray_tracker.hpp"
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
+#include "memory_manager.hpp"
 
-// Note(wlr): A LOT of these atomics could just be declared as volatile.
+using namespace std::chrono_literals;
+using namespace parray;
+
+using namespace std::chrono_literals;
+using namespace parray;
+
+// General Note: A LOT of these atomics could just be declared as volatile.
 
 // Forward Declarations of Inner Classes
 class InnerTask;
@@ -59,16 +66,11 @@ using TaskQueue = ProtectedQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
 using SpaceList = ProtectedVector<TaskBarrier *>;
 using PointerList = ProtectedVector<uintptr_t>;
+using CreatedPArrayQueue = ProtectedQueue<PArrayLocationSize_t>;
 
-/// @brief Access type for a data dependence
-enum class AccessMode {
-  /// This data is the input to a task (READ ACCESS).
-  IN = 0,
-  // This data is the output to a task (WRITE ACCESS).
-  OUT = 1,
-  // This data is both input and output of a task. (READ/WRITE ACCESS).
-  INOUT = 2
-};
+/// Global New PArray List for arrays instatiated outside of the runtime
+inline CreatedPArrayQueue unmapped_created_parrays;
+inline CreatedPArrayQueue unreserved_created_parrays;
 
 // Callbacks into Python
 
@@ -94,6 +96,28 @@ inline void launch_task_callback(launchfunc_t func, void *scheduler, void *task,
  */
 inline void launch_stop_callback(stopfunc_t func, void *scheduler) {
   func(scheduler);
+}
+
+inline void add_unmapped_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                        size_t to_move_size) {
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unmapped_created_parrays.push_back(parray_location);
+}
+
+inline void add_unreserved_created_parray(InnerPArray *parray, DevID_t dev_id,
+                                          size_t to_move_size) {
+
+  PArrayLocationSize_t parray_location =
+      std::make_tuple(parray, dev_id, to_move_size);
+  unreserved_created_parrays.push_back(parray_location);
+}
+
+inline void create_parray(InnerPArray *parray, int parray_device_id) {
+  auto dev_id = parrayid_to_globalid(parray_device_id);
+  size_t to_move_size = parray->get_size();
+  add_unmapped_created_parray(parray, dev_id, to_move_size);
+  add_unreserved_created_parray(parray, dev_id, to_move_size);
 }
 
 /*!
@@ -289,8 +313,7 @@ public:
   /* A list of a pair of PArray instances and access modes to them.
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
-  std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
-      parray_list;
+  std::vector<std::vector<PArrayAccess_t>> parray_list;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -339,6 +362,8 @@ public:
   // void add_dependents(std::vector<bool> result, std::vector<InnerTask*>&
   // tasks);
 
+  /* Handle the creation of a new parray object */
+  void create_parray(InnerPArray *parray, int parray_device_id);
   /*
    * Add a PArray to the task
    *
@@ -350,7 +375,7 @@ public:
    * Cython, but C++ enum and Python enum or int are not compatible. So, for
    * conveniency, I just pass int between Python and C++.
    */
-  void add_parray(parray::InnerPArray *parray, int access_mode, int dev_id);
+  void add_parray(InnerPArray *parray, int access_mode, int dev_id);
 
   /*
    *  Notify dependents that dependencies have completed
@@ -412,73 +437,45 @@ public:
     return this->num_unmapped_dependencies.load();
   };
 
-  /*!
-   * @brief Set the number of instances of the task (replicates for multi-device
-   * scheduling)
-   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
-   * to denote which phase of scheduling we are in.
-   * @param num_instances Number of instances of the task
-   * @details This is called to set the multi-device counters for the task when
-   * enqueued into the RuntimeReserver and MemoryResever Phases. These counters
-   * track how many devices the task is waiting on to be scheduled (i.e. it has
-   * not yet reached the head of their queues)
-   */
-  template <ResourceCategory category> inline void set_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->num_persistant_instances.store(this->assigned_devices.size());
     } else {
       this->num_runtime_instances.store(this->assigned_devices.size());
     }
   };
 
-  /*!
-   * @brief Decrement the number of instances of the task (replicates for
-   * multi-device scheduling)
-   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
-   * to denote which phase of scheduling we are in (memory or runtime)
-   */
-  template <ResourceCategory category> inline int decrement_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int decrement_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.fetch_sub(1);
     } else {
       return this->num_runtime_instances.fetch_sub(1);
     }
   };
 
-  template <ResourceCategory category> inline int get_num_instances() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline int get_num_instances() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->num_persistant_instances.load();
     } else {
       return this->num_runtime_instances.load();
     }
   };
 
-  /*!
-   * @brief A task is removed when one of its instances (replicates across
-   * multi-device queues) has been moved to the next phase.
-   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
-   * to denote which phase of scheduling we are in (memory or runtime)
-   * @return True if the task has already been removed from the queue
-   */
-  template <ResourceCategory category> inline bool get_removed() {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline bool get_removed() {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       return this->removed_reserved;
     } else {
       return this->removed_runtime;
     }
   }
 
-  /*!
-   * @brief Set the removed flag for the task
-   * @tparam category ResourceCategory::Persistent or ResourceCategory::Runtime
-   * to denote which phase of scheduling we are in (memory or runtime)
-   * @param waiting True if the task is waiting to be removed from the queue
-   * @details This is called when a task is moved to the next phase of
-   * scheduling (i.e. from MemoryReserver to RuntimeReserver) to indicate that
-   * the task is no longer in the queue
-   */
-  template <ResourceCategory category> inline void set_removed(bool waiting) {
-    if constexpr (category == ResourceCategory::Persistent) {
+  template <typename ResourceCategory> inline void set_removed(bool waiting) {
+    if constexpr (std::is_same<ResourceCategory,
+                               Resource::PersistentResources>::value) {
       this->removed_reserved = waiting;
     } else {
       this->removed_runtime = waiting;
@@ -577,6 +574,9 @@ public:
   /*Add to the assigned device list*/
   void add_assigned_device(Device *device);
 
+  /* Fix the assigned device set.*/
+  void finalize_assigned_devices();
+
   /*
    * Copy a vector of device pointers
    *
@@ -652,7 +652,7 @@ public:
   //           immediately assign the unique id. We may need another function
   //           call from Python t C++ when we create Python data move task
   //           later. The current id for all the data move tasks is 0.
-  InnerDataTask(std::string name, long long int id, parray::InnerPArray *parray,
+  InnerDataTask(std::string name, long long int id, InnerPArray *parray,
                 AccessMode access_mode, int dev_id)
       : parray_(parray), access_mode_(access_mode), dev_id_(dev_id),
         InnerTask(name, id, nullptr) {
@@ -672,7 +672,7 @@ public:
   int get_device_id() { return this->dev_id_; }
 
 private:
-  parray::InnerPArray *parray_;
+  InnerPArray *parray_;
   AccessMode access_mode_;
   int dev_id_;
 };
@@ -988,6 +988,21 @@ public:
   /* Phase: maps tasks to devices */
   Mapper *mapper;
 
+  /* If it is set, break an infinite loop in InnerScheduler::run()
+     and invoke PArray eviction from PythonScheduler */
+  bool break_for_eviction = false;
+  /* Memory size to evict for each device */
+  std::vector<size_t> memory_size_to_evict{0};
+
+  /* Track the number of eviction manager invocation */
+  size_t num_eviction_invocation{0};
+
+  /* Set necessary memory size getting from eviction manager
+     on each device */
+  void set_memory_size_to_evict(size_t, DevID_t);
+  /* Get memory size to evict for each device */
+  size_t get_memory_size_to_evict(DevID_t);
+
   /* Phase reserves resources to limit/plan task execution*/
   MemoryReserver *memory_reserver;
   RuntimeReserver *runtime_reserver;
@@ -995,7 +1010,7 @@ public:
   /*Responsible for launching a task. Signals worker thread*/
   Launcher *launcher;
 
-  InnerScheduler(DeviceManager *device_manager);
+  InnerScheduler(LRUGlobalEvictionManager *memory_manager, DeviceManager *device_manager);
   ~InnerScheduler();
   // InnerScheduler(int nworkers);
 
@@ -1016,6 +1031,9 @@ public:
 
   /* Set Python "stop" callback */
   void set_stop_callback(stopfunc_t stop_callback);
+
+  /* Get a flag that represents if there is still a task to be executed */
+  bool get_should_run();
 
   /* Run the scheduler thread. Active for the lifetime of the Parla program */
   void run();
@@ -1051,6 +1069,8 @@ public:
   void task_cleanup_presync(InnerWorker *worker, InnerTask *task, int state);
   void task_cleanup_postsync(InnerWorker *worker, InnerTask *task, int state);
 
+  void task_cleanup_and_wait_for_task(InnerWorker *worker, InnerTask *task, int state);
+
   /* Get number of active tasks. A task is active if it is spawned but not
    * complete */
   int get_num_active_tasks();
@@ -1081,42 +1101,60 @@ public:
     return this->workers.get_num_notified_workers();
   }
 
-  /* Get a PArray tracker */
-  PArrayTracker *get_parray_tracker() { return &(this->parray_tracker_); }
-
   /* Reserve a PArray in a device */
-  void reserve_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.reserve_parray(*parray, device);
-  }
+  void create_parray(InnerPArray *parray, int parray_device_id);
 
   /* Release a PArray in a device */
-  void release_parray(parray::InnerPArray *parray, DevID_t global_dev_id) {
-    Device *device =
-        this->device_manager_->get_device_by_global_id(global_dev_id);
-    this->parray_tracker_.release_parray(*parray, device);
+  void remove_parray(InnerPArray *parray, DevID_t global_dev_id);
+
+  /* Reflect a PArray removal to PArray trackers */
+  void remove_parray_from_tracker(
+      parray::InnerPArray *parray, DevID_t global_dev_id);
+
+  /* A task started to refer to the PArray, and so, reflect that to
+   * the eviction manager (mm) */
+  void grab_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->grab_parray_reference(parray, global_dev_id);
   }
 
-  bool get_parray_state(DevID_t global_dev_idx, uint64_t parray_parent_id) {
-    return this->parray_tracker_.get_parray_state(global_dev_idx,
-                                                  parray_parent_id);
+  /* A task released the PArray, and so, reflect that to the eviction
+   * manager (mm) */
+  void release_parray_reference(
+      parray::InnerPArray *parray, DevID_t global_dev_id) {
+    this->mm_->release_parray_reference(parray, global_dev_id);
   }
+
+  size_t get_mm_evictable_bytes(DevID_t dev_id) {
+    return this->mm_->get_evictable_bytes(dev_id);
+  }
+
+  /* Get mapped memory on device */
+  size_t get_mapped_memory(DevID_t global_dev_id);
+
+  /* Get reserved memory on device */
+  size_t get_reserved_memory(DevID_t global_dev_id);
+
+  /*Get total memory on device */
+  size_t get_max_memory(DevID_t global_dev_id);
+
+  /* Get parray state in mapping parray tracker */
+  bool get_mapped_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
+
+  /* Get parray state in reserved parray tracker */
+  bool get_reserved_parray_state(DevID_t global_dev_idx, uint64_t parray_id);
 
   /* Spawn wait. Slow down the compute bound spawning thread so tasks on other
    * threads can start*/
   void spawn_wait();
 
   DeviceManager *get_device_manager() { return this->device_manager_; }
-
+  
 protected:
   /// It manages all device instances in C++.
   /// This is destructed by the Cython scheduler.
   DeviceManager *device_manager_;
-
-  /// It manages the current/planned distribution of PArrays across devices.
-  /// Parla task mapping policy considers locality of PArrays through this.
-  PArrayTracker parray_tracker_;
+  LRUGlobalEvictionManager *mm_;
 };
 
 #endif // PARLA_BACKEND_HPP

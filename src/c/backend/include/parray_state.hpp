@@ -1,11 +1,13 @@
 /*! @file parray_state.hpp
  *  @brief Provides C++ interface to parray coherency.
  */
-
 #ifndef PARLA_PARRAY_STATE_HPP
 #define PARLA_PARRAY_STATE_HPP
 
+#include "device.hpp"
+#include <cstdint>
 #include <unordered_map>
+#include <vector>
 
 namespace parray {
 // A Class that keep record of PArray's state
@@ -27,6 +29,9 @@ public:
   // set the valid status of PArray on a device
   void set_valid_on_device(int device_id, bool valid);
 
+  // get vector of valid devices
+  std::vector<int> get_valid_devices();
+
 private:
   std::unordered_map<int, bool>
       _exist_on_device; // a mapping between device_id and exist status
@@ -35,4 +40,4 @@ private:
 };
 } // namespace parray
 
-#endif // PARLA_PARRAY_STATE_HPP
+#endif

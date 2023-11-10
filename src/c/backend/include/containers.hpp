@@ -44,36 +44,33 @@ private:
   std::string name;
 
 public:
-  ProtectedVector() = default;
+  ProtectedVector() { this->name = "default"; };
 
-  ProtectedVector(std::string name) {
-    this->mtx.lock();
-    this->name = name;
-    this->mtx.unlock();
+  ProtectedVector(const ProtectedVector<T> &other) {
+    this->name = other.name;
+    this->vec = other.vec;
+    this->length.exchange(other.length);
   }
 
+  ProtectedVector(std::string name) { this->name = name; }
+
   ProtectedVector(std::string name, std::vector<T> vec) {
-    this->mtx.lock();
     this->name = name;
     this->vec = vec;
-    this->mtx.unlock();
   }
 
   ProtectedVector(std::string name, size_t size) {
-    this->mtx.lock();
     this->name = name;
     this->vec.reserve(size);
-    this->mtx.unlock();
   }
 
-  /// Explicit move assignment due to the atomic size member.
-  ProtectedVector &operator=(ProtectedVector &&other) {
-    this->length.exchange(other.length);
-    this->vec = std::move(other.vec);
-    // The string should be small
-    this->name = std::move(other.name);
-    return *this;
-  }
+  // ProtectedVector &operator=(const ProtectedVector<T> &&other) {
+  //   this->length.exchange(other.length);
+  //   this->vec = std::move(other.vec);
+  //   // The string should be small
+  //   this->name = std::move(other.name);
+  //   return *this;
+  // }
 
   void lock() { this->mtx.lock(); }
 

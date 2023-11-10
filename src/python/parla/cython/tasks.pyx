@@ -13,14 +13,24 @@ from ..utility.threads import Propagate
 
 from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
 from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement
+from .cyparray import CyPArray
 
 from ..common.globals import _Locals as Locals
 from ..common.globals import DeviceType
 from ..common.globals import get_stream_pool, get_scheduler
 from ..common.globals import AccessMode, Storage
 from ..common.globals import SynchronizationType as SyncType 
-
 from ..common.parray.core import PArray
+from ..common.globals import _global_data_tasks
+
+
+PyDevice = device.PyDevice
+PyCUDADevice = device.PyCUDADevice
+PyCPUDevice = device.PyCPUDevice
+PyArchitecture = device.PyArchitecture
+PyCUDAArchitecture = device.PyCUDAArchitecture
+
+DeviceType = PyDeviceType
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, FrozenSet
@@ -462,7 +472,6 @@ class Task:
         task_state = None
         self.state = TaskRunning(self.func, self.args)
         try:
-
             task_state = self._execute_task()
 
             task_state = task_state or TaskRunahead(None)
@@ -511,6 +520,9 @@ class Task:
 
     def get_assigned_devices(self):
         return self.inner_task.get_assigned_devices()
+
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
+        return self.inner_task.create_parray(cy_parray, parray_dev_id)
 
     def add_dataflow(self, dataflow):
         if dataflow is not None:
@@ -682,6 +694,7 @@ class DataMovementTask(Task):
                  name = None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
+
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
@@ -701,6 +714,7 @@ class DataMovementTask(Task):
         self.inner_task.set_py_task(self)
         self.dev_id = attrs.dev_id
         self.runahead = runahead
+        self.dependencies = self.get_dependencies()
 
     def _execute_task(self):
         """!
@@ -719,7 +733,7 @@ class DataMovementTask(Task):
         return TaskRunahead(0)
 
     def cleanup(self):
-        pass
+        self.parray = None
 
 ######
 # Task Environment
@@ -1780,9 +1794,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
-
-
-
-    
-    

@@ -58,13 +58,16 @@ cdef class CyDeviceManager:
         self.cpp_device_manager_.print_registered_devices()
 
     cpdef globalid_to_parrayid(self, global_dev_id):
-        return self.cpp_device_manager_.globalid_to_parrayid(global_dev_id)
+        return g2p(global_dev_id)
 
     cpdef parrayid_to_globalid(self, parray_dev_id):
-        return self.cpp_device_manager_.parrayid_to_globalid(parray_dev_id)
+        return p2g(parray_dev_id)
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_
+
+    cpdef free_memory(self, parray_dev_id, memory_size):
+        self.cpp_device_manager_.free_memory_by_parray_id(parray_dev_id, memory_size)
 
 
 class PrintableFrozenSet(frozenset):
@@ -369,3 +372,11 @@ class PyDeviceManager:
 
     def parrayid_to_globalid(self, parray_dev_id):
         return self.cy_device_manager.parrayid_to_globalid(parray_dev_id)
+
+    def free_memory(self, parray_dev_id, size):
+        """
+        Free memory of the device with the given device id.
+        Note: The device id is the PArray id of the device, not the internal global Parla id.
+        Frees the memory on both the devices Mapped and Reserved Pools.
+        """
+        self.cy_device_manager.free_memory(parray_dev_id, size)

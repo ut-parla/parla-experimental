@@ -27,15 +27,6 @@ cdef class CyDevice:
     cpdef int get_global_id(self):
         return self._cpp_device.get_global_id()
 
-    cpdef long long int query_resource(self, int resource_type):
-        return self._cpp_device.query_resource(<Resource> resource_type)
-
-    cpdef long long int query_reserved_resource(self, int resource_type):
-        return self._cpp_device.query_reserved_resource(<Resource> resource_type)
-
-    cpdef long long int query_mapped_resource(self, int resource_type):
-        return self._cpp_device.query_mapped_resource(<Resource> resource_type)
-
 
 cdef class CyGPUDevice(CyDevice):
     """
@@ -158,15 +149,6 @@ class PyDevice:
     def get_cy_device(self):
         return self._cy_device
 
-    def query_resource(self, res_type):
-        return self._cy_device.query_resource(res_type)
-
-    def query_reserved_resource(self, res_type):
-        return self._cy_device.query_reserved_resource(res_type)
-
-    def query_mapped_resource(self, res_type):
-        return self._cy_device.query_mapped_resource(res_type)
-
     @property
     def device(self):
         """
@@ -228,7 +210,7 @@ class PyGPUDevice(PyDevice):
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
         super().__init__(DeviceType.GPU, "GPU", dev_id)
         #TODO(wlr): If we ever support VECs, we might need to move this device initialization
-        self._cy_device = CyGPUDevice(dev_id, mem_sz, num_vcus, self)
+        self._cy_device = CyGPUDevice(dev_id, int(mem_sz*0.8), num_vcus, self)
 
     @property
     def device(self):

@@ -31,7 +31,8 @@ class _VariantFunction(object):
         self._variants = {}
         functools.update_wrapper(self, func)
 
-    def variant(self, spec_list, override=False, architecture=None, max_amount=8):
+
+    def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
         """!
         @brief Decorator to declare a variant of this function for a specific architecture.
 

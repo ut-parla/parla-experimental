@@ -1,5 +1,6 @@
 #include "parray_state.hpp"
 #include <unordered_map>
+#include <vector>
 
 namespace parray {
 PArrayState::PArrayState() {}
@@ -29,4 +30,15 @@ void PArrayState::set_exist_on_device(int device_id, bool exist) {
 void PArrayState::set_valid_on_device(int device_id, bool valid) {
   this->_valid_on_device[device_id] = valid;
 }
+
+std::vector<int> PArrayState::get_valid_devices() {
+  std::vector<int> valid_devices;
+  for (auto &kv : this->_valid_on_device) {
+    if (kv.second) {
+      valid_devices.push_back(kv.first);
+    }
+  }
+  return valid_devices;
+}
+
 } // namespace parray
