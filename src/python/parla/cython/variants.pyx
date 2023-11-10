@@ -1,18 +1,21 @@
 
+# cython: language_level=3
+# cython: language=c++
 """!
 @file variants.pyx
 @brief Provides decorators for dispatching functions based on the active TaskEnvironment.
 """
 
 import functools 
-from parla.common.globals import _Locals as Locals 
-from parla.cython.device import PyArchitecture
+from ..common.globals import _Locals as Locals 
+
 
 class VariantDefinitionError(ValueError):
     """!
     @brief Error for an invalid function variant definition.
     """
     pass
+
 
 class _VariantFunction(object):
     """!
@@ -27,7 +30,6 @@ class _VariantFunction(object):
         self._default = func 
         self._variants = {}
         functools.update_wrapper(self, func)
-
 
     def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
         """!
@@ -97,8 +99,6 @@ def specialize(func):
     The decorated function is the default implemention, used when no specialized implementation is available.
     The default can just be `raise NotImplementedError()` in cases where no default implementation is possible.
     To provide a specialized variant use the `variant` member of the main function:
-    .. testsetup::
-        from parla.function_decorators import *
     >>> @specialize
     ... def f():
     ...     raise NotImplementedError()
@@ -112,11 +112,3 @@ def specialize(func):
     The compiler will make the choice when it is compiling for a specific target.
     """
     return _VariantFunction(func)
-
-
-        
-
-        
-
-
-

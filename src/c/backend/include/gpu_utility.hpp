@@ -2,7 +2,6 @@
  *  @brief Provides architecture independent interface to event and stream
  * creation & synchronization.
  */
-
 #ifndef PARLA_CUDA_UTILITY_H
 #define PARLA_CUDA_UTILITY_H
 
@@ -13,14 +12,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#if defined(PARLA_ENABLE_CUDA)
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#endif
-
 using namespace std;
 using namespace chrono;
-
 
 /***
  * @brief Busy sleep on the GPU machine for a given number of cycles
@@ -62,5 +55,20 @@ void event_wait(uintptr_t event_ptr, uintptr_t stream_ptr);
  * @brief Synchronize gpu streams (host blocking)
  */
 void stream_synchronize(uintptr_t stream_ptr);
+
+/***
+ * @brief Set the current device
+ */
+void set_device(int device);
+
+/***
+ * @brief Get the current device
+ */
+int get_device();
+
+/***
+ * @brief Get the number of devices
+ */
+int get_num_devices();
 
 #endif // PARLA_CUDA_UTILITY_H

@@ -1,25 +1,18 @@
-################################################################################
-# Cython implementations (Declarations are in device.pxd)
-################################################################################
-import cython 
-cimport cython 
-
+# cython: language_level=3
+# cython: language=c++
 """!
 @file device.pyx
 @brief Contains the user-facing device and architectures classes.
 """
 
-from parla.common.globals import _Locals as Locals
-from parla.common.globals import cupy, CUPY_ENABLED
-from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import VCU_BASELINE, get_device_manager
+from ..common.globals import _Locals as Locals
+from ..common.globals import cupy, CUPY_ENABLED
+from ..common.globals import DeviceType as PyDeviceType
+from ..common.globals import VCU_BASELINE, get_device_manager
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from dataclasses import dataclass
-from typing import Union, List, Iterable, Dict, Tuple
-from collections import defaultdict
-import os 
-from enum import IntEnum
+from typing import Union, Dict, Tuple
 
 cdef class CyDevice:
     """
@@ -35,15 +28,14 @@ cdef class CyDevice:
         return self._cpp_device.get_global_id()
 
 
-cdef class CyCUDADevice(CyDevice):
+cdef class CyGPUDevice(CyDevice):
     """
-    An inherited class from `CyDevice` for a device object specialized to CUDA.
+    An inherited class from `CyDevice` for a device object specialized to GPU.
     """
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, \
-                                          <void *> py_device)
+        self._cpp_device = new GPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -56,8 +48,7 @@ cdef class CyCPUDevice(CyDevice):
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, \
-                                         <void *> py_device)
+        self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -98,6 +89,7 @@ class DeviceResource:
         "vcus": int
     }
 
+
 class PyDevice:
     """
     This class is to abstract a single device in Python and manages
@@ -120,7 +112,7 @@ class PyDevice:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-        #print(f"Exited device, {self.get_name()}, context", flush=True)
+        # print(f"Exited device, {self.get_name()}, context", flush=True)
 
     @property
     def id(self) -> int:
@@ -181,7 +173,7 @@ class PyDevice:
         return self._device_name
 
     def __hash__(self):
-        #NOTE: DEVICE NAMES MUST BE UNIQUE INSIDE A SCHEDULER INSTANCE
+        # NOTE: DEVICE NAMES MUST BE UNIQUE INSIDE A SCHEDULER INSTANCE
         return hash(self._device_name)
 
     def __eq__(self, other) -> bool:
@@ -204,25 +196,14 @@ class PyDevice:
         return self._device_id
 
 
-"""
-Device instances in Python manage resource status.
-TODO(hc): the device configuration will be packed in a data class soon.
-"""
-
-class PyCUDADevice(PyDevice):
+class PyGPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
-        #TODO(wlr): If we ever support VECs, we might need to move this device
-        #initialization
-        #In Parla, we assume 80% of the actual device memory as the full 
-        #memory size.
-        #We assume that 1~20% of the device memory is used by external
-        #libraries including CuPy.
-        self._cy_device = CyCUDADevice(dev_id, mem_sz * 0.8, num_vcus, self)
+        super().__init__(DeviceType.GPU, "GPU", dev_id)
+        self._cy_device = CyGPUDevice(dev_id, int(mem_sz*0.8), num_vcus, self)
 
     @property
     def device(self):
@@ -274,7 +255,7 @@ class PyArchitecture(metaclass=ABCMeta):
             # If a requested device does not exist,
             # ignore that placement.
             error_msg = f"{self._name} does not have device({index})."
-            error_msg += f" Please specify existing devices."
+            error_msg += " Please specify existing devices."
             raise ValueError(error_msg)
 
     def __getitem__(self, param):
@@ -375,7 +356,7 @@ class ImportableArchitecture(PyArchitecture):
         if isinstance(o, int):
             return self.id == o
         elif isinstance(o, type(self)):
-            return ( (self.id == o.id) and (self._name == o.name) )
+            return ((self.id == o.id) and (self._name == o.name))
         else:
             return False
 
@@ -386,7 +367,7 @@ class ImportableArchitecture(PyArchitecture):
         return type(self).__name__
 
     def __mul__(self, num_archs: int):
-        #architecture = get_device_manager().get_architecture(self._architecture_type)
+        # architecture = get_device_manager().get_architecture(self._architecture_type)
         arch_ps = [self for i in range(0, num_archs)]
         return tuple(arch_ps)
 
@@ -399,13 +380,14 @@ class ImportableArchitecture(PyArchitecture):
         architecture.add_device(device)
 
 
-class PyCUDAArchitecture(PyArchitecture):
+class PyGPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("GPUArch", DeviceType.GPU)
 
-class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
+
+class ImportableGPUArchitecture(PyGPUArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
+        ImportableArchitecture.__init__(self, "GPUArch", DeviceType.GPU)
  
 
 class PyCPUArchitecture(PyArchitecture):
@@ -415,6 +397,7 @@ class PyCPUArchitecture(PyArchitecture):
     def add_device(self, device):
         assert isinstance(device, PyCPUDevice)
         self._devices.append(device)
+
 
 class ImportableCPUArchitecture(PyCPUArchitecture, ImportableArchitecture):
     def __init__(self):
@@ -428,10 +411,10 @@ class DeviceResourceRequirement:
         self.res_req = res_req
 
     def __repr__(self):
-        return "("+self.device.get_name()+", memory:"+str(self.res_req.memory_sz)+ \
-               ", num_vcus:"+str(self.res_req.num_vcus)+")" 
+        return f"({self.device.get_name()}, memory:{self.res_req.memory_sz} bytes, vcus:{self.res_req.num_vcus})"
 
-PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource], \
+
+PlacementSource = Union[PyArchitecture, PyDevice, Tuple[PyArchitecture, DeviceResource],
                         Tuple[PyDevice, DeviceResource]]
 
 
@@ -448,11 +431,11 @@ class Stream:
         return self.__repr__()
 
     def __enter__(self):
-        #print("Entering Stream: ", self, flush=True)
+        # print("Entering Stream: ", self, flush=True)
         pass
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        #print("Exiting Stream: ", self, flush=True)
+        # print("Exiting Stream: ", self, flush=True)
         pass
 
     @property
@@ -476,6 +459,7 @@ class Stream:
     def ptr(self):
         return None
 
+
 class CupyStream(Stream):
 
     def __init__(self, device=None, stream=None, non_blocking=True):
@@ -489,10 +473,9 @@ class CupyStream(Stream):
 
         if device is None:
             self._device = cupy.cuda.Device()
-            self._device_id = self._device.id
         else:
             self._device = device
-            self._device_id = device.device.id
+        self._device_id = device.device.id
 
         with cupy.cuda.Device(self._device_id) as d:
             if stream is None:
@@ -507,16 +490,11 @@ class CupyStream(Stream):
         return self.__repr__()
 
     def __enter__(self):
-        #print("Entering Stream: ", self, Locals.task, self._device_id, flush=True)
-
-        #Set the device to the stream's device.
+        # Set the device to the stream's device.
         self.active_device = cupy.cuda.Device(self._device_id)
-
         self.active_device.__enter__()
-        #self._device.__enter__()
 
-        
-        #Set the stream to the current stream.
+        # Set the stream to the current stream.
         self._stream.__enter__()
 
         Locals.push_stream(self)
@@ -528,10 +506,10 @@ class CupyStream(Stream):
         ret_stream = False
         ret_device = False
 
-        #Restore the stream to the previous stream.
+        # Restore the stream to the previous stream.
         ret_stream = self._stream.__exit__(exc_type, exc_value, traceback)
 
-        #Restore the device to the previous device.
+        # Restore the device to the previous device.
         ret_device = self.active_device.__exit__(exc_type, exc_value, traceback)
             
         Locals.pop_stream()
@@ -546,7 +524,6 @@ class CupyStream(Stream):
         return self._stream
 
     def synchronize(self):
-        #print("Synchronizing stream", flush=True)
         self._stream.synchronize()
 
     def create_event(self):
@@ -562,7 +539,7 @@ class CupyStream(Stream):
     def ptr(self):
         return self._stream.ptr
 
-    #TODO(wlr): What is the performance impact of this?
+    # TODO(wlr): What is the performance impact of this?
     def __getatrr__(self, name):
         if hasattr(self, name):
             return getattr(self, name)

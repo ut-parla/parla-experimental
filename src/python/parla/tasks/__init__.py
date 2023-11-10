@@ -12,4 +12,15 @@ BackendTaskSpace = tasks.BackendTaskSpace
 
 specialize = variants.specialize
 
-__all__ = [spawn, Tasks, TaskSpace, AtomicTaskSpace, BackendTaskSpace, specialize, get_current_context, get_current_task, get_current_stream, get_current_devices]
+__all__ = [
+    spawn,
+    Tasks,
+    TaskSpace,
+    AtomicTaskSpace,
+    BackendTaskSpace,
+    specialize,
+    get_current_context,
+    get_current_task,
+    get_current_stream,
+    get_current_devices,
+]

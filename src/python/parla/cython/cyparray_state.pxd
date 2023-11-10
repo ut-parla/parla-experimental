@@ -1,9 +1,6 @@
-# distutils: language=c++
-
+# cython: language_level=3
+# cython: language=c++
 from libcpp cimport bool
-
-#cdef extern from "parray_state.cpp":
-#    pass
 
 # a mapping between C++ PArrayState api to Cython PArrayState api
 cdef extern from "include/parray_state.hpp" namespace "parray":

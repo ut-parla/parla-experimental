@@ -31,9 +31,16 @@ TaskEnvironment = tasks.TaskEnvironment
 GPUEnvironment = tasks.GPUEnvironment
 
 
-__all__ = ['spawn', 'TaskSpace', 'Parla', 'sleep_gil',
-           'sleep_nogil', 'Tasks', 'parla_num_threads',
-           'parray']
+__all__ = [
+    "spawn",
+    "TaskSpace",
+    "Parla",
+    "sleep_gil",
+    "sleep_nogil",
+    "Tasks",
+    "parla_num_threads",
+    "parray",
+]
 
 
 def signal_handler(signal, frame):
@@ -44,16 +51,22 @@ def signal_handler(signal, frame):
 parla_num_threads = os.environ.get("PARLA_NUM_THREADS", None)
 if parla_num_threads is None:
     import psutil
+
     parla_num_threads = int(psutil.cpu_count(logical=False))
 else:
     parla_num_threads = int(parla_num_threads)
 
 
 class Parla:
-
-    def __init__(self, scheduler_class=scheduler.Scheduler,
-                 sig_type=signal.SIGINT, logfile=None, n_workers=None,
-                 dev_config_file=None, **kwds):
+    def __init__(
+        self,
+        scheduler_class=scheduler.Scheduler,
+        sig_type=signal.SIGINT,
+        logfile=None,
+        n_workers=None,
+        dev_config_file=None,
+        **kwds,
+    ):
         assert issubclass(scheduler_class, scheduler.Scheduler)
 
         self.scheduler_class = scheduler_class
@@ -78,11 +91,10 @@ class Parla:
 
     def __enter__(self):
         if hasattr(self, "_sched"):
-            raise ValueError(
-                "Do not use the same Parla object more than once.")
-        self._sched = self.scheduler_class(self._memory_manager,
-                                           self._device_manager,
-                                           **self.kwds)
+            raise ValueError("Do not use the same Parla object more than once.")
+        self._sched = self.scheduler_class(
+            self._memory_manager, self._device_manager, **self.kwds
+        )
 
         self.interuppted = False
         self.released = False

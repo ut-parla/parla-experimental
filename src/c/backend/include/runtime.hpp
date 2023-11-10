@@ -1,4 +1,3 @@
-#pragma once
 #ifndef PARLA_BACKEND_HPP
 #define PARLA_BACKEND_HPP
 

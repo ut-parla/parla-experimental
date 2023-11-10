@@ -1,9 +1,9 @@
-# distutils: language=c++
+# cython: language_level=3
+# cython: language=c++
 """!
 @file cyparray_state.pyx
 @brief Contains the core intermediate cython wrapper classes for PArray Coherence.
 """
-from .cyparray_state cimport PArrayState
 
 # a Cython wrapper class around C++ PArrayState
 cdef class CyPArrayState:

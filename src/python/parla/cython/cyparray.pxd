@@ -1,11 +1,11 @@
-# distutils: language=c++
-
+# cython: language_level=3
+# cython: language=c++
 from libc.stdint cimport uint32_t, uint64_t
 
 from .cyparray_state cimport PArrayState
 
-#cdef extern from "parray.cpp":
-#    pass
+# cdef extern from "parray.cpp":
+#     pass
 
 # a mapping between C++ PArray api to Cython PArray api
 cdef extern from "include/parray.hpp" namespace "parray":

@@ -2,7 +2,6 @@
  *  @brief Provides interface for device initialization and management.
  */
 
-#pragma once
 #ifndef PARLA_DEVICE_MANAGER_HPP
 #define PARLA_DEVICE_MANAGER_HPP
 
@@ -70,8 +69,8 @@ public:
       return all_devices_.size();
     } else if constexpr (T == DeviceType::CPU) {
       return arch_devices_[static_cast<int>(DeviceType::CPU)].size();
-    } else if constexpr (T == DeviceType::CUDA) {
-      return arch_devices_[static_cast<int>(DeviceType::CUDA)].size();
+    } else if constexpr (T == DeviceType::GPU) {
+      return arch_devices_[static_cast<int>(DeviceType::GPU)].size();
     }
   }
 
@@ -79,8 +78,8 @@ public:
     switch (dev_type) {
     case DeviceType::CPU:
       return get_num_devices<DeviceType::CPU>();
-    case DeviceType::CUDA:
-      return get_num_devices<DeviceType::CUDA>();
+    case DeviceType::GPU:
+      return get_num_devices<DeviceType::GPU>();
     default:
       return get_num_devices<DeviceType::All>();
     }
@@ -89,8 +88,8 @@ public:
   template <DeviceType T> std::vector<Device *> &get_devices() {
     if constexpr (T == DeviceType::CPU) {
       return arch_devices_[static_cast<int>(DeviceType::CPU)];
-    } else if constexpr (T == DeviceType::CUDA) {
-      return arch_devices_[static_cast<int>(DeviceType::CUDA)];
+    } else if constexpr (T == DeviceType::GPU) {
+      return arch_devices_[static_cast<int>(DeviceType::GPU)];
     } else if constexpr (T == DeviceType::All) {
       return all_devices_;
     }
@@ -109,8 +108,8 @@ public:
     switch (dev_type) {
     case DeviceType::CPU:
       return get_devices<DeviceType::CPU>();
-    case DeviceType::CUDA:
-      return get_devices<DeviceType::CUDA>();
+    case DeviceType::GPU:
+      return get_devices<DeviceType::GPU>();
     default:
       return get_devices<DeviceType::All>();
     }

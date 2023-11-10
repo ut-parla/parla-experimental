@@ -4,8 +4,6 @@
  * This file contains the interface for scheduler runtime phases. This includes
  * classes for Task Mapping, Task Resource Reservation, and Task Launching.
  */
-
-#pragma once
 #ifndef PARLA_PHASES_HPP
 #define PARLA_PHASES_HPP
 

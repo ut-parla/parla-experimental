@@ -10,9 +10,36 @@ from dataclasses import dataclass, field
 
 from .threads import Propagate
 
-from .graphs import LogState, DeviceType, MovementType, DataInitType, TaskID, TaskRuntimeInfo, TaskDataInfo, TaskInfo, DataInfo, TaskTime, TimeSample
-from .graphs import RunConfig, GraphConfig, TaskConfig, TaskConfigs, SerialConfig, IndependentConfig, ReductionConfig, ReductionScatterConfig
-from .graphs import generate_serial_graph, generate_independent_graph, generate_reduction_graph, generate_reduction_scatter_graph, shuffle_tasks
+from .graphs import (
+    LogState,
+    DeviceType,
+    MovementType,
+    DataInitType,
+    TaskID,
+    TaskRuntimeInfo,
+    TaskDataInfo,
+    TaskInfo,
+    DataInfo,
+    TaskTime,
+    TimeSample,
+)
+from .graphs import (
+    RunConfig,
+    GraphConfig,
+    TaskConfig,
+    TaskConfigs,
+    SerialConfig,
+    IndependentConfig,
+    ReductionConfig,
+    ReductionScatterConfig,
+)
+from .graphs import (
+    generate_serial_graph,
+    generate_independent_graph,
+    generate_reduction_graph,
+    generate_reduction_scatter_graph,
+    shuffle_tasks,
+)
 from .graphs import read_pgraph, parse_blog
 
 import os
@@ -25,12 +52,14 @@ from parla import Parla, spawn, TaskSpace, parray
 from parla import sleep_gil as lock_sleep
 from parla import sleep_nogil as free_sleep
 from parla.common.array import clone_here
-from parla.common.globals import get_current_devices, get_current_stream, get_current_context
+from parla.common.globals import (
+    get_current_devices,
+    get_current_stream,
+)
 from parla.common.parray.from_data import asarray
 from parla.cython.device_manager import cpu, gpu
 from parla.cython.variants import specialize
 from parla.cython.core import gpu_bsleep_nogil
-from typing import Tuple
 
 import numpy as np
 
@@ -42,10 +71,13 @@ PArray = parray.core.PArray
 def make_parrays(data_list):
     parray_list = list()
     for i, data in enumerate(data_list):
-        parray_list.append(asarray(data, name="data"+str(i)) )
+        parray_list.append(asarray(data, name="data" + str(i)))
     return parray_list
 
-def _get_time_for_cycles(sleep_func: Callable, cycles: int, samples=10) -> Tuple[float, float]:
+
+def _get_time_for_cycles(
+    sleep_func: Callable, cycles: int, samples=10
+) -> Tuple[float, float]:
     import cupy as cp
     import numpy as np
 
@@ -63,9 +95,12 @@ def _get_time_for_cycles(sleep_func: Callable, cycles: int, samples=10) -> Tuple
     return np.mean(times), np.std(times)
 
 
-def _get_time_for_cycles_event(sleep_func: Callable, cycles: int, samples=10) -> Tuple[float, float]:
+def _get_time_for_cycles_event(
+    sleep_func: Callable, cycles: int, samples=10
+) -> Tuple[float, float]:
     import cupy as cp
     import numpy as np
+
     observed_times = []
     for k in range(samples):
         stream = cp.cuda.get_current_stream()
@@ -76,16 +111,23 @@ def _get_time_for_cycles_event(sleep_func: Callable, cycles: int, samples=10) ->
         sleep_func(0, cycles, stream)
         end_event.record(stream)
         stream.synchronize()
-        event_elapsed = cp.cuda.get_elapsed_time(
-            start_event, end_event)/1000
+        event_elapsed = cp.cuda.get_elapsed_time(start_event, end_event) / 1000
         observed_times.append(event_elapsed)
 
     times = np.asarray(observed_times)
     return np.mean(times), np.std(times)
 
-def estimate_frequency(sleep_func: Callable, samples=30, initial: int = 100000000, target_time=10000, verbose=False, use_event=True, tol=10) -> int:
+
+def estimate_frequency(
+    sleep_func: Callable,
+    samples=30,
+    initial: int = 100000000,
+    target_time=10000,
+    verbose=False,
+    use_event=True,
+    tol=10,
+) -> int:
     import cupy as cp
-    import numpy as cp
 
     target_time = target_time / (1000 * 1000)
     tol = tol / (1000 * 1000)
@@ -99,18 +141,19 @@ def estimate_frequency(sleep_func: Callable, samples=30, initial: int = 10000000
     times = []
 
     for k in range(samples):
-
         if use_event:
             mean_time, std_time = _get_time_for_cycles_event(
-                sleep_func, ticks, samples=k+10)
+                sleep_func, ticks, samples=k + 10
+            )
         else:
             mean_time, std_time = _get_time_for_cycles(
-                sleep_func, ticks, samples=k+10)
+                sleep_func, ticks, samples=k + 10
+            )
 
         times.append(mean_time)
 
         # Update Estimate
-        ticks = (ticks) * (target_time/times[-1])
+        ticks = (ticks) * (target_time / times[-1])
 
         if verbose:
             print(f"Observed Time: {mean_time}, STD: {std_time}", flush=True)
@@ -125,11 +168,11 @@ def estimate_frequency(sleep_func: Callable, samples=30, initial: int = 10000000
     return int(final_estimate)
 
 
-class GPUInfo():
-    #approximate average on frontera RTX
-    #cycles_per_second = 1919820866.3481758
-    #cycles_per_second = 875649327.7713356
-    #cycles_per_second = 47994628114801.04
+class GPUInfo:
+    # approximate average on frontera RTX
+    # cycles_per_second = 1919820866.3481758
+    # cycles_per_second = 875649327.7713356
+    # cycles_per_second = 47994628114801.04
     cycles_per_second = 1949802881.4819772
 
     def update(self, cycles):
@@ -138,11 +181,13 @@ class GPUInfo():
 
     def get_cycles_per_second(self):
         return self.cycles_per_second
-    
+
+
 _GPUInfo = GPUInfo()
 
 
 _GPUInfo = GPUInfo()
+
 
 def get_placement_set_from(ps_str_set, num_gpus):
     ps_set = []
@@ -170,7 +215,9 @@ def get_placement_set_from(ps_str_set, num_gpus):
     return tuple(ps_set)
 
 
-def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_movement_type) -> List[np.ndarray]:
+def generate_data(
+    data_config: Dict[int, DataInfo], data_scale: float, data_movement_type
+) -> List[np.ndarray]:
     value = 0
     data_list = []
     # If data does not exist, this loop will not be iterated.
@@ -179,15 +226,14 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
         data_size = data_config[data_idx].size
 
         if data_location == DeviceType.CPU_DEVICE:
-            data = np.zeros([data_size, data_scale],
-                            dtype=np.float32) + value + 1
+            data = np.zeros([data_size, data_scale], dtype=np.float32) + value + 1
             data_list.append(data)
 
         elif data_location > DeviceType.ANY_GPU_DEVICE:
             import cupy as cp
+
             with cp.cuda.Device(data_location - 1) as device:
-                data = cp.zeros([data_size, data_scale],
-                                dtyp=np.float32) + value + 1
+                data = cp.zeros([data_size, data_scale], dtyp=np.float32) + value + 1
                 device.synchronize()
                 data_list.append(data)
         else:
@@ -201,7 +247,12 @@ def generate_data(data_config: Dict[int, DataInfo], data_scale: float, data_move
 
 
 @specialize
-def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+def synthetic_kernel(
+    total_time: int,
+    gil_fraction: Union[Fraction, float],
+    gil_accesses: int,
+    config: RunConfig,
+):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
@@ -215,7 +266,7 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
     free_time = kernel_time * (1 - gil_fraction)
     gil_time = kernel_time * gil_fraction
 
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
+    # print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
 
     for i in range(gil_accesses):
         free_sleep(free_time)
@@ -230,7 +281,12 @@ def synthetic_kernel(total_time: int, gil_fraction: Union[Fraction, float], gil_
 
 
 @synthetic_kernel.variant(architecture=gpu)
-def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], gil_accesses: int, config: RunConfig):
+def synthetic_kernel_gpu(
+    total_time: int,
+    gil_fraction: Union[Fraction, float],
+    gil_accesses: int,
+    config: RunConfig,
+):
     """
     A simple synthetic kernel that simulates a task that takes a given amount of time
     and accesses the GIL a given number of times. The GIL is accessed in a fraction of
@@ -247,16 +303,15 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
 
     cycles_per_second = _GPUInfo.get_cycles_per_second()
     parla_cuda_stream = get_current_stream()
-    ticks = int((total_time/(10**6))*cycles_per_second)
+    ticks = int((total_time / (10**6)) * cycles_per_second)
 
-    #print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
+    # print("device id:", dev_id, " ticks:", ticks, " stream:", stream, flush=True)
 
     dev_id = get_current_devices()[0]
-    #print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
+    # print(f"gil accesses: {gil_accesses}, free time: {free_time}, gil time: {gil_time}")
     for i in range(gil_accesses):
-        #print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
-        gpu_bsleep_nogil(dev_id[0]().device_id, int(
-            ticks), parla_cuda_stream.stream)
+        # print(dev_id[0]().device_id, parla_cuda_stream.stream, flush=True)
+        gpu_bsleep_nogil(dev_id[0]().device_id, int(ticks), parla_cuda_stream.stream)
         parla_cuda_stream.stream.synchronize()
         lock_sleep(gil_time)
 
@@ -265,23 +320,23 @@ def synthetic_kernel_gpu(total_time: int, gil_fraction: Union[Fraction, float], 
         task_internal_duration = task_internal_end_t - task_internal_start_t
         return task_internal_duration
 
-    #task_internal_end_t = time.perf_counter()
-    #task_internal_duration = task_internal_end_t - task_internal_start_t
-    #print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
+    # task_internal_end_t = time.perf_counter()
+    # task_internal_duration = task_internal_end_t - task_internal_start_t
+    # print("Wall clock duration:", task_internal_duration, ", user passed total time:", total_time, ", ticks:", ticks , flush=True)
 
     return None
 
 
 def create_task_no_data(task, taskspaces, config, data_list=None):
-
     try:
         # Task ID
         task_idx = task.task_id.task_idx
         taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
+        dependencies = [
+            taskspaces[dep.taskspace][dep.task_idx] for dep in task.task_dependencies
+        ]
 
         # Valid Placement Set
         num_gpus = config.num_gpus
@@ -316,13 +371,19 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
         # print("task idx:", task_idx, " dependencies:", dependencies, " vcu:", device_fraction,
         #      " placement:", placement_set, " placement key:", placement_set_str)
 
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        @spawn(
+            taskspace[task_idx],
+            dependencies=dependencies,
+            vcus=device_fraction,
+            placement=[placement_set],
+        )
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
 
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
+            elapsed = synthetic_kernel(
+                total_time, gil_fraction, gil_accesses, config=config
+            )
 
             if config.verbose:
                 print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
@@ -334,15 +395,15 @@ def create_task_no_data(task, taskspaces, config, data_list=None):
 
 
 def create_task_eager_data(task, taskspaces, config=None, data_list=None):
-
     try:
         # Task ID
         task_idx = task.task_id.task_idx
         taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
+        dependencies = [
+            taskspaces[dep.taskspace][dep.task_idx] for dep in task.task_dependencies
+        ]
 
         # Valid Placement Set
         num_gpus = config.num_gpus
@@ -359,11 +420,9 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
 
         # Remove duplicated data blocks between in/out and inout
         if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(
-                set(read_data_list).difference(set(rw_data_list)))
+            read_data_list = list(set(read_data_list).difference(set(rw_data_list)))
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(
-                set(write_data_list).difference(set(rw_data_list)))
+            write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
 
         """
         print("RW data list:", rw_data_list)
@@ -373,12 +432,19 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
         """
 
         # Construct data blocks.
-        INOUT = [] if len(rw_data_list) == 0 else [
-            (data_list[d], 0) for d in rw_data_list]
-        IN = [] if len(read_data_list) == 0 else [(data_list[d], 0)
-                                                  for d in read_data_list]
-        OUT = [] if len(write_data_list) == 0 else [(data_list[d], 0)
-                                                    for d in write_data_list]
+        INOUT = (
+            [] if len(rw_data_list) == 0 else [(data_list[d], 0) for d in rw_data_list]
+        )
+        IN = (
+            []
+            if len(read_data_list) == 0
+            else [(data_list[d], 0) for d in read_data_list]
+        )
+        OUT = (
+            []
+            if len(write_data_list) == 0
+            else [(data_list[d], 0) for d in write_data_list]
+        )
 
         # TODO: This needs rework with Device support
         # TODO(hc): This assumes that this task is a single task
@@ -410,13 +476,23 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
             " placement:", placement_set)
         # TODO(hc): Add data checking.
         """
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set], input=IN, output=OUT, inout=INOUT)
+
+        @spawn(
+            taskspace[task_idx],
+            dependencies=dependencies,
+            vcus=device_fraction,
+            placement=[placement_set],
+            input=IN,
+            output=OUT,
+            inout=INOUT,
+        )
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
 
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
+            elapsed = synthetic_kernel(
+                total_time, gil_fraction, gil_accesses, config=config
+            )
 
             if config.verbose:
                 print(f"-{task.task_id} Finished: {elapsed} seconds", flush=True)
@@ -428,15 +504,15 @@ def create_task_eager_data(task, taskspaces, config=None, data_list=None):
 
 
 def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
-
     try:
         # Task ID
         task_idx = task.task_id.task_idx
         taskspace = taskspaces[task.task_id.taskspace]
 
         # Dependency Info
-        dependencies = [taskspaces[dep.taskspace][dep.task_idx]
-                        for dep in task.task_dependencies]
+        dependencies = [
+            taskspaces[dep.taskspace][dep.task_idx] for dep in task.task_dependencies
+        ]
 
         # Valid Placement Set
         num_gpus = config.num_gpus
@@ -453,11 +529,9 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
 
         # Remove duplicated data blocks between in/out and inout
         if len(read_data_list) > 0 and len(rw_data_list) > 0:
-            read_data_list = list(
-                set(read_data_list).difference(set(rw_data_list)))
+            read_data_list = list(set(read_data_list).difference(set(rw_data_list)))
         if len(write_data_list) > 0 and len(rw_data_list) > 0:
-            write_data_list = list(
-                set(write_data_list).difference(set(rw_data_list)))
+            write_data_list = list(set(write_data_list).difference(set(rw_data_list)))
 
         """
         print("RW data list:", rw_data_list)
@@ -494,7 +568,12 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
               " placement:", placement_set)
         """
 
-        @spawn(taskspace[task_idx], dependencies=dependencies, vcus=device_fraction, placement=[placement_set])
+        @spawn(
+            taskspace[task_idx],
+            dependencies=dependencies,
+            vcus=device_fraction,
+            placement=[placement_set],
+        )
         async def task_func():
             if config.verbose:
                 print(f"+{task.task_id} Running", flush=True)
@@ -511,10 +590,13 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
                     local_data[d][0, 1] = -old
                 if config.verbose:
                     print(
-                        f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>", flush=True)
+                        f"=Task {task_idx} moved Data[{d}] from Device[{where}]. Block=[{local_data[d][0, 0]}] | Value=[{local_data[d][0, 1]}], <{old}>",
+                        flush=True,
+                    )
 
-            elapsed = synthetic_kernel(total_time, gil_fraction,
-                                       gil_accesses, config=config)
+            elapsed = synthetic_kernel(
+                total_time, gil_fraction, gil_accesses, config=config
+            )
 
             for d in itertools.chain(write_data_list, rw_data_list):
                 data_list[d] = local_data[d]
@@ -528,34 +610,44 @@ def create_task_lazy_data(task, taskspaces, config=None, data_list=None):
         return
 
 
-def execute_tasks(taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None):
-
+def execute_tasks(
+    taskspaces, tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, data_list=None
+):
     spawn_start_t = time.perf_counter()
 
     # Spawn tasks
     for task, details in tasks.items():
         if run_config.movement_type == MovementType.NO_MOVEMENT:
-            create_task_no_data(details, taskspaces,
-                                config=run_config, data_list=data_list)
+            create_task_no_data(
+                details, taskspaces, config=run_config, data_list=data_list
+            )
         elif run_config.movement_type == MovementType.EAGER_MOVEMENT:
-            create_task_eager_data(details, taskspaces,
-                                   config=run_config, data_list=data_list)
+            create_task_eager_data(
+                details, taskspaces, config=run_config, data_list=data_list
+            )
         elif run_config.movement_type == MovementType.LAZY_MOVEMENT:
-            create_task_lazy_data(details, taskspaces,
-                                  config=run_config, data_list=data_list)
+            create_task_lazy_data(
+                details, taskspaces, config=run_config, data_list=data_list
+            )
 
     spawn_end_t = time.perf_counter()
 
     return taskspaces
 
 
-def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo], run_config: RunConfig, timing: List[TimeSample]):
+def execute_graph(
+    data_config: Dict[int, DataInfo],
+    tasks: Dict[TaskID, TaskInfo],
+    run_config: RunConfig,
+    timing: List[TimeSample],
+):
     @spawn(vcus=0)
     async def main_task():
-
         graph_times = []
         # Generate data once for multiple iterations.
-        data_list = generate_data(data_config, run_config.data_scale, run_config.movement_type)
+        data_list = generate_data(
+            data_config, run_config.data_scale, run_config.movement_type
+        )
         for i in range(0, run_config.inner_iterations):
             # Initialize task spaces
             taskspaces = {}
@@ -577,28 +669,37 @@ def execute_graph(data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo
             graph_times.append(graph_elapsed)
 
         graph_times = np.asarray(graph_times)
-        graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(
-            graph_times), np.min(graph_times), np.max(graph_times), len(graph_times))
+        graph_t = TimeSample(
+            np.mean(graph_times),
+            np.median(graph_times),
+            np.std(graph_times),
+            np.min(graph_times),
+            np.max(graph_times),
+            len(graph_times),
+        )
 
         timing.append(graph_t)
 
 
 def execute_eviction_manager_benchmark(
-    data_config: Dict[int, DataInfo], tasks: Dict[TaskID, TaskInfo],
-    run_config: RunConfig, timing: List[TimeSample]):
+    data_config: Dict[int, DataInfo],
+    tasks: Dict[TaskID, TaskInfo],
+    run_config: RunConfig,
+    timing: List[TimeSample],
+):
     """
     This function is used to benchmark the Parla eviction manager.
     It first generates a list of PArray lists, and iteratively passes
     one of them to task graph execution.
     So, the PArray list passed at the last iteration remains on memory
-    as an evictable state, but no task would refer to this. 
+    as an evictable state, but no task would refer to this.
     The eviction manager would evicts those evictable PArrays if more
     memory is necessary for the further execution.
     """
-    #TODO(hc): it might be a separate test.
+
+    # TODO(hc): it might be a separate test.
     @spawn(vcus=0)
     async def main_task():
-
         graph_times = []
         data_list = []
         max_memory = 0
@@ -606,11 +707,13 @@ def execute_eviction_manager_benchmark(
         for i in range(0, num_data):
             data_list.append(
                 generate_data(
-                  data_config, run_config.data_scale,
-                  run_config.movement_type))
+                    data_config, run_config.data_scale, run_config.movement_type
+                )
+            )
         data_id = 0
         for i in range(0, run_config.inner_iterations):
             import cupy
+
             # Initialize task spaces
             taskspaces = {}
 
@@ -648,28 +751,40 @@ def execute_eviction_manager_benchmark(
             graph_times.append(graph_elapsed)
 
         graph_times = np.asarray(graph_times)
-        graph_t = TimeSample(np.mean(graph_times), np.median(graph_times), np.std(
-            graph_times), np.min(graph_times), np.max(graph_times), len(graph_times))
+        graph_t = TimeSample(
+            np.mean(graph_times),
+            np.median(graph_times),
+            np.std(graph_times),
+            np.min(graph_times),
+            np.max(graph_times),
+            len(graph_times),
+        )
 
         timing.append(graph_t)
 
 
-def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, run_config: RunConfig = None) -> TimeSample:
-
+def run(
+    tasks: Dict[TaskID, TaskInfo],
+    data_config: Dict[int, DataInfo] = None,
+    run_config: RunConfig = None,
+) -> TimeSample:
     if run_config is None:
-        run_config = RunConfig(outer_iterations=1, inner_iterations=1,
-                               verbose=False, threads=1, data_scale=1)
+        run_config = RunConfig(
+            outer_iterations=1,
+            inner_iterations=1,
+            verbose=False,
+            threads=1,
+            data_scale=1,
+        )
 
     timing = []
 
     for outer in range(run_config.outer_iterations):
-
         outer_start_t = time.perf_counter()
 
         with Parla(logfile=run_config.logfile):
             internal_start_t = time.perf_counter()
-            execute_eviction_manager_benchmark(
-                data_config, tasks, run_config, timing)
+            execute_eviction_manager_benchmark(data_config, tasks, run_config, timing)
             internal_end_t = time.perf_counter()
 
         outer_end_t = time.perf_counter()
@@ -680,13 +795,14 @@ def run(tasks: Dict[TaskID, TaskInfo], data_config: Dict[int, DataInfo] = None, 
     return timing[0]
 
 
-def verify_order(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]]) -> bool:
+def verify_order(
+    log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]]
+) -> bool:
     """
     Verify that all tasks have run in the correct order in the log graph.
     """
 
     for task in truth_graph:
-
         details = truth_graph[task]
 
         for dependency in details.task_dependencies:
@@ -697,25 +813,27 @@ def verify_order(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Li
     return True
 
 
-def verify_dependencies(log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict[TaskID, List[TaskID]]):
+def verify_dependencies(
+    log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict[TaskID, List[TaskID]]
+):
     """
     Verify that all dependencies in the truth graph have completed execution in the log graph.
     """
 
     for task in truth_graph:
-
         details = truth_graph[task]
 
         for dependency in details.task_dependencies:
             if dependency not in log_graph:
-                print(
-                    f"Dependency {dependency} of task {task} not in log graph")
+                print(f"Dependency {dependency} of task {task} not in log graph")
                 return False
 
     return True
 
 
-def verify_complete(log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict[TaskID, List[TaskID]]) -> bool:
+def verify_complete(
+    log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict[TaskID, List[TaskID]]
+) -> bool:
     """
     Verify that all tasks in the truth graph have completed exceution in the log graph.
     """
@@ -728,7 +846,11 @@ def verify_complete(log_graph: Dict[TaskID, List[TaskID]], truth_graph: Dict[Tas
     return True
 
 
-def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]], factor: float = 2.0) -> bool:
+def verify_time(
+    log_times: Dict[TaskID, TaskTime],
+    truth_graph: Dict[TaskID, List[TaskID]],
+    factor: float = 2.0,
+) -> bool:
     """
     Verify that all tasks execute near their expected time.
     """
@@ -743,20 +865,24 @@ def verify_time(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, Lis
 
         if observed_time > expected_time * factor:
             print(
-                f"Task {task} took too long to execute. Expected {expected_time} us, took {observed_time} us")
+                f"Task {task} took too long to execute. Expected {expected_time} us, took {observed_time} us"
+            )
             return False
 
     return True
 
 
-def verify_ntasks(log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]]):
+def verify_ntasks(
+    log_times: Dict[TaskID, TaskTime], truth_graph: Dict[TaskID, List[TaskID]]
+):
     """
     Verify that the number of tasks in the log graph is the same as the number of tasks in the truth graph.
     """
 
-    if len(log_times) != len(truth_graph)+1:
+    if len(log_times) != len(truth_graph) + 1:
         print(
-            f"Number of tasks in log graph ({len(log_times)}) does not match number of tasks in truth graph ({len(truth_graph)})")
+            f"Number of tasks in log graph ({len(log_times)}) does not match number of tasks in truth graph ({len(truth_graph)})"
+        )
         return False
 
     return True
@@ -774,16 +900,16 @@ def verify_states(log_states) -> bool:
         # if ('SPAWNED' not in states):
         #    print(f"Task {task} did not spawn", flush=True)
         #    return False
-        if ('MAPPED' not in states):
+        if "MAPPED" not in states:
             print(f"Task {task} was not mapped.", states, flush=True)
             return False
-        if ('RESERVED' not in states):
+        if "RESERVED" not in states:
             print(f"Task {task} was not reserved.", states, flush=True)
             return False
         # if ('RUNNING' not in states):
         #    print(f"Task {task} did not run.", states, flush=True)
         #    return False
-        if ('RUNAHEAD' not in states):
+        if "RUNAHEAD" not in states:
             print(f"Task {task} was not runahead", states, flush=True)
             return False
 
@@ -795,17 +921,23 @@ def timeout(seconds_before_timeout):
     Decorator that raises an exception if the function takes longer than seconds_before_timeout to execute.
     https://stackoverflow.com/questions/21827874/timeout-a-function-windows
     """
+
     def deco(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (
-                func.__name__, seconds_before_timeout))]
+            res = [
+                Exception(
+                    "function [%s] timeout [%s seconds] exceeded!"
+                    % (func.__name__, seconds_before_timeout)
+                )
+            ]
 
             def newFunc():
                 try:
                     res[0] = func(*args, **kwargs)
                 except Exception as e:
                     res[0] = e
+
             t = Propagate(target=newFunc)
             t.daemon = True
             try:
@@ -813,18 +945,19 @@ def timeout(seconds_before_timeout):
                 t.join(seconds_before_timeout)
                 r = t.value
             except Exception as e:
-                print('Unhandled exception in Propagate wrapper', flush=True)
+                print("Unhandled exception in Propagate wrapper", flush=True)
                 raise e
             ret = res[0]
             if isinstance(ret, BaseException):
                 raise ret
             return ret
+
         return wrapper
+
     return deco
 
 
 class GraphContext(object):
-
     def __init__(self, config: GraphConfig, name: str, graph_path=None):
         self.config = config
         self.graph = None
@@ -848,18 +981,17 @@ class GraphContext(object):
             self.tmpfilepath = None
 
     def __enter__(self):
-
         self.diro = tempfile.TemporaryDirectory()
         self.dir = self.diro.__enter__()
 
         if self.tmpfilepath is None:
             self.tmpfilepath = os.path.join(
-                self.dir, 'test_'+str(self.name)+'.graph')
-        self.tmplogpath = os.path.join(
-            self.dir, 'test_'+str(self.name)+'_.blog')
+                self.dir, "test_" + str(self.name) + ".graph"
+            )
+        self.tmplogpath = os.path.join(self.dir, "test_" + str(self.name) + "_.blog")
 
         print("Graph Path:", self.tmpfilepath)
-        with open(self.tmpfilepath, 'w') as tmpfile:
+        with open(self.tmpfilepath, "w") as tmpfile:
             graph = self.graph_function(self.config)
             # print(graph)
             tmpfile.write(graph)
@@ -882,5 +1014,12 @@ class GraphContext(object):
         self.diro.__exit__(type, value, traceback)
 
 
-__all__ = [run, verify_order, verify_dependencies,
-           verify_complete, verify_time, timeout, GraphContext]
+__all__ = [
+    run,
+    verify_order,
+    verify_dependencies,
+    verify_complete,
+    verify_time,
+    timeout,
+    GraphContext,
+]

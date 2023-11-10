@@ -1,4 +1,6 @@
-from parla.cython.resources cimport Resource
+# cython: language_level=3
+# cython: language=c++
+from ..cython.resources cimport Resource
 
 import cython
 cimport cython
@@ -11,10 +13,7 @@ cdef extern from "include/device.hpp" nogil:
     cdef enum DeviceType:
         All "DeviceType::All"
         CPU "DeviceType::CPU"
-        CUDA "DeviceType::CUDA"
-        # TODO(hc): For now, we only support CUDA gpu devices.
-        # Laster, it would be extended to more gpu types
-        # like for AMD
+        GPU "DeviceType::GPU"
         
     cdef cppclass Device:
         Device(string, int, long, long, void*) except +
@@ -25,8 +24,8 @@ cdef extern from "include/device.hpp" nogil:
         long get_num_vcus() except +
         void *get_py_device() except +
 
-    cdef cppclass CUDADevice(Device):
-        CUDADevice(int, long, long, void*) except +
+    cdef cppclass GPUDevice(Device):
+        GPUDevice(int, long, long, void*) except +
 
     cdef cppclass CPUDevice(Device):
         CPUDevice(int, long, long, void*) except +

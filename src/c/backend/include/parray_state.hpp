@@ -1,8 +1,9 @@
 /*! @file parray_state.hpp
  *  @brief Provides C++ interface to parray coherency.
  */
+#ifndef PARLA_PARRAY_STATE_HPP
+#define PARLA_PARRAY_STATE_HPP
 
-#pragma once
 #include "device.hpp"
 #include <cstdint>
 #include <unordered_map>
@@ -38,3 +39,5 @@ private:
       _valid_on_device; // a mapping between device_id and valid status
 };
 } // namespace parray
+
+#endif

@@ -14,6 +14,7 @@ from .coherence import CPU_INDEX
 
 if TYPE_CHECKING:  # False at runtime
     import cupy
+
     ndarray = Union[numpy.ndarray, cupy.ndarray]
     SlicesType = Union[slice, int, tuple]
     IndicesMapType = List[Union[Dict[int, int], tuple]]
@@ -86,7 +87,13 @@ class MultiDeviceBuffer:
         self._cyparray_state.set_exist_on_device(location, True)
         return location
 
-    def set(self, device_id: int, array: ndarray, is_complete: bool = True, overwrite: bool = False) -> None:
+    def set(
+        self,
+        device_id: int,
+        array: ndarray,
+        is_complete: bool = True,
+        overwrite: bool = False,
+    ) -> None:
         """
         Set copy at a device, also clean up existing `indices_map` if necessary
 
@@ -119,7 +126,9 @@ class MultiDeviceBuffer:
         """
         return self._buffer[device_id]
 
-    def get_global_slices(self, device_id: int, subarray_index: int) -> SlicesType | None:
+    def get_global_slices(
+        self, device_id: int, subarray_index: int
+    ) -> SlicesType | None:
         """
         Return global slices of one copy at the device.
 
@@ -200,15 +209,12 @@ class MultiDeviceBuffer:
         input_begin, input_end, input_step = input_slice
         input_step = 1 if input_step is None else input_step
 
-        mapped_begin = MultiDeviceBuffer._map_int_with_slice(
-            input_begin, target_slice)
+        mapped_begin = MultiDeviceBuffer._map_int_with_slice(input_begin, target_slice)
 
         # get the last possible element in range of `input_slice`
         # TODO: what if last_element < input_begin ?
-        last_element = input_end - input_step + \
-            (input_end - input_begin) % input_step
-        mapped_end = MultiDeviceBuffer._map_int_with_slice(
-            last_element, target_slice)
+        last_element = input_end - input_step + (input_end - input_begin) % input_step
+        mapped_end = MultiDeviceBuffer._map_int_with_slice(last_element, target_slice)
 
         if mapped_begin is None or mapped_end is None:
             return None
@@ -220,7 +226,9 @@ class MultiDeviceBuffer:
 
         return mapped_begin, mapped_end + 1, mapped_step  # tuple
 
-    def map_local_slices(self, device_id: int, global_slices: SlicesType) -> (int, SlicesType):
+    def map_local_slices(
+        self, device_id: int, global_slices: SlicesType
+    ) -> (int, SlicesType):
         """
         Map a given global slices to local slices wrt buffer at the device.
 
@@ -266,10 +274,13 @@ class MultiDeviceBuffer:
                 elif isinstance(index_map, tuple):
                     if isinstance(global_index, int):  # int vs slice
                         local_index = MultiDeviceBuffer._map_int_with_slice(
-                            global_index, index_map)
+                            global_index, index_map
+                        )
                     elif isinstance(global_index, list):  # List[int] vs slice
-                        local_index = [MultiDeviceBuffer._map_int_with_slice(
-                            i, index_map) for i in global_index]
+                        local_index = [
+                            MultiDeviceBuffer._map_int_with_slice(i, index_map)
+                            for i in global_index
+                        ]
 
                         # any index out of bound?
                         if None in local_index:
@@ -278,35 +289,43 @@ class MultiDeviceBuffer:
                         # slice to tuple
                         slice_tuple = global_index.indices(size)
                         local_tuple = MultiDeviceBuffer._map_slice_with_slice(
-                            slice_tuple, index_map)
+                            slice_tuple, index_map
+                        )
                         if local_tuple is None:
                             local_index = None
                         else:
                             local_index = slice(*local_tuple)
                     else:
                         raise IndexError(
-                            f"Unsupported slices type: {type(global_index)}")
+                            f"Unsupported slices type: {type(global_index)}"
+                        )
                 else:  # Map is int or list<int>
                     if isinstance(global_index, int):  # int vs int/list
                         local_index = self._map_int_with_int_map(
-                            global_index, index_map)
+                            global_index, index_map
+                        )
                     elif isinstance(global_index, list):  # list vs int/list
-                        local_index = [self._map_int_with_int_map(
-                            i, index_map) for i in global_index]
+                        local_index = [
+                            self._map_int_with_int_map(i, index_map)
+                            for i in global_index
+                        ]
 
                         if None in local_index:
                             local_index = None
                     elif isinstance(global_index, slice):  # slice vs int/list
                         # slice to tuple
                         slice_tuple = global_index.indices(size)
-                        local_index = [self._map_int_with_int_map(
-                            i, index_map) for i in range(*slice_tuple)]
+                        local_index = [
+                            self._map_int_with_int_map(i, index_map)
+                            for i in range(*slice_tuple)
+                        ]
 
                         if None in local_index:
                             local_index = None
                     else:
                         raise IndexError(
-                            f"Unsupported slices type {type(global_index)}")
+                            f"Unsupported slices type {type(global_index)}"
+                        )
 
                 # if None, it means index out of range at this axis
                 if local_index is None:
@@ -359,14 +378,13 @@ class MultiDeviceBuffer:
             if isinstance(global_slice, int):  # a single integer
                 slice_map = {global_slice: 0}
             elif isinstance(global_slice, list):  # a list of integer
-                slice_map = {global_slice[i]                             : i for i in range(len(global_slice))}
+                slice_map = {global_slice[i]: i for i in range(len(global_slice))}
             elif isinstance(global_slice, slice):  # slice
                 # save slice as a tuple
                 # None in slice will be instantiated by concrete values
                 slice_map = global_slice.indices(size)
             else:
-                raise IndexError(
-                    f"Unsupported slices type {type(global_slice)}")
+                raise IndexError(f"Unsupported slices type {type(global_slice)}")
             slices_map_list.append(slice_map)
 
         if self._indices_map[device_id] is None:
@@ -409,10 +427,13 @@ class MultiDeviceBuffer:
         else:
             # map global slices to local slices
             subarray_index, local_slices = self.map_local_slices(
-                device_id, global_slices)
+                device_id, global_slices
+            )
             return self._buffer[device_id][subarray_index].__getitem__(local_slices)
 
-    def set_by_global_slices(self, device_id: int, global_slices: SlicesType, value: ndarray | Any):
+    def set_by_global_slices(
+        self, device_id: int, global_slices: SlicesType, value: ndarray | Any
+    ):
         """
         Indexing/Slicing the buffer by `global_slices` and set value.
 
@@ -432,50 +453,68 @@ class MultiDeviceBuffer:
         else:
             # map global slices to local slices
             subarray_index, local_slices = self.map_local_slices(
-                device_id, global_slices)
-            self._buffer[device_id][subarray_index].__setitem__(
-                local_slices, value)
+                device_id, global_slices
+            )
+            self._buffer[device_id][subarray_index].__setitem__(local_slices, value)
 
-    def _move_data(self, copy_func, dst: int, src: int, subarray_index: int, dst_slices: SlicesType, src_slices: SlicesType, dst_is_current_device: bool = True):
+    def _move_data(
+        self,
+        copy_func,
+        dst: int,
+        src: int,
+        subarray_index: int,
+        dst_slices: SlicesType,
+        src_slices: SlicesType,
+        dst_is_current_device: bool = True,
+    ):
         """
         Helper function for copy_data_between_device
         """
         if dst_is_current_device:
             if dst_slices is None and src_slices is None:  # Complete to Complete
                 self._buffer[dst] = copy_func(self._buffer[src])
-            elif dst_slices is None and src_slices is not None:  # Incomplete to Complete
+            elif (
+                dst_slices is None and src_slices is not None
+            ):  # Incomplete to Complete
                 self._buffer[dst][src_slices] = copy_func(
-                    self._buffer[src][subarray_index])
-            elif dst_slices is not None and src_slices is None:  # Complete to incomplete
+                    self._buffer[src][subarray_index]
+                )
+            elif (
+                dst_slices is not None and src_slices is None
+            ):  # Complete to incomplete
                 if self._buffer[dst] is None:
                     self._buffer[dst] = []
-                self._buffer[dst].append(
-                    copy_func(self._buffer[src][dst_slices]))
+                self._buffer[dst].append(copy_func(self._buffer[src][dst_slices]))
             else:  # incomplete to incomplete
-                raise ValueError(
-                    "Copy from subarray to subarray is unsupported")
+                raise ValueError("Copy from subarray to subarray is unsupported")
         else:
             with cupy.cuda.Device(dst):  # switch device
                 if dst_slices is None and src_slices is None:  # Complete to Complete
                     self._buffer[dst] = copy_func(self._buffer[src])
-                elif dst_slices is None and src_slices is not None:  # Incomplete to Complete
+                elif (
+                    dst_slices is None and src_slices is not None
+                ):  # Incomplete to Complete
                     self._buffer[dst][src_slices] = copy_func(
-                        self._buffer[src][subarray_index])
-                elif dst_slices is not None and src_slices is None:  # Complete to incomplete
+                        self._buffer[src][subarray_index]
+                    )
+                elif (
+                    dst_slices is not None and src_slices is None
+                ):  # Complete to incomplete
                     if self._buffer[dst] is None:
                         self._buffer[dst] = []
-                    self._buffer[dst].append(
-                        copy_func(self._buffer[src][dst_slices]))
+                    self._buffer[dst].append(copy_func(self._buffer[src][dst_slices]))
                 else:  # incomplete to incomplete
-                    raise ValueError(
-                        "Copy from subarray to subarray is unsupported")
+                    raise ValueError("Copy from subarray to subarray is unsupported")
 
-    def copy_data_between_device(self, dst: int, src: int, dst_is_current_device: bool = True) -> None:
+    def copy_data_between_device(
+        self, dst: int, src: int, dst_is_current_device: bool = True
+    ) -> None:
         """
         Copy data from src to dst.
 
         dst is current device if `dst_is_current_device` is True
         """
+
         # a function to copy data between GPU devices async
         def copy_from_device_async(src):
             dst_data = cupy.empty_like(src)
@@ -485,8 +524,10 @@ class MultiDeviceBuffer:
         if self._indices_map[src] is None:
             src_slices_list = [None]
         else:
-            src_slices_list = [self.get_global_slices(
-                src, i) for i in range(len(self._indices_map[src]))]
+            src_slices_list = [
+                self.get_global_slices(src, i)
+                for i in range(len(self._indices_map[src]))
+            ]
 
         # TRICK: if there are multiple subarray in this device, always pick the last one
         # this is because load of data always comes together with create indices mapping
@@ -496,15 +537,30 @@ class MultiDeviceBuffer:
         for subarray_index in range(len(src_slices_list)):
             src_slices = src_slices_list[subarray_index]
             if src == CPU_INDEX:  # copy from CPU to GPU
-                self._move_data(cupy.asarray, dst, src, subarray_index,
-                                dst_slices, src_slices, dst_is_current_device)
+                self._move_data(
+                    cupy.asarray,
+                    dst,
+                    src,
+                    subarray_index,
+                    dst_slices,
+                    src_slices,
+                    dst_is_current_device,
+                )
             elif dst != CPU_INDEX:  # copy from GPU to GPU
-                self._move_data(copy_from_device_async, dst, src, subarray_index,
-                                dst_slices, src_slices, dst_is_current_device)
+                self._move_data(
+                    copy_from_device_async,
+                    dst,
+                    src,
+                    subarray_index,
+                    dst_slices,
+                    src_slices,
+                    dst_is_current_device,
+                )
             else:  # copy from GPU to CPU
                 # dst_is_current_device is no need if dst is CPU
-                self._move_data(cupy.asnumpy, dst, src,
-                                subarray_index, dst_slices, src_slices)
+                self._move_data(
+                    cupy.asnumpy, dst, src, subarray_index, dst_slices, src_slices
+                )
         self._cyparray_state.set_exist_on_device(dst, True)
 
     def get_slices_hash(self, global_slices: SlicesType) -> int:
@@ -520,15 +576,19 @@ class MultiDeviceBuffer:
             if isinstance(global_slices, list):
                 # Built-int hash() method might return negtive value.
                 # c_size_t is to ensure it is not negative
-                hash_value = hash_value * prime + \
-                    ctypes.c_size_t(hash(tuple(global_slices))).value
+                hash_value = (
+                    hash_value * prime
+                    + ctypes.c_size_t(hash(tuple(global_slices))).value
+                )
             elif isinstance(global_slices, slice):
-                hash_value = hash_value * prime + \
-                    ctypes.c_size_t(
-                        hash(global_slices.indices(self.shape[0]))).value
+                hash_value = (
+                    hash_value * prime
+                    + ctypes.c_size_t(hash(global_slices.indices(self.shape[0]))).value
+                )
             else:
-                hash_value = hash_value * prime + \
-                    ctypes.c_size_t(hash(global_slices)).value
+                hash_value = (
+                    hash_value * prime + ctypes.c_size_t(hash(global_slices)).value
+                )
         else:
             if len(self.shape) < len(global_slices):
                 raise IndexError(f"index out of range, index:{global_slices}")
@@ -536,15 +596,16 @@ class MultiDeviceBuffer:
             for d in range(len(global_slices)):
                 index = global_slices[d]
                 if isinstance(index, list):
-                    hash_value = hash_value * prime + \
-                        ctypes.c_size_t(hash(tuple(index))).value
+                    hash_value = (
+                        hash_value * prime + ctypes.c_size_t(hash(tuple(index))).value
+                    )
                 elif isinstance(index, slice):
-                    hash_value = hash_value * prime + \
-                        ctypes.c_size_t(
-                            hash(index.indices(self.shape[d]))).value
+                    hash_value = (
+                        hash_value * prime
+                        + ctypes.c_size_t(hash(index.indices(self.shape[d]))).value
+                    )
                 else:
-                    hash_value = hash_value * prime + \
-                        ctypes.c_size_t(hash(index)).value
+                    hash_value = hash_value * prime + ctypes.c_size_t(hash(index)).value
 
         return hash_value
 

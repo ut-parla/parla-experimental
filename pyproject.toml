@@ -1,14 +1,47 @@
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-    "scikit-build",
-    "cmake",
-    "pip",
-    "cython<=0.29.36",
-    "ninja",
-    "numpy"
-]
+requires = ["scikit-build-core>=0.5", "pyyaml", "cython", "numpy"]
+build-backend = "scikit_build_core.build"
 
-[tool.ruff]
-extend-ignore = ["F841", "401"]
+[project]
+name = "parla"
+version = "0.3.1"
+maintainers = [
+    { name = "William Ruys", email = "will.ruys@gmail.com" },
+    { name = "Hochan Lee", email = "hochan@utexas.edu" },
+]
+description = ""
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["psutil", "pyyaml", "numpy"]
+
+[tool.scikit-build]
+minimum-version = "0.5"
+build-dir = "build"
+wheel.packages = ["src/python/parla"]
+wheel.license-files = []
+cmake.minimum-version = "3.22.1"
+cmake.build-type = "Release"
+cmake.verbose = true
+ninja.minimum-version = "1.11"
+
+[tool.scikit-build.cmake.define]
+PARLA_ENABLE_NVTX = "OFF"
+PARLA_ENABLE_LOGGING = "OFF"
+PARLA_ENABLE_CUDA = "OFF"
+PARLA_ENABLE_HIP = "OFF"
+
+[project.optional-dependencies]
+gpu = ["cupy>=9.2"]
+crosspy = ["crosspy", "cupy>=9.2"]
+dev = ["ruff", "cython-lint", "cython"]
+
+[tool.cython-lint]
+ignore = [
+    'E504', # break after binary operator
+    'E501', # line too long
+    "F841", # local variable is assigned to but never used
+    "F405", # may be undefined, or defined from star imports: ...
+    "W291", # trailing whitespace
+    "E116", # unexpected indentation (comment)
+    "W293", # blank line contains whitespace
+]

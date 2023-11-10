@@ -1,4 +1,6 @@
 
+# cython: language_level=3
+# cython: language=c++
 """!
 @file tasks.pyx
 @brief Contains the Task and TaskEnvironment classes, which are used to represent tasks and their execution environments.
@@ -7,47 +9,29 @@
 from collections import namedtuple, defaultdict
 import functools 
 
-from parla.utility.threads import Propagate
+from ..utility.threads import Propagate
 
-cimport core
-from parla.cython import core
-from parla.cython import device
+from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
+from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement, PyDeviceType
+from .cyparray import CyPArray
 
-from parla.common.globals import _Locals as Locals
-from parla.common.globals import get_stream_pool, get_scheduler
-from parla.common.globals import DeviceType as PyDeviceType
-from parla.common.globals import AccessMode, Storage
-
-from parla.cython.cyparray import CyPArray
-from parla.common.parray.core import PArray
-from parla.common.globals import SynchronizationType as SyncType 
-from parla.common.globals import _global_data_tasks
-
-
-PyDevice = device.PyDevice
-PyCUDADevice = device.PyCUDADevice
-PyCPUDevice = device.PyCPUDevice
-PyArchitecture = device.PyArchitecture
-PyCUDAArchitecture = device.PyCUDAArchitecture
+from ..common.globals import _Locals as Locals
+from ..common.globals import DeviceType
+from ..common.globals import get_stream_pool
+from ..common.globals import AccessMode, Storage
+from ..common.globals import SynchronizationType as SyncType 
+from ..common.parray.core import PArray
 
 DeviceType = PyDeviceType
 
 from abc import abstractmethod, ABCMeta
-from typing import Optional, List, Iterable, Union
-from typing import Awaitable, Collection, Iterable, FrozenSet
-from copy import copy
+from typing import Optional, List, Iterable, FrozenSet
 import threading
 
 import traceback
-import sys
 
 import cython 
 cimport cython
-
-from parla.cython import device, device_manager
-
-DeviceResourceRequirement = device.DeviceResourceRequirement 
-cpu = device_manager.cpu
 
 
 class TaskState(object, metaclass=ABCMeta):
@@ -158,28 +142,19 @@ class TaskRunning(TaskState):
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
     def __init__(self, func, args, dependencies: Optional[Iterable] = None):
-        #print("TaskRunning init", flush=True)
         if dependencies is not None:
-            # d could be one of four types: Task, DataMovementTask, TaskID or other types.
-            #assert all(isinstance(d, (Task, TaskID)) for d in dependencies)
-            #self.dependencies = [
-            #    d for d in dependencies if isinstance(d, Task)]
-
-            #COMMENT(wlr): I think we shouldn't filter out the TaskID here. Otherwise, we cannot barrier on unspawned tasks
             self.dependencies = dependencies
         else:
             self.dependencies = []
 
         self.args = args
         self.func = func
-        #print("TaskRunning init done", flush=True)
 
     def clear_dependencies(self):
         self.dependencies = []
 
     def __repr__(self):
         if self.func:
-            # return "TaskRunning({}, {}, {})".format(self.func.__name__, self.args, self.dependencies)
             return "TaskRunning({})".format(self.func.__name__)
         else:
             return "Functionless task"
@@ -204,6 +179,7 @@ class TaskRunahead(TaskState):
 
     def __repr__(self):
         return "TaskRunahead({})".format(self.return_value)
+
 
 class TaskCompleted(TaskState):
     """!
@@ -253,7 +229,7 @@ class TaskException(TaskState):
 TaskAwaitTasks = namedtuple("AwaitTasks", ["dependencies", "value_task"])
 
 
-#TODO: Deprecate Task Locals
+# TODO: Deprecate Task Locals
 class _TaskLocals(threading.local):
     def __init__(self):
         super(_TaskLocals, self).__init__()
@@ -279,6 +255,7 @@ class _TaskLocals(threading.local):
 
 task_locals = _TaskLocals()
 
+
 class Task:
     """!
     @brief Python Task interface. This class is used to represent a task in the task graph.
@@ -297,14 +274,13 @@ class Task:
 
         self.id = id(self)
 
-        #TODO(wlr): Should this be a stack for continuation tasks? (so the task has a memory of where it executed from)
+        # TODO(wlr): Should this be a stack for continuation tasks? (so the task has a memory of where it executed from)
         self._environment = None
 
         self.taskspace = taskspace
         self.idx = idx
         self.func = None
         self.args = None
-
 
         self.state = state
         self.scheduler = scheduler
@@ -316,10 +292,10 @@ class Task:
         elif name is None:
             self.name = "UnnamedTask_"+str(idx)
         else:
-            #Allow user to specify a name (used for testing and debugging)
+            # Allow user to specify a name (used for testing and debugging)
             self.name = name
 
-        self.inner_task = core.PyInnerTask(self.id, self)
+        self.inner_task = PyInnerTask(self.id, self)
         self.update_name()
         self._env = None
 
@@ -399,14 +375,13 @@ class Task:
 
         self.inner_task.handle_runahead_dependencies(int(sync_type))
         
-
     def py_handle_runahead_dependencies(self):
         """!
         @brief Wait (or synchronize) on all events that the task depends on.
 
         This handles the synchronization through the Python interface.
         """
-        #print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
+        # print("Handling synchronization for task {}".format(self.name), self.runahead, flush=True)
         assert(self.environment is not None)
 
         if self.runahead == SyncType.NONE:
@@ -418,11 +393,7 @@ class Task:
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
-        #print("Trying to get dependencies: ", self.name)
-
         dependencies = self.get_dependencies()
-
-        #print("Dependencies: {}".format(dependencies), flush=True)
 
         for task in dependencies:
             assert(isinstance(task, Task))
@@ -434,7 +405,7 @@ class Task:
 
             sync_events(task_env)
 
-    def instantiate(self, dependencies=None, list_of_dev_reqs=[], priority=None, dataflow=None, runahead=SyncType.BLOCKING):
+    def instantiate(self, dependencies=None, list_of_dev_reqs=None, priority=None, dataflow=None, runahead=SyncType.BLOCKING):
         """!
         @brief Add metadata to a blank task object. Includes dependencies, device requirements, priority, and dataflow.
         @param dependencies A list of tasks that this task depends on.
@@ -443,6 +414,8 @@ class Task:
         @param dataflow The collection of CrossPy objects and dependence direction (IN/OUT/INOUT).
         @param runahead The runahead synchronization type of the task. Defaults to SyncType.BLOCKING.
         """
+        if list_of_dev_reqs is None:
+            list_of_dev_reqs = []
 
         self.dependencies = dependencies
         self.priority = priority
@@ -489,9 +462,6 @@ class Task:
         @brief Run the task body.
         """
 
-        #assert self.assigned, "Task was not assigned to a device before execution"
-        #assert isinstance(self.req, EnvironmentRequirements), "Task was not assigned to a enviornment before execution"
-
         task_state = None
         self.state = TaskRunning(self.func, self.args)
         try:
@@ -509,7 +479,7 @@ class Task:
             if isinstance(e, KeyboardInterrupt):
                 print("You pressed Ctrl+C! In a Task!", flush=True)
                 raise e
-            #print("Task {} failed with exception: {} \n {}".format(self.name, e, tb), flush=True)
+            # print("Task {} failed with exception: {} \n {}".format(self.name, e, tb), flush=True)
 
         finally:
             assert(task_state is not None)
@@ -553,20 +523,17 @@ class Task:
                 in_parray = in_parray_tpl[0]
                 in_parray_devid = in_parray_tpl[1]
                 cy_parray = in_parray.cy_parray
-                self.inner_task.add_parray(cy_parray,
-                    AccessMode.IN, in_parray_devid)
+                self.inner_task.add_parray(cy_parray, AccessMode.IN, in_parray_devid)
             for out_parray_tpl in dataflow.output:
                 out_parray = out_parray_tpl[0]
                 out_parray_devid = out_parray_tpl[1]
                 cy_parray = out_parray.cy_parray
-                self.inner_task.add_parray(cy_parray,
-                    AccessMode.OUT, out_parray_devid)
+                self.inner_task.add_parray(cy_parray, AccessMode.OUT, out_parray_devid)
             for inout_parray_tpl in dataflow.inout:
                 inout_parray = inout_parray_tpl[0]
                 inout_parray_devid = inout_parray_tpl[1]
                 cy_parray = inout_parray.cy_parray
-                self.inner_task.add_parray(cy_parray,
-                    AccessMode.INOUT, inout_parray_devid)
+                self.inner_task.add_parray(cy_parray, AccessMode.INOUT, inout_parray_devid)
 
     def notify_dependents_wrapper(self):
         """!
@@ -632,7 +599,7 @@ class Task:
         return f"Task({self.name})"
 
     def __hash__(self):
-            return hash(self.name)
+        return hash(self.name)
 
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
@@ -652,11 +619,11 @@ class Task:
     def cleanup(self):
         raise NotImplementedError()
 
+
 class ComputeTask(Task):
     """!
     @brief A compute task is a task that executes a user defined Python function on a device.
     """
-
 
     def __init__(self, taskspace=None, idx=None, state=TaskCreated(), scheduler=None, name=None):
         super().__init__(taskspace, idx, state, scheduler, name)
@@ -672,16 +639,16 @@ class ComputeTask(Task):
         @param runahead The type of synchronization the task uses for runahead scheduling.
         """
 
-        #Holds the original function
+        # Holds the original function
         self.base_function = function
 
-        #Holds the function that will be executed (and its continuation)
+        # Holds the function that will be executed (and its continuation)
         self.func = function
 
-        #Holds the arguments to the function
+        # Holds the arguments to the function
         self.args = args
 
-        #Holds the dataflow object (in/out parrays)
+        # Holds the dataflow object (in/out parrays)
         self.dataflow = dataflow
         
         super().instantiate(dependencies=dependencies, priority=priority, dataflow=dataflow, runahead=runahead)
@@ -709,16 +676,22 @@ class DataMovementTask(Task):
     @brief A data movement task is a task that moves data between devices. It is not user defined.
     """
 
-    def __init__(self, parray: PArray=None, access_mode=None, \
-        assigned_devices: List[PyDevice]=None, taskspace=None, \
-        idx=0, state=TaskCreated(), scheduler=None, name=None):
+    def __init__(self, 
+                 parray: PArray = None, 
+                 access_mode = None,
+                 assigned_devices: List[PyDevice] = None,
+                 taskspace = None,
+                 idx = 0,
+                 state = TaskCreated(),
+                 scheduler = None,
+                 name = None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
 
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
-    def instantiate(self, attrs: core.DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
+    def instantiate(self, attrs: DataMovementTaskAttributes, scheduler, runahead=SyncType.BLOCKING):
         """!
         @brief Instantiate the data movement task with attributes from the C++ runtime.
         @param attrs The attributes of the data movement task.
@@ -743,20 +716,13 @@ class DataMovementTask(Task):
         """
         write_flag = True if self.access_mode != AccessMode.IN else False
 
-        #TODO: Get device manager from task environment instead of scheduler at creation time
+        # TODO: Get device manager from task environment instead of scheduler at creation time
         device_manager = self.scheduler.device_manager
-        """
-        for device in self.assigned_devices:
-            global_device_id = device.get_global_id()
-            self.parray._auto_move(device_manager.get_parray_id(global_device_id),
-                                   write_flag)
-        """
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
+
         self.parray._auto_move(parray_id, write_flag)
-        #print(self, "Move PArray ", self.parray.ID, " to a device ", parray_id, flush=True)
-        #print(self, "STATUS: ", self.parray.print_overview())
         return TaskRunahead(0)
 
     def cleanup(self):
@@ -766,6 +732,7 @@ class DataMovementTask(Task):
 # Task Environment
 ######
 
+
 def create_device_env(device):
     """!
     @brief Create a terminal device environment from a PyDevice.
@@ -773,8 +740,9 @@ def create_device_env(device):
     """
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
-    elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
+    elif isinstance(device, PyGPUDevice):
+        return GPUEnvironment(device), DeviceType.GPU
+
 
 def create_env(sources):
     """!
@@ -786,14 +754,14 @@ def create_env(sources):
 
     for env in sources:
         if isinstance(env, PyDevice):
-            device = env
-            new_env, dev_type = create_device_env(env)
+            new_env, _dev_type = create_device_env(env)
             targets.append(new_env)
 
     if len(targets) == 1:
         return targets[0]
     else:
         return TaskEnvironment(targets)
+
 
 class TaskEnvironment:
 
@@ -824,7 +792,7 @@ class TaskEnvironment:
                 self.device_dict[dev.architecture].append(dev)
 
             self.stream_list.extend(env.streams)
-            self._global_device_ids  = self._global_device_ids.union(env.global_ids)
+            self._global_device_ids = self._global_device_ids.union(env.global_ids)
             self.env_list.append(env)
 
     @property
@@ -839,14 +807,14 @@ class TaskEnvironment:
         """
         Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
         """
-        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.GPU]]
 
     @property
     def gpu_id(self):
         """
         Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
         """
-        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+        return self.device_dict[DeviceType.GPU][0].get_parla_device().id
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
@@ -900,7 +868,6 @@ class TaskEnvironment:
         return self.device_dict[arch]
 
     def get_all_devices(self):
-        #return sum(self.device_dict.values(), [])
         return self.device_list
 
     @property
@@ -909,9 +876,8 @@ class TaskEnvironment:
 
     @property
     def devices(self):
-        #TODO: Improve this
+        # TODO: Improve this
         devices = self.get_all_devices()
-        #print(f"Devices: {devices}")
         return devices
     
     @property
@@ -919,19 +885,18 @@ class TaskEnvironment:
         return self.devices[0]
 
     def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+        return [dev.device for dev in self.get_devices(DeviceType.GPU)]
 
-    def synchronize(self, events=False, tags=['default'], return_to_pool=True):
-        #print(f"Synchronizing {self}..", flush=True)
+    def synchronize(self, events=False, tags=None, return_to_pool=True):
+        if tags is None:
+            tags = ['default']
 
         if self.is_terminal:
             if events:
                 for tag in tags:
-                    #print("SELF: ", self, f"Synchronizing on event {tag}..", flush=True)
                     self.synchronize_event(tag=tag)
             else:
                 for stream in self.stream_list:
-                    #print("SELF: ", self, f"Synchronizong on stream {stream}", flush=True)
                     stream.synchronize()
 
             if return_to_pool:
@@ -940,12 +905,9 @@ class TaskEnvironment:
                     stream_pool.return_stream(stream)
         else:
             for env in self.env_list:
-                #print("Non terminal: Recursing", flush=True)
                 env.synchronize(events=events, tags=tags)
 
     def __enter__(self):
-        #print("Entering environment:", self.env_list, flush=True)
-
         if len(self.env_list) == 0:
             raise RuntimeError("[TaskEnvironment] No environment or device is available.")
 
@@ -958,7 +920,6 @@ class TaskEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        #print("Exiting environment", self.env_list, flush=True)
         ret = False
         self.devices[0].exit_without_context(exc_type, exc_val, exc_tb)
         Locals.pop_context()
@@ -974,7 +935,6 @@ class TaskEnvironment:
             return self.env_list[index]
         
         return create_env(self.env_list[index])
-
 
     def store(self, key, value):
         self._store.store(key, value)
@@ -997,7 +957,6 @@ class TaskEnvironment:
         for stream in self.stream_list:
             stream_pool.return_stream(stream)
 
-    #TODO: MOVE THIS TO C++!!!!
     def finalize(self):
         stream_pool = get_stream_pool()
 
@@ -1009,7 +968,6 @@ class TaskEnvironment:
             stream_pool.return_stream(stream)
 
     def __contains__(self, obj):
-        #TODO(wlr): Add optional support for CuPy device 
         if isinstance(obj, PyDevice):
             return obj in self.device_list
         elif isinstance(obj, TaskEnvironment):
@@ -1067,13 +1025,12 @@ class TaskEnvironment:
         else:
             raise TypeError("Invalid type for __contains__")
 
-
-    def wait_events(self, env, tags=['default']):
+    def wait_events(self, env, tags=None):
         """
         Wait for tagged events in the given environment on all streams in this environment.
         """
-
-        #print("Waiting for events", env, tags, flush=True)
+        if tags is None:
+            tags = ['default']
 
         if not isinstance(tags, list):
             tags = [tags]
@@ -1081,13 +1038,14 @@ class TaskEnvironment:
         for device in env.devices:
             for stream in device.streams:
                 for tag in tags:
-                    #print("++Waiting for event", device, stream, tag, flush=True)
                     device.wait_event(stream=stream, tag=tag)
 
-    def synchronize_events(self, env, tags=['default']):
+    def synchronize_events(self, env, tags=None):
         """
         Synchronize tagged events in the given environment on all streams in this environment.
         """
+        if tags is None:
+            tags = ['default']
 
         if not isinstance(tags, list):
             tags = [tags]
@@ -1095,13 +1053,14 @@ class TaskEnvironment:
         for device in env.devices:
             for stream in device.streams:
                 for tag in tags:
-                    #print("++Synchronizing event", device, stream, tag, flush=True)
                     device.synchronize_event(tag=tag)
     
-    def record_events(self, tags=['default']):
+    def record_events(self, tags=None):
         """
         Record tagged events on all streams in this environment.
         """
+        if tags is None:
+            tags = ['default']
 
         if not isinstance(tags, list):
             tags = [tags]
@@ -1109,13 +1068,14 @@ class TaskEnvironment:
         for device in self.devices:
             for stream in device.streams:
                 for tag in tags:
-                    #print("--Recording event", device, stream, tag, flush=True)
                     device.record_event(stream=stream, tag=tag)
 
-    def create_events(self, tags=['default']):
+    def create_events(self, tags=None):
         """
         Create tagged events on all devices in this environment.
         """
+        if tags is None:
+            tags = ['default']
 
         if not isinstance(tags, list):
             tags = [tags]
@@ -1208,7 +1168,7 @@ class TerminalEnvironment(TaskEnvironment):
 
         event = self.event_dict[tag]
         if event is not None:
-            #print("TEST RECORD: ", event, stream.stream)
+            # print("TEST RECORD: ", event, stream.stream)
             event.record(stream.stream)
 
     def synchronize_event(self, tag='default'):
@@ -1222,7 +1182,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            #print("TEST EVENT SYNC: ", event, flush=True)
+            # print("TEST EVENT SYNC: ", event, flush=True)
             event.synchronize()
 
     def wait_event(self, stream=None, tag='default'):
@@ -1235,7 +1195,7 @@ class TerminalEnvironment(TaskEnvironment):
         event = self.event_dict[tag]
 
         if event is not None:
-            #print("TEST WAIT EVENT: ", stream, event)
+            # print("TEST WAIT EVENT: ", stream, event)
             stream.wait_event(event)
 
     def create_event(self, stream=None, tag='default'):
@@ -1253,10 +1213,10 @@ class TerminalEnvironment(TaskEnvironment):
         for stream in self.streams:
             task.add_stream(stream.stream)
         
-        #for event in self.event_dict.values():
-        #    task.add_event(event)
+        # for event in self.event_dict.values():
+        #     task.add_event(event)
 
-        #Note: only adding default event for now
+        # Note: only adding default event for now
         task.add_event(self.event_dict['default'])
 
     def write_streams_to_task(self, task):
@@ -1270,14 +1230,11 @@ class TerminalEnvironment(TaskEnvironment):
         """!
         @brief Record event pointers in C++ task
         """
-        #for event in self.event_dict.values():
+        # for event in self.event_dict.values():
                 #    task.add_event(event)
         task.add_event(self.event_dict['default'])
         
 
-        
-
-    
 class CPUEnvironment(TerminalEnvironment):
 
     def __init__(self,  device, blocking=False):
@@ -1287,17 +1244,17 @@ class CPUEnvironment(TerminalEnvironment):
         return f"CPUEnvironment({self._device})"
 
     def __enter__(self):
-        #print("Entering CPU Environment: ", self, flush=True)
+        # print("Entering CPU Environment: ", self, flush=True)
         Locals.push_context(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        #print("Exiting CPU Environment: ", self, flush=True)
+        # print("Exiting CPU Environment: ", self, flush=True)
         Locals.pop_context()
         return False
 
     def __len__(self):
-            return 1
+        return 1
 
     def __getitem__(self, index):
         if index == 0:
@@ -1309,37 +1266,35 @@ class CPUEnvironment(TerminalEnvironment):
     def return_streams(self):
         pass
 
+
 class GPUEnvironment(TerminalEnvironment):
 
     def __init__(self, device, blocking=False):
         super(GPUEnvironment, self).__init__(device, blocking=blocking)
 
         stream_pool = get_stream_pool()
-        stream = stream_pool.get_stream(device=device)
+        stream = stream_pool.get_stream(dev=device)
         self.stream_list.append(stream)
 
         self.event_dict['default'] = stream.create_event()
 
-
     def __repr__(self):
         return f"GPUEnvironment({self._device})"
 
-
     def __enter__(self):
-        #print("Entering GPU Environment: ", self, flush=True)
+        # print("Entering GPU Environment: ", self, flush=True)
         Locals.push_context(self)
         self.active_stream = self.stream_list[0]
-        ret_stream = self.active_stream.__enter__()
+        _ret_stream = self.active_stream.__enter__()
         return self
 
     def enter_without_context(self):
         self.active_stream = self.stream_list[0]
-        ret_stream = self.active_stream.__enter__()
+        _ret_stream = self.active_stream.__enter__()
         return self
 
-
     def __exit__(self, exc_type, exc_val, exc_tb):
-        #print("Exiting GPU Environment: ", self, flush=True)
+        # print("Exiting GPU Environment: ", self, flush=True)
         ret = False
         self.active_stream.__exit__(exc_type, exc_val, exc_tb)
         Locals.pop_context()
@@ -1366,9 +1321,12 @@ class GPUEnvironment(TerminalEnvironment):
 # Task Collections
 #######
 
-cpdef flatten_tasks(tasks, list output=[]):
+cpdef flatten_tasks(tasks, output: Optional[List] = None):
 
-    #Unpack any TaskCollections
+    if output is None:
+        output = []
+
+    # Unpack any TaskCollections
     if isinstance(tasks, TaskCollection):
         tasks = tasks.tasks
 
@@ -1384,19 +1342,21 @@ cpdef flatten_tasks(tasks, list output=[]):
             task = tasks[keys[i]]
             flatten_tasks(task, output)
     elif isinstance(tasks, Iterable):
-        #NOTE: This is not threadsafe if iterated concurrently
+        # NOTE: This is not threadsafe if iterated concurrently
         for task in tasks:
             flatten_tasks(task, output)
     else:
         raise TypeError("TaskCollections can only contain Tasks or Iterable Containers of Tasks")
 
+
 cdef step(tuple prefix, v):
     return prefix + (v,)
 
+
 @cython.boundscheck(False)
 cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=None, start=None):
-    #Proof of concept for boundable index parsing
-    #TODO: Performance improvements (avoid recursion, etc.)
+    # Proof of concept for boundable index parsing
+    # TODO: Performance improvements (avoid recursion, etc.)
     shape_flag = (shape is not None)
 
     cdef int max_dim = len(shape) if shape_flag else 0
@@ -1415,7 +1375,7 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
     cdef int istop = 0
     cdef int istep = 1
 
-    #TODO(wlr): Iterable check should be more robust (try/catch)
+    # TODO(wlr): Iterable check should be more robust (try/catch)
 
     if len(index) > 0:
         i, *remainder = index
@@ -1444,16 +1404,17 @@ cpdef cy_parse_index(tuple prefix, index, list index_list, int depth=0, shape=No
                 for k in range(0, len(keys)):
                     cy_parse_index(step(prefix, i[keys[k]]), remainder, index_list, depth+1, shape, start)
             else:
-                #NOTE: This is not threadsafe if the iterator is shared
+                # NOTE: This is not threadsafe if the iterator is shared
                 for v in i:
                     cy_parse_index(step(prefix, v), remainder, index_list, depth+1, shape, start)
         elif isinstance(i, int) or isinstance(i, float):
-            if (lower_boundary <= i) and ( (upper_boundary < 0) or (i < upper_boundary) ):
+            if (lower_boundary <= i) and ((upper_boundary < 0) or (i < upper_boundary)):
                 cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
         else:
             cy_parse_index(step(prefix, i), remainder, index_list, depth+1, shape, start)
     else:
         index_list.append(prefix)
+
 
 def parse_index(prefix, index,  step,  stop):
     """Traverse :param:`index`, update :param:`prefix` by applying :param:`step`, :param:`stop` at leaf calls.
@@ -1502,6 +1463,8 @@ cpdef get_or_create_tasks(taskspace, list index_list, create=True):
             new_index.append(index)
 
     return task_list, (new_tasks, new_index)
+
+
 class TaskCollection:
 
     def __init__(self, tasks, name=None, flatten=True):
@@ -1551,7 +1514,6 @@ class TaskCollection:
         return self
 
 
-
 class TaskList(TaskCollection):
 
     def __init__(self, tasks, name=None, flatten=True):
@@ -1568,7 +1530,7 @@ class TaskList(TaskCollection):
         if isinstance(task_list, list):
             return TaskList(task_list, flatten=False)
         else:
-            #Return a single task
+            # Return a single task
             return task_list
 
     def __repr__(self):
@@ -1581,18 +1543,20 @@ class TaskList(TaskCollection):
         self._tasks += other._tasks
         return self
 
+
 cpdef wait(barrier):
 
-    if isinstance(barrier, core.CyTaskList):
+    if isinstance(barrier, CyTaskList):
         barrier = BackendTaskList(barrier)
 
     barrier.wait()
+
 
 class AtomicTaskList(TaskList):
 
     def __init__(self, tasks, name=None, flatten=True):
         super().__init__(tasks, name, flatten)
-        self.inner_barrier = core.PyTaskBarrier(self.tasks)
+        self.inner_barrier = PyTaskBarrier(self.tasks)
 
     def __repr__(self):
         return "AtomicTaskList: {}".format(self.tasks)
@@ -1606,10 +1570,11 @@ class AtomicTaskList(TaskList):
     def wait(self):
         self.inner_barrier.wait()
 
+
 class BackendTaskList(TaskList):
 
     def __init__(self, tasks, name=None, flatten=True):
-        self.inner_barrier = core.PyTaskBarrier(tasks)
+        self.inner_barrier = PyTaskBarrier(tasks)
         self._tasks = None
         self._name = name 
 
@@ -1621,6 +1586,7 @@ class BackendTaskList(TaskList):
 
 
 _task_space_globals = {}
+
 
 class TaskSpace(TaskCollection):
 
@@ -1646,7 +1612,6 @@ class TaskSpace(TaskCollection):
     def __getitem__(self, index):
 
         create = self._create
-        tasks = self._tasks
 
         if isinstance(index, int):
             start_flag = (self.start is not None)
@@ -1654,7 +1619,7 @@ class TaskSpace(TaskCollection):
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
 
-            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
+            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary < 0)) else []
             task_list, _= get_or_create_tasks(self, idx, create=create)
 
             if len(task_list) == 1:
@@ -1666,7 +1631,6 @@ class TaskSpace(TaskCollection):
             if len(task_list) == 1:
                 return task_list[0]
             return TaskList(task_list)
-
 
         if not isinstance(index, tuple):
             index = (index,)
@@ -1714,16 +1678,14 @@ class AtomicTaskSpace(TaskSpace):
 
     def __init__(self, name="", create=True, shape=None, start=None):
         super().__init__(name, create, shape, start)
-        self.inner_space = core.PyTaskBarrier()
+        self.inner_space = PyTaskBarrier()
 
     def __repr__(self):
         return f"AtomicTaskSpace({self._name}, ntasks={len(self)})"
 
-    
     def __getitem__(self, index):
 
         create = self._create
-        tasks = self._tasks
 
         if isinstance(index, int):
             start_flag = (self.start is not None)
@@ -1731,10 +1693,10 @@ class AtomicTaskSpace(TaskSpace):
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
 
-            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
-            task_list, (new_tasks, new_idx) = get_or_create_tasks(self, idx, create=create)
+            idx = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary < 0)) else []
+            task_list, (new_tasks, _new_idx) = get_or_create_tasks(self, idx, create=create)
 
-            #self.inner_space.add_tasks(new_idx, new_tasks)
+            # self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
             if len(task_list) == 1:
@@ -1744,7 +1706,7 @@ class AtomicTaskSpace(TaskSpace):
 
         if isinstance(index, str):
             task_list, (new_tasks, new_index) = get_or_create_tasks(self, [(index,)], create=create)
-            #self.inner_space.add_tasks(new_idx, new_tasks)
+            # self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
             if len(task_list) == 1:
@@ -1752,14 +1714,13 @@ class AtomicTaskSpace(TaskSpace):
 
             return AtomicTaskList(task_list)
 
-
         if not isinstance(index, tuple):
             index = (index,)
 
         index_list = []
         cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
         task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=self._create)
-        #self.inner_space.add_tasks(new_idx, new_tasks)
+        # self.inner_space.add_tasks(new_idx, new_tasks)
         self.inner_space.add_tasks(new_tasks)
 
         if len(task_list) == 1:
@@ -1771,21 +1732,19 @@ class AtomicTaskSpace(TaskSpace):
         self.inner_space.wait()
 
 
-#TODO(wlr): This is incredibly experimental. 
+# TODO(wlr): This is incredibly experimental. 
 class BackendTaskSpace(TaskSpace):
 
     def __init__(self, name="", create=True, shape=None, start=None):
         super().__init__(name, create, shape, start)
-        self.inner_space = core.PyTaskSpace()
+        self.inner_space = PyTaskSpace()
 
     def __repr__(self):
         return f"BackendTaskspace({self._name}, ntasks={len(self)})"
 
-    
     def __getitem__(self, index):
 
         create = self._create
-        tasks = self._tasks
 
         if isinstance(index, int):
             start_flag = (self.start is not None)
@@ -1793,26 +1752,25 @@ class BackendTaskSpace(TaskSpace):
             lower_boundary = self.start[0] if start_flag else 0
             upper_boundary = lower_boundary + self.shape[0] if shape_flag else -1
 
-            index_list = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary  < 0)) else []
-            task_list, (new_tasks, new_idx) = get_or_create_tasks(self, index_list, create=create)
+            index_list = [(index,)] if (index >= lower_boundary) and ((index <= upper_boundary) or (upper_boundary < 0)) else []
+            _task_list, (new_tasks, _new_idx) = get_or_create_tasks(self, index_list, create=create)
 
-            #self.inner_space.add_tasks(new_idx, new_tasks)
+            # self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
-            return_list = core.CyTaskList()
+            return_list = CyTaskList()
             self.inner_space.get_tasks(index_list, return_list)
             return return_list
 
         if isinstance(index, str):
             index_list = [(index,)]
             task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=create)
-            #self.inner_space.add_tasks(new_idx, new_tasks)
+            # self.inner_space.add_tasks(new_idx, new_tasks)
             self.inner_space.add_tasks(new_tasks)
 
-            return_list = core.CyTaskList()
+            return_list = CyTaskList()
             self.inner_space.get_tasks(index_list, return_list)
             return return_list
-
 
         if not isinstance(index, tuple):
             index = (index,)
@@ -1820,13 +1778,12 @@ class BackendTaskSpace(TaskSpace):
         index_list = []
         cy_parse_index((), index, index_list, shape=self.shape, start=self.start)
         task_list, (new_tasks, new_index) = get_or_create_tasks(self, index_list, create=self._create)
-        #self.inner_space.add_tasks(new_idx, new_tasks)
+        # self.inner_space.add_tasks(new_idx, new_tasks)
         self.inner_space.add_tasks(new_tasks)
 
-        return_list = core.CyTaskList()
+        return_list = CyTaskList()
         self.inner_space.get_tasks(index_list, return_list)
         return return_list
-
 
     def wait(self):
         self.inner_space.wait()

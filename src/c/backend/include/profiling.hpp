@@ -2,7 +2,6 @@
  *  @brief Provides macros for NVTX profiling and BINLOG tracing.
  */
 
-// #pragma once
 #ifndef PARLA_PROFILING_HPP
 #define PARLA_PROFILING_HPP
 

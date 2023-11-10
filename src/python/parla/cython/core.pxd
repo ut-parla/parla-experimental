@@ -1,10 +1,13 @@
+# cython: language_level=3
+# cython: language=c++
 import cython
 cimport cython
 
-from parla.cython.device_manager cimport DeviceManager
-from parla.cython.device cimport Device, CyDevice
-from parla.cython.cyparray cimport InnerPArray
-from parla.cython.mm cimport LRUGlobalEvictionManager
+from .device_manager cimport DeviceManager
+from .cyparray cimport InnerPArray
+from .device cimport Device, DeviceType, CyDevice
+from .resources cimport Resource
+from .mm cimport LRUGlobalEvictionManager
 
 from libc.stdint cimport uint32_t, uint64_t, int64_t
 from libcpp  cimport bool
@@ -13,27 +16,19 @@ from libcpp.vector cimport vector
 
 from libc.stdint cimport uintptr_t
 
-cdef extern from "include/resources.hpp" nogil:
-    cdef enum Resource:
-        MEMORY = 0,
-        VCUS = 1,
-
 cdef extern from "include/gpu_utility.hpp" nogil:
-    void cpu_busy_sleep(unsigned int microseconds)
-    void gpu_busy_sleep(const int device, const unsigned long cycles,
-                    uintptr_t stream_ptr)
+    void cpu_busy_sleep(unsigned int microseconds) noexcept
+    void gpu_busy_sleep(const int device, const unsigned long cycles, uintptr_t stream_ptr) noexcept 
 
 
 cdef extern from "include/runtime.hpp" nogil:
-    ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker)
-    ctypedef void (*stopfunc_t)(void*)
+    ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker) noexcept 
+    ctypedef void (*stopfunc_t)(void*) noexcept 
 
-    void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker)
-    void stop_callback(stopfunc_t func, void* scheduler)
+    void launch_task_callback(launchfunc_t func, void* py_scheduler, void* py_task, void* py_worker) noexcept
+    void stop_callback(stopfunc_t func, void* scheduler) noexcept
 
-    void create_parray(InnerPArray* parray, int parray_dev_id)
-    #ctypedef void* Ptr_t
-    #ctypedef InnerTask* InnerTaskPtr_t
+    void create_parray(InnerPArray* parray, int parray_dev_id) noexcept 
 
     cdef cppclass _StatusFlags "TaskStatusFlags":
         bool spawnable
@@ -87,7 +82,6 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void create_parray(InnerPArray* parray, int parray_dev_id)
 
-
     cdef cppclass InnerDataTask(InnerTask):
         void* get_py_parray()
         int get_access_mode()
@@ -116,8 +110,7 @@ cdef extern from "include/runtime.hpp" nogil:
         InnerWorker(void* py_worker)
 
         void set_py_worker(void* py_worker)
-        void set_scheduler(InnerScheduler* scheduler
-        )
+        void set_scheduler(InnerScheduler* scheduler)
         void set_thread_idx(int idx)
         void assign_task(InnerTask* task)
         void get_task(InnerTask** task, bool* is_data_task)
@@ -125,8 +118,6 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void wait()
         void stop()
-
-    #ctypedef InnerWorker* InnerWorkerPtr_t
 
     cdef cppclass InnerScheduler:
 
@@ -160,7 +151,6 @@ cdef extern from "include/runtime.hpp" nogil:
         void increase_num_active_tasks()
         void decrease_num_active_tasks()
 
-        #int get_num_active_workers()
         int get_num_active_tasks()
         int get_num_running_tasks()
         int get_num_ready_tasks()
@@ -190,7 +180,6 @@ cdef extern from "include/profiling.hpp" nogil:
     void log_task_1[T](int t, string msg, T* obj)
     void log_worker_1[T](int t, string msg, T* obj)
     void log_scheduler_1[T](int t, string msg, T* obj)
-
 
     void log_task_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)
     void log_worker_2[T, G](int t, string msg1, T* obj, string msg2, G* obj2)

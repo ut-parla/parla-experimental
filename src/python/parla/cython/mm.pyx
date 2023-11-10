@@ -3,7 +3,7 @@ from parla.cython import device_manager
 
 from parla.cython.core cimport LRUGlobalEvictionManager
 from parla.cython cimport device_manager
-#from parla.cython.core import LRUGlobalEvictionManager
+
 
 class PyMM:
     def __init__(self, dm: device_manager.PyDeviceManager):
@@ -20,13 +20,11 @@ class PyMM:
         return self._cy_mm
 
     def print_memory_stats(self, device_id, label: str):
-        import psutil
-        import os
         print(f"[{label}] Memory tracking", flush=True)
         try:
             import cupy
             mempool = cupy.get_default_memory_pool()
-            pinned_mempool = cupy.get_default_pinned_memory_pool()
+            _pinned_mempool = cupy.get_default_pinned_memory_pool()
             print((
                   f"\t GPU{device_id} {label} CuPy used bytes: {mempool.used_bytes()} \n"
                   f"\t GPU{device_id} {label} Free bytes: {mempool.free_bytes()} \n"
