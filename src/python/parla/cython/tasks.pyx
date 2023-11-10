@@ -12,7 +12,7 @@ import functools
 from ..utility.threads import Propagate
 
 from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
-from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement
+from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement, PyDeviceType
 from .cyparray import CyPArray
 
 from ..common.globals import _Locals as Locals
@@ -22,13 +22,6 @@ from ..common.globals import AccessMode, Storage
 from ..common.globals import SynchronizationType as SyncType 
 from ..common.parray.core import PArray
 from ..common.globals import _global_data_tasks
-
-
-PyDevice = device.PyDevice
-PyCUDADevice = device.PyCUDADevice
-PyCPUDevice = device.PyCPUDevice
-PyArchitecture = device.PyArchitecture
-PyCUDAArchitecture = device.PyCUDAArchitecture
 
 DeviceType = PyDeviceType
 

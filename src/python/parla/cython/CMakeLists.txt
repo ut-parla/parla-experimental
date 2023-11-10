@@ -4,6 +4,7 @@ endif()
 
 set(PYX_FILES
     cyparray_state.pyx
+    mm.pyx
     cyparray.pyx
     core.pyx
     stream_pool.pyx
@@ -15,8 +16,9 @@ set(PYX_FILES
 
 set(FILE_MAP
     "cyparray_state.pxd"
+    "mm.pxd"
     "cyparray.pxd cyparray_state.pxd"
-    "core.pxd device.pxd device_manager.pxd resources.pxd cyparray.pxd"
+    "core.pxd device.pxd device_manager.pxd resources.pxd cyparray.pxd mm.pxd"
     "stream_pool.pxd"
     "device.pxd"
     "device_manager.pxd device.pxd stream_pool.pxd"

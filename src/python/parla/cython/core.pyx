@@ -656,10 +656,6 @@ cdef class PyInnerScheduler:
         with nogil:
             c_self.task_cleanup_and_wait_for_task(c_worker, c_task, state)
 
-    cpdef get_num_active_tasks(self):
-        cdef InnerScheduler* c_self = self.inner_scheduler
-        return c_self.get_num_active_tasks()
-
     cpdef increase_num_active_tasks(self):
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.increase_num_active_tasks()
