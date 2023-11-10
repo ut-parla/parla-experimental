@@ -568,8 +568,7 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         self.inner_scheduler.remove_parray_from_tracker(cy_parray, did)
 
-
-cdef _task_callback(task, body):
+cpdef _task_callback(task, body):
     """
     A function which forwards to a python function in the appropriate device context.
     """
