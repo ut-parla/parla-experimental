@@ -212,6 +212,13 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
       # Depending on the importance of the current episode, mostly decided by the
       # total execution time, this dictionary can either be reflected or not.
       self.candidate_task_execution_map = dict()
+      # This tracks how long the previously measured best expected finish time 
+      # of a task has not been achieved.
+      # If this goal has not been achieved for a long time, this is highly
+      # likely due to the result of bad past decisions.
+      # (This kind of logs are usually gathered during the first epoch)
+      self.num_failed_to_achieved_goals = dict()
+      self.remove_threshold = 10
 
   def create_gcn_task_workload_state(
       self, node_id_offset: int, target_task: SimulatedTask,
@@ -332,20 +339,33 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
       return current_device_load_state, edge_index, current_workload_features
 
   def calculate_reward(self, task, completion_time, is_worth_to_evaluate):
-      if not is_worth_to_evaluate:
-          return torch.tensor([[0]], dtype=torch.float)
       if task.name not in self.task_execution_map:
           print(task.name, " does not exist on completion time map")
           self.candidate_task_execution_map[task.name] = completion_time
+          self.num_failed_to_achieved_goals[task.name] = 0
           return torch.tensor([[0]], dtype=torch.float)
       else:
           old_completion_time =  self.task_execution_map[task.name]
           reward = 1
           if completion_time > 0:
-            reward = (old_completion_time - completion_time) / old_completion_time
+              reward = (old_completion_time - completion_time) / old_completion_time
           if old_completion_time > completion_time:
-            self.candidate_task_execution_map[task.name] = completion_time
+              self.num_failed_to_achieved_goals[task.name] = 0
+              self.candidate_task_execution_map[task.name] = completion_time
+          else:
+              # The current episode's device selection fails to achieve the goal in
+              # the dictionary
+              self.num_failed_to_achieved_goals[task.name] += 1
+              if self.num_failed_to_achieved_goals[task.name] == self.remove_threshold:
+                  # If this goal is hard to achieve across multiple episodes, this might be
+                  # because of a somewhat skewed past decisions, and that goal was achieved
+                  # by task mapping to other relatively free devices.
+                  # In this case, resetting goal might be helpful.
+                  self.num_failed_to_achieved_goals[task.name] = 0
+                  del self.task_execution_map[task.name]
           print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time, " = reward ", reward)
+          if not is_worth_to_evaluate and reward > 0:
+              return torch.tensor([[0]], dtype=torch.float)
           return torch.tensor([[reward]], dtype=torch.float)
 
   def finalize_epoch(self, execution_time):

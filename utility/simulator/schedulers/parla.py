@@ -90,6 +90,15 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
         if heft > max_dev_available_time:
             print("Heft:", heft, ", max_dev_available_time:" << max_dev_available_time)
             is_worth_to_evaluate = False
+        active_reward = parla_arch.device_active_reward[action.item()]
+        num_active_tasks = parla_arch.num_mapped_tasks[action.item()]
+        print("active reward:", active_reward, ", num active tasks:", num_active_tasks)
+        # If the old task mapping decisions were bad, and if the current task mapping
+        # get some "big" benefits from them, it might not be worth to consider since
+        # it is slightly biased. So ignore this if this reward is > 0.
+        if num_active_tasks != 0 and (active_reward / num_active_tasks) < 0:
+            is_worth_to_evaluate = False
+
         # 7. Calculate task completion time EXPECTATION
         completion_time_expectation = max(heft, chosen_dev_available_time) + task_duration
         task.completion_time_expectation = completion_time_expectation
@@ -97,6 +106,7 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
         # 8. Calculate reward
         reward = parla_arch.rl_environment.calculate_reward(
             task, completion_time_expectation, is_worth_to_evaluate)
+        parla_arch.device_active_reward[action.item()] += reward.item()
         parla_arch.rl_mapper.add_reward(reward)
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
@@ -243,7 +253,13 @@ class ParlaArchitecture(SchedulerArchitecture):
         default_factory=dict
     )
     launched_tasks: Dict[Device, TaskQueue] = field(default_factory=dict)
+    # For RL training
     device_available_time: Dict[int, float] = field(default_factory=dict)
+    device_active_reward: Dict[int, float] = field(default_factory=dict)
+    # Number of mapped tasks until task completion
+    num_mapped_tasks: Dict[Device, int] = field(default_factory=dict)
+
+    
     # List of Devices
     devices: List = field(default_factory=list)
 
@@ -257,8 +273,8 @@ class ParlaArchitecture(SchedulerArchitecture):
         assert topology is not None
 
         for device in topology.devices:
+            self.num_mapped_tasks[device.name.device_id] = 0
             self.reservable_tasks[device.name] = TaskQueue()
-
             self.launchable_tasks[device.name] = dict()
             self.launchable_tasks[device.name][TaskType.DATA] = TaskQueue()
             self.launchable_tasks[device.name][TaskType.COMPUTE] = TaskQueue()
@@ -266,6 +282,7 @@ class ParlaArchitecture(SchedulerArchitecture):
             self.launched_tasks[device.name] = TaskQueue()
 
             self.device_available_time[device.name.device_id] = 0
+            self.device_active_reward[device.name.device_id] = 0
 
             self.devices.append(device.name)
 
@@ -312,6 +329,7 @@ class ParlaArchitecture(SchedulerArchitecture):
             assert task is not None
 
             if device := rl_map_task(task, scheduler_state, self):
+                self.num_mapped_tasks[device.device_id] += 1
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
@@ -323,7 +341,7 @@ class ParlaArchitecture(SchedulerArchitecture):
                     self.reservable_tasks, self.launchable_tasks, self.launched_tasks)
                 # 2. Attempt to optimize a RL model
                 self.rl_mapper.optimize_model(
-                    next_deviceload_state, ext_node_features, next_edge_index)
+                    next_deviceload_state, next_node_features, next_edge_index)
             else:
                 next_tasks.fail()
                 continue
@@ -444,6 +462,8 @@ class ParlaArchitecture(SchedulerArchitecture):
 
         self._verify_correct_task_completed(task, scheduler_state)
         complete_task(task, scheduler_state)
+        for device in task.assigned_devices:
+            self.num_mapped_tasks[device.device_id] -= 1
 
         # Update status of dependencies
         task.notify_state(TaskState.COMPLETED, objects.taskmap, scheduler_state.time)
