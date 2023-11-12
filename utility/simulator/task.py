@@ -93,6 +93,9 @@ class SimulatedTask:
     counters: TaskCounters = field(init=False)
     dependents: List[TaskID] = field(default_factory=list)
     resources: List[ResourceSet] = field(default_factory=list)
+    # TODO(hc): move this to times
+    # Store expectation of the completion time
+    completion_time_expectation: float = 0
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)
@@ -206,6 +209,9 @@ class SimulatedTask:
 
     def set_resources(self, devices: Device | Tuple[Device, ...]):
         raise NotImplementedError
+
+    def update_completion_time_expectation(self, completion_time_expectation):
+        self.completion_time_expectation = completion_time_expectation
 
     def __str__(self) -> str:
         return f"Task({self.name}, {self.state})"

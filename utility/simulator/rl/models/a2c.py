@@ -11,6 +11,7 @@ from .model import *
 
 import torchviz
 
+# TODO(hc): This is deprecated as the reward system becomes an immediate reward.
 A2CTransition = namedtuple("A2CTransition",
                           ("state", "action", "next_state", "reward",
                            # We may store information for a GCN layer too.
@@ -66,84 +67,92 @@ class A2CAgent(RLModel):
 
     def select_device(self, target_task: SimulatedTask, x: torch.tensor,
                       gcn_x = None, gcn_edgeindex = None):
-        with torch.autograd.set_detect_anomaly(True):
-            # Different from DQN, A2C requires gradient tracking.
-            model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
-            # This gets two values:
-            # 1) transition probability of all the actions from the current state
-            # 2) state value that evaluates the actor's policy;
-            #    if a state value and probability distribution are corresponding,
-            #    it is a good model.
-            actions, value = self.a2c_model(model_input)
-            print("Target task:", target_task)
-            print("select device:", target_task)
-            print("model input:", model_input)
-            print("gcn input:", gcn_x)
-            print("gcn edgeindex:", gcn_edgeindex)
-            print("value:", value)
-            print("actions:", actions)
-            action_probabilities = F.softmax(actions, dim=0)
-            print("action probs:", action_probabilities)
-            # Sample an action by using Categorical random distribution
-            dist = Categorical(action_probabilities)
-            action = dist.sample()
-            log_prob = dist.log_prob(action)
-            self.entropy_sum += dist.entropy().mean()
-            print("entropy:", dist.entropy())
-            print("sum:", self.entropy_sum)
-            self.log_probs.append(log_prob)
-            self.values.append(value)
-            self.rewards.append(torch.tensor([[10]], dtype=torch.float))
-            self.accumulated_reward += 10
-            print("actions:", actions)
-            print("action:", action)
-            return action
+        # Different from DQN, A2C requires gradient tracking.
+        model_input = NetworkInput(x, False, gcn_x, gcn_edgeindex)
+        # This gets two values:
+        # 1) transition probability of all the actions from the current state
+        # 2) state value that evaluates the actor's policy;
+        #    if a state value and probability distribution are corresponding,
+        #    it is a good model.
+        actions, value = self.a2c_model(model_input)
+        action_probabilities = F.softmax(actions, dim=0)
+        # Sample an action by using Categorical random distribution
+        dist = Categorical(action_probabilities)
+        action = dist.sample()
+        log_prob = dist.log_prob(action)
+        self.entropy_sum += dist.entropy().mean()
+        self.log_probs.append(log_prob)
+        self.values.append(value)
+        print("Target task:", target_task)
+        print("action:", action)
+        """
+        print("action probs:", action_probabilities)
+        print("select device:", target_task)
+        print("model input:", model_input)
+        print("gcn input:", gcn_x)
+        print("gcn edgeindex:", gcn_edgeindex)
+        print("value:", value)
+        print("actions:", actions)
+        print("entropy:", dist.entropy())
+        print("sum:", self.entropy_sum)
+        """
+        return action
 
-    def optimize_model(self, x, gcn_x, gcn_edgeindex,
-                       next_x, next_gcn_x, next_gcn_edgeindex):
+    def add_reward(self, reward):
+        """
+        Add a reward to the list.
+        """
+        self.accumulated_reward += reward.item()
+        self.rewards.append(reward)
+
+    def optimize_model(self, next_x, next_gcn_x, next_gcn_edgeindex):
         self.steps += 1
         if self.episode == 0:
             return
         if self.steps == self.step_for_optim:
-            with torch.autograd.set_detect_anomaly(True):
-                assert len(self.log_probs) == self.step_for_optim
-                assert len(self.values) == self.step_for_optim
-                assert len(self.rewards) == self.step_for_optim
+            assert len(self.log_probs) == self.step_for_optim
+            assert len(self.values) == self.step_for_optim
+            assert len(self.rewards) == self.step_for_optim
 
-                # To perform TD to optimize the model, get a state value
-                # of the expected next state from the critic netowrk
-                _, next_value = self.a2c_model(
-                    NetworkInput(next_x, False, next_gcn_x, next_gcn_edgeindex))
-                cat_log_probs = torch.cat(
-                    [lp.unsqueeze(0) for lp in self.log_probs])
-                cat_values = torch.cat(self.values)
-                cat_rewards = torch.cat(self.rewards).to(self.device)
-                returns = self.compute_returns(next_value, cat_rewards)
-                print("lst_log_probs:", cat_log_probs)
-                print("lst rewards:", cat_rewards)
-                print("lst values:", cat_values)
-                returns = torch.cat(returns).detach() 
-                print("cat returns:", returns)
-                advantage = returns - cat_values
-                actor_loss = -(cat_log_probs * advantage.detach()).mean()
-                critic_loss = advantage.pow(2).mean()
-#critic_loss = 1 * F.mse_loss(cat_values.unsqueeze(-1), returns.unsqueeze(-1))
-                print("actor loss:", actor_loss, ", and critic loss:", critic_loss, " advantage:", advantage)
-                loss = actor_loss + 0.5 * critic_loss - 0.001 * self.entropy_sum
-                print("loss;", loss)
-                self.steps = 0
-                self.optimizer.zero_grad()
-                # print("last values:", cat_values)
-                loss.backward()
-                torchviz.make_dot(loss, params=dict(self.a2c_model.named_parameters())).render("attacehd", format="png")
-                # for param in self.a2c_model.parameters():
-                #    param.grad.data.clamp_(-1, 1)
-                torch.nn.utils.clip_grad_value_(parameters=self.a2c_model.parameters(), clip_value=0.1)
-                self.optimizer.step()
-                self.entropy_sum = 0
-                self.log_probs = []
-                self.values = []
-                self.rewards = []
+            # To perform TD to optimize the model, get a state value
+            # of the expected next state from the critic netowrk
+            _, next_value = self.a2c_model(
+                NetworkInput(next_x, False, next_gcn_x, next_gcn_edgeindex))
+            cat_log_probs = torch.cat(
+                [lp.unsqueeze(0) for lp in self.log_probs])
+            cat_values = torch.cat(self.values)
+            cat_rewards = torch.cat(self.rewards).to(self.device)
+            returns = self.compute_returns(next_value, cat_rewards)
+            returns = torch.cat(returns).detach() 
+            advantage = returns - cat_values
+            actor_loss = -(cat_log_probs * advantage.detach()).mean()
+            #critic_loss = advantage.pow(2).mean()
+            critic_loss = 1 * F.mse_loss(cat_values.unsqueeze(-1), returns.unsqueeze(-1))
+            loss = actor_loss + 0.5 * critic_loss - 0.001 * self.entropy_sum
+            self.optimizer.zero_grad()
+            loss.backward()
+            # torchviz.make_dot(loss, params=dict(self.a2c_model.named_parameters())).render("attacehd", format="png")
+            for param in self.a2c_model.parameters():
+               param.grad.data.clamp_(-1, 1)
+            """
+            print("next x:", next_x)
+            print("next_gcn_x:", next_gcn_x)
+            print("next gcn edgeindex:", next_gcn_edgeindex)
+            print("next value:", next_value)
+            print("lst_log_probs:", cat_log_probs)
+            print("lst rewards:", cat_rewards)
+            print("lst values:", cat_values)
+            print("cat returns:", returns)
+            print("actor loss:", actor_loss, ", and critic loss:", critic_loss, " advantage:", advantage)
+            print("loss;", loss)
+            """
+            # Reset the model states
+            self.steps = 0
+            self.optimizer.step()
+            self.entropy_sum = 0
+            self.log_probs = []
+            self.values = []
+            self.rewards = []
 
     def load_model(self):
         """ Load a2c model and optimizer parameters from files;

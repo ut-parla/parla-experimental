@@ -48,6 +48,10 @@ class Time:
         value = self.scale_between(target_unit) * self.duration
         return value
 
+    def to_float(self) -> float:
+        value = self.scale_to(self.display_unit)
+        return float(value) if isinstance(value, Fraction) else value
+
     def print(self, unit: str | None = None) -> str:
         value = self.scale_to(unit or self.display_unit)
         value_str = str(float(value)) if isinstance(value, Fraction) else str(value)

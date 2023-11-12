@@ -27,7 +27,7 @@ class SimulatedScheduler:
     topology: InitVar[SimulatedTopology]
     scheduler_type: InitVar[str] = "parla"
     rl_mapper: InitVar[RLModel] = None
-    rl_environment: InitVar[ParlaRLEnvironment] = None
+    rl_environment: InitVar[ParlaRLBaseEnvironment] = None
     tasks: List[TaskID] = field(default_factory=list)
     name: str = "SimulatedScheduler"
     mechanisms: SchedulerArchitecture = field(init=False)
@@ -36,11 +36,15 @@ class SimulatedScheduler:
 
     events: EventQueue = EventQueue()
 
-    def __post_init__(self, topology: SimulatedTopology, scheduler_type: str = "parla", rl_mapper: RLModel = None, rl_environment: ParlaRLEnvironment = None):
+    def __post_init__(self, topology: SimulatedTopology,
+                      scheduler_type: str = "parla", rl_mapper: RLModel = None,
+                      rl_environment: ParlaRLBaseEnvironment = None):
         self.state = SystemState(topology=topology)
         scheduler_arch = SchedulerOptions.get_scheduler(scheduler_type)
         print(f"Scheduler Architecture: {scheduler_arch}")
-        self.mechanisms = scheduler_arch(topology=topology, rl_mapper=rl_mapper, rl_environment=rl_environment)
+        self.mechanisms = scheduler_arch(
+            topology=topology, rl_mapper=rl_mapper,
+            rl_environment=rl_environment)
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"
@@ -109,4 +113,6 @@ class SimulatedScheduler:
 
         print(f"Event Count: {event_count}")
         print(f"Execution time: {self.time}")
-        # print(self.mechanisms)
+        # In order to compare the current execution's execution time with
+        # the past best execution time, it returns the execution time
+        return self.time

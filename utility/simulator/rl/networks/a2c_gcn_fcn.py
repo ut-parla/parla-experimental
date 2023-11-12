@@ -16,8 +16,8 @@ class A2CNetwork(torch.nn.Module):
                                    else "cpu")
         self.gcn_indim = gcn_indim
         self.fcn1_indim = in_dim
-        self.fcn1_outdim = in_dim * 4
-        self.fcn2_outdim = in_dim * 8
+        self.fcn1_outdim = max(128, in_dim * 4)
+        self.fcn2_outdim = max(256, in_dim * 8)
         self.actor_outdim = out_dim
         self.critic_outdim = 1
         self.gcn = GCNConv(self.gcn_indim, self.gcn_indim).to(device=self.device)
@@ -47,7 +47,7 @@ class A2CNetwork(torch.nn.Module):
             for i in range(len(gcn_x)):
                 gcn_x[i] = gcn_x[i].to(self.device)
                 gcn_edge_index[i] = gcn_edge_index[i].to(self.device)
-                print(i, " input:", gcn_x[i], ", ei:", gcn_edge_index[i], flush=True)
+                #print(i, " input:", gcn_x[i], ", ei:", gcn_edge_index[i], flush=True)
                 gcn_out = self.gcn(gcn_x[i], gcn_edge_index[i])
                 # Only aggregate gcn output tensors.
                 gcn_out = torch.mean(gcn_out, dim=0)
