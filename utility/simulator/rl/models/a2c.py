@@ -23,7 +23,7 @@ class A2CAgent(RLModel):
     # TODO(hc): if testing mode is enabled, skip the model optimization.
 
     def __init__(self, gcn_indim: int, fcn_indim: int, outdim: int,
-                 execution_mode: str = "training", gamma: float = 0.999):
+                 execution_mode: str = "test", gamma: float = 0.999):
         self.gcn_indim = gcn_indim
         self.indim = fcn_indim + gcn_indim
         self.outdim = outdim
@@ -52,6 +52,9 @@ class A2CAgent(RLModel):
         self.log_probs = []
         self.values = []
         self.rewards = []
+
+        if not self.is_training_mode():
+            self.load_model()
 
     def compute_returns(self, next_value, rewards):
         returns = []
@@ -107,7 +110,7 @@ class A2CAgent(RLModel):
 
     def optimize_model(self, next_x, next_gcn_x, next_gcn_edgeindex):
         self.steps += 1
-        if self.episode == 0:
+        if self.episode == 0 or not self.is_training_mode():
             return
         if self.steps == self.step_for_optim:
             assert len(self.log_probs) == self.step_for_optim
@@ -195,14 +198,16 @@ class A2CAgent(RLModel):
         """ Start a new episode, and update (or initialize) the current state.
         """
         self.episode += 1
-        self.print_model("started")
+        #self.print_model("started")
 
     def finalize_episode(self):
         """ Finalize the current episode.
         """
-        self.print_model("finished")
+        #self.print_model("finished")
         print("Episode total reward:", self.episode, ", ", self.accumulated_reward)
-        self.accumulated_reward = 0
+        if self.is_training_mode():
+            self.save_model()
+            self.accumulated_reward = 0
 
     def print_model(self, prefix: str):
         with open("models/" + prefix + ".a2c_network.str", "w") as fp:
