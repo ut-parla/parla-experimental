@@ -968,3 +968,24 @@ def make_task_placement_from_dict(
     device_runtime.update()
 
     return device_runtime
+
+
+#########################################
+# Utility Functions & Conversions
+#########################################
+
+class ExecutionMode(IntEnum):
+    """
+    Used to specify the current execution mode.
+    """
+
+    RL_PARLA_TRAINING = 0
+    RL_PARLA_TESTING  = 1
+    READYS_TRAINING   = 2    
+    READYS_TESTING    = 3    
+    RANDOM            = 4
+    PARLA             = 5
+
+    def __str__(self):
+        return self.name
+

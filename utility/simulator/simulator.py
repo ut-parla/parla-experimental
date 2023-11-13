@@ -8,7 +8,7 @@ from .task import *
 from .topology import *
 
 from ..types import Architecture, Device, TaskID, TaskState, TaskType, Time
-from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
+from ..types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap, ExecutionMode
 
 from typing import List, Dict, Set, Tuple, Optional, Callable
 from dataclasses import dataclass, InitVar
@@ -33,18 +33,23 @@ class SimulatedScheduler:
     mechanisms: SchedulerArchitecture = field(init=False)
     state: SystemState = field(init=False)
     log_level: int = 0
+    execution_mode: InitVar[ExecutionMode] = ExecutionMode.RL_PARLA_TESTING
 
     events: EventQueue = EventQueue()
 
     def __post_init__(self, topology: SimulatedTopology,
-                      scheduler_type: str = "parla", rl_mapper: RLModel = None,
-                      rl_environment: ParlaRLBaseEnvironment = None):
+                      scheduler_type: str = "parla",
+                      rl_mapper: RLModel = None,
+                      rl_environment: ParlaRLBaseEnvironment = None,
+                      execution_mode: ExecutionMode = ExecutionMode.RL_PARLA_TESTING):
+        print("execution mode on simulator:",  execution_mode)
         self.state = SystemState(topology=topology)
         scheduler_arch = SchedulerOptions.get_scheduler(scheduler_type)
         print(f"Scheduler Architecture: {scheduler_arch}")
         self.mechanisms = scheduler_arch(
             topology=topology, rl_mapper=rl_mapper,
-            rl_environment=rl_environment)
+            rl_environment=rl_environment,
+            execution_mode=execution_mode)
 
     def __str__(self):
         return f"Scheduler {self.name} | Current Time: {self.time}"

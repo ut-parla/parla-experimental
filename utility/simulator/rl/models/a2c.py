@@ -23,7 +23,7 @@ class A2CAgent(RLModel):
     # TODO(hc): if testing mode is enabled, skip the model optimization.
 
     def __init__(self, gcn_indim: int, fcn_indim: int, outdim: int,
-                 execution_mode: str = "test", gamma: float = 0.999):
+                 execution_mode: str = "training", gamma: float = 0.999):
         self.gcn_indim = gcn_indim
         self.indim = fcn_indim + gcn_indim
         self.outdim = outdim
@@ -193,6 +193,14 @@ class A2CAgent(RLModel):
 
     def is_training_mode(self):
         return "training" in self.execution_mode
+
+    def set_training_mode(self):
+        print("training mode is enabled")
+        self.execution_mode = "training"
+
+    def set_test_mode(self):
+        print("test mode is enabled")
+        self.execution_mode = "test"
 
     def start_episode(self):
         """ Start a new episode, and update (or initialize) the current state.

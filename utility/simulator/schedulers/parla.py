@@ -8,7 +8,7 @@ from ..task import *
 from ..topology import *
 
 from ...types import Architecture, Device, TaskID, TaskState, TaskType, Time
-from ...types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap
+from ...types import TaskRuntimeInfo, TaskPlacementInfo, TaskMap, ExecutionMode
 
 from typing import List, Dict, Set, Tuple, Optional, Callable, Sequence
 from dataclasses import dataclass, InitVar
@@ -34,6 +34,14 @@ StatesToResources[TaskState.RESERVED] = [ResourceType.MEMORY]
 StatesToResources[TaskState.COMPLETED] = []
 AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
+def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch, execution_mode: ExecutionMode) -> Optional[Device]:
+    if execution_mode == ExecutionMode.RL_PARLA_TRAINING or \
+       execution_mode == ExecutionMode.RL_PARLA_TESTING:
+       return rl_map_task(task, scheduler_state, parla_arch)
+    elif execution_mode == ExecutionMode.RANDOM:
+       return random_map_task(task, scheduler_state, parla_arch)
+    elif execution_mode == ExecutionMode.PARLA:
+       return parla_map_task(task, scheduler_state, parla_arch)
 
 def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> Optional[Device]:
 
@@ -111,6 +119,88 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
         # print(f"Task {task.name} assigned to device {devices}")
+        assert devices is not None
+
+        if devices is None:
+            raise ValueError(
+                f"Task {task.name} has no assigned devices. Minimal scheduler requires that all tasks have an assigned device at spawn."
+            )
+        device = devices[0]
+        task.set_resources(device)
+
+        # Update MAPPED resources (for policy and metadata)
+        resource_pool.add_resources(
+            devices=devices,
+            state=TaskState.MAPPED,
+            types=AllResources,
+            resources=task.resources,
+        )
+
+        return device
+    return None
+
+
+def parla_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> Optional[Device]:
+
+    objects = scheduler_state.objects
+    assert objects is not None
+
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+
+    current_time = scheduler_state.time
+    assert current_time is not None
+
+    # Check if task is mappable
+    if check_status := task.check_status(
+        TaskStatus.MAPPABLE, objects.taskmap, current_time
+    ):
+        task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
+        task_runtime_info_list = task.get_runtime_info(task.assigned_devices)
+        task.times[TaskState.MAPPED] = current_time
+        devices = task.assigned_devices
+        # print(f"Task {task.name} assigned to device {devices}")
+        assert devices is not None
+
+        if devices is None:
+            raise ValueError(
+                f"Task {task.name} has no assigned devices. Minimal scheduler requires that all tasks have an assigned device at spawn."
+            )
+        device = devices[0]
+        task.set_resources(device)
+
+        # Update MAPPED resources (for policy and metadata)
+        resource_pool.add_resources(
+            devices=devices,
+            state=TaskState.MAPPED,
+            types=AllResources,
+            resources=task.resources,
+        )
+
+        return device
+    return None
+
+
+def random_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -> Optional[Device]:
+
+    objects = scheduler_state.objects
+    assert objects is not None
+
+    resource_pool = scheduler_state.resource_pool
+    assert resource_pool is not None
+
+    current_time = scheduler_state.time
+    assert current_time is not None
+
+    # Check if task is mappable
+    if check_status := task.check_status(
+        TaskStatus.MAPPABLE, objects.taskmap, current_time
+    ):
+        task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
+        task_runtime_info_list = task.get_runtime_info(task.assigned_devices)
+        task.times[TaskState.MAPPED] = current_time
+        devices = task.assigned_devices
+        print(f"Task {task.name} assigned to device {devices}")
         assert devices is not None
 
         if devices is None:
@@ -259,6 +349,7 @@ class ParlaArchitecture(SchedulerArchitecture):
     # Number of mapped tasks until task completion
     num_mapped_tasks: Dict[Device, int] = field(default_factory=dict)
 
+    execution_mode: ExecutionMode = ExecutionMode.RL_PARLA_TESTING
     
     # List of Devices
     devices: List = field(default_factory=list)
@@ -272,6 +363,7 @@ class ParlaArchitecture(SchedulerArchitecture):
     def __post_init__(self, topology: SimulatedTopology):
         assert topology is not None
 
+        print("Execution " , self.execution_mode, " mode is enabled") 
         for device in topology.devices:
             self.num_mapped_tasks[device.name.device_id] = 0
             self.reservable_tasks[device.name] = TaskQueue()
@@ -296,6 +388,11 @@ class ParlaArchitecture(SchedulerArchitecture):
         # Initialize the set of visible tasks
         self.add_initial_tasks(task_objects, scheduler_state)
 
+        if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING:
+            self.rl_mapper.set_training_mode()
+        elif self.execution_mode == ExecutionMode.RL_PARLA_TESTING:
+            self.rl_mapper.set_test_mode()
+
         # Initialize the event queue
         next_event = Mapper()
         next_time = Time(0)
@@ -313,7 +410,7 @@ class ParlaArchitecture(SchedulerArchitecture):
         for task in tasks:
             task.info.order = order
             self.spawned_tasks.put(task)
-            order += 1
+#order += 1
 
     def mapper(
         self, scheduler_state: SystemState, event: Mapper
@@ -325,25 +422,27 @@ class ParlaArchitecture(SchedulerArchitecture):
         objects = scheduler_state.objects
 
         for priority, taskid in next_tasks:
-            # print(f"Processing task {taskid}")
+            print(f"Processing task {taskid}")
 
             task = objects.get_task(taskid)
             assert task is not None
 
-            if device := rl_map_task(task, scheduler_state, self):
+#if device := rl_map_task(task, scheduler_state, self):
+            if device := map_task(task, scheduler_state, self, self.execution_mode):
                 self.num_mapped_tasks[device.device_id] += 1
                 self.reservable_tasks[device].put_id(task_id=taskid, priority=priority)
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
                 self.success_count += 1
-                # 1. Create a next state for a RL model
-                next_deviceload_state, next_edge_index, next_node_features = \
-                    self.rl_environment.create_state(
-                    task, self.devices, objects.taskmap,
-                    self.reservable_tasks, self.launchable_tasks, self.launched_tasks)
-                # 2. Attempt to optimize a RL model
-                self.rl_mapper.optimize_model(
-                    next_deviceload_state, next_node_features, next_edge_index)
+                if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING:
+                    # 1. Create a next state for a RL model
+                    next_deviceload_state, next_edge_index, next_node_features = \
+                        self.rl_environment.create_state(
+                        task, self.devices, objects.taskmap,
+                        self.reservable_tasks, self.launchable_tasks, self.launched_tasks)
+                    # 2. Attempt to optimize a RL model
+                    self.rl_mapper.optimize_model(
+                        next_deviceload_state, next_node_features, next_edge_index)
             else:
                 next_tasks.fail()
                 continue
@@ -388,7 +487,7 @@ class ParlaArchitecture(SchedulerArchitecture):
 
         next_events: Sequence[EventPair] = []
 
-        # print(f"Remaining tasks: {remaining_tasks}")
+#print(f"Remaining tasks: {remaining_tasks}")
 
         next_tasks = MultiTaskIterator(self.launchable_tasks)
         for priority, taskid in next_tasks:
