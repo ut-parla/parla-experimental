@@ -309,8 +309,11 @@ class ParlaArchitecture(SchedulerArchitecture):
         Append an initial task who does not have any dependency to
         a spawned task queue.
         """
+        order = 0
         for task in tasks:
+            task.info.order = order
             self.spawned_tasks.put(task)
+            order += 1
 
     def mapper(
         self, scheduler_state: SystemState, event: Mapper
@@ -318,7 +321,6 @@ class ParlaArchitecture(SchedulerArchitecture):
         # print("Mapping tasks...")
         self.success_count = 0
         next_tasks = TaskIterator(self.spawned_tasks)
-
         current_time = scheduler_state.time
         objects = scheduler_state.objects
 

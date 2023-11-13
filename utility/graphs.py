@@ -220,8 +220,8 @@ def make_serial_graph(config: SerialConfig) -> Tuple[TaskMap, DataMap]:
 
     return task_dict, data_dict
 
-
-def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
+@register_graph_generator
+def make_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
     check_config(config)
 
     data_config = config.data_config
@@ -235,22 +235,24 @@ def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]
     # Build Task Graph
     task_placement_info = configurations
 
+    level_count = 1
     for level in range(config.levels, -1, -1):
         tasks_in_level = config.branch_factor**level
-        subtree_segment = tasks_in_level / config.num_gpus
+        subtree_segment = tasks_in_level / config.n_devices
 
         for j in range(tasks_in_level):
             # Task ID:
-            task_id = TaskID("T", (level, j), 0)
+            task_id = TaskID("T", (level_count, j), 0)
 
             # Task Dependencies
             dependency_list = []
-            if level < config.levels:
+            if level != config.levels:
                 for k in range(config.branch_factor):
-                    dependency = TaskID(
-                        "T", (level - 1, config.branch_factor * j + k), 0
-                    )
-                    dependency_list.append(dependency)
+                    if config.branch_factor * j + k < config.branch_factor**(level + 1):
+                        dependency = TaskID(
+                            "T", (level_count - 1, config.branch_factor * j + k), 0
+                        )
+                        dependency_list.append(dependency)
 
             # Task Data Dependencies
             if data_config.pattern == DataInitType.NO_DATA:
@@ -278,8 +280,11 @@ def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]
                 data_dependencies,
                 task_mapping,
             )
+        level_count += 1
 
+    return task_dict, data_dict
 
+'''
 def generate_reduction_graph(config: ReductionConfig) -> str:
     task_config = config.task_config
     num_gpus = config.num_gpus
@@ -366,6 +371,7 @@ def generate_reduction_graph(config: ReductionConfig) -> str:
             global_idx += 1
         reverse_level += 1
     return graph
+'''
 
 
 def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> str:
