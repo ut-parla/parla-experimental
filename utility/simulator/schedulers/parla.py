@@ -155,7 +155,23 @@ def parla_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch
     if check_status := task.check_status(
         TaskStatus.MAPPABLE, objects.taskmap, current_time
     ):
-        task.assigned_devices = (Device(Architecture.GPU,np.random.randint(0, 4)),)
+
+        total_num_mapped_tasks: float = 0
+        for device in parla_arch.devices:
+            total_num_mapped_tasks += parla_arch.num_mapped_tasks[device.device_id]
+
+        chosen_device_id = 0
+        best_score = 0
+        if total_num_mapped_tasks > 0:
+            for device in parla_arch.devices:
+                normalized_device_load = parla_arch.num_mapped_tasks[device.device_id] / total_num_mapped_tasks
+                score = 50;
+                # TODO(hc): add data score
+                score += (- 10 * normalized_device_load)
+                if score > best_score:
+                    best_score = score
+                    chosen_device_id = device.device_id
+        task.assigned_devices = (Device(Architecture.GPU,chosen_device_id),)
         task_runtime_info_list = task.get_runtime_info(task.assigned_devices)
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
