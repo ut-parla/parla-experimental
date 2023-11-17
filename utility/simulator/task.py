@@ -96,6 +96,7 @@ class SimulatedTask:
     # TODO(hc): move this to times
     # Store expectation of the completion time
     completion_time_expectation: float = 0
+    heft_rank: int = 0
 
     def __post_init__(self):
         self.counters = TaskCounters(self.info)

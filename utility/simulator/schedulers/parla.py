@@ -413,6 +413,9 @@ class ParlaArchitecture(SchedulerArchitecture):
         next_event = Mapper()
         next_time = Time(0)
         self.active_scheduler += 1
+
+        if isinstance(self.rl_environment, READYSEnvironment):
+            self.rl_environment.calculate_heft(tasks, objects.taskmap, self.devices)
         return [(next_time, next_event)]
 
     def add_initial_tasks(
