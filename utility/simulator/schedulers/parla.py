@@ -36,7 +36,9 @@ AllResources = [ResourceType.VCU, ResourceType.MEMORY, ResourceType.COPY]
 
 def map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch, execution_mode: ExecutionMode) -> Optional[Device]:
     if execution_mode == ExecutionMode.RL_PARLA_TRAINING or \
-       execution_mode == ExecutionMode.RL_PARLA_TESTING:
+       execution_mode == ExecutionMode.RL_PARLA_TESTING or \
+       execution_mode == ExecutionMode.READYS_TRAINING or \
+       execution_mode == ExecutionMode.READYS_TESTING:
        return rl_map_task(task, scheduler_state, parla_arch)
     elif execution_mode == ExecutionMode.RANDOM:
        return random_map_task(task, scheduler_state, parla_arch)
@@ -404,7 +406,8 @@ class ParlaArchitecture(SchedulerArchitecture):
         # Initialize the set of visible tasks
         self.add_initial_tasks(task_objects, scheduler_state)
 
-        if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING:
+        if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING or \
+            self.execution_mode == ExecutionMode.READYS_TRAINING:
             self.rl_mapper.set_training_mode()
         elif self.execution_mode == ExecutionMode.RL_PARLA_TESTING:
             self.rl_mapper.set_test_mode()
@@ -453,7 +456,8 @@ class ParlaArchitecture(SchedulerArchitecture):
                 task.notify_state(TaskState.MAPPED, objects.taskmap, current_time)
                 next_tasks.success()
                 self.success_count += 1
-                if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING:
+                if self.execution_mode == ExecutionMode.RL_PARLA_TRAINING or \
+                    self.execution_mode == ExecutionMode.READYS_TRAINING:
                     # 1. Create a next state for a RL model
                     next_deviceload_state, next_edge_index, next_node_features = \
                         self.rl_environment.create_state(
