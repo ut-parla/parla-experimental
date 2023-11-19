@@ -441,7 +441,7 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
       HEFTEvent = namedtuple('HEFTEvent', 'task start end')
       #ft = lambda device: 
 
-      for taskid in reversed(tasklist):
+      for taskid in reversed(heft_sorted_tasks):
           task = taskmap[taskid]
           duration = max([task_runtime_info.task_time
                           for task_runtime_info in task.get_runtime_info(
@@ -569,6 +569,7 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
       current_gcn_state[2] = task_type
       current_gcn_state[3] = ready
       current_gcn_state[4] = f_type
+      print(f"task:{target_task}, 0:{num_succesors}, 1:{num_predecessors}, 2:{task_type}, 3:{ready}, 4:{f_type}")
       return current_gcn_state.unsqueeze(0)
 
   def create_device_load_state(self, target_task: SimulatedTask, devices: List,
@@ -582,17 +583,22 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
       # print("******** Create states:", target_task)
       idx = 0
       total_tasks = 0
-      most_idle_device = 0
-      most_idle_device_total_tasks = 0
+      most_idle_device = -1
+      most_idle_device_total_tasks = -1
       for device in devices:
+          # Ignore CPU
+          if device.architecture == Architecture.CPU:
+              continue
           dev_num_tasks = len(reservable_tasks[device]) + \
                           len(launchable_tasks[device][TaskType.COMPUTE]) + \
                           len(launchable_tasks[device][TaskType.DATA]) + \
                           len(launched_tasks[device])
-          if dev_num_tasks < most_idle_device_total_tasks:
+          print("device:", device, ", id:", device.device_id, ", ", dev_num_tasks)
+          if most_idle_device_total_tasks == -1  or dev_num_tasks < most_idle_device_total_tasks:
               most_idle_device_total_tasks = dev_num_tasks
               most_idle_device = device
-      current_state[0] = most_idle_device
+      current_state[0] = most_idle_device.device_id
+      print(f"task:{target_task}, 0:{most_idle_device}, total: {most_idle_device_total_tasks}")
       return current_state
 
   def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
@@ -618,8 +624,10 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
           print("task heft mksp:", task.heft_makespan)
           return torch.tensor([[0]], dtype=torch.float)
       else:
-          reward = (self.max_heft - completion_time) / self.max_heft
-          print("task heft mksp:", self.max_heft, " vs ", completion_time, " = reward:", reward)
+          #reward = (self.max_heft - completion_time) / self.max_heft
+          #print("task heft mksp:", self.max_heft, " vs ", completion_time, " = reward:", reward)
+          reward = (task.heft_makespan - completion_time) / task.heft_makespan
+          print("task heft mksp:", task.heft_makespan, " vs ", completion_time, " = reward:", reward)
           return torch.tensor([[reward]], dtype=torch.float)
 
   def finalize_epoch(self, execution_time):
