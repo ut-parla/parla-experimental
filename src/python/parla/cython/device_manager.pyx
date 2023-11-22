@@ -7,7 +7,7 @@
 
 from . import device
 from .device cimport Device
-from parla.common.globals import DeviceType, cupy, VCU_BASELINE
+from ..common.globals import DeviceType, cupy, VCU_BASELINE
 
 from typing import Iterable, Tuple, List
 
@@ -16,12 +16,12 @@ import psutil
 import yaml
 
 PyDevice = device.PyDevice
-PyCUDADevice = device.PyCUDADevice
+PyGPUDevice = device.PyGPUDevice
 PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
-ImportableCUDAArchitecture = device.ImportableCUDAArchitecture
+ImportableGPUArchitecture = device.ImportableGPUArchitecture
 ImportableCPUArchitecture = device.ImportableCPUArchitecture
-PyCUDAArchitecture = device.PyCUDAArchitecture
+PyGPUArchitecture = device.PyGPUArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
 DeviceResource = device.DeviceResource
 DeviceResourceRequirement = device.DeviceResourceRequirement
@@ -30,8 +30,10 @@ CupyStream = device.CupyStream
 CUPY_ENABLED = device.CUPY_ENABLED
 
 # Importable architecture declarations
-gpu = ImportableCUDAArchitecture()
+gpu = ImportableGPUArchitecture()
 cpu = ImportableCPUArchitecture()
+
+from . import stream_pool
 
 cdef class CyDeviceManager:
     """
@@ -55,13 +57,16 @@ cdef class CyDeviceManager:
         self.cpp_device_manager_.print_registered_devices()
 
     cpdef globalid_to_parrayid(self, global_dev_id):
-        return self.cpp_device_manager_.globalid_to_parrayid(global_dev_id)
+        return g2p(global_dev_id)
 
     cpdef parrayid_to_globalid(self, parray_dev_id):
-        return self.cpp_device_manager_.parrayid_to_globalid(parray_dev_id)
+        return p2g(parray_dev_id)
 
     cdef DeviceManager* get_cpp_device_manager(self):
         return self.cpp_device_manager_
+
+    cpdef free_memory(self, parray_dev_id, memory_size):
+        self.cpp_device_manager_.free_memory_by_parray_id(parray_dev_id, memory_size)
 
 
 class PrintableFrozenSet(frozenset):
@@ -77,49 +82,6 @@ class PrintableFrozenSet(frozenset):
 
     def __repr__(self):
         return self.get_name()
-
-
-class StreamPool:
-
-    def __init__(self, device_list, per_device=8):
-
-        if CUPY_ENABLED:
-            self.StreamClass = CupyStream 
-        else:
-            self.StreamClass = Stream
-
-        self._device_list = device_list
-        self._per_device = per_device
-        self._pool = {}
-
-        for dev in self._device_list:
-            self._pool[dev] = []
-            
-            with dev.device as d:
-                for i in range(self._per_device):
-                    self._pool[dev].append(self.StreamClass(device=dev))
-
-    def get_stream(self, dev):
-        if len(self._pool[dev]) == 0:
-            # Create a new stream if the pool is empty.
-            new_stream = self.StreamClass(device=dev)
-            return new_stream
-
-        return self._pool[dev].pop()
-
-    def return_stream(self, stream):
-        self._pool[stream.device].append(stream)
-
-    def __summarize__(self):
-        summary = ""
-        for dev in self._device_list:
-            summary += f"({dev} : {len(self._pool[dev])})"
-
-        return summary
-
-    def __repr__(self):
-        return f"StreamPool({self.__summarize__()})"
-
 
 # TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
 # TODO(wlr):  - Provide a way to iterate over these real device ids
@@ -156,7 +118,7 @@ class PyDeviceManager:
         # self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
-        self.stream_pool = StreamPool(self.get_devices(DeviceType.CUDA))
+        self.stream_pool = stream_pool.CyStreamPool(self.get_devices(DeviceType.GPU))
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
@@ -178,14 +140,14 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
-            gpu_arch = PyCUDAArchitecture()
+            gpu_arch = PyGPUArchitecture()
             self.py_registered_archs[gpu] = gpu_arch
 
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info  # tuple of free and total memory (in bytes)
                 mem_sz = long(mem_info[1])
-                py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
+                py_cuda_device = PyGPUDevice(dev_id, mem_sz, VCU_BASELINE)
 
                 # Add device to the architecture
                 gpu_arch.add_device(py_cuda_device)
@@ -274,7 +236,7 @@ class PyDeviceManager:
 
             num_of_gpus = parsed_configs["GPU"]["num_devices"]
             if num_of_gpus > 0:
-                gpu_arch = PyCUDAArchitecture()
+                gpu_arch = PyGPUArchitecture()
                 self.py_registered_archs[gpu] = gpu_arch
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(num_of_gpus == len(gpu_mem_sizes)) 
@@ -282,11 +244,12 @@ class PyDeviceManager:
                 for dev_id in range(num_of_gpus):
 
                     if self.num_real_gpus > 0:
-                        py_cuda_device = PyCUDADevice(
+                        py_cuda_device = PyGPUDevice(
                                                 dev_id % self.num_real_gpus,
                                                 gpu_mem_sizes[dev_id],
                                                 VCU_BASELINE
                                             )
+                    
                     else:
                         py_cuda_device = PyCPUDevice(
                                                 dev_id,
@@ -409,3 +372,11 @@ class PyDeviceManager:
 
     def parrayid_to_globalid(self, parray_dev_id):
         return self.cy_device_manager.parrayid_to_globalid(parray_dev_id)
+
+    def free_memory(self, parray_dev_id, size):
+        """
+        Free memory of the device with the given device id.
+        Note: The device id is the PArray id of the device, not the internal global Parla id.
+        Frees the memory on both the devices Mapped and Reserved Pools.
+        """
+        self.cy_device_manager.free_memory(parray_dev_id, size)

@@ -251,9 +251,8 @@ class MultiDeviceBuffer:
 
         final_subarray_index = 0
 
-        for subarray_index in range(
-            len(self._indices_map[device_id])
-        ):  # for each subarray at this device
+        # for each subarray at this device
+        for subarray_index in range(len(self._indices_map[device_id])):
             indices_map = self._indices_map[device_id][subarray_index]
 
             for d in range(len(global_slices)):
@@ -267,9 +266,8 @@ class MultiDeviceBuffer:
                     # special case, this axis was indexed by a int, so
                     # dimension was reduced by 1,
                     # need to ignore this axis, just check index match or not
-                    if (
-                        list(index_map.keys())[0] == global_index
-                    ):  # false if type or value doesn't match
+                    # false if type or value doesn't match
+                    if list(index_map.keys())[0] == global_index:
                         continue
                     else:
                         local_index = None
@@ -338,9 +336,8 @@ class MultiDeviceBuffer:
                 local_slices.append(local_index)
 
             if local_slices is None:  # result is not found for this subarray
-                if (
-                    subarray_index == len(self._indices_map[device_id]) - 1
-                ):  # this is the last subarray
+                # this is the last subarray
+                if subarray_index == len(self._indices_map[device_id]) - 1:
                     local_slices = None  # non slices is found
                 else:  # check next subarray
                     local_slices = []  # clear intermidate result
@@ -351,9 +348,8 @@ class MultiDeviceBuffer:
         if local_slices is None:
             raise IndexError(f"index out of range, index:{global_slices}")
         elif not_tuple:
-            if (
-                len(local_slices) == 0
-            ):  # only be possible when special case int vs int exists and all axis are ignored
+            # only be possible when special case int vs int exists and all axis are ignored
+            if len(local_slices) == 0:
                 return final_subarray_index, slice(None, None, None)
             else:
                 return final_subarray_index, local_slices[0]
@@ -561,9 +557,10 @@ class MultiDeviceBuffer:
                     dst_is_current_device,
                 )
             else:  # copy from GPU to CPU
+                # dst_is_current_device is no need if dst is CPU
                 self._move_data(
                     cupy.asnumpy, dst, src, subarray_index, dst_slices, src_slices
-                )  # dst_is_current_device is no need if dst is CPU
+                )
         self._cyparray_state.set_exist_on_device(dst, True)
 
     def get_slices_hash(self, global_slices: SlicesType) -> int:
@@ -621,10 +618,25 @@ class MultiDeviceBuffer:
         """
         return device_id in self._buffer and self._buffer[device_id] is not None
 
-    def clear(self, device_id) -> None:
+    def clear(self, device_id) -> int:
         """
         Clear data in device_id
         """
         self._indices_map[device_id] = None
+        to_free = 0
+        if self._buffer[device_id] is not None:
+            data = self._buffer[device_id]
+            if isinstance(data, list) or isinstance(data, dict):
+                for subarray in data:
+                    to_free += subarray.nbytes
+            else:
+                to_free = data.nbytes
         self._buffer[device_id] = None
         self._cyparray_state.set_exist_on_device(device_id, False)
+        return to_free
+
+    def __del__(self):
+        for i in range(0, len(self._buffer)):
+            self._cyparray_state.set_exist_on_device(i, False)
+        self._indices_map = None
+        self._buffer = None

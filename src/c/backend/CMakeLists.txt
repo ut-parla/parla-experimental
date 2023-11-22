@@ -76,18 +76,17 @@ if(PARLA_ENABLE_CUDA)
     
     set_target_properties(backend PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(backend PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-
     target_compile_definitions(backend PUBLIC PARLA_ENABLE_CUDA)
 
-    target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})
-    target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
-    target_include_directories(backend PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
+    #target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_DIR})
+    #target_include_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
+    #target_include_directories(backend PUBLIC ${CUDAToolkit_INCLUDE_DIRS})
 
-    target_link_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
-    target_compile_options(backend PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda -DPROD>)
-    target_compile_options(backend PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
+    #target_link_directories(backend PUBLIC ${CUDAToolkit_LIBRARY_ROOT})
+    #target_compile_options(backend PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda -DPROD>)
+    #target_compile_options(backend PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
 
-    target_link_libraries(backend PUBLIC CUDA::cudart)
+    #target_link_libraries(backend PUBLIC CUDA::cudart)
 
     set(GPU_ARCH $ENV{CUDA_ARCH})
     if(GPU_ARCH)

@@ -105,9 +105,11 @@ public:
   virtual void run_task_mapping(
       InnerTask *task, const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
-      const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+      const std::vector<
+          std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
-      std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) = 0;
+      std::vector<std::shared_ptr<PlacementRequirementBase>>
+          *placement_req_options_vec) = 0;
 
 protected:
   DeviceManager *device_manager_;
@@ -146,13 +148,14 @@ public:
           std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list) override;
 
-
   void run_task_mapping(
       InnerTask *task, const Mapper &mapper,
       std::vector<std::shared_ptr<DeviceRequirement>> *chosen_devices,
-      const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+      const std::vector<
+          std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
           &parray_list,
-      std::vector<std::shared_ptr<PlacementRequirementBase>> *placement_req_options_vec) override;
+      std::vector<std::shared_ptr<PlacementRequirementBase>>
+          *placement_req_options_vec) override;
 };
 
 #endif

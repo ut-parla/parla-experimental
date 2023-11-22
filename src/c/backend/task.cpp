@@ -1,4 +1,7 @@
 #include "include/containers.hpp"
+#include "include/device.hpp"
+#include "include/parray.hpp"
+#include "include/phases.hpp"
 #include "include/resources.hpp"
 #include "include/runtime.hpp"
 #include <string.h>
@@ -36,6 +39,9 @@ InnerTask::InnerTask(std::string name, long long int id, void *py_task)
 void InnerTask::set_scheduler(InnerScheduler *scheduler) {
   this->scheduler = scheduler;
   size_t num_devices = this->scheduler->get_device_manager()->get_num_devices();
+
+  // NOTE(@dialecticDolt): The max index in this tasks dataflow object size
+  // should set the parray_list size not num_devices!
   this->parray_list.resize(num_devices);
 }
 
@@ -221,12 +227,65 @@ TaskState InnerTask::add_dependent_space(TaskBarrier *barrier) {
   return state;
 }
 
-void InnerTask::add_parray(parray::InnerPArray *parray, int am, int dev_id) {
+void InnerTask::create_parray(InnerPArray *parray, int parray_device_id) {
+  // Adjust task resource pool to reflect the new parray
+  // Do not free "task memory" associated with persistent arrays on local
+  // devices.
+  PArrayAccess_t parray_access = std::make_pair(parray, AccessMode::NEW);
+  auto device_manager = this->scheduler->get_device_manager();
+  auto &assigned_devices = this->assigned_devices;
+  auto &device_constraints = this->device_constraints;
+  auto mapped_parray_tracker = this->scheduler->mapper->get_parray_tracker();
+  auto reserved_parray_tracker =
+      this->scheduler->memory_reserver->get_parray_tracker();
+
+  DevID_t global_dev_id = parrayid_to_globalid(parray_device_id);
+
+  size_t to_move_mapped =
+      mapped_parray_tracker->do_log(global_dev_id, parray_access);
+  size_t to_move_reserved =
+      reserved_parray_tracker->do_log(global_dev_id, parray_access);
+
+  bool is_local_device =
+      device_constraints.find(global_dev_id) != device_constraints.end();
+
+  if (is_local_device) {
+    // Pass ownership of the memory to the array from the task
+    auto &task_pool = this->device_constraints[global_dev_id];
+
+    Resource_t current_memory = task_pool.get<Resource::Memory>();
+    if (current_memory < to_move_mapped) {
+
+      // std::cout << "Task " << this->name << " has " << current_memory
+      //           << " memory on device " << global_dev_id
+      //           << " but needs to allocate " << to_move_mapped << std::endl;
+
+      Resource_t required_memory = to_move_mapped - current_memory;
+
+      // Drop the freed task memory to zero
+      task_pool.decrease<Resource::Memory>(current_memory);
+
+      // Remaining memory needs to be handled by the global scheduler
+      add_unmapped_created_parray(parray, global_dev_id, to_move_mapped);
+      add_unreserved_created_parray(parray, global_dev_id, to_move_reserved);
+    } else {
+      task_pool.decrease<Resource::Memory>(to_move_mapped);
+    }
+  } else {
+    // Otherwise this needs to be handled by the global scheduler
+    add_unmapped_created_parray(parray, global_dev_id, to_move_mapped);
+    add_unreserved_created_parray(parray, global_dev_id, to_move_reserved);
+  }
+}
+
+void InnerTask::add_parray(parray::InnerPArray *parray, int am,
+                           int local_dev_id) {
   AccessMode access_mode = static_cast<AccessMode>(am);
   if (access_mode != AccessMode::IN) {
     parray->get_parent_parray()->add_task(this);
   }
-  this->parray_list[dev_id].emplace_back(std::make_pair(parray, access_mode));
+  this->parray_list[local_dev_id].emplace_back(
+      std::make_pair(parray, access_mode));
 }
 
 void InnerTask::notify_dependents_completed() {
@@ -256,7 +315,8 @@ void InnerTask::notify_dependents(TaskStatusList &buffer, TaskState new_state) {
   // NOTE: I changed this to queue up ready tasks instead of enqueing them one
   // at a time
   //       This is possibly worse, but splits out scheduler dependency.
-  //       May need to change back to call scheduler.enqueue(task) here instead
+  //       May need to change back to call scheduler.enqueue(task) here
+  //       instead
 
   this->dependents.lock();
   // std::cout << "Notifying dependents of " << this->name << ": " <<
@@ -267,9 +327,9 @@ void InnerTask::notify_dependents(TaskStatusList &buffer, TaskState new_state) {
     auto task = this->dependents.get_unsafe(i);
     TaskStatusFlags status = task->notify(new_state, this->is_data.load());
 
-    // std::cout << "Dependent Task is notified: " << task->name << std::endl;
+    //std::cout << "Dependent Task is notified: " << task->name << std::endl;
     if (status.any()) {
-      // std::cout << "Dependent Task Ready: " << task->name << std::endl;
+      //std::cout << "Dependent Task Ready: " << task->name << std::endl;
       buffer.push_back(std::make_pair(task, status));
     }
   }
@@ -378,6 +438,11 @@ void InnerTask::add_assigned_device(Device *device) {
   this->assigned_devices.push_back(device);
 }
 
+void InnerTask::finalize_assigned_devices() {
+  this->assigned_devices.shrink_to_fit();
+  // this->parray_list.shrink_to_fit();
+}
+
 TaskState InnerTask::set_state(TaskState state) {
   TaskState new_state = state;
   TaskState old_state;
@@ -421,8 +486,8 @@ bool InnerTask::get_complete() {
 void InnerTask::add_device_req(Device *dev_ptr, MemorySz_t mem_sz,
                                VCU_t num_vcus) {
   ResourcePool_t res_req;
-  res_req.set(Resource::Memory, mem_sz);
-  res_req.set(Resource::VCU, num_vcus);
+  res_req.set<Resources<Resource::Memory, Resource::VCU, Resource::Copy>>(
+      {mem_sz, num_vcus, 0});
 
   std::shared_ptr<DeviceRequirement> dev_req =
       std::make_shared<DeviceRequirement>(dev_ptr, res_req);

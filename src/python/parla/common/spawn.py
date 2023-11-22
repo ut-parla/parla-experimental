@@ -4,14 +4,14 @@
 """
 
 from __future__ import annotations  # For type hints of unloaded classes
-from parla.cython import scheduler
-from parla.cython import core
-from parla.cython import tasks
-from parla.cython import device, device_manager
-from parla.common.dataflow import Dataflow
-from parla.common.parray.core import PArray
-from parla.utility.tracer import NVTXTracer
-from parla.common.globals import (
+from ..cython import scheduler
+from ..cython import core
+from ..cython import tasks
+from ..cython import device, device_manager
+from ..common.dataflow import Dataflow
+from ..common.parray.core import PArray
+from ..utility.tracer import NVTXTracer
+from ..common.globals import (
     default_sync,
     VCU_BASELINE,
     SynchronizationType,

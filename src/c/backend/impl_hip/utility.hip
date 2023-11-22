@@ -41,3 +41,28 @@ void stream_synchronize(uintptr_t stream_ptr) {
   hipStream_t stream = reinterpret_cast<hipStream_t>(stream_ptr);
   auto res = hipStreamSynchronize(stream);
 };
+
+void set_device(int device) {
+  auto res = hipSetDevice(device);
+  if (res != hipSuccess) {
+    throw std::runtime_error("hipSetDevice failed");
+  }
+}
+
+int get_device(){
+  int device;
+  auto res = hipGetDevice(&device);
+  if (res != hipSuccess) {
+    throw std::runtime_error("hipGetDevice failed");
+  }
+  return device;
+}
+
+int get_num_devices() {
+  int num_devices;
+  auto res = hipGetDeviceCount(&num_devices);
+  if (res != hipSuccess) {
+    throw std::runtime_error("hipGetDeviceCount failed");
+  }
+  return num_devices;
+}

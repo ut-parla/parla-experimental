@@ -7,7 +7,7 @@
 """
 
 import functools 
-from parla.common.globals import _Locals as Locals 
+from ..common.globals import _Locals as Locals 
 
 
 class VariantDefinitionError(ValueError):
@@ -31,7 +31,7 @@ class _VariantFunction(object):
         self._variants = {}
         functools.update_wrapper(self, func)
 
-    def variant(self, spec_list, override=False, architecture=None, max_amount=8):
+    def variant(self, spec_list=None, override=False, architecture=None, max_amount=8):
         """!
         @brief Decorator to declare a variant of this function for a specific architecture.
 
@@ -99,8 +99,6 @@ def specialize(func):
     The decorated function is the default implemention, used when no specialized implementation is available.
     The default can just be `raise NotImplementedError()` in cases where no default implementation is possible.
     To provide a specialized variant use the `variant` member of the main function:
-    .. testsetup::
-        from parla.function_decorators import *
     >>> @specialize
     ... def f():
     ...     raise NotImplementedError()

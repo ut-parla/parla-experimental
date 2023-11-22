@@ -23,25 +23,25 @@ include(CTest)
 find_package(
   Python
   COMPONENTS Interpreter Development.Module
-  REQUIRED
-  )
+  REQUIRED)
 
 set(CYTHON cython)
 message(STATUS "Cython: " ${CYTHON})
-#Test if cython is installed
+# Test if cython is installed
 if(NOT CYTHON)
   message(
     FATAL_ERROR
-      "Cython is required to build Parla. Please install cython and try again."
-    )
+      "Cython is required to build Parla. Please install cython and try again.")
 endif()
-#Test if cython exists
-execute_process(COMMAND ${CYTHON} --version ERROR_QUIET OUTPUT_VARIABLE CYTHON_VERSION)
+# Test if cython exists
+execute_process(
+  COMMAND ${CYTHON} --version
+  ERROR_QUIET
+  OUTPUT_VARIABLE CYTHON_VERSION)
 if(NOT CYTHON_VERSION)
   message(
     FATAL_ERROR
-      "Cython is required to build Parla. Please install cython and try again."
-    )
+      "Cython is required to build Parla. Please install cython and try again.")
 endif()
 
 message(STATUS "Python: " ${Python_EXECUTABLE})
@@ -82,9 +82,8 @@ if(PARLA_ENABLE_CUDA)
 endif(PARLA_ENABLE_CUDA)
 
 if(PARLA_ENABLE_HIP)
-    enable_language(HIP)
+  enable_language(HIP)
 endif(PARLA_ENABLE_HIP)
-
 
 if(PARLA_ENABLE_LOGGING)
   # TODO: figure out binlog cmake support
@@ -119,11 +118,9 @@ endif(PARLA_ENABLE_LOGGING)
 add_subdirectory(src/c/backend)
 add_subdirectory(src/python/parla)
 
-# if(PARLA_BUILD_TESTS)
-#   add_subdirectory(testing)
-# endif(PARLA_BUILD_TESTS)
+# if(PARLA_BUILD_TESTS) add_subdirectory(testing) endif(PARLA_BUILD_TESTS)
 
-# set(test_path_file ${CMAKE_SOURCE_DIR}/testing/run_tests.sh)
-# file(WRITE ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/testing\n")
-# file(APPEND ${test_path_file} "py.test $PARLA_TESTS\n")
-# file(APPEND ${test_path_file} "ctest --test-dir $PARLA_TESTS\n")
+# set(test_path_file ${CMAKE_SOURCE_DIR}/testing/run_tests.sh) file(WRITE
+# ${test_path_file} "export PARLA_TESTS=${CMAKE_BINARY_DIR}/testing\n")
+# file(APPEND ${test_path_file} "py.test $PARLA_TESTS\n") file(APPEND
+# ${test_path_file} "ctest --test-dir $PARLA_TESTS\n")

@@ -2,7 +2,6 @@
  *  @brief Provides interface for abstract device object.
  */
 
-#pragma once
 #ifndef PARLA_DEVICE_HPP
 #define PARLA_DEVICE_HPP
 
@@ -16,21 +15,28 @@
 using DevID_t = uint32_t;
 using MemorySz_t = Resource_t;
 using VCU_t = Resource_t;
-// using ResourcePool_t = ResourcePool<std::atomic<Resource_t>>;
-using ResourcePool_t = ResourcePool;
+
+using GPUResources = Resources<Resource::Memory, Resource::VCU, Resource::Copy>;
+using GPUResourcePool = ResourcePool<GPUResources>;
+
+using CPUResources = Resources<Resource::Memory, Resource::VCU, Resource::Copy>;
+using CPUResourcePool = ResourcePool<CPUResources>;
+
+// TODO(wlr): Temporarily maintain a single resource pool for all devices.
+using ResourcePool_t = GPUResourcePool;
 
 class DeviceRequirement;
 
 /**
  * @brief Architecture types for devices.
  */
-enum class DeviceType { INVALID = -2, All = -1, CPU = 0, CUDA = 1 };
+enum class DeviceType { INVALID = -2, All = -1, CPU = 0, GPU = 1 };
 
 inline const constexpr std::array architecture_types{DeviceType::CPU,
-                                                     DeviceType::CUDA};
+                                                     DeviceType::GPU};
 inline const constexpr int NUM_DEVICE_TYPES = architecture_types.size();
 inline const std::array<std::string, NUM_DEVICE_TYPES> architecture_names{
-    "CPU", "CUDA"};
+    "CPU", "GPU"};
 
 /// Devices can be distinguished from other devices
 /// by a class type and its index.
@@ -43,17 +49,9 @@ public:
          void *py_dev, int copy_engines = 2)
       : py_dev_(py_dev), dev_id_(dev_id), dev_type_(arch) {
 
-    res_.set(Resource::VCU, num_vcus);
-    res_.set(Resource::Memory, mem_sz);
-    res_.set(Resource::Copy, copy_engines);
-
-    reserved_res_.set(Resource::VCU, num_vcus);
-    reserved_res_.set(Resource::Memory, mem_sz);
-    reserved_res_.set(Resource::Copy, copy_engines);
-
-    mapped_res_.set(Resource::VCU, 0);
-    mapped_res_.set(Resource::Memory, 0);
-    mapped_res_.set(Resource::Copy, 0);
+    res_.set<GPUResources>({mem_sz, num_vcus, copy_engines});
+    reserved_res_.set<GPUResources>({mem_sz, num_vcus, copy_engines});
+    mapped_res_.set<GPUResources>({0, 0, 0});
   }
 
   /// Return a device id.
@@ -64,16 +62,16 @@ public:
            std::to_string(dev_id_);
   }
 
-  const Resource_t query_resource(Resource type) const {
-    return this->res_.get(type);
+  template <typename Resource> const Resource_t query_max() const {
+    return this->res_.get<Resource>();
   }
 
-  const Resource_t query_reserved_resource(Resource type) const {
-    return this->reserved_res_.get(type);
+  template <typename Resource> const Resource_t query_reserved() const {
+    return this->reserved_res_.get<Resource>();
   }
 
-  const Resource_t query_mapped_resource(Resource type) const {
-    return this->mapped_res_.get(type);
+  template <typename Resource> const Resource_t query_mapped() const {
+    return this->mapped_res_.get<Resource>();
   }
 
   const DeviceType get_type() const { return dev_type_; }
@@ -111,22 +109,10 @@ public:
   const DevID_t get_global_id() const { return dev_global_id_; }
 
   const MemorySz_t get_memory_size() const {
-    return res_.get(Resource::Memory);
+    return res_.get<Resource::Memory>();
   }
 
-  const VCU_t get_num_vcus() const { return res_.get(Resource::VCU); }
-
-  const Resource_t get_max_resource(Resource type) const {
-    return this->res_.get(type);
-  }
-
-  const Resource_t get_reserved_resource(Resource type) const {
-    return this->reserved_res_.get(type);
-  }
-
-  const Resource_t get_mapped_resource(Resource type) const {
-    return this->mapped_res_.get(type);
-  }
+  const VCU_t get_num_vcus() const { return res_.get<Resource::VCU>(); }
 
   const bool check_resource_availability(DeviceRequirement *dev_req) const;
 
@@ -142,10 +128,10 @@ protected:
 };
 
 ///
-class CUDADevice : public Device {
+class GPUDevice : public Device {
 public:
-  CUDADevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
-      : Device(DeviceType::CUDA, dev_id, mem_sz, num_vcus, py_dev, 3) {}
+  GPUDevice(DevID_t dev_id, size_t mem_sz, size_t num_vcus, void *py_dev)
+      : Device(DeviceType::GPU, dev_id, mem_sz, num_vcus, py_dev, 3) {}
 
 private:
 };

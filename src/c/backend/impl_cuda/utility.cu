@@ -40,3 +40,17 @@ void stream_synchronize(uintptr_t stream_ptr) {
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_ptr);
   cudaStreamSynchronize(stream);
 };
+
+void set_device(int device) { cudaSetDevice(device); }
+
+int get_device() {
+  int device;
+  cudaGetDevice(&device);
+  return device;
+}
+
+int get_num_devices() {
+  int num_devices;
+  cudaGetDeviceCount(&num_devices);
+  return num_devices;
+}

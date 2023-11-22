@@ -3,6 +3,7 @@ from typing import List, Dict, TYPE_CHECKING, Union, Any
 
 from parla.cython.device import PyCPUDevice
 from parla.common.globals import (
+    get_current_task,
     get_current_devices,
     get_scheduler,
     has_environment,
@@ -125,7 +126,17 @@ class PArray:
             self._name = name
 
         # record the size in Cython PArray
+
+        # Note(@dialecticDolt):It should be valid to create PArrays outside of a scheduler context!!
+        # FIXME
+
         scheduler = get_scheduler()
+        if scheduler is None:
+            raise NotImplementedError(
+                "PArrays cannot be created outside of a scheduler context"
+            )
+
+        # print("Creating PArray with size: ", self.subarray_nbytes, flush=True)
         num_devices = len(scheduler.device_manager.get_all_devices())
         self._cy_parray = CyPArray(
             self,
@@ -135,17 +146,25 @@ class PArray:
             self._cyparray_state,
             num_devices,
         )
+        # record the size in Cython PArray
         self._cy_parray.set_size(self.subarray_nbytes)
+
         target_dev_id = -1 if isinstance(array, numpy.ndarray) else array.device.id
-        if target_dev_id >= 0:
-            assert isinstance(array, cupy.ndarray)
-        target_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
-            target_dev_id
-        )
-        scheduler.reserve_parray(self._cy_parray, target_global_dev_id)
+
+        if scheduler is not None:
+            task = get_current_task()
+            if task is not None:
+                task.create_parray(self._cy_parray, target_dev_id)
+            else:
+                scheduler.create_parray(self._cy_parray, target_dev_id)
+        else:
+            # TODO(wlr): Allow PArrays to be created outside of a task
+            # create_parray(self._cy_parray, target_dev_id)
+            raise NotImplementedError(
+                "PArrays cannot be created outside of a scheduler context"
+            )
 
     # Properties:
-
     @property
     def name(self):
         if self._name is None:
@@ -203,7 +222,7 @@ class PArray:
         elif isinstance(device, PyCPUDevice):
             return CPU_INDEX
         else:
-            # assume GPU here, won't check isinstance(device, PyCUDADevice)
+            # assume GPU here, won't check isinstance(device, PyGPUDevice)
             # to avoid import gpu context, which is slow to setup.
             return device.device.id  # device.device should be a cupy.cuda.Device object
 
@@ -299,7 +318,8 @@ class PArray:
             f"Parent_ID: {self.parent_ID if self.ID != self.parent_ID else None}, "
             f"Slice: {self._slices[0] if self.ID != self.parent_ID else None}, "
             f"Bytes: {self.subarray_nbytes}, "
-            f"Owner: {'GPU ' + str(self._coherence.owner) if self._coherence.owner != CPU_INDEX else 'CPU'}"
+            f"Owner: {'GPU ' + str(self._coherence.owner) if self._coherence.owner != CPU_INDEX else 'CPU'}",
+            flush=True,
         )
         for device_id, state in self._coherence._local_states.items():
             if device_id == CPU_INDEX:
@@ -310,18 +330,20 @@ class PArray:
 
             if isinstance(state, dict):
                 print(
-                    f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices"
+                    f"state: {[state_str_map[s] for s in list(state.values())]}, including sliced copy:  # states of slices is unordered wrt the below slices",
+                    flush=True,
                 )
                 for slice, slice_id in zip(
                     self._array._indices_map[device_id],
                     range(len(self._array._indices_map[device_id])),
                 ):
                     print(
-                        f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}"
+                        f"\tslice {slice_id} - indices: {slice}, bytes: {self._array._buffer[device_id][slice_id].nbytes}",
+                        flush=True,
                     )
             else:
-                print(f"state: {state_str_map[state]}")
-        print("---End of Overview")
+                print(f"state: {state_str_map[state]}", flush=True)
+        print("---End of Overview", flush=True)
 
     # slicing/indexing
 
@@ -396,7 +418,7 @@ class PArray:
 
         with self._coherence_cv[device_id]:
             operations = self._coherence.evict(device_id, keep_one_copy)
-            if operations[0].inst == MemoryOperation.ERROR:
+            if len(operations) != 0 and operations[0].inst == MemoryOperation.ERROR:
                 return False  # cannot perform the eviction
             self._process_operations(operations)
 
@@ -477,16 +499,31 @@ class PArray:
                 if num_gpu > 0:
                     cupy.cuda.stream.get_current_stream().synchronize()
             elif op.inst == MemoryOperation.EVICT:
+                # decrement the reference counter, relying on GC to free the memory
+                to_free = self._array.clear(op.src)
+                # print(
+                #    f"Evicting {self.name} from {op.src}, size: {to_free} bytes", flush=True)
+
                 scheduler = get_scheduler()
-                src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
-                    op.src
-                )
-                if self._cy_parray.get_num_active_tasks(src_global_dev_id) == 0:
-                    # If none of visible tasks will refer this PArray, release
-                    # this PArray instance of the source device from the PArray tracker.
-                    scheduler.release_parray(self._cy_parray, src_global_dev_id)
-                # decrement the reference counter, relying on GC to free the memor
-                self._array.clear(op.src)
+                if scheduler is not None:
+                    if to_free > 0:
+                        # This frees the memory on the device in the mapped and reserved pools
+                        scheduler.device_manager.free_memory(op.src, to_free)
+                        # TODO(wlr): This is only for explictly evicted PArrays. PArrays that fall out of scope need to be freed as well.
+                    src_global_dev_id = scheduler.device_manager.parrayid_to_globalid(
+                        op.src
+                    )
+                    if self._cy_parray.get_num_referring_tasks(src_global_dev_id) == 0:
+                        # If none of active tasks refers this PArray,
+                        # remove this PArray on the src device from
+                        # the PArray tracker's table.
+                        # XXX(hc): Note that this remove PArray "instance" on a specific
+                        # device. For example, a PArray instance on a different device
+                        # from the device being evicted can still be on the eviction
+                        # manager table.
+                        scheduler.remove_parray_from_tracker(
+                            self._cy_parray, src_global_dev_id
+                        )
             elif op.inst == MemoryOperation.ERROR:
                 raise RuntimeError("PArray gets an error from coherence protocol")
             else:
@@ -910,5 +947,11 @@ class PArray:
     def get_parray_parentid_from_cpp(self):
         return self._cy_parray.get_parray_parentid()
 
-    def get_num_active_tasks(self, global_dev_id):
-        return self._cy_parray.get_num_active_tasks(global_dev_id)
+    def get_num_referring_tasks(self, global_dev_id):
+        return self._cy_parray.get_num_referring_tasks(global_dev_id)
+
+    def __del__(self):
+        # Users can explicitly call `del` over a Python PArray.
+        # In this case, detroy its array instance.
+        # TODO(hc): This code is not tested yet
+        self._array = None

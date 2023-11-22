@@ -17,7 +17,7 @@ from typing import Dict
 #  Loading numpy locally works for some things, but not for the array._register_array_type call.
 import numpy
 
-from parla.common.globals import (
+from .globals import (
     get_current_context,
     cupy,
     DeviceType,
@@ -85,7 +85,7 @@ class NumpyArray(ArrayType):
         current_context = get_current_context()
         current_device = current_context.devices[0]
 
-        is_gpu = current_device.architecture == DeviceType.CUDA
+        is_gpu = current_device.architecture == DeviceType.GPU
 
         if CUPY_ENABLED and isinstance(src, cupy.ndarray):
             if is_gpu and (src.flags["C_CONTIGUOUS"] or src.flags["F_CONTIGUOUS"]):
@@ -123,7 +123,7 @@ class CupyArray(ArrayType):
         current_context = get_current_context()
         current_device = current_context.devices[0]
 
-        is_gpu = current_device.architecture == DeviceType.CUDA
+        is_gpu = current_device.architecture == DeviceType.GPU
 
         if isinstance(src, cupy.ndarray) or isinstance(src, numpy.ndarray):
             if isinstance(src, cupy.ndarray) and (src.device.id == target_device_id):
@@ -306,7 +306,7 @@ def clone_here(source, kind=None):
         current_device = current_content.devices[0]
 
         # FIXME: Make this a property of the device
-        if (current_device.architecture == DeviceType.CUDA) and CUPY_ENABLED:
+        if (current_device.architecture == DeviceType.GPU) and CUPY_ENABLED:
             AType = CupyArray()
         else:
             AType = NumpyArray()

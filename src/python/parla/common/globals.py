@@ -37,8 +37,10 @@ PREINIT_THREADS = os.getenv("PARLA_PREINIT_THREADS", "1") == "1"
 
 print("USE_PYTHON_RUNAHEAD: ", USE_PYTHON_RUNAHEAD)
 print("CUPY_ENABLED: ", CUPY_ENABLED)
+print("CROSSPY_ENABLED: ", CROSSPY_ENABLED)
 print("PREINIT_THREADS: ", PREINIT_THREADS)
 
+# TODO(hc): This will be removed during runahead refactoring.
 _global_data_tasks = {}
 
 
@@ -87,7 +89,7 @@ class DeviceType(IntEnum):
     INVALID = -2
     ANY = -1
     CPU = 0
-    CUDA = 1
+    GPU = 1
 
 
 class AccessMode(IntEnum):
