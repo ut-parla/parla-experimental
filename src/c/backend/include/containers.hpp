@@ -480,4 +480,159 @@ public:
   inline bool empty_unsafe() { return this->q.empty(); }
 };
 
+class Compare {
+    public:
+       bool operator()(T a, T b){
+           if(a.priority >= b.priority) { 
+               return true; // the order is correct and NO swapping of elements takes place
+           }
+           return false; // the order is NOT correct and swapping of elements takes place
+      }
+};
+template <typename T> class ProtectedPriorityQueue {
+
+private:
+  std::priority_queue<T, vector<T>, Compare> pq= std::priority_queue<T, vector<T>, Compare>();
+  std::atomic<int> length{0};
+  std::mutex mtx;
+  std::string name;
+
+public:
+  ProtectedPriorityQueue() = default;
+
+  ProtectedPriorityQueue(std::string name) {
+    this->mtx.lock();
+    this->name = name;
+    this->mtx.unlock();
+  }
+
+  ProtectedPriorityQueue(std::string name, std::priority_queue<T> pq) {
+    this->mtx.lock();
+    this->name = name;
+    this->pq = pq;
+    this->mtx.unlock();
+  }
+
+  ProtectedPriorityQueue(std::string name, size_t size) {
+    this->mtx.lock();
+    this->name = name;
+    this->pq.reserve(size);
+    this->mtx.unlock();
+  }
+
+  void lock() { this->mtx.lock(); }
+
+  void unlock() { this->mtx.unlock(); }
+
+  void push(T a) {
+    this->mtx.lock();
+    this->pq.push(a);
+    this->mtx.unlock();
+    this->length++;
+  }
+
+  inline void push_unsafe(T a) {
+    this->pq.push(a);
+    this->length++;
+  }
+
+  void push(std::vector<T> &a) {
+    this->mtx.lock();
+    for (auto val : a) {
+      this->push_unsafe(val);
+    }
+    this->mtx.unlock();
+  }
+
+  inline void push_unsafe(std::vector<T> &a) {
+    for (auto val : a) {
+      this->push_unsafe(val);
+    }
+  }
+
+  void pop() {
+    this->mtx.lock();
+    this->pq.pop();
+    this->mtx.unlock();
+    this->length--;
+  }
+
+  inline void pop_unsafe() {
+    this->pq.pop();
+    this->length--;
+  }
+
+  size_t atomic_size() { return this->length.load(); }
+
+  size_t size() {
+    this->mtx.lock();
+    int size = this->pq.size();
+    this->mtx.unlock();
+    return size;
+  }
+
+  size_t size_unsafe() { return this->q.size(); }
+
+  T operator[](size_t i) {
+    this->mtx.lock();
+    auto val = this->pq[i];
+    this->mtx.unlock();
+    return val;
+  }
+
+  T at(size_t i) {
+    this->mtx.lock();
+    T val = this->pq.at(i);
+    this->mtx.unlock();
+    return val;
+  }
+
+  inline T at_unsafe(size_t i) { return this->pq.at(i); }
+
+  T front() {
+    this->mtx.lock();
+    T val = this->pq.top();
+    this->mtx.unlock();
+    return val;
+  }
+
+  inline T front_unsafe() { return this->pq.top(); }
+  
+  T front_and_pop() {
+    this->mtx.lock();
+    T val = this->front_unsafe();
+    this->pop_unsafe();
+    this->mtx.unlock();
+    return val;
+  }
+
+  inline T front_and_pop_unsafe() {
+    T val = this->front_unsafe();
+    this->pop_unsafe();
+    return val;
+  }
+  
+  // Add implementation of clear()
+  // void clear() {
+  //   this->mtx.lock();
+  //   this->pq.clear();
+  //   this->mtx.unlock();
+  //   this->length = 0;
+  // }
+
+  // inline void clear_unsafe() {
+  //   this->pq.clear();
+  //   this->length = 0;
+  // }
+
+  bool empty() {
+    this->mtx.lock();
+    bool empty = this->pq.empty();
+    this->mtx.unlock();
+    return empty;
+  }
+
+  inline bool empty_unsafe() { return this->pq.empty(); }
+};
+
 #endif // PARLA_CONTAINERS_HPP

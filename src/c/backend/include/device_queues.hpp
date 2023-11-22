@@ -8,7 +8,13 @@
 
 #include "device_manager.hpp"
 #include "runtime.hpp"
+// #include <chrono>
+#include <ctime>
 
+struct taskStructure {             // Structure declaration
+  int priority;         // Member (int variable)
+  InnerTask *task;   // Member (string variable)
+}; 
 // TODO(wlr): FIXME Change these back to smart pointers. I'm leaking memory
 // here...
 
@@ -22,7 +28,7 @@
  * queue supervises the phase of.
  */
 template <ResourceCategory category> class DeviceQueue {
-  using MixedQueue_t = TaskQueue;
+  using MixedQueue_t = PriorityTaskQueue;
   using MDQueue_t = TaskQueue;
 
 public:
@@ -38,12 +44,26 @@ public:
    * Enqueues a task on this device.
    * @param task the task to enqueue
    */
+
+  int determine_priority(InnerTask *task) {
+    int num_dependents = xyz; // directly propotional
+    int num_gpus_required = xyz; // inveresly propotional
+    int start_time =  time(NULL); // directly propotional
+    priority = (num_dependents * start_time) / num_gpus_required; // normalize and change this
+    return priority;
+    // critical path length to most recently spawned task
+    // estimated completion time
+
+  }
   void enqueue(InnerTask *task) {
+    taskStructure new_task;
+    new_task.priority = task->determine_priority(task);
+    new_task.task = task;
     // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
     // std::endl;
 
     // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
-    this->mixed_queue.push_back(task);
+    this->mixed_queue.push(new_task);
     num_tasks++;
   };
 
@@ -111,7 +131,7 @@ public:
         // If the task is still waiting, move it to the waiting queue
         // std::cout << "Moving to waiting queue" << std::endl;
         waiting_queue.push_back(head);
-        mixed_queue.pop_front();
+        mixed_queue.pop();
 
         // TODO(wlr): Should num_tasks include waiting tasks?
         // (2)
@@ -138,7 +158,7 @@ public:
     InnerTask *task = front();
     if (task != nullptr) {
       // std::cout << "Popping task: " << task->get_name() << std::endl;
-      mixed_queue.pop_front();
+      mixed_queue.pop();
       // Set removed status so task can be pruned from other queues
       task->set_removed<category>(true);
       num_tasks--;
