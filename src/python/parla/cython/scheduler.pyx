@@ -8,8 +8,10 @@
 from abc import abstractmethod
 import threading
 import inspect 
-from parla.common.globals import DeviceType, cupy, CUPY_ENABLED
-from parla.common.globals import SynchronizationType as SyncType
+from ..common.globals import DeviceType, cupy, CUPY_ENABLED
+from ..common.globals import SynchronizationType as SyncType
+from ..common.globals import _Locals as Locals 
+from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
 
 if cupy is not None:
     import cupy_backends
@@ -23,9 +25,7 @@ from . import tasks
 from . cimport core
 from . import core
 from .cyparray import CyPArray
-
-from ..common.globals import _Locals as Locals 
-from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
+from ..utility.tracer import NVTXTracer
 
 Task = tasks.Task
 ComputeTask = tasks.ComputeTask
@@ -33,8 +33,6 @@ DataMovementTask = tasks.DataMovementTask
 TaskSpace = tasks.TaskSpace
 AtomicTaskSpace = tasks.AtomicTaskSpace
 create_env = tasks.create_env
-
-from parla.utility.tracer import NVTXTracer
 
 PyInnerScheduler = core.PyInnerScheduler
 PyInnerWorker = core.PyInnerWorker
@@ -150,7 +148,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
         # TODO(wlr): Fix this in device_manager (see todo there)
 
         if CUPY_ENABLED:
-            gpu_arch = device_manager.py_registered_archs[DeviceType.CUDA]
+            gpu_arch = device_manager.py_registered_archs[DeviceType.GPU]
             ngpus = len(gpu_arch)
 
             for index in range(ngpus):
@@ -203,12 +201,12 @@ class WorkerThread(ControllableThread, SchedulerContext):
                     self.scheduler.start_monitor.notify_all()
 
                 while self._should_run:
-                    self.status = "Waiting"
-
-                    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
-                    self.inner_worker.wait_for_task()
-
                     self.task = self.inner_worker.get_task()
+                    if(self.task is None):
+                        self.status = "Waiting"
+                        nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        self.inner_worker.wait_for_task()  # GIL Release
+                        self.task = self.inner_worker.get_task()
                     if isinstance(self.task, core.DataMovementTaskAttributes):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
@@ -219,7 +217,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         _global_data_tasks[id(self.task)] = self.task
 
                     nvtx.pop_range(domain="Python Runtime")
-
+                    # print("THREAD AWAKE", self.index, self.task, self._should_run, flush=True)
                     self.status = "Running"
 
                     if isinstance(self.task, Task):
@@ -232,6 +230,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         active_task.environment = device_context
 
                         # Writes all 'default' streams and event pointers to c++ task
+                        # This allows their synchronization without the GIL and faster iteration over them
+                        # (only saves initial runtime ones, TODO(wlr): save any user added events or streams after body returns)
                         device_context.write_to_task(active_task)
 
                         # Wait / Enqueue event for dependencies to complete
@@ -259,7 +259,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         device_context.record_events()
 
                         nvtx.pop_range(domain="Python Runtime")
-
+                        # print("Finished Task", self.index, active_task.taskid.full_name, flush=True)
                         nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
 
                         final_state = active_task.state
@@ -286,31 +286,55 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         elif  isinstance(final_state, tasks.TaskRunahead):
                             core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                     
-                        # print("Cleaning up Task", active_task, flush=True)
-                        
                         if USE_PYTHON_RUNAHEAD:
                             # Handle synchronization in Python (for debugging, works!)
-                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
-                            if active_task.runahead != SyncType.NONE:
-                                device_context.synchronize(events=True)
-                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            # print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            if self._should_run:
+                                # print("In if", flush=True)
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            else:
+                                # print("In else", flush=True)
+                                self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                if active_task.runahead != SyncType.NONE:
+                                    device_context.synchronize(events=True)
+                                self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
                         else:
                             # Handle synchronization in C++
-                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
-
+                            # self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            # Adding wait here to reduce context switch between GIL
+                            print("Should run before cleanup_and_wait", self._should_run, active_task.inner_task, flush=True)
+                            if self._should_run:
+                                self.status = "Waiting"
+                                nvtx.push_range(message="worker::wait::2", domain="Python Runtime", color="red")
+                                self.scheduler.inner_scheduler.task_cleanup_and_wait_for_task(self.inner_worker, active_task.inner_task, active_task.state.value)
+                                # self.task = self.inner_worker.get_task()
+                            else:
+                                self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                        # print("Finished Cleaning up Task", active_task, flush=True)
+                        # print("Should run before device_context", self._should_run, task, flush=True)
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
-
+                        # print("Should run before final_state cleanup", self._should_run, task, flush=True)
                         if isinstance(final_state, tasks.TaskRunahead):
                             final_state = tasks.TaskCompleted(final_state.return_value)
                             active_task.cleanup()
-
                             core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
 
+                        # print("Finished Task", active_task, flush=True)
+                        # print("Should run before reassigning active_task", self._should_run, task, flush=True)
                         active_task.state = final_state
                         self.task = None
-
                         nvtx.pop_range(domain="Python Runtime")
+
+                        # Adding wait here to reduce context switch between GIL
+                        # if self._should_run:
+                        #    self.status = "Waiting"
+                        #    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
+                        #    self.inner_worker.wait_for_task() # GIL Release
+                        #    self.task = self.inner_worker.get_task()
+
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:
@@ -338,7 +362,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
 class Scheduler(ControllableThread, SchedulerContext):
 
-    def __init__(self, device_manager, n_threads=6, period=0.001):
+    def __init__(self, memory_manager, device_manager, n_threads=6, period=0.001):
         super().__init__()
 
         self.start_monitor = threading.Condition(threading.Lock())
@@ -352,9 +376,17 @@ class Scheduler(ControllableThread, SchedulerContext):
         # TODO: Deprecate this
         resources = 1.0
 
+        self.memory_manager = memory_manager
         self.device_manager = device_manager
+        cy_memory_manager = self.memory_manager.get_cy_memory_manager()
         cy_device_manager = self.device_manager.get_cy_device_manager()
-        self.inner_scheduler = PyInnerScheduler(cy_device_manager, n_threads, resources, self)
+        self.inner_scheduler = PyInnerScheduler(cy_memory_manager,
+                                                cy_device_manager,
+                                                n_threads,
+                                                resources, self)
+        # Worker threads and a scheduler both can access the active_parrays
+        # and so we need a lock to guard that.
+        self.active_parrays_monitor = threading.Condition(threading.Lock())
 
         self.worker_threads = [WorkerThread(self, i) for i in range(n_threads)]
 
@@ -396,8 +428,50 @@ class Scheduler(ControllableThread, SchedulerContext):
         finally:
             pass
 
+    def parray_eviction(self):
+        py_mm = self.memory_manager
+        # print("Eviction policy is activated")
+        for cuda_device in self.device_manager.get_devices(DeviceType.CUDA):
+            global_id = cuda_device.get_global_id()
+            parray_id = self.device_manager.globalid_to_parrayid(global_id)
+            # Get target memory size to evict from this device
+            memory_size_to_evict = \
+                self.inner_scheduler.get_memory_size_to_evict(global_id)
+            # Get the number of PArray candidates that are allowed to be evicted
+            # from Python eviction manager.
+            num_evictable_parray = py_mm.size(global_id)
+            # TODO(hc): remove this. this is for test.
+            # import cupy
+            for i in range(0, num_evictable_parray):
+                try:
+                    # Get a PArray from a memory manager to evict.
+                    evictable_parray = \
+                        py_mm.remove_and_return_head_from_zrlist(global_id)
+                    if evictable_parray is not None:
+                        evictable_parray.evict(parray_id)
+
+                        # Repeat eviction until it gets enough memory.
+                        memory_size_to_evict -= \
+                            evictable_parray.nbytes_at(parray_id)
+                        # print("\t Remaining size to evict:", memory_size_to_evict, flush=True)
+                        if memory_size_to_evict <= 0:
+                            break
+                except Exception as e:
+                    print("Failed to find parray evictable", flush=True)
+        return
+
     def run(self):
-        self.inner_scheduler.run()
+        with self:
+            while True:
+                print("Scheduler: Running", flush=True)
+                self.inner_scheduler.run()
+                should_run = self.inner_scheduler.get_should_run()
+                if should_run is False:
+                    break
+                # This case is executed if PArray eviction
+                # mechanism was invoked by C++ scheduler.
+                self.parray_eviction() 
+            self.stop_callback()
 
     def stop(self):
         self.inner_scheduler.stop()
@@ -423,8 +497,8 @@ class Scheduler(ControllableThread, SchedulerContext):
 
     def spawn_wait(self):
         self.inner_scheduler.spawn_wait()
-
-    def reserve_parray(self, cy_parray: CyPArray, global_dev_id: int):
+        
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
         """
         Reserve PArray instances that are created through
         __init__() of the PArray class.
@@ -432,22 +506,48 @@ class Scheduler(ControllableThread, SchedulerContext):
         during initialization if its internal array type is PArray.
 
         :param parray: Created Cython PArray instance
+        """
+        self.inner_scheduler.create_parray(cy_parray, parray_dev_id)
+
+    def get_mapped_memory(self, global_dev_id: int):
+        """
+        Return the total amount of mapped memory on a device.
+
         :param global_dev_id: global logical device id that
-                              the PArray will be placed
+                              this function interests
         """
-        self.inner_scheduler.reserve_parray(cy_parray, global_dev_id)
+        return self.inner_scheduler.get_mapped_memory(global_dev_id)
 
-    def release_parray(self, cy_parray: CyPArray, global_dev_id: int):
+    def get_reserved_memory(self, global_dev_id: int):
         """
-        Release PArray instances that are evicted.
+        Return the total amount of reserved memory on a device.
 
-        :param parray: Cython PArray instance to be evicted
         :param global_dev_id: global logical device id that
-                              the PArray will be evicted
+                              this function interests
         """
-        self.inner_scheduler.release_parray(cy_parray, global_dev_id)
+        return self.inner_scheduler.get_reserved_memory(global_dev_id)
 
-    def get_parray_state(self, global_dev_id: int, parray_parent_id):
+    def get_max_memory(self, global_dev_id: int):
+        """
+        Return the total amount of memory on a device.
+
+        :param global_dev_id: global logical device id that
+                              this function interests
+        """
+        return self.inner_scheduler.get_max_memory(global_dev_id)
+
+    def get_mapped_parray_state(self, global_dev_id: int, parray_parent_id):
+        """
+        Return True if a parent PArray of the passed PArray exists on a
+        device.
+
+        :param global_dev_id: global logical device id that 
+                            this function interests 
+        :param parray_parent_id: parent PArray ID
+        """
+        return self.inner_scheduler.get_mapped_parray_state(global_dev_id, parray_parent_id)
+
+    def get_reserved_parray_state(self, global_dev_id: int, parray_parent_id):
         """
         Return True if a parent PArray of the passed PArray exists on a
         device.
@@ -458,8 +558,18 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_parray_state(global_dev_id, parray_parent_id)
 
+    def remove_parray_from_tracker(self, cy_parray: CyPArray, did: int):
+        """
+        Remove the evicted PArray instance on device `global_dev_id`
+        from the PArray tracker's table
 
-def _task_callback(task, body):
+        :param cy_parray: Cython PArray instance to be removed 
+        :param did: global logical device id where the PArray is evicted
+        """
+        self.inner_scheduler.remove_parray_from_tracker(cy_parray, did)
+
+
+cpdef _task_callback(task, body):
     """
     A function which forwards to a python function in the appropriate device context.
     """
@@ -481,6 +591,7 @@ def _task_callback(task, body):
                         "Parla coroutine tasks must yield a TaskAwaitTasks")
                 dependencies = new_task_info.dependencies
                 value_task = new_task_info.value_task
+
                 if value_task:
                     assert isinstance(value_task, Task)
                     task.value_task = value_task

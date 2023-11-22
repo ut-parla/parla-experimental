@@ -9,19 +9,20 @@
 from collections import namedtuple, defaultdict
 import functools 
 
-from parla.utility.threads import Propagate
+from ..utility.threads import Propagate
 
 from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
-
-from .device import PyDevice, PyCPUDevice, PyCUDADevice, DeviceResourceRequirement
+from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement, PyDeviceType
+from .cyparray import CyPArray
 
 from ..common.globals import _Locals as Locals
 from ..common.globals import DeviceType
 from ..common.globals import get_stream_pool
 from ..common.globals import AccessMode, Storage
-
-from ..common.parray.core import PArray
 from ..common.globals import SynchronizationType as SyncType 
+from ..common.parray.core import PArray
+
+DeviceType = PyDeviceType
 
 from abc import abstractmethod, ABCMeta
 from typing import Optional, List, Iterable, FrozenSet
@@ -392,11 +393,7 @@ class Task:
         else:
             raise NotImplementedError("Unknown synchronization type: {}".format(self.runahead))
 
-        # print("Trying to get dependencies: ", self.name)
-
         dependencies = self.get_dependencies()
-
-        # print("Dependencies: {}".format(dependencies), flush=True)
 
         for task in dependencies:
             assert(isinstance(task, Task))
@@ -468,7 +465,6 @@ class Task:
         task_state = None
         self.state = TaskRunning(self.func, self.args)
         try:
-
             task_state = self._execute_task()
 
             task_state = task_state or TaskRunahead(None)
@@ -517,6 +513,9 @@ class Task:
 
     def get_assigned_devices(self):
         return self.inner_task.get_assigned_devices()
+
+    def create_parray(self, cy_parray: CyPArray, parray_dev_id: int):
+        return self.inner_task.create_parray(cy_parray, parray_dev_id)
 
     def add_dataflow(self, dataflow):
         if dataflow is not None:
@@ -688,6 +687,7 @@ class DataMovementTask(Task):
                  name = None):
         super().__init__(taskspace, idx, state, scheduler, name)
         self.parray = parray
+
         self.access_mode = access_mode
         self.assigned_devices = assigned_devices
 
@@ -707,6 +707,7 @@ class DataMovementTask(Task):
         self.inner_task.set_py_task(self)
         self.dev_id = attrs.dev_id
         self.runahead = runahead
+        self.dependencies = self.get_dependencies()
 
     def _execute_task(self):
         """!
@@ -725,7 +726,7 @@ class DataMovementTask(Task):
         return TaskRunahead(0)
 
     def cleanup(self):
-        pass
+        self.parray = None
 
 ######
 # Task Environment
@@ -739,8 +740,8 @@ def create_device_env(device):
     """
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
-    elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
+    elif isinstance(device, PyGPUDevice):
+        return GPUEnvironment(device), DeviceType.GPU
 
 
 def create_env(sources):
@@ -806,14 +807,14 @@ class TaskEnvironment:
         """
         Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
         """
-        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.GPU]]
 
     @property
     def gpu_id(self):
         """
         Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
         """
-        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+        return self.device_dict[DeviceType.GPU][0].get_parla_device().id
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
@@ -884,7 +885,7 @@ class TaskEnvironment:
         return self.devices[0]
 
     def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+        return [dev.device for dev in self.get_devices(DeviceType.GPU)]
 
     def synchronize(self, events=False, tags=None, return_to_pool=True):
         if tags is None:
@@ -1786,4 +1787,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
