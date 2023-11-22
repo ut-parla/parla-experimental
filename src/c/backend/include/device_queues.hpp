@@ -45,8 +45,8 @@ public:
    */
 
   int determine_priority(InnerTask *task) {
-    int num_dependents = xyz; // directly propotional
-    int num_gpus_required = xyz; // inveresly propotional
+    int num_dependents = task->dependents.size(); // directly propotional
+    int num_gpus_required = task->assigned_devices.size(); // inveresly propotional
     int start_time =  time(NULL); // directly propotional
     priority = (num_dependents * start_time) / num_gpus_required; // normalize and change this
     return priority;
