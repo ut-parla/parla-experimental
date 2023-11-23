@@ -196,12 +196,11 @@ class ParlaRLEnvironment(ParlaRLBaseEnvironment):
 
 class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
   # [Features]
-  # 1. dependency per device (5, GCN)
-  # 2. dependentedependency per state (6 due to dependents, GCN)
-  # 3. num. of visible dependents (1, GCN)
-  # 4. device per-state load (3 * 5 = 15, FCN)
-  gcn_indim = 12
-  fcn_indim = 15
+  # 1. dependency state per device (3 * 4, GCN)
+  # 2. num. of visible dependents (1, GCN)
+  # 3. device per-state load (3 * 4 = 12, FCN)
+  gcn_indim = 13
+  fcn_indim = 12
   outdim = 4
   device_feature_dim = 3
 
@@ -225,7 +224,7 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
 
   def create_gcn_task_workload_state(
       self, node_id_offset: int, target_task: SimulatedTask,
-      devices: List, taskmap: Dict) -> Tuple[torch.tensor, torch.tensor]:
+      devices: List, taskmap: Dict, per_device_total_tasks: List) -> Tuple[torch.tensor, torch.tensor]:
       """
       Create a state that shows task workload states.
       This function creates states not only of the current target task, but also
@@ -237,7 +236,7 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
       lst_dst_edge_index = []
       # Create a state of the current task, and append it to the features list.
       lst_node_features.append(
-          self.create_task_workload_state(target_task, devices, taskmap))
+          self.create_task_workload_state(target_task, devices, taskmap, per_device_total_tasks))
       # This function temporarily assigns an index to each task.
       # This should match the index on the node feature list and the edge list.
       node_id_offset += 1
@@ -248,7 +247,7 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
           # 0th task is the target task
           lst_dst_edge_index.append(0)
           lst_node_features.append(
-              self.create_task_workload_state(dependency, devices, taskmap))
+              self.create_task_workload_state(dependency, devices, taskmap, per_device_total_tasks))
           node_id_offset += 1
       for dependent_id in target_task.dependents:
           dependent = taskmap[dependent_id]
@@ -257,7 +256,7 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
           # Add a dependent to the edge list
           lst_dst_edge_index.append(node_id_offset)
           lst_node_features.append(
-              self.create_task_workload_state(dependent, devices, taskmap))
+              self.create_task_workload_state(dependent, devices, taskmap, per_device_total_tasks))
           node_id_offset += 1
       edge_index = torch.Tensor([lst_src_edge_index, lst_dst_edge_index])
       edge_index = edge_index.to(torch.int64)
@@ -269,36 +268,42 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
 
   def create_task_workload_state(
       self, target_task: SimulatedTask, devices: List,
-      taskmap: Dict) -> torch.tensor:
+      taskmap: Dict, per_device_total_tasks: List) -> torch.tensor:
       # TODO(hc): need to be normalized
-      # The number of dependencies per-state (dim: 4): MAPPED ~ COMPLETED
+      # The number of dependencies per-state (dim: 4): MAPPED ~ LAUNCHED
       # Then, # of the dependencies per-devices
       # (dim: # of devices): 0 ~ # of devices
       current_gcn_state = torch.zeros(self.gcn_indim)
-      device_state_offset = TaskState.COMPLETED - TaskState.NONE + 1
+      per_device_offset = TaskState.LAUNCHED - TaskState.MAPPED + 1
       for dependency_id in target_task.dependencies:
           dependency = taskmap[dependency_id]
-          assigned_device_to_dependency = dependency.assigned_devices
-          dependency_state = dependency.state
-          dependency_state_offset = (dependency_state - TaskState.NONE)
-          # print("  state: ", dependency_state_offset, " = ", current_gcn_state[dependency_state_offset], ", ", dependency_state)
-          # The number of the dependencies per state
-          current_gcn_state[dependency_state_offset] = \
-              current_gcn_state[dependency_state_offset] + 1
-          for assigned_device in dependency.assigned_devices:
-              # print("  device: ", device_state_offset + assigned_device.device_id, " = ", current_gcn_state[device_state_offset + assigned_device.device_id], ", ", assigned_device.device_id)
-              # The number of the dependencies per device
-              current_gcn_state[device_state_offset + assigned_device.device_id] = \
-                  current_gcn_state[device_state_offset + assigned_device.device_id] + 1
+          dependency_state_offset = dependency.state - TaskState.MAPPED
+          for dev in dependency.assigned_devices:
+              this_device_offset = dev.device_id * per_device_offset
+              this_dependency_offset = this_device_offset + dependency_state_offset
+              current_gcn_state[this_dependency_offset] = \
+                  current_gcn_state[this_dependency_offset] + 1
+              print("dependency:", this_dependency_offset, " <- ", current_gcn_state[this_dependency_offset])
+      for device in devices:
+          if device.architecture == Architecture.CPU:
+              continue
+          this_device_total_tasks = per_device_total_tasks[device.device_id] 
+          if this_device_total_tasks == 0:
+              continue
+          this_device_offset = per_device_offset * device.device_id
+          for si in range(0, per_device_offset):
+              current_gcn_state[this_device_offset + si] = \
+                  current_gcn_state[this_device_offset + si] / this_device_total_tasks
+              print(this_device_offset + si , " is normalized to ", current_gcn_state[this_device_offset + si])
       # The number of the dependent tasks
-      current_gcn_state[device_state_offset + len(devices)] = len(target_task.dependents)
-      # print(" dependents: ", device_state_offset + len(devices), " = ", current_gcn_state[device_state_offset + len(devices)], ", ", len(target_task.dependents))
+      current_gcn_state[per_device_offset * len(per_device_total_tasks)] = len(target_task.dependents) / 100
+      print(" dependents: ", per_device_offset * len(per_device_total_tasks), " = ", current_gcn_state[per_device_offset * len(per_device_total_tasks)], ", ", len(target_task.dependents))
       # print("gcn state:", current_gcn_state)
       return current_gcn_state.unsqueeze(0)
 
   def create_device_load_state(self, target_task: SimulatedTask, devices: List,
                                reservable_tasks: Dict, launchable_tasks: Dict,
-                               launched_tasks: Dict) -> torch.tensor:
+                               launched_tasks: Dict, total_tasks) -> torch.tensor:
       """
       Create a state that shows devices' workload states.
       This state will be an input of the fully-connected layer.
@@ -307,24 +312,26 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
       # print("******** Create states:", target_task)
       # Per-state load per-device
       idx = 0
-      total_tasks = 0
       for device in devices:
+          if device.architecture == Architecture.CPU:
+              continue
           current_state[idx] = len(reservable_tasks[device]) + len(launchable_tasks[device][TaskType.COMPUTE])
           current_state[idx + 1] = len(launchable_tasks[device][TaskType.DATA])
           current_state[idx + 2] = len(launched_tasks[device])
-          for i in range(0, self.device_feature_dim):
-              total_tasks += current_state[idx + i].item()
           idx += self.device_feature_dim
       # Normalization
       idx = 0
       if (total_tasks > 0):
           for device in devices:
+              if device.architecture == Architecture.CPU:
+                  continue
               for i in range(0, self.device_feature_dim):
                   current_state[idx + i] = current_state[idx + i].item() / total_tasks
               idx += self.device_feature_dim
       return current_state
 
   def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
+                   spawned_tasks: Dict, mappable_tasks: Dict,
                    reservable_tasks: Dict, launchable_tasks: Dict,
                    launched_tasks: Dict):
       """
@@ -334,14 +341,44 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
       2) Task workload state: How many dependencies are on each state, and how many
                               dependent tasks this task has?
       """
+      total_tasks = 0
+      per_device_total_tasks = []
+      for device in devices:
+          if device.architecture == Architecture.CPU:
+              print("CPU id:", device.device_id)
+              continue
+          print(device, " id :", device.device_id)
+          this_device_total_tasks = \
+                         len(reservable_tasks[device]) + \
+                         len(launchable_tasks[device][TaskType.COMPUTE]) + \
+                         len(launchable_tasks[device][TaskType.DATA]) + \
+                         len(launched_tasks[device])
+          per_device_total_tasks.append(this_device_total_tasks)
+          total_tasks += per_device_total_tasks[device.device_id]
+          # TODO(hc): this assumes that all tasks are spawned in advnace.
+          # so hard to use that.
+      print("Total task:", total_tasks)
       current_device_load_state = self.create_device_load_state(
           target_task, devices, reservable_tasks, launchable_tasks,
-          launched_tasks)
+          launched_tasks, total_tasks)
+      #if total_tasks > 0:
+      #    total_tasks /= 10
       edge_index, current_workload_features = self.create_gcn_task_workload_state(
-          0, target_task, devices, taskmap)
+          0, target_task, devices, taskmap, per_device_total_tasks)
+      print("current dev:", current_device_load_state)
+      print("current wkl:", current_workload_features)
       return current_device_load_state, edge_index, current_workload_features
 
-  def calculate_reward(self, task, completion_time, is_worth_to_evaluate):
+  def inspect_reward(self, task, completion_time):
+      """ Return true if an inspected reward is less than -1. """
+      if task.name not in self.task_execution_map:
+          return False
+      old_completion_time = self.task_execution_map[task.name]
+      reward = (old_completion_time - completion_time) / old_completion_time
+      return reward < -5
+
+  def calculate_reward(self, task, completion_time, negative_is_worth_to_evaluate,
+      positive_is_worth_to_evaluate):
       if task.name not in self.task_execution_map:
           print(task.name, " does not exist on completion time map")
           self.candidate_task_execution_map[task.name] = completion_time
@@ -349,16 +386,26 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
           return torch.tensor([[0]], dtype=torch.float)
       else:
           old_completion_time =  self.task_execution_map[task.name]
-          reward = 1
-          if completion_time > 0:
+          reward = 0
+          if old_completion_time > 0:
+#if old_completion_time == completion_time:
+#reward = 0.01
+#else:
               reward = (old_completion_time - completion_time) / old_completion_time
-          if old_completion_time > completion_time:
+              reward = max(reward, -1)
+              reward = min(reward, 1)
+
+          if old_completion_time >= completion_time:
               self.num_failed_to_achieved_goals[task.name] = 0
               self.candidate_task_execution_map[task.name] = completion_time
           else:
-              # The current episode's device selection fails to achieve the goal in
-              # the dictionary
-              self.num_failed_to_achieved_goals[task.name] += 1
+              if old_completion_time * 2 < completion_time:
+                  # The current episode's device selection fails to achieve the goal in
+                  # the dictionary
+                  self.num_failed_to_achieved_goals[task.name] += 1
+              else:
+                  self.num_failed_to_achieved_goals[task.name] -= 1
+
               if self.num_failed_to_achieved_goals[task.name] == self.remove_threshold:
                   # If this goal is hard to achieve across multiple episodes, this might be
                   # because of a somewhat skewed past decisions, and that goal was achieved
@@ -366,9 +413,14 @@ class ParlaRLNormalizedEnvironment(ParlaRLBaseEnvironment):
                   # In this case, resetting goal might be helpful.
                   self.num_failed_to_achieved_goals[task.name] = 0
                   del self.task_execution_map[task.name]
-          print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time, " = reward ", reward)
-          if not is_worth_to_evaluate and reward > 0:
+          if not negative_is_worth_to_evaluate and not positive_is_worth_to_evaluate:
               return torch.tensor([[0]], dtype=torch.float)
+          elif not negative_is_worth_to_evaluate and reward > 0:
+              print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time, " = reward ", reward)
+              return torch.tensor([[0]], dtype=torch.float)
+          elif not positive_is_worth_to_evaluate and reward < 0:
+              return torch.tensor([[0]], dtype=torch.float)
+          print(task.name, "'s completion time:", completion_time, " vs ", old_completion_time, " = reward ", reward)
           return torch.tensor([[reward]], dtype=torch.float)
 
   def finalize_epoch(self, execution_time):
@@ -602,6 +654,7 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
       return current_state
 
   def create_state(self, target_task: SimulatedTask, devices: List, taskmap: Dict,
+                   spawned_tasks: Dict, mappable_tasks: Dict,
                    reservable_tasks: Dict, launchable_tasks: Dict,
                    launched_tasks: Dict):
       """

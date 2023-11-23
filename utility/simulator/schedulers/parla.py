@@ -21,6 +21,8 @@ from ..rl.models.dqn import DQNAgent
 from ..rl.models.model import *
 from ..rl.models.env import *
 
+import torch
+
 #from rich import print
 
 StatesToResources: Dict[TaskState, list[ResourceType]] = {}
@@ -66,6 +68,8 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
         current_deviceload_state, edge_index, node_features = \
             parla_arch.rl_environment.create_state(
             task, parla_arch.devices, objects.taskmap,
+            parla_arch.spawned_tasks,
+            parla_arch.mappable_tasks,
             parla_arch.reservable_tasks,
             parla_arch.launchable_tasks,
             parla_arch.launched_tasks)
@@ -113,11 +117,29 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
         completion_time_expectation = max(heft, chosen_dev_available_time) + task_duration
         task.completion_time_expectation = completion_time_expectation
         parla_arch.device_available_time[action.item()] = completion_time_expectation
+
+        inspect_result = True
+        negative_is_worth_to_evaluate = True
+        for device in parla_arch.devices:
+            dev_avail_time = parla_arch.device_available_time[device.device_id]
+            inspecting_compl_time = max(heft, dev_avail_time) + task_duration 
+            print("device:", device.device_id, " inspecting compl time:", inspecting_compl_time)
+            inspect_result = parla_arch.rl_environment.inspect_reward(task, inspecting_compl_time)
+            # if any of the device can give >0 reward, break and proceed with the later processes
+            # normally
+            if not inspect_result:
+                break
+        # If all of the devices can only give <0 reward, ignore this for training
+        if inspect_result:
+            print("due to inspection, this is decided to ignore")
+            negative_is_worth_to_evaluate = False
+
         # 8. Calculate reward
         reward = parla_arch.rl_environment.calculate_reward(
-            task, completion_time_expectation, is_worth_to_evaluate)
-        parla_arch.device_active_reward[action.item()] += reward.item()
+            task, completion_time_expectation, is_worth_to_evaluate, negative_is_worth_to_evaluate)
         parla_arch.rl_mapper.add_reward(reward)
+
+        parla_arch.device_active_reward[action.item()] += reward.item()
         task.times[TaskState.MAPPED] = current_time
         devices = task.assigned_devices
         # print(f"Task {task.name} assigned to device {devices}")
@@ -462,6 +484,7 @@ class ParlaArchitecture(SchedulerArchitecture):
                     next_deviceload_state, next_edge_index, next_node_features = \
                         self.rl_environment.create_state(
                         task, self.devices, objects.taskmap,
+                        self.spawned_tasks, self.mappable_tasks,
                         self.reservable_tasks, self.launchable_tasks, self.launched_tasks)
                     # 2. Attempt to optimize a RL model
                     self.rl_mapper.optimize_model(

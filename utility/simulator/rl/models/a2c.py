@@ -32,11 +32,12 @@ class A2CAgent(RLModel):
         # Critic: Value network that evaluates an action from the policy network.
         self.a2c_model = A2CNetwork(gcn_indim, self.indim, outdim)
         self.optimizer = optim.RMSprop(self.a2c_model.parameters(),
-                                       lr=0.002)
+                                       lr=0.0001)
+                                       #lr=0.0005)
         self.steps = 0
         self.execution_mode = execution_mode
         # Interval to update the actor network parameter
-        self.step_for_optim = 5
+        self.step_for_optim = 10
         self.gamma = gamma
         self.episode = 0
         self.a2cnet_fname = "a2c_network.pt"
@@ -88,8 +89,8 @@ class A2CAgent(RLModel):
         self.values.append(value)
         print("Target task:", target_task)
         print("action:", action)
-        """
         print("action probs:", action_probabilities)
+        """
         print("select device:", target_task)
         print("model input:", model_input)
         print("gcn input:", gcn_x)
@@ -110,9 +111,17 @@ class A2CAgent(RLModel):
 
     def optimize_model(self, next_x, next_gcn_x, next_gcn_edgeindex):
         self.steps += 1
-        if self.episode == 0 or not self.is_training_mode():
+        if self.episode == 1 or not self.is_training_mode():
+            # Reset the model states
+            print("optimization ignored")
+            self.steps = 0
+            self.entropy_sum = 0
+            self.log_probs = []
+            self.values = []
+            self.rewards = []
             return
         if self.steps == self.step_for_optim:
+            print("optimization started")
             assert len(self.log_probs) == self.step_for_optim
             assert len(self.values) == self.step_for_optim
             assert len(self.rewards) == self.step_for_optim
