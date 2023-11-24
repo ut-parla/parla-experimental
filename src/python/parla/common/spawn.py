@@ -17,7 +17,7 @@ from ..common.globals import (
     SynchronizationType,
     crosspy,
     CROSSPY_ENABLED,
-    GLOBAL_START_TIME
+    GLOBAL_START_TIME,
 )
 import inspect
 from typing import Collection, Any, Union, List, Tuple

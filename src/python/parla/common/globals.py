@@ -48,6 +48,7 @@ _global_data_tasks = {}
 VCU_BASELINE = 1000
 GLOBAL_START_TIME = time.time()
 
+
 class SynchronizationType(IntEnum):
     """
     This class declares the type (if any) of runeahead synchronization
