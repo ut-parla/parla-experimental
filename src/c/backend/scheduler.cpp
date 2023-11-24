@@ -228,7 +228,7 @@ void InnerScheduler::spawn_task(InnerTask *task) {
   this->enqueue_task(task, status);
 }
 
-void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
+void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status, int global_start_time) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
   if (status.mappable && (task->get_state() < TaskState::MAPPED)) {
@@ -238,7 +238,7 @@ void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
   } else if (status.reservable && (task->get_state() == TaskState::MAPPED)) {
     task->set_status(TaskStatus::RESERVABLE);
     LOG_INFO(SCHEDULER, "Enqueing task: {} to memory reserver", task);
-    this->memory_reserver->enqueue(task);
+    this->memory_reserver->enqueue(task, global_start_time);
   } else if (status.runnable && (task->get_state() == TaskState::RESERVED)) {
     task->set_status(TaskStatus::RUNNABLE);
     //std::cout << "ENQUEUE FROM CALLBACK" << std::endl;

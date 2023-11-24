@@ -12,6 +12,7 @@
 
 struct taskStructure {             // Structure declaration
   int priority;         // Member (int variable)
+  int wait_time;
   InnerTask *task;   // Member (string variable)
 }; 
 // TODO(wlr): FIXME Change these back to smart pointers. I'm leaking memory
@@ -40,23 +41,30 @@ public:
   Device *get_device() { return device; }
 
   /**
-   * Enqueues a task on this device.
-   * @param task the task to enqueue
+   * Calculates priority for the task. Lower the priority, earlier it should be scheduled. 
+   * @param task the task to calculate the priority for
+   * @return the priority number of the task
    */
-
-  int determine_priority(InnerTask *task) {
-    int num_dependents = task->dependents.size(); // directly propotional
-    int num_gpus_required = task->assigned_devices.size(); // inveresly propotional
-    int start_time =  time(NULL); // directly propotional
-    priority = (num_dependents * start_time) / num_gpus_required; // normalize and change this
+  int determine_priority(InnerTask *task, int global_start_time) {
+    int num_dependents = task->dependents.size(); // inveresly propotional -> more the # of dependents, earlier it should be scheduled
+    int num_gpus_required = task->assigned_devices.size(); // directly propotional -> more the # of GPUs req, later it should be scheduled
+    int relative_start_time =  time(NULL) - global_start_time; // task coming later, should be later in the queue
+    priority = relative_start_time + (num_gpus_required / num_dependents); // normalize and change this
     return priority;
     // critical path length to most recently spawned task
     // estimated completion time
 
   }
-  void enqueue(InnerTask *task) {
+
+  /**
+   * Enqueues a task on this device.
+   * @param task the task to enqueue
+   */
+
+  
+  void enqueue(InnerTask *task, int global_start_time) {
     taskStructure new_task;
-    new_task.priority = task->determine_priority(task);
+    new_task.priority = task->determine_priority(task, global_start_time);
     new_task.task = task;
     // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
     // std::endl;
@@ -228,7 +236,7 @@ public:
    * Enqueues a task to the appropriate DeviceQueue(s).
    * @param task the task to enqueue. May be single or multi-device.
    **/
-  void enqueue(InnerTask *task) {
+  void enqueue(InnerTask *task, int global_start_time) {
     // std::cout << "pointer: " << reinterpret_cast<void *>(this) << std::endl;
     // std::cout << "ndevices: " << this->ndevices << std::endl;
     // std::cout << "nqueues: " << this->device_queues.size() << std::endl;
@@ -236,7 +244,7 @@ public:
     //           << std::endl;
     task->set_num_instances<ResourceCategory>();
     for (auto device : task->assigned_devices) {
-      this->device_queues[device->get_global_id()]->enqueue(task);
+      this->device_queues[device->get_global_id()]->enqueue(task, global_start_time);
     }
     this->num_tasks++;
   }

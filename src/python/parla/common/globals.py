@@ -9,6 +9,7 @@ from __future__ import annotations  # For type hints of unloaded classes
 from enum import IntEnum
 import threading
 import os
+import time
 
 try:
     import cupy
@@ -45,7 +46,7 @@ _global_data_tasks = {}
 
 
 VCU_BASELINE = 1000
-
+GLOBAL_START_TIME = time.time()
 
 class SynchronizationType(IntEnum):
     """

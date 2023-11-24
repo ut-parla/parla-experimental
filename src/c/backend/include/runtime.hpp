@@ -1048,7 +1048,7 @@ public:
   void activate_wrapper();
 
   /*Spawn a Task (increment active, set state, possibly enqueue)*/
-  void spawn_task(InnerTask *task);
+  void spawn_task(InnerTask *task, int global_start_time);
 
   /* Enqueue task. */
   void enqueue_task(InnerTask *task, TaskStatusFlags flags);

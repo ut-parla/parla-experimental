@@ -475,10 +475,11 @@ public:
   inline bool empty_unsafe() { return this->q.empty(); }
 };
 
+// Create a min heap
 class Compare {
     public:
        bool operator()(T a, T b){
-           if(a.priority >= b.priority) { 
+           if(a.priority < b.priority) { 
                return true; // the order is correct and NO swapping of elements takes place
            }
            return false; // the order is NOT correct and swapping of elements takes place
