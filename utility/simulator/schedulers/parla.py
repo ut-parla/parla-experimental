@@ -136,7 +136,8 @@ def rl_map_task(task: SimulatedTask, scheduler_state: SystemState, parla_arch) -
 
         # 8. Calculate reward
         reward = parla_arch.rl_environment.calculate_reward(
-            task, completion_time_expectation, is_worth_to_evaluate, negative_is_worth_to_evaluate)
+            task, completion_time_expectation, is_worth_to_evaluate,
+            negative_is_worth_to_evaluate)
         parla_arch.rl_mapper.add_reward(reward)
 
         parla_arch.device_active_reward[action.item()] += reward.item()

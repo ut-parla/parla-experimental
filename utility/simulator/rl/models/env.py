@@ -671,9 +671,13 @@ class READYSEnvironment(ParlaRLBaseEnvironment):
           0, target_task, devices, taskmap)
       return current_device_load_state, edge_index, current_workload_features
 
-  def calculate_reward(self, task, completion_time, is_worth_to_evaluate):
+  def inspect_reward(self, task, completion_time):
+      pass
+
+  def calculate_reward(self, task, completion_time, is_worth_to_evaluate,
+                       negative_is_worth_to_evaluate):
       print("task:", task, " assigned devices:", task.assigned_devices)
-      if task.heft_makespan == 0:
+      if task.heft_makespan == 0 or task.info.is_terminal == False:
           print("task heft mksp:", task.heft_makespan)
           return torch.tensor([[0]], dtype=torch.float)
       else:

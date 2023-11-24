@@ -550,6 +550,7 @@ class TaskInfo:
     dependencies: list[TaskID]
     data_dependencies: TaskDataInfo
     mapping: Device | Tuple[Device, ...] | None = None
+    is_terminal: bool = False
     order: int = 0
 
 
