@@ -603,11 +603,11 @@ cdef class PyInnerScheduler:
         cdef InnerScheduler* c_self = self.inner_scheduler
         c_self.activate_wrapper()
 
-    cpdef spawn_task(self, PyInnerTask task, int global_start_time):
+    cpdef spawn_task(self, PyInnerTask task):
         cdef InnerScheduler* c_self = self.inner_scheduler
         cdef InnerTask* c_task = task.c_task
 
-        c_self.spawn_task(c_task, global_start_time)
+        c_self.spawn_task(c_task)
 
     cpdef add_worker(self, PyInnerWorker worker):
         cdef InnerScheduler* c_self = self.inner_scheduler

@@ -20,6 +20,7 @@ cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds) noexcept
     void gpu_busy_sleep(const int device, const unsigned long cycles, uintptr_t stream_ptr) noexcept 
 
+
 cdef extern from "include/runtime.hpp" nogil:
     ctypedef void (*launchfunc_t)(void* py_scheduler, void* py_task, void* py_worker) noexcept 
     ctypedef void (*stopfunc_t)(void*) noexcept 
@@ -138,7 +139,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         void activate_wrapper()
 
-        void spawn_task(InnerTask* task, int global_start_time) except +
+        void spawn_task(InnerTask* task) except +
 
         void add_worker(InnerWorker* worker)
         void enqueue_worker(InnerWorker* worker)

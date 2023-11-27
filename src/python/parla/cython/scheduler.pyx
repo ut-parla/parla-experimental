@@ -11,7 +11,7 @@ import inspect
 from ..common.globals import DeviceType, cupy, CUPY_ENABLED
 from ..common.globals import SynchronizationType as SyncType
 from ..common.globals import _Locals as Locals 
-from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS, GLOBAL_START_TIME
+from ..common.globals import USE_PYTHON_RUNAHEAD, _global_data_tasks, PREINIT_THREADS
 
 if cupy is not None:
     import cupy_backends
@@ -485,8 +485,8 @@ class Scheduler(ControllableThread, SchedulerContext):
         for w in self.worker_threads:
             w.stop()
 
-    def spawn_task(self, task, global_start_time):
-        self.inner_scheduler.spawn_task(task.inner_task, global_start_time)
+    def spawn_task(self, task):
+        self.inner_scheduler.spawn_task(task.inner_task)
 
     def assign_task(self, task, worker):
         task.state = tasks.TaskRunning(task.func, task.args, task.dependencies)

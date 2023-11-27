@@ -1,11 +1,13 @@
-if (PARLA_ENABLE_CUDA)
-    find_package(CUDAToolkit REQUIRED)
+if(PARLA_ENABLE_CUDA)
+  find_package(CUDAToolkit REQUIRED)
 endif()
 
-set(PYX_FILES 
+set(PYX_FILES
     cyparray_state.pyx
+    mm.pyx
     cyparray.pyx
     core.pyx
+    stream_pool.pyx
     device.pyx
     device_manager.pyx
     tasks.pyx

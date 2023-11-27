@@ -475,20 +475,20 @@ public:
   inline bool empty_unsafe() { return this->q.empty(); }
 };
 
-// Create a min heap
-class Compare {
+template <typename T> class ComparePriority {
     public:
        bool operator()(T a, T b){
-           if(a.priority < b.priority) { 
+           if(a->priority < b->priority) { 
                return true; // the order is correct and NO swapping of elements takes place
            }
            return false; // the order is NOT correct and swapping of elements takes place
       }
 };
+
 template <typename T> class ProtectedPriorityQueue {
 
 private:
-  std::priority_queue<T, vector<T>, Compare> pq= std::priority_queue<T, vector<T>, Compare>();
+  std::priority_queue<T, std::vector<T>, ComparePriority<T>> pq;
   std::atomic<int> length{0};
   std::mutex mtx;
   std::string name;
@@ -593,7 +593,7 @@ public:
   }
 
   inline T front_unsafe() { return this->pq.top(); }
-  
+
   T front_and_pop() {
     this->mtx.lock();
     T val = this->front_unsafe();
@@ -607,7 +607,7 @@ public:
     this->pop_unsafe();
     return val;
   }
-  
+
   // Add implementation of clear()
   // void clear() {
   //   this->mtx.lock();

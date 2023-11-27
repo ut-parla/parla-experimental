@@ -17,7 +17,6 @@ from ..common.globals import (
     SynchronizationType,
     crosspy,
     CROSSPY_ENABLED,
-    GLOBAL_START_TIME
 )
 import inspect
 from typing import Collection, Any, Union, List, Tuple
@@ -162,7 +161,7 @@ def spawn(
             runahead=runahead,
         )
         try:
-            scheduler.spawn_task(task, GLOBAL_START_TIME)
+            scheduler.spawn_task(task)
         except RuntimeError:
             raise RuntimeError(
                 "Conflicting task state while spawning task. Possible duplicate TaskID: "
