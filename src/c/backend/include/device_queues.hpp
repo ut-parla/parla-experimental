@@ -8,7 +8,6 @@
 #include "device_manager.hpp"
 #include "runtime.hpp"
 #include "containers.hpp"
-#include <ctime>
 
 // TODO(wlr): FIXME Change these back to smart pointers. I'm leaking memory
 // here...
@@ -35,11 +34,15 @@ public:
    */
   Device *get_device() { return device; }
 
+  /**
+   * Calculates priority for the task. The scheduling algorithm follows a low priority scheme.
+   * @param task the task to set priority for
+   */
   void set_priority(InnerTask *task) {
     int num_dependents = task->dependents.size(); // inveresly propotional -> more the # of dependents, earlier it should be scheduled
     int num_gpus_required = task->assigned_devices.size(); // directly propotional -> more the # of GPUs req, later it should be scheduled
-    int relative_start_time =  time(NULL); // task coming later, should be later in the queue
-    int priority = relative_start_time + (num_gpus_required / num_dependents); // normalize and change this
+    int priority = total_num_tasks + (num_gpus_required / num_dependents); // normalize and change this
+    std::cout << total_num_tasks << std::endl;
     task->set_priority(priority);
     // critical path length to most recently spawned task
     // estimated completion time
@@ -50,16 +53,10 @@ public:
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    // taskStructure new_task;
-    // int global_start_time = 1701038679;
-    // new_task.priority = set_priority(task);
-    // new_task.task = task;
-    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
-    // std::endl;
     this->set_priority(task);
-    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
     this->mixed_queue.push(task);
     num_tasks++;
+    total_num_tasks++;
   };
 
   /**
@@ -174,6 +171,7 @@ protected:
   MixedQueue_t mixed_queue;
   MDQueue_t waiting_queue;
   std::atomic<int> num_tasks{0};
+  std::atomic<int> total_num_tasks{0};
 };
 
 // TODO(wlr): I don't know what to name this.

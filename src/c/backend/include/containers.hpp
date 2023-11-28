@@ -35,6 +35,18 @@
 // as well as std::atomic_flag.
 // template <> auto constexpr is_atomic<std::atomic_flag> = true;
 
+// struct taskStructure {             // Structure declaration
+//   int priority;         // Member (int variable)
+//   int wait_time;
+//   InnerTask *task;   // Member (string variable)
+//   bool operator() <(taskStructure& b){
+//       if(priority < b.priority) { 
+//           return true; // the order is correct and NO swapping of elements takes place
+//       }
+//       return false; // the order is NOT correct and swapping of elements takes place
+//     }
+// }; 
+
 template <typename T> class ProtectedVector {
 
 private:
