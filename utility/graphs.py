@@ -221,6 +221,105 @@ def make_serial_graph(config: SerialConfig) -> Tuple[TaskMap, DataMap]:
     return task_dict, data_dict
 
 
+@register_graph_generator
+def make_cholesky_graph(config: CholeskyConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    data_config = config.data_config
+    configurations = config.task_config
+    task_placement_info = configurations
+
+    task_dict = dict()
+    data_dict = dict()
+
+    # Generate configuration for data initialization
+    for i in range(config.blocks):
+        for j in range(config.blocks):
+            if i <= j:
+                data_placement = get_data_placement(i, config)
+                data_dict[i, j] = DataInfo(DataID((i, j)), 1, data_placement)
+
+    for j in range(config.blocks):
+        for k in range(j):
+            # Inter-block GEMM (update diagonal block)
+            syrk_task_id = TaskID("SYRK", (j, k), 0)
+            dependency_list = []
+            dependency_list.append(TaskID("SOLVE", (j, k), 0))
+            for l in range(k):
+                dependency_list.append(TaskID("SYRK", (j, l), 0))
+
+            if data_config.pattern == DataInitType.NO_DATA:
+                data_dependencies = TaskDataInfo()
+            else:
+                data_dependencies = TaskDataInfo(
+                    read=[DataAccess(DataID((j, k)))],
+                    read_write=[DataAccess(DataID(j, j))],
+                )
+
+            task_dict[syrk_task_id] = TaskInfo(
+                syrk_task_id, task_placement_info, dependency_list, data_dependencies
+            )
+
+        # Diagonal block Cholesky
+        potrf_task_id = TaskID("POTRF", (j,), 0)
+        dependency_list = []
+        for l in range(j):
+            dependency_list.append(TaskID("SYRK", (j, l), 0))
+
+        if data_config.pattern == DataInitType.NO_DATA:
+            data_dependencies = TaskDataInfo()
+        else:
+            data_dependencies = TaskDataInfo(read_write=[DataAccess(DataID((j, j)))])
+
+        task_dict[potrf_task_id] = TaskInfo(
+            potrf_task_id, task_placement_info, dependency_list, data_dependencies
+        )
+
+        for i in range(j + 1, config.blocks):
+            for k in range(j):
+                # Inter-block GEMM (update off-diagonal block)
+                gemm_task_id = TaskID("GEMM", (i, j, k), 0)
+                dependency_list = []
+                dependency_list.append(TaskID("SOLVE", (i, k), 0))
+                dependency_list.append(TaskID("SOLVE", (j, k), 0))
+                for l in range(k):
+                    dependency_list.append(TaskID("GEMM", (i, j, l), 0))
+
+                if data_config.pattern == DataInitType.NO_DATA:
+                    data_dependencies = TaskDataInfo()
+                else:
+                    data_dependencies = TaskDataInfo(
+                        read=[DataAccess(DataID((i, k))), DataAccess(DataID((j, k)))],
+                        read_write=[DataAccess(DataID((i, j)))],
+                    )
+
+                task_dict[gemm_task_id] = TaskInfo(
+                    gemm_task_id,
+                    task_placement_info,
+                    dependency_list,
+                    data_dependencies,
+                )
+
+            # Panel solve
+            solve_task_id = TaskID("SOLVE", (i, j), 0)
+            dependency_list = []
+            dependency_list.append(TaskID("POTRF", (j,), 0))
+            for k in range(j):
+                dependency_list.append(TaskID("GEMM", (i, j, k), 0))
+
+            if data_config.pattern == DataInitType.NO_DATA:
+                data_dependencies = TaskDataInfo()
+            else:
+                data_dependencies = TaskDataInfo(
+                    read=[DataAccess(DataID((j, j)))],
+                    read_write=[DataAccess(DataID((i, j)))],
+                )
+
+            task_dict[solve_task_id] = TaskInfo(
+                solve_task_id, task_placement_info, dependency_list, data_dependencies
+            )
+    return task_dict, data_dict
+
+
 def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
     check_config(config)
 
