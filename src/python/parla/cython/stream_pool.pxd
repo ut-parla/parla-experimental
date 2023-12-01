@@ -14,6 +14,7 @@ cdef extern from "include/device_contexts.hpp":
 
 cdef class CyStreamPool:
     cdef InnerStreamPool* _c_pool
+    cdef object StreamClass
     cdef dict _pool
     cdef int _per_device
     cdef list _device_list

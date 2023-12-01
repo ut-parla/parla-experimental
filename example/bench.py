@@ -3,6 +3,7 @@ import time
 import argparse
 
 from parla import Parla, spawn, TaskSpace, sleep_nogil, sleep_gil
+from parla.devices import cpu, gpu
 import nvtx
 
 free_sleep = sleep_nogil
@@ -39,7 +40,7 @@ def main(workers, n, t, accesses, frac):
                         domain="application")
 
         for i in range(n):
-            @spawn(T[i], vcus=cost)
+            @spawn(T[i], vcus=cost, placement=[gpu])
             def task1():
                 nvtx.push_range(message="TASK", color="blue", domain="application")
                 if args.empty:

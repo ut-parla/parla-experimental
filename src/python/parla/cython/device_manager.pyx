@@ -119,7 +119,7 @@ class PyDeviceManager:
         # self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
-        self.stream_pool = stream_pool.CyStreamPool(self.get_devices(DeviceType.GPU))
+        self.stream_pool = stream_pool.StreamPool(self.get_devices(DeviceType.GPU))
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
