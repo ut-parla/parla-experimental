@@ -675,6 +675,15 @@ class SerialConfig(GraphConfig):
 
 
 @dataclass(slots=True)
+class CholeskyConfig(GraphConfig):
+    """
+    Used to configure the generation of a synthetic Cholesky task graph
+    """
+
+    blocks: int = 4
+
+
+@dataclass(slots=True)
 class ReductionConfig(GraphConfig):
     """
     Used to configure the generation of a reduction synthetic task graph.

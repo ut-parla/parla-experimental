@@ -252,7 +252,7 @@ def make_cholesky_graph(config: CholeskyConfig) -> Tuple[TaskMap, DataMap]:
             else:
                 data_dependencies = TaskDataInfo(
                     read=[DataAccess(DataID((j, k)))],
-                    read_write=[DataAccess(DataID(j, j))],
+                    read_write=[DataAccess(DataID((j, j)))],
                 )
 
             task_dict[syrk_task_id] = TaskInfo(
