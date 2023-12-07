@@ -7,6 +7,7 @@
 
 #include "device_manager.hpp"
 #include "runtime.hpp"
+#include "containers.hpp"
 
 // TODO(wlr): FIXME Change these back to smart pointers. I'm leaking memory
 // here...
@@ -21,7 +22,7 @@
  * queue supervises the phase of.
  */
 template <typename ResourceCategory> class DeviceQueue {
-  using MixedQueue_t = TaskQueue;
+  using MixedQueue_t = PriorityTaskQueue;
   using MDQueue_t = TaskQueue;
 
 public:
@@ -34,16 +35,28 @@ public:
   Device *get_device() { return device; }
 
   /**
+   * Calculates priority for the task. The scheduling algorithm follows a low priority scheme.
+   * @param task the task to set priority for
+   */
+  void set_priority(InnerTask *task) {
+    int num_dependents = task->dependents.size() + 1; // inveresly propotional -> more the # of dependents, earlier it should be scheduled, added 1 to handle if dependents are 0
+    int num_gpus_required = task->assigned_devices.size(); // directly propotional -> more the # of GPUs req, later it should be scheduled
+    int priority = total_num_tasks + (num_gpus_required / num_dependents); // normalize and change this
+    std::cout << total_num_tasks << std::endl;
+    task->set_priority(priority);
+    // critical path length to most recently spawned task
+    // estimated completion time
+  }
+
+  /**
    * Enqueues a task on this device.
    * @param task the task to enqueue
    */
   void enqueue(InnerTask *task) {
-    // std::cout << "DeviceQueue::enqueue() - " << task->get_name() <<
-    // std::endl;
-
-    // std::cout << "Mixed Queue size: " << mixed_queue.size() << std::endl;
-    this->mixed_queue.push_back(task);
+    this->set_priority(task);
+    this->mixed_queue.push(task);
     num_tasks++;
+    total_num_tasks++;
   };
 
   /**
@@ -115,7 +128,7 @@ public:
         std::cout << "Moving task to waiting queue: " << head->get_name()
                   << std::endl;
         waiting_queue.push_back(head);
-        mixed_queue.pop_front();
+        mixed_queue.pop();
 
         // TODO(wlr): Should num_tasks include waiting tasks?
         // (2)
@@ -142,7 +155,7 @@ public:
     InnerTask *task = front();
     if (task != nullptr) {
       // std::cout << "Popping task: " << task->get_name() << std::endl;
-      mixed_queue.pop_front();
+      mixed_queue.pop();
       // Set removed status so task can be pruned from other queues
       task->set_removed<ResourceCategory>(true);
       num_tasks--;
@@ -158,6 +171,7 @@ protected:
   MixedQueue_t mixed_queue;
   MDQueue_t waiting_queue;
   std::atomic<int> num_tasks{0};
+  std::atomic<int> total_num_tasks{0};
 };
 
 // TODO(wlr): I don't know what to name this.

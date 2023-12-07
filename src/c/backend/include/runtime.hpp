@@ -44,6 +44,7 @@
 #include "profiling.hpp"
 #include "resource_requirements.hpp"
 #include "memory_manager.hpp"
+// # include "task.hpp"
 
 using namespace std::chrono_literals;
 using namespace parray;
@@ -59,10 +60,25 @@ class TaskBarrier;
 class InnerWorker;
 class InnerScheduler;
 
+// struct taskStructure {             // Structure declaration
+//   int priority;         // Member (int variable)
+//   int wait_time;
+//   InnerTask *task;   // Member (string variable)
+//   // bool operator()< (const taskStructure& b)
+//   // {
+//   //   return a.priority < b.priority;
+//   //     // if(priority < b.priority) { 
+//   //     //     return true; // the order is correct and NO swapping of elements takes place
+//   //     // }
+//   //     // return false; // the order is NOT correct and swapping of elements takes place
+//   // }
+// }; 
+
 // Type Aliases for common containers
 using WorkerQueue = ProtectedQueue<InnerWorker *>;
 using WorkerList = ProtectedVector<InnerWorker *>;
 using TaskQueue = ProtectedQueue<InnerTask *>;
+using PriorityTaskQueue = ProtectedPriorityQueue<InnerTask *>;
 using TaskList = ProtectedVector<InnerTask *>;
 using SpaceList = ProtectedVector<TaskBarrier *>;
 using PointerList = ProtectedVector<uintptr_t>;

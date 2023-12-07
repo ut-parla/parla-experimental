@@ -380,6 +380,7 @@ public:
   }
 
   void enqueue(InnerTask *task);
+  // void enqueue(taskStructure *task_with_priority);
   void enqueue(std::vector<InnerTask *> &tasks);
   void run(SchedulerPhase *next_phase);
   size_t get_count();

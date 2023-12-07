@@ -83,7 +83,6 @@ class PrintableFrozenSet(frozenset):
     def __repr__(self):
         return self.get_name()
 
-
 # TODO(wlr):  - Allow device manager to initialize non-contiguous gpu ids. 
 # TODO(wlr):  - Provide a way to iterate over these real device ids
            

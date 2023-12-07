@@ -7,7 +7,6 @@
 
 from .cyparray cimport InnerPArray
 from .cyparray_state cimport CyPArrayState
-
 # a Cython wrapper class around C++ PArray
 cdef class CyPArray:
 
