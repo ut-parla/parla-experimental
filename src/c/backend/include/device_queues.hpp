@@ -39,7 +39,7 @@ public:
    * @param task the task to set priority for
    */
   void set_priority(InnerTask *task) {
-    int num_dependents = task->dependents.size(); // inveresly propotional -> more the # of dependents, earlier it should be scheduled
+    int num_dependents = task->dependents.size() + 1; // inveresly propotional -> more the # of dependents, earlier it should be scheduled, added 1 to handle if dependents are 0
     int num_gpus_required = task->assigned_devices.size(); // directly propotional -> more the # of GPUs req, later it should be scheduled
     int priority = total_num_tasks + (num_gpus_required / num_dependents); // normalize and change this
     std::cout << total_num_tasks << std::endl;
