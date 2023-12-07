@@ -9,6 +9,8 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <memory>
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -40,6 +42,28 @@ inline void cpu_busy_sleep(unsigned int micro) {
     elapsed =
         std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
   } while (elapsed.count() < micro);
+}
+
+inline double cpu_busy_sleep_data(unsigned int micro, unsigned int size,
+                                  double *data_ptr) {
+  auto block = std::chrono::microseconds(micro);
+  auto time_start = std::chrono::high_resolution_clock::now();
+
+  auto now = std::chrono::high_resolution_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
+  size_t start_idx = rand() % size;
+  size_t count = 0;
+  double sum = 0;
+  do {
+    now = std::chrono::high_resolution_clock::now();
+    sum += data_ptr[(start_idx + count) % size];
+    count += 1;
+    elapsed =
+        std::chrono::duration_cast<std::chrono::microseconds>(now - time_start);
+  } while (elapsed.count() < micro);
+
+  return sum;
 }
 
 /***

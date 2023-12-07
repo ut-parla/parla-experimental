@@ -17,6 +17,7 @@ from libc.stdint cimport uintptr_t
 
 cdef extern from "include/gpu_utility.hpp" nogil:
     void cpu_busy_sleep(unsigned int microseconds) noexcept
+    double cpu_busy_sleep_data(unsigned int microseconds, unsigned int size, double* ptr) noexcept 
     void gpu_busy_sleep(const int device, const unsigned long cycles, uintptr_t stream_ptr) noexcept 
 
 cdef extern from "include/runtime.hpp" nogil:

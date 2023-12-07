@@ -14,6 +14,7 @@ specialize = variants.specialize
 
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
+sleep_nogil_data = core.cpu_bsleep_nogil_data
 
 gpu_sleep_gil = core.gpu_bsleep_gil
 gpu_sleep_nogil = core.gpu_bsleep_nogil

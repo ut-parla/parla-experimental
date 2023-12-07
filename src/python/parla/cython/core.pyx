@@ -101,6 +101,10 @@ cpdef cpu_bsleep_gil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but don't release the GIL"""
     cpu_busy_sleep(microseconds)
 
+cpdef cpu_bsleep_nogil_data(unsigned int microseconds, unsigned int size, double[:] data):
+    with nogil:
+        cpu_busy_sleep_data(microseconds, size, <double*> &data[0])
+
 cpdef cpu_bsleep_nogil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but release the GIL"""
     with nogil:
