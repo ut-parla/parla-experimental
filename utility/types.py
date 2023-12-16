@@ -10,6 +10,7 @@ from decimal import Decimal
 from ast import literal_eval as make_tuple
 
 from rich.text import Text
+import numpy as np
 
 #########################################
 # Time Information
@@ -258,6 +259,24 @@ class TaskDataInfo:
         else:
             raise ValueError(f"Invalid access type: {access}")
 
+    def __contains__(self, access: DataAccess) -> bool:
+        if access in self.read:
+            return True
+        if access in self.write:
+            return True
+        if access in self.read_write:
+            return True
+        return False
+
+    def __len__(self) -> int:
+        return len(self.read) + len(self.write) + len(self.read_write)
+
+    def all_accesses(self) -> list[DataAccess]:
+        return self.read + self.write + self.read_write
+
+    def all_ids(self) -> list[DataID]:
+        return [x.id for x in self.all_accesses()]
+
 
 DataMap = Dict[DataID, DataInfo]
 
@@ -372,6 +391,12 @@ class TaskID:
     def __repr__(self):
         return str(self)
 
+    def base(self) -> "TaskID":
+        return TaskID(self.taskspace, self.task_idx, 0)
+
+    def __hash__(self) -> int:
+        return hash((self.taskspace, self.task_idx, self.instance))
+
 
 @dataclass(slots=True)
 class TaskRuntimeInfo:
@@ -430,6 +455,8 @@ class TaskPlacementInfo:
         self.locations.append(placement)
         self.info[placement] = runtime_info
 
+        return self
+
     def remove(self, placement: Device | Tuple[Device, ...]):
         if isinstance(placement, Device):
             placement = (placement,)
@@ -444,6 +471,8 @@ class TaskPlacementInfo:
 
         del self.info[placement]
         self.locations.remove(placement)
+
+        return self
 
     def update(self):
         """
@@ -610,10 +639,17 @@ class DataInitType(IntEnum):
 
 @dataclass(slots=True)
 class DataGraphConfig:
-    pattern: int = DataInitType.NO_DATA
-    architecture = Architecture.CPU
-    total_width: int = 2**23
-    npartitions: int = 1
+    """
+    Information about initial data placement for a synthetic task graph.
+    """
+
+    name: str = "DefaultDataPattern"
+    data_size: int = 2**16  # 64 KiB
+    initial_placement: Optional[
+        Callable[[int | Tuple[int, ...]], Device | Tuple[Device, ...]]
+    ] = None
+    initial_sizes: Optional[Callable[[int | Tuple[int, ...]], int]] = None
+    edges: Optional[Callable[[TaskID], TaskDataInfo]] = None
 
 
 @dataclass(slots=True)
@@ -629,16 +665,326 @@ class GraphConfig:
 
     """
 
-    task_config: TaskPlacementInfo = field(default_factory=TaskPlacementInfo)
     fixed_placement: bool = False
-    placement_arch = Architecture.GPU
+    fixed_architecture: Architecture = Architecture.GPU
     n_devices: int = 4
-    data_config: DataGraphConfig = field(default_factory=DataGraphConfig)
+    data_config: None | DataGraphConfig = None
+    mapping: Callable[
+        [int | Tuple[int, ...]], Device | Tuple[Device, ...]
+    ] = lambda x: Device(Architecture.CPU, 0)
+    task_config: Callable[
+        [TaskID], TaskPlacementInfo
+    ] = lambda x: TaskPlacementInfo().add(
+        (Device(Architecture.CPU, 0),), TaskRuntimeInfo(task_time=10000)
+    )
+
+    def __post_init__(self):
+        if self.data_config is None:
+            self.data_config = NoDataGraphConfig()
+
+    @property
+    def initial_data_placement(self):
+        return self.data_config.initial_placement
+
+    @initial_data_placement.setter
+    def initial_data_placement(self, value: Callable[[int | Tuple[int, ...]], Device]):
+        self.data_config.initial_placement = value
+
+    @property
+    def initial_data_sizes(self):
+        return self.data_config.initial_sizes
+
+    @initial_data_sizes.setter
+    def initial_data_sizes(self, value: Callable[[int | Tuple[int, ...]], int]):
+        self.data_config.initial_sizes = value
+
+    @property
+    def data_edges(self):
+        return self.data_config.edges
+
+    @data_edges.setter
+    def data_edges(self, value: Callable[[TaskID], TaskDataInfo]):
+        self.data_config.edges = value
 
 
 #########################################
 # Specific Synthetic Graph Configurations
 #########################################
+
+
+@dataclass(slots=True)
+class NoDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern that uses no data
+    """
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: 0
+        self.edges = lambda x: TaskDataInfo()
+
+
+@dataclass(slots=True)
+class ReusedDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern where the data is reused across tasks.
+    Only READ operations.
+    """
+
+    n_partitions: int = 1
+    n_devices: int = 1
+    n_reads: int = 1
+    _internal_count: int = 0
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: self.data_size
+
+        def edges(task_id: TaskID):
+            data_info = TaskDataInfo()
+            for i in range(self.n_reads):
+                data_info.read.append(
+                    DataAccess(
+                        DataID(self._internal_count % self.n_partitions), device=0
+                    )
+                )
+                self._internal_count += 1
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class IndependentDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern where the data is independent across tasks.
+    Only READ operations.
+    """
+
+    n_devices: int = 1
+    n_reads: int = 1
+    _internal_count: int = 0
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: self.data_size
+
+        def edges(task_id: TaskID):
+            data_info = TaskDataInfo()
+            for i in range(self.n_reads):
+                data_info.read.append(
+                    DataAccess(DataID(self._internal_count), device=0)
+                )
+                self._internal_count += 1
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class ChainDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern where data in the same dependent chain is shared between tasks.
+    """
+
+    chain_index: slice | int = 1
+    n_devices: int = 1
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: self.data_size
+
+        def edges(task_id: TaskID):
+            data_info = TaskDataInfo()
+            data_info.read_write.append(
+                DataAccess(DataID(list(task_id.task_idx)[self.chain_index]), device=0)
+            )
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class CholeskyDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern for a Block Cholesky factorization.
+    """
+
+    n_devices = 1
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: self.data_size
+
+        def edges(task_id: TaskID):
+            if task_id.taskspace == "POTRF":
+                j = task_id.task_idx[0]
+                data_info = TaskDataInfo()
+                data_info.read_write.append(DataAccess(DataID((j, j)), device=0))
+            elif task_id.taskspace == "SYRK":
+                j, k = task_id.task_idx
+                data_info = TaskDataInfo()
+                data_info.read.append(DataAccess(DataID((j, k)), device=0))
+                data_info.read_write.append(DataAccess(DataID((j, j)), device=0))
+            elif task_id.taskspace == "SOLVE":
+                i, j = task_id.task_idx
+                data_info = TaskDataInfo()
+                data_info.read.append(DataAccess(DataID((j, j)), device=0))
+                data_info.read_write.append(DataAccess(DataID((i, j)), device=0))
+            elif task_id.taskspace == "GEMM":
+                i, j, k = task_id.task_idx
+                data_info = TaskDataInfo()
+                data_info.read.append(DataAccess(DataID((i, k)), device=0))
+                data_info.read.append(DataAccess(DataID((j, k)), device=0))
+                data_info.read_write.append(DataAccess(DataID((i, j)), device=0))
+
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class ReductionDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern for a reduction.
+    """
+
+    n_devices: int = 1
+    branch_factor: int = 2
+    levels: int = 2
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+        self.initial_sizes = lambda x: self.data_size
+
+        def edges(task_id: TaskID):
+            in_data_indices = []
+            level = task_id.task_idx[0]
+            j = task_id.task_idx[1]
+
+            step = self.branch_factor ** (self.levels - level)
+            start = step * j
+
+            for k in range(1, self.branch_factor):
+                in_data_indices.append(start + (step // self.branch_factor * k))
+
+            inout_data_index = start
+
+            data_info = TaskDataInfo()
+            for i in in_data_indices:
+                data_info.read.append(DataAccess(DataID((i,)), device=0))
+
+            data_info.read_write.append(
+                DataAccess(DataID((inout_data_index,)), device=0)
+            )
+
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class SweepDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern for a sweep graph.
+    """
+
+    n_devices: int = 1
+    large_size: int = 2**16
+    small_size: int = 2**8
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+
+        self.initial_sizes = lambda x: self.large_size if x[0] == 0 else self.small_size
+
+        def edges(task_id: TaskID):
+            data_info = TaskDataInfo()
+
+            # A task reads/writes to an interior domain (unique for each task)
+            data_info.read_write.append(
+                DataAccess(DataID((0,) + task_id.task_idx), device=0)
+            )
+
+            # A task reads/writes to a small communication buffer (unique for each task)
+            data_info.read_write.append(
+                DataAccess(DataID((1,) + task_id.task_idx), device=0)
+            )
+
+            # A task reads the small communication buffers from its neighbors (dependencies)
+            for i in range(len(task_id.task_idx)):
+                if task_id.task_idx[i] > 0:
+                    source_idx = list(task_id.task_idx)
+                    source_idx[i] -= 1
+                    data_info.read.append(
+                        DataAccess(DataID((1,) + tuple(source_idx)), device=0)
+                    )
+
+            return data_info
+
+        self.edges = edges
+
+
+@dataclass(slots=True)
+class StencilDataGraphConfig(DataGraphConfig):
+    """
+    Defines a data graph pattern for a sweep graph.
+    """
+
+    n_devices: int = 1
+    large_size: int = 2**16
+    small_size: int = 2**8
+    neighbor_distance: int = 1
+    dimensions: int = 1
+    width: int = 10
+
+    def __post_init__(self):
+        self.initial_placement = lambda x: Device(Architecture.CPU, 0)
+
+        self.initial_sizes = lambda x: self.large_size if x[0] == 0 else self.small_size
+
+        def edges(task_id: TaskID):
+            data_info = TaskDataInfo()
+
+            timestep_idx = task_id.task_idx[0]
+            task_idx = task_id.task_idx[1:]
+
+            # A task reads/writes to an interior domain (unique for each region, shared between timesteps)
+            # The first index of the taskid is the timestep number
+            data_info.read_write.append(DataAccess(DataID((0,) + task_idx), device=0))
+
+            # A task reads/writes to each of its boundaries
+            n_boundaries = 2 * (self.dimensions)
+
+            for i in range(n_boundaries):
+                data_info.read_write.append(
+                    DataAccess(DataID((1,) + task_idx + (i,)), device=0)
+                )
+
+            # A task reads the small communication buffers from its neighbors (dependencies)
+            if timestep_idx > 0:
+                # Read boundaries of neighbors from the previous timestep
+                neighbor_generator = tuple(
+                    self.neighbor_distance * 2 + 1 for _ in range(self.dimensions)
+                )
+                stencil_generator = np.ndindex(neighbor_generator)
+                count = 0
+                for stencil_tuple in stencil_generator:
+                    stencil_tuple = np.subtract(stencil_tuple, self.neighbor_distance)
+                    if np.count_nonzero(stencil_tuple) == 1:
+                        dependency_grid = tuple(np.add(task_idx, stencil_tuple))
+                        out_of_bounds = any(
+                            element < 0 or element >= self.width
+                            for element in dependency_grid
+                        )
+                        if not out_of_bounds:
+                            neighbor_data = DataID((1,) + dependency_grid + (count,))
+                            data_info.read.append(DataAccess(neighbor_data, device=0))
+                        count += 1
+
+            return data_info
+
+        self.edges = edges
 
 
 @dataclass(slots=True)
@@ -650,6 +996,14 @@ class IndependentConfig(GraphConfig):
     """
 
     task_count: int = 1
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[0] % self.n_devices
+            )
 
 
 @dataclass(slots=True)
@@ -673,6 +1027,14 @@ class SerialConfig(GraphConfig):
     dependency_count: int = 1
     chains: int = 1
 
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[0] % self.n_devices
+            )
+
 
 @dataclass(slots=True)
 class CholeskyConfig(GraphConfig):
@@ -681,6 +1043,14 @@ class CholeskyConfig(GraphConfig):
     """
 
     blocks: int = 4
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[0] % self.n_devices
+            )
 
 
 @dataclass(slots=True)
@@ -702,19 +1072,116 @@ class ReductionConfig(GraphConfig):
     levels: int = 8
     branch_factor: int = 2
 
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] // self.n_devices
+            )
+
 
 @dataclass(slots=True)
-class ReductionScatterConfig(GraphConfig):
+class ScatterReductionConfig(GraphConfig):
     """
-    Used to configure the generation of a reduction-scatter task graph.
+    Used to configure the generation of a scatter-reduction task graph.
     """
 
-    # The total number of tasks.
-    # The number of tasks for each level is calculated based on this.
-    # e.g., 1000 total tasks and 4 levels, then about 333 tasks exist for each level
-    #       with 2 bridge tasks.
-    task_count: int = 1
-    levels: int = 4  # Number of levels in the tree
+    levels: int = 4
+    branch_factor: int = 2
+
+
+@dataclass(slots=True)
+class SweepConfig(GraphConfig):
+    """
+    Used to configure the generation of a sweep synthetic task graph.
+    """
+
+    width: int = 1
+    dimensions: int = 1
+    steps: int = 1
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] % self.n_devices
+            )
+
+
+@dataclass(slots=True)
+class StencilConfig(GraphConfig):
+    """
+    Used to configure the generation of a stencil task graph.
+    """
+
+    width: int = 10
+    steps: int = 2
+    neighbor_distance: int = 1
+    dimensions: int = 1
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] % self.n_devices
+            )
+
+
+@dataclass(slots=True)
+class ButterflyConfig(GraphConfig):
+    """
+    Used to configure the generation of a butterfly synthetic task graph. (FFT Pattern)
+    """
+
+    width: int = 9
+    steps: int = 4
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] % self.n_devices
+            )
+
+
+@dataclass(slots=True)
+class MapReduceConfig(GraphConfig):
+    """
+    Used to configure the generation of a map-reduce synthetic task graph.
+    """
+
+    width: int = 10
+    steps: int = 2
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] % self.n_devices
+            )
+
+
+@dataclass(slots=True)
+class FullyConnectedConfig(GraphConfig):
+    """
+    Used to configure the generation of a fully connected synthetic task graph.
+    """
+
+    steps: int = 10
+    width: int = 2
+
+    def __post_init__(self):
+        if self.fixed_architecture == Architecture.CPU:
+            self.mapping = lambda x: Device(self.fixed_architecture, 0)
+        else:
+            self.mapping = lambda x: Device(
+                self.fixed_architecture, x[1] % self.n_devices
+            )
 
 
 #########################################

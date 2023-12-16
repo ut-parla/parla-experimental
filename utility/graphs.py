@@ -31,6 +31,18 @@ from .load import *
 graph_generators = []
 
 
+def get_mapping(
+    config: GraphConfig, task_idx: Tuple[int, ...]
+) -> Device | Tuple[Device, ...] | None:
+    if config.fixed_placement:
+        mapping_lambda = config.mapping
+        assert mapping_lambda is not None
+        task_mapping = mapping_lambda(task_idx)
+    else:
+        task_mapping = None
+    return task_mapping
+
+
 def register_graph_generator(func):
     """
     Registers a graph generator function to be used for generating synthetic task graphs.
@@ -48,17 +60,6 @@ def shuffle_tasks(tasks: Dict[TaskID, TaskInfo]) -> Dict[TaskID, TaskInfo]:
     return convert_to_dictionary(task_list)
 
 
-def get_data_placement(idx, config):
-    data_config = config.data_config
-
-    if data_config.architecture == Architecture.CPU:
-        return Device(Architecture.CPU, 0)
-    elif data_config.architecture == Architecture.GPU:
-        return Device(Architecture.GPU, idx % config.n_devices)
-    else:
-        return Device(Architecture.CPU, 0)
-
-
 def check_config(config: GraphConfig):
     """
     Raise warnings for invalid configuration specifications.
@@ -73,6 +74,18 @@ def check_config(config: GraphConfig):
         raise ValueError(f"Data Configuration file must be specified: {config}")
 
 
+def get_data_dependencies(
+    task_id: TaskID, data_dict: DataMap, data_config: DataGraphConfig
+):
+    data_dependencies = data_config.edges(task_id)
+    for data_id in data_dependencies.all_ids():
+        data_placement = data_config.initial_placement(data_id.idx)
+        data_size = data_config.data_size
+        data_dict[data_id] = DataInfo(data_id, data_size, data_placement)
+
+    return data_dependencies, data_dict
+
+
 @register_graph_generator
 def make_independent_graph(config: IndependentConfig) -> Tuple[TaskMap, DataMap]:
     check_config(config)
@@ -82,55 +95,25 @@ def make_independent_graph(config: IndependentConfig) -> Tuple[TaskMap, DataMap]
     task_dict = dict()
     data_dict = dict()
 
-    # Generate configuration for data initialization
-    if data_config.pattern == DataInitType.NO_DATA:
-        data_placement = Device(Architecture.CPU, 0)
-        data_dict[0] = DataInfo(0, 1, data_placement)
-        num_data_blocks = 1
-    else:
-        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-            num_data_blocks = config.task_count
-        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-            num_data_blocks = data_config.npartitions
-        else:
-            raise NotImplementedError(
-                f"Data pattern {data_config.pattern} not implemented for independent task graph."
-            )
-
-        data_size = data_config.total_width // num_data_blocks
-
-        for i in range(num_data_blocks):
-            data_placement = get_data_placement(i, config)
-            data_dict[i] = DataInfo(i, data_size, data_placement)
-
     # Build task graph
-    task_placement_info = configurations
     for i in range(config.task_count):
         # Task ID
-        task_id = TaskID("T", (i,), 0)
+        task_idx = (i,)
+        task_id = TaskID("T", task_idx, 0)
+
+        # Task Placement Info
+        task_placement_info = configurations(task_id)
 
         # Task Dependencies
         task_dependencies = []
 
         # Task Data Dependencies
-        if data_config.pattern == DataInitType.NO_DATA:
-            data_dependencies = TaskDataInfo()
-        if (
-            data_config.pattern == DataInitType.INDEPENDENT_DATA
-            or data_config.pattern == DataInitType.OVERLAPPED_DATA
-        ):
-            data_dependencies = TaskDataInfo(
-                read=[DataAccess(DataID(i % num_data_blocks))]
-            )
+        data_dependencies, data_dict = get_data_dependencies(
+            task_id, data_dict, data_config
+        )
 
         # Task Mapping
-        if config.fixed_placement:
-            if config.placement_arch == Architecture.GPU:
-                task_mapping = Device(Architecture.GPU, i % config.n_devices)
-            elif config.placement_arch == Architecture.CPU:
-                task_mapping = Device(Architecture.CPU, 0)
-        else:
-            task_mapping = None
+        task_mapping = get_mapping(config, task_idx)
 
         task_dict[task_id] = TaskInfo(
             task_id,
@@ -152,34 +135,15 @@ def make_serial_graph(config: SerialConfig) -> Tuple[TaskMap, DataMap]:
     task_dict = dict()
     data_dict = dict()
 
-    # Generate configuration for data initialization
-    if data_config.pattern == DataInitType.NO_DATA:
-        data_placement = Device(Architecture.CPU, 0)
-        data_dict[0] = DataInfo(DataID((0,)), 1, data_placement)
-        num_data_blocks = 1
-    else:
-        if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-            num_data_blocks = config.steps * config.chains
-
-        elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-            num_data_blocks = config.chains
-        else:
-            raise NotImplementedError(
-                f"Data pattern {data_config.pattern} not implemented for serial task graph."
-            )
-
-        data_size = data_config.total_width // num_data_blocks
-
-        for i in range(num_data_blocks):
-            data_placement = get_data_placement(i, config)
-            data_dict[i] = DataInfo(DataID(i), data_size, data_placement)
-
     # Build task graph
-    task_placement_info = configurations
     for i in range(config.steps):
         for j in range(config.chains):
             # Task ID:
-            task_id = TaskID("T", (i, j), 0)
+            task_idx = (i, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Runtime Info
+            task_placement_info = configurations(task_id)
 
             # Task Dependencies
             dependency_list = []
@@ -190,25 +154,12 @@ def make_serial_graph(config: SerialConfig) -> Tuple[TaskMap, DataMap]:
                 dependency_list.append(dependency)
 
             # Task Data Dependencies
-            if data_config.pattern == DataInitType.NO_DATA:
-                data_dependencies = TaskDataInfo()
-            else:
-                if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-                    inout_data_index = i * config.chains + j
-                elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-                    inout_data_index = j
-                data_dependencies = TaskDataInfo(
-                    read_write=[DataAccess(inout_data_index)]
-                )
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
 
             # Task Mapping
-            if config.fixed_placement:
-                if config.placement_arch == Architecture.GPU:
-                    task_mapping = Device(Architecture.GPU, j % config.n_devices)
-                elif config.placement_arch == Architecture.CPU:
-                    task_mapping = Device(Architecture.CPU, 0)
-            else:
-                task_mapping = None
+            task_mapping = get_mapping(config, task_idx)
 
             task_dict[task_id] = TaskInfo(
                 task_id,
@@ -226,101 +177,90 @@ def make_cholesky_graph(config: CholeskyConfig) -> Tuple[TaskMap, DataMap]:
     check_config(config)
     data_config = config.data_config
     configurations = config.task_config
-    task_placement_info = configurations
 
     task_dict = dict()
     data_dict = dict()
-
-    # Generate configuration for data initialization
-    for i in range(config.blocks):
-        for j in range(config.blocks):
-            if i <= j:
-                data_placement = get_data_placement(i, config)
-                data_dict[i, j] = DataInfo(DataID((i, j)), 1, data_placement)
 
     for j in range(config.blocks):
         for k in range(j):
             # Inter-block GEMM (update diagonal block)
             syrk_task_id = TaskID("SYRK", (j, k), 0)
-            dependency_list = []
-            dependency_list.append(TaskID("SOLVE", (j, k), 0))
-            for l in range(k):
-                dependency_list.append(TaskID("SYRK", (j, l), 0))
-
-            if data_config.pattern == DataInitType.NO_DATA:
-                data_dependencies = TaskDataInfo()
-            else:
-                data_dependencies = TaskDataInfo(
-                    read=[DataAccess(DataID((j, k)))],
-                    read_write=[DataAccess(DataID((j, j)))],
-                )
-
+            syrk_placement_info = configurations(syrk_task_id)
+            dependency_list = [TaskID("SOLVE", (j, k), 0)] + [
+                TaskID("SYRK", (j, l), 0) for l in range(k)
+            ]
+            data_dependencies, data_dict = get_data_dependencies(
+                syrk_task_id, data_dict, data_config
+            )
+            task_mapping = get_mapping(config, (j, k))
             task_dict[syrk_task_id] = TaskInfo(
-                syrk_task_id, task_placement_info, dependency_list, data_dependencies
+                syrk_task_id,
+                syrk_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
             )
 
         # Diagonal block Cholesky
         potrf_task_id = TaskID("POTRF", (j,), 0)
-        dependency_list = []
-        for l in range(j):
-            dependency_list.append(TaskID("SYRK", (j, l), 0))
-
-        if data_config.pattern == DataInitType.NO_DATA:
-            data_dependencies = TaskDataInfo()
-        else:
-            data_dependencies = TaskDataInfo(read_write=[DataAccess(DataID((j, j)))])
-
+        potrf_placement_info = configurations(potrf_task_id)
+        dependency_list = [TaskID("SYRK", (j, l), 0) for l in range(j)]
+        data_dependencies, data_dict = get_data_dependencies(
+            potrf_task_id, data_dict, data_config
+        )
+        task_mapping = get_mapping(config, (j,))
         task_dict[potrf_task_id] = TaskInfo(
-            potrf_task_id, task_placement_info, dependency_list, data_dependencies
+            potrf_task_id,
+            potrf_placement_info,
+            dependency_list,
+            data_dependencies,
+            task_mapping,
         )
 
         for i in range(j + 1, config.blocks):
             for k in range(j):
                 # Inter-block GEMM (update off-diagonal block)
                 gemm_task_id = TaskID("GEMM", (i, j, k), 0)
-                dependency_list = []
-                dependency_list.append(TaskID("SOLVE", (i, k), 0))
-                dependency_list.append(TaskID("SOLVE", (j, k), 0))
-                for l in range(k):
-                    dependency_list.append(TaskID("GEMM", (i, j, l), 0))
-
-                if data_config.pattern == DataInitType.NO_DATA:
-                    data_dependencies = TaskDataInfo()
-                else:
-                    data_dependencies = TaskDataInfo(
-                        read=[DataAccess(DataID((i, k))), DataAccess(DataID((j, k)))],
-                        read_write=[DataAccess(DataID((i, j)))],
-                    )
-
+                gemm_placement_info = configurations(gemm_task_id)
+                dependency_list = [
+                    TaskID("SOLVE", (i, k), 0),
+                    TaskID("SOLVE", (j, k), 0),
+                ] + [TaskID("GEMM", (i, j, l), 0) for l in range(k)]
+                data_dependencies, data_dict = get_data_dependencies(
+                    gemm_task_id, data_dict, data_config
+                )
+                task_mapping = get_mapping(config, (i, j, k))
                 task_dict[gemm_task_id] = TaskInfo(
                     gemm_task_id,
-                    task_placement_info,
+                    gemm_placement_info,
                     dependency_list,
                     data_dependencies,
+                    task_mapping,
                 )
 
             # Panel solve
             solve_task_id = TaskID("SOLVE", (i, j), 0)
-            dependency_list = []
-            dependency_list.append(TaskID("POTRF", (j,), 0))
-            for k in range(j):
-                dependency_list.append(TaskID("GEMM", (i, j, k), 0))
-
-            if data_config.pattern == DataInitType.NO_DATA:
-                data_dependencies = TaskDataInfo()
-            else:
-                data_dependencies = TaskDataInfo(
-                    read=[DataAccess(DataID((j, j)))],
-                    read_write=[DataAccess(DataID((i, j)))],
-                )
-
-            task_dict[solve_task_id] = TaskInfo(
-                solve_task_id, task_placement_info, dependency_list, data_dependencies
+            solve_placement_info = configurations(solve_task_id)
+            dependency_list = [TaskID("POTRF", (j,), 0)] + [
+                TaskID("GEMM", (i, j, l), 0) for l in range(j)
+            ]
+            data_dependencies, data_dict = get_data_dependencies(
+                solve_task_id, data_dict, data_config
             )
+            task_mapping = get_mapping(config, (i, j))
+            task_dict[solve_task_id] = TaskInfo(
+                solve_task_id,
+                solve_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
     return task_dict, data_dict
 
 
-def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
+@register_graph_generator
+def make_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]:
     check_config(config)
 
     data_config = config.data_config
@@ -329,46 +269,37 @@ def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]
     task_dict = dict()
     data_dict = dict()
 
-    # Generate configuration for data initialization
-
     # Build Task Graph
-    task_placement_info = configurations
+    count = 0
 
-    for level in range(config.levels, -1, -1):
-        tasks_in_level = config.branch_factor**level
-        subtree_segment = tasks_in_level / config.num_gpus
+    for level in range(config.levels - 1, -1, -1):
+        tasks_in_level = config.branch_factor ** (level)
+        print("tasks in level", tasks_in_level)
+        subtree_segment = tasks_in_level / config.n_devices
 
         for j in range(tasks_in_level):
             # Task ID:
-            task_id = TaskID("T", (level, j), 0)
+            task_idx = (level, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
 
             # Task Dependencies
             dependency_list = []
-            if level < config.levels:
+            if level < config.levels - 1:
                 for k in range(config.branch_factor):
                     dependency = TaskID(
-                        "T", (level - 1, config.branch_factor * j + k), 0
+                        "T", (level + 1, config.branch_factor * j + k), 0
                     )
                     dependency_list.append(dependency)
 
-            # Task Data Dependencies
-            if data_config.pattern == DataInitType.NO_DATA:
-                data_dependencies = TaskDataInfo([], [], [])
-            else:
-                if data_config.pattern == DataInitType.INDEPENDENT_DATA:
-                    inout_data_index = level * config.branch_factor + j
-                elif data_config.pattern == DataInitType.OVERLAPPED_DATA:
-                    inout_data_index = j
-                data_dependencies = TaskDataInfo([], [], [inout_data_index])
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
 
             # Task Mapping
-            if config.fixed_placement:
-                if config.placement_arch == Architecture.GPU:
-                    task_mapping = Device(Architecture.GPU, j // subtree_segment)
-                elif config.placement_arch == Architecture.CPU:
-                    task_mapping = Device(Architecture.CPU, 0)
-            else:
-                task_mapping = None
+            task_mapping = get_mapping(config, task_idx)
 
             task_dict[task_id] = TaskInfo(
                 task_id,
@@ -378,240 +309,397 @@ def generate_reduction_graph(config: ReductionConfig) -> Tuple[TaskMap, DataMap]
                 task_mapping,
             )
 
+    return task_dict, data_dict
 
-def generate_reduction_graph(config: ReductionConfig) -> str:
-    task_config = config.task_config
-    num_gpus = config.num_gpus
-    configurations = task_config.configurations
 
-    graph = ""
+@register_graph_generator
+def make_scatter_reduction_graph(config: ScatterReductionConfig):
+    check_config(config)
 
-    if task_config is None:
-        raise ValueError("Task config must be specified")
+    data_config = config.data_config
+    configurations = config.task_config
 
-    data_config_string = ""
-    if config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = "{{1 : -1}}\n"
-    elif config.data_pattern == DataInitType.INDEPENDENT_DATA:
-        raise NotImplementedError("[Reduction] Data patterns not implemented")
-    else:
-        single_data_block_size = config.total_data_width
-        for i in range(config.branch_factor**config.levels):
+    task_dict = dict()
+    data_dict = dict()
+
+    # Build Task Graph
+
+    # Scatter phase
+    for level in range(config.levels + 1):
+        tasks_in_level = config.branch_factor ** (level)
+
+        subtree_segment = tasks_in_level // config.n_devices
+
+        for j in range(tasks_in_level):
+            # Task ID:
+            task_idx = (2 * config.levels - level, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
+            dependency_list = []
+            if level > 0:
+                dependency = TaskID(
+                    "T",
+                    (2 * config.levels - level + 1, j // config.branch_factor),
+                    0,
+                )
+                dependency_list.append(dependency)
+
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
+    # Reduction phase
+    for level in range(config.levels - 1, -1, -1):
+        tasks_in_level = config.branch_factor ** (level)
+        print("tasks in level", tasks_in_level)
+        subtree_segment = tasks_in_level / config.n_devices
+
+        for j in range(tasks_in_level):
+            # Task ID:
+            task_idx = (level, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
+            dependency_list = []
+            for k in range(config.branch_factor):
+                dependency = TaskID("T", (level + 1, config.branch_factor * j + k), 0)
+                dependency_list.append(dependency)
+
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
+    return task_dict, data_dict
+
+
+@register_graph_generator
+def make_stencil_graph(config: StencilConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    from rich import print
+
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    # Build task graph
+
+    dimensions = tuple(config.width for _ in range(config.dimensions))
+    print("dimensions", dimensions)
+
+    for t in range(config.steps):
+        grid_generator = np.ndindex(dimensions)
+        for grid_tuple in grid_generator:
+            # Task ID:
+            task_idx = (t,) + grid_tuple
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
+            dependency_list = []
+            if t > 0:
+                neighbor_generator = tuple(
+                    config.neighbor_distance * 2 + 1 for _ in range(config.dimensions)
+                )
+                stencil_generator = np.ndindex(neighbor_generator)
+                for stencil_tuple in stencil_generator:
+                    # Filter to only orthogonal stencil directions (no diagonals)
+                    # This is inefficient, but allows easy testing of other stencil types
+                    stencil_tuple = np.subtract(stencil_tuple, config.neighbor_distance)
+                    if np.count_nonzero(stencil_tuple) == 1:
+                        dependency_grid = tuple(np.add(grid_tuple, stencil_tuple))
+                        print("task_idx", grid_tuple)
+                        print("stencil_tuple", stencil_tuple)
+                        print("dependency_grid", dependency_grid)
+                        out_of_bounds = any(
+                            element < 0 or element >= config.width
+                            for element in dependency_grid
+                        )
+                        if not out_of_bounds:
+                            dependency = TaskID("T", (t - 1,) + dependency_grid, 0)
+                            dependency_list.append(dependency)
+
+            # Task Data Dependencies
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+            print(task_dict[task_id])
+
+    return task_dict, data_dict
+
+
+@register_graph_generator
+def make_map_reduce_graph(config: MapReduceConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    from rich import print
+
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    # Build task graph
+    for i in range(config.steps):
+        for j in range(config.width):
+            # Task ID:
+            task_idx = (0, i, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
             if i > 0:
-                data_config_string += ", "
-            data_config_string += f"{{ {single_data_block_size} : -1}}"
-    data_config_string += "\n"
-    graph += data_config_string
-
-    post_configuration_string = ""
-
-    # TODO(hc): when this was designed, we considered multidevice placement.
-    #           but for now, we only consider a single device placement and so,
-    #           follow the old generator's graph generation rule.
-
-    device_id = Architecture.GPU
-    for config_device_id, task_config in configurations.items():
-        last_flag = 1 if config_device_id == list(configurations.keys())[-1] else 0
-
-        post_configuration_string += f"{task_config.task_time}, {task_config.device_fraction}, {task_config.gil_accesses}, {task_config.gil_fraction}, {task_config.memory} }}"
-        # TODO(hc): This should be refined.
-        #           If users did not set "fixed", then it should be any cpu or gpu.
-        device_id = config_device_id[-1]
-
-        if last_flag == 0:
-            post_configuration_string += ", "
-
-    reverse_level = 0
-    global_idx = 0
-    for i in range(config.levels, -1, -1):
-        total_tasks_in_level = config.branch_factor**i
-        segment = total_tasks_in_level / num_gpus
-        for j in range(total_tasks_in_level):
-            if reverse_level > 0:
-                dependency_string = " "
-                for k in range(config.branch_factor):
-                    dependency_string += (
-                        f"{reverse_level-1, config.branch_factor*j + k}"
-                    )
-                    if k + 1 < config.branch_factor:
-                        dependency_string += " : "
+                dependency_list = [TaskID("T", (1, i - 1), 0)]
             else:
-                dependency_string = " "
+                dependency_list = []
 
-            if reverse_level > 0:
-                l = 0
-                read_dependency = " "
-                targets = [config.branch_factor ** (reverse_level - 1)]
-                for k in targets:
-                    read_dependency += f"{(config.branch_factor**(reverse_level))*j+k}"
-                    l += 1
-                    if l < len(targets):
-                        read_dependency += ", "
-                write_dependency = f"{config.branch_factor**(reverse_level)*j}"
-            else:
-                read_dependency = " "
-                write_dependency = f"{global_idx}"
-            if config.fixed_placement:
-                # USER_CHOSEN_DEVICE acts as an offset.
-                device_id = int(2 + j // segment)
-            else:
-                assert (
-                    device_id == Architecture.CPU_DEVICE
-                    or device_id == Architecture.ANY_GPU_DEVICE
-                )
-            pre_configuration_string = f"{{ {device_id} : "
-            configuration_string = pre_configuration_string + post_configuration_string
-            graph += f"{reverse_level, j} |  {configuration_string} | {dependency_string} | {read_dependency} : : {write_dependency} \n"
-            global_idx += 1
-        reverse_level += 1
-    return graph
-
-
-def generate_reduction_scatter_graph(tgraph_config: ReductionScatterConfig) -> str:
-    """
-    Generate reduction-scatter graph input file.
-
-    e.g.,
-    * * * * * * (bulk tasks) 
-    \ | | | | /
-         *      (bridge task)
-    / | | | | \
-    * * * * * *
-    ...
-    """
-    task_config = tgraph_config.task_config
-    configurations = task_config.configurations
-    num_gpus = tgraph_config.num_gpus
-    num_tasks = tgraph_config.task_count
-    # Level starts from 1
-    levels = tgraph_config.levels
-    # Calcualte the number of bridge tasks in the graph.
-    num_bridge_tasks = levels // 2
-    num_bridge_tasks += 1 if (levels % 2 > 0) else 0
-    # Calculate the number of bulk tasks in the graph.
-    num_bulk_tasks = num_tasks - num_bridge_tasks
-    # Calculate the number of bulk tasks per level.
-    num_levels_for_bulk_tasks = levels // 2 + 1
-    num_bulk_tasks_per_level = num_bulk_tasks // num_levels_for_bulk_tasks
-    # All the remaining bulk tasks are added to the last level.
-    num_bulk_tasks_last_level = (
-        num_bulk_tasks % num_levels_for_bulk_tasks
-    ) + num_bulk_tasks_per_level
-    # Calculate the number of tasks per gpu per level.
-    num_bulk_tasks_per_gpu = (num_bulk_tasks_per_level) // num_gpus
-    """
-    for l in range(levels + 1):
-        if l % 2 > 0:
-            print(f"Level {l}: -- 1 --", flush=True)
-        else:
-            if l == levels:
-                print(f"Level {l}: {num_bulk_tasks_last_level}, {num_bulk_tasks_per_gpu}", flush=True)
-            else:
-                print(f"Level {l}: {num_bulk_tasks_per_level}, {num_bulk_tasks_per_gpu}", flush=True)
-    """
-
-    graph = ""
-
-    data_config_string = ""
-    # TODO(hc): for now, assume that data allocation starts from cpu.
-    if tgraph_config.data_pattern == DataInitType.NO_DATA:
-        data_config_string = f"{{1 : -1}}"
-    elif tgraph_config.data_pattern == DataInitType.OVERLAPPED_DATA:
-        # Each bulk task takes an individual (non-overlapped) data block.
-        # A bridge task reduces all data blocks from the bulk tasks in the previous level.
-        single_data_block_size = tgraph_config.total_data_width
-        for d in range(num_bulk_tasks_last_level):
-            if d > 0:
-                data_config_string += ", "
-            data_config_string += f"{{{single_data_block_size} : -1}}"
-    elif tgraph_config.data_pattern == DataInitType.INDEPENDENT_DATA:
-        raise NotImplementedError("[Independent] Data patterns not implemented")
-    data_config_string += "\n"
-    graph += data_config_string
-
-    # TODO(hc): I don't know how to handle user-fixed placement on multi-device
-    #           tasks. Let me design single device task workload.
-    assert len(task_config.configurations) == 1
-
-    # Construct task graphs.
-    task_id = 0
-    bridge_task_dev_id = (
-        DeviceType.USER_CHOSEN_DEVICE
-        if tgraph_config.fixed_placement
-        else DeviceType.ANY_GPU_DEVICE
-    )
-    last_bridge_task_id_str = ""
-    last_bridge_task_id = 0
-    for l in range(levels + 1):
-        # If the last level has a bridge task, the previous level should take all remaining bulk
-        # tasks.
-        if levels % 2 > 0:
-            l_num_bulk_tasks = (
-                num_bulk_tasks_per_level
-                if l < (levels - 1)
-                else num_bulk_tasks_last_level
+            # Task Data Dependencies
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
             )
-        else:
-            l_num_bulk_tasks = (
-                num_bulk_tasks_per_level if l < levels else num_bulk_tasks_last_level
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
             )
-        if l % 2 > 0:  # Bridge task condition
-            dependency_block = ""
-            inout_data_block = ""
-            for d in range(l_num_bulk_tasks):
-                inout_data_block += f"{d}"
-                if l == 1:
-                    dependency_block += f"{d + last_bridge_task_id}"
-                else:
-                    dependency_block += f"{d + last_bridge_task_id + 1}"
-                if d != (l_num_bulk_tasks - 1):
-                    inout_data_block += ","
-                    dependency_block += " : "
-            # TODO(hc): assume a single device task.
-            for _, sdevice_task_config in task_config.configurations.items():
-                graph += (
-                    f"{task_id} | {{ {bridge_task_dev_id} : {sdevice_task_config.task_time}, "
-                    f"{sdevice_task_config.device_fraction}, {sdevice_task_config.gil_accesses}, "
-                    f"{sdevice_task_config.gil_fraction}, {sdevice_task_config.memory} }}"
-                )
-            graph += f" | {dependency_block}"
-            graph += f" | : : {inout_data_block}\n"
-            if tgraph_config.fixed_placement:
-                bridge_task_dev_id += 1
-                if bridge_task_dev_id == num_gpus + DeviceType.USER_CHOSEN_DEVICE:
-                    bridge_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
-            last_bridge_task_id_str = f"{task_id}"
-            last_bridge_task_id = int(task_id)
-            task_id += 1
-        else:  # Bulk tasks condition
-            bulk_task_id_per_gpu = 0
-            bulk_task_dev_id = (
-                DeviceType.USER_CHOSEN_DEVICE
-                if tgraph_config.fixed_placement
-                else DeviceType.ANY_GPU_DEVICE
+
+        task_idx = (1, i)
+        task_id = TaskID("T", task_idx, 0)
+
+        # Task Placement Info
+        task_placement_info = configurations(task_id)
+
+        # Task Dependencies
+        dependency_list = []
+        for j in range(config.width):
+            dependency = TaskID("T", (0, i, j), 0)
+            dependency_list.append(dependency)
+
+        # Task Data Dependencies
+        data_dependencies, data_dict = get_data_dependencies(
+            task_id, data_dict, data_config
+        )
+
+        # Task Mapping
+        task_mapping = get_mapping(config, task_idx)
+
+        task_dict[task_id] = TaskInfo(
+            task_id,
+            task_placement_info,
+            dependency_list,
+            data_dependencies,
+            task_mapping,
+        )
+
+    return task_dict, data_dict
+
+
+@register_graph_generator
+def make_fully_connected_graph(config: FullyConnectedConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    from rich import print
+
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    for i in range(config.steps):
+        for j in range(config.width):
+            # Task ID:
+            task_idx = (i, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
+            dependency_list = []
+            if i > 0:
+                for k in range(config.width):
+                    dependency = TaskID("T", (i - 1, k), 0)
+                    dependency_list.append(dependency)
+
+            # Task Data Dependencies
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
             )
-            for bulk_task_id in range(l_num_bulk_tasks):
-                inout_data_block = f"{bulk_task_id}"
-                # TODO(hc): assume a single device task.
-                for _, sdevice_task_config in task_config.configurations.items():
-                    graph += (
-                        f"{task_id} | {{ {bulk_task_dev_id} : {sdevice_task_config.task_time}, "
-                        f"{sdevice_task_config.device_fraction}, {sdevice_task_config.gil_accesses}, "
-                        f"{sdevice_task_config.gil_fraction}, {sdevice_task_config.memory} }}"
-                    )
-                graph += f" | {last_bridge_task_id_str}"
-                graph += f" | : : {inout_data_block}\n"
-                l_num_bulk_tasks_per_gpu = l_num_bulk_tasks // num_gpus
-                if tgraph_config.fixed_placement:
-                    if l_num_bulk_tasks % num_gpus >= (
-                        bulk_task_dev_id - DeviceType.USER_CHOSEN_DEVICE
-                    ):
-                        l_num_bulk_tasks_per_gpu += 1
-                    bulk_task_id_per_gpu += 1
-                    if bulk_task_id_per_gpu == l_num_bulk_tasks_per_gpu:
-                        bulk_task_id_per_gpu = 0
-                        bulk_task_dev_id += 1
-                        if bulk_task_dev_id == num_gpus + DeviceType.USER_CHOSEN_DEVICE:
-                            bulk_task_dev_id = DeviceType.USER_CHOSEN_DEVICE
-                task_id += 1
-    return graph
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
+    return task_dict, data_dict
+
+
+@register_graph_generator
+def make_butterfly_graph(config: ButterflyConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    from rich import print
+
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    assert config.steps <= np.log2(config.width) + 1
+
+    # Build task graph
+    for i in range(config.steps + 1):
+        for j in range(config.width):
+            # Task ID:
+            task_idx = (i, j)
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+
+            # Task Dependencies
+            dependency_list = []
+            if i > 0:
+                dependency = TaskID("T", (i - 1, j), 0)
+                dependency_list.append(dependency)
+
+                step = 2 ** (config.steps - i)
+                print("step", step)
+
+                left_idx = j - step
+                if left_idx >= 0 and left_idx < config.width:
+                    dependency = TaskID("T", (i - 1, left_idx), 0)
+                    dependency_list.append(dependency)
+
+                right_idx = j + step
+                if right_idx >= 0 and right_idx < config.width:
+                    dependency = TaskID("T", (i - 1, right_idx), 0)
+                    dependency_list.append(dependency)
+
+            # Task Data Dependencies
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
+    return task_dict, data_dict
+
+
+@register_graph_generator
+def make_sweep_graph(config: SweepConfig) -> Tuple[TaskMap, DataMap]:
+    check_config(config)
+    from rich import print
+
+    data_config = config.data_config
+    configurations = config.task_config
+
+    task_dict = dict()
+    data_dict = dict()
+
+    shape = tuple(config.width for _ in range(config.dimensions))
+
+    for i in range(config.steps):
+        grid_generator = np.ndindex(shape)
+
+        for grid_tuple in grid_generator:
+            # Task ID:
+            task_idx = (i,) + grid_tuple
+            task_id = TaskID("T", task_idx, 0)
+
+            # Task Placement Info
+            task_placement_info = configurations(task_id)
+            print(task_placement_info)
+
+            # Task Dependencies
+            dependency_list = []
+            for j in range(config.dimensions + 1):
+                if task_idx[j] > 0:
+                    dependency_grid = list(task_idx)
+                    dependency_grid[j] -= 1
+                    dependency = TaskID("T", tuple(dependency_grid), 0)
+                    dependency_list.append(dependency)
+
+            # Task Data Dependencies
+            data_dependencies, data_dict = get_data_dependencies(
+                task_id, data_dict, data_config
+            )
+
+            # Task Mapping
+            task_mapping = get_mapping(config, task_idx)
+
+            task_dict[task_id] = TaskInfo(
+                task_id,
+                task_placement_info,
+                dependency_list,
+                data_dependencies,
+                task_mapping,
+            )
+
+    return task_dict, data_dict
