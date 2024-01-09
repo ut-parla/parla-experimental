@@ -13,7 +13,7 @@ from parla.utility.threads import Propagate
 
 from .core import PyInnerTask, CyTaskList, PyTaskSpace, PyTaskBarrier, DataMovementTaskAttributes
 
-from .device import PyDevice, PyCPUDevice, PyCUDADevice, DeviceResourceRequirement
+from .device import PyDevice, PyCPUDevice, PyGPUDevice, DeviceResourceRequirement
 
 from ..common.globals import _Locals as Locals
 from ..common.globals import DeviceType
@@ -739,8 +739,8 @@ def create_device_env(device):
     """
     if isinstance(device, PyCPUDevice):
         return CPUEnvironment(device), DeviceType.CPU
-    elif isinstance(device, PyCUDADevice):
-        return GPUEnvironment(device), DeviceType.CUDA
+    elif isinstance(device, PyGPUDevice):
+        return GPUEnvironment(device), DeviceType.GPU
 
 
 def create_env(sources):
@@ -806,14 +806,14 @@ class TaskEnvironment:
         """
         Returns the CUDA_VISIBLE_DEVICES ids of the GPU devices in this environment.
         """
-        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.CUDA]]
+        return [device_env.get_parla_device().id for device_env in self.device_dict[DeviceType.GPU]]
 
     @property
     def gpu_id(self):
         """
         Returns the CUDA_VISIBLE_DEVICES id of the first GPU device in this environment.
         """
-        return self.device_dict[DeviceType.CUDA][0].get_parla_device().id
+        return self.device_dict[DeviceType.GPU][0].get_parla_device().id
 
     def __repr__(self):
         return f"TaskEnvironment({self.env_list})"
@@ -884,7 +884,7 @@ class TaskEnvironment:
         return self.devices[0]
 
     def get_cupy_devices(self):
-        return [dev.device for dev in self.get_devices(DeviceType.CUDA)]
+        return [dev.device for dev in self.get_devices(DeviceType.GPU)]
 
     def synchronize(self, events=False, tags=None, return_to_pool=True):
         if tags is None:
@@ -1104,6 +1104,7 @@ class TerminalEnvironment(TaskEnvironment):
 
     def  __init__(self,  device, blocking=False):
         super(TerminalEnvironment, self).__init__([], blocking=blocking)
+
         self.device_dict[device.architecture].append(self)
         self.device_list.append(self)
         self._device = device

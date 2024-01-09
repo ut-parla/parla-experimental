@@ -203,7 +203,7 @@ class PArray:
         elif isinstance(device, PyCPUDevice):
             return CPU_INDEX
         else:
-            # assume GPU here, won't check isinstance(device, PyCUDADevice)
+            # assume GPU here, won't check isinstance(device, PyGPUDevice)
             # to avoid import gpu context, which is slow to setup.
             return device.device.id  # device.device should be a cupy.cuda.Device object
 

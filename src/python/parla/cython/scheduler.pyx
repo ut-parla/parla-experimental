@@ -150,7 +150,7 @@ class WorkerThread(ControllableThread, SchedulerContext):
         # TODO(wlr): Fix this in device_manager (see todo there)
 
         if CUPY_ENABLED:
-            gpu_arch = device_manager.py_registered_archs[DeviceType.CUDA]
+            gpu_arch = device_manager.py_registered_archs[DeviceType.GPU]
             ngpus = len(gpu_arch)
 
             for index in range(ngpus):

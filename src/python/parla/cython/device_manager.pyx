@@ -16,12 +16,12 @@ import psutil
 import yaml
 
 PyDevice = device.PyDevice
-PyCUDADevice = device.PyCUDADevice
+PyGPUDevice = device.PyGPUDevice
 PyCPUDevice = device.PyCPUDevice
 PyArchitecture = device.PyArchitecture
-ImportableCUDAArchitecture = device.ImportableCUDAArchitecture
+ImportableGPUArchitecture = device.ImportableGPUArchitecture
 ImportableCPUArchitecture = device.ImportableCPUArchitecture
-PyCUDAArchitecture = device.PyCUDAArchitecture
+PyGPUArchitecture = device.PyGPUArchitecture
 PyCPUArchitecture = device.PyCPUArchitecture
 DeviceResource = device.DeviceResource
 DeviceResourceRequirement = device.DeviceResourceRequirement
@@ -30,7 +30,7 @@ CupyStream = device.CupyStream
 CUPY_ENABLED = device.CUPY_ENABLED
 
 # Importable architecture declarations
-gpu = ImportableCUDAArchitecture()
+gpu = ImportableGPUArchitecture()
 cpu = ImportableCPUArchitecture()
 
 cdef class CyDeviceManager:
@@ -156,7 +156,7 @@ class PyDeviceManager:
         # self.register_devices_to_cpp()
 
         # Initialize Device Hardware Queues
-        self.stream_pool = StreamPool(self.get_devices(DeviceType.CUDA))
+        self.stream_pool = StreamPool(self.get_devices(DeviceType.GPU))
 
     def __dealloc__(self):
         for arch in self.py_registered_archs:
@@ -178,14 +178,14 @@ class PyDeviceManager:
             num_of_gpus = 0
 
         if num_of_gpus > 0:
-            gpu_arch = PyCUDAArchitecture()
+            gpu_arch = PyGPUArchitecture()
             self.py_registered_archs[gpu] = gpu_arch
 
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info  # tuple of free and total memory (in bytes)
                 mem_sz = long(mem_info[1])
-                py_cuda_device = PyCUDADevice(dev_id, mem_sz, VCU_BASELINE)
+                py_cuda_device = PyGPUDevice(dev_id, mem_sz, VCU_BASELINE)
 
                 # Add device to the architecture
                 gpu_arch.add_device(py_cuda_device)
@@ -274,7 +274,7 @@ class PyDeviceManager:
 
             num_of_gpus = parsed_configs["GPU"]["num_devices"]
             if num_of_gpus > 0:
-                gpu_arch = PyCUDAArchitecture()
+                gpu_arch = PyGPUArchitecture()
                 self.py_registered_archs[gpu] = gpu_arch
                 gpu_mem_sizes = parsed_configs["GPU"]["mem_sz"]
                 assert(num_of_gpus == len(gpu_mem_sizes)) 
@@ -282,21 +282,21 @@ class PyDeviceManager:
                 for dev_id in range(num_of_gpus):
 
                     if self.num_real_gpus > 0:
-                        py_cuda_device = PyCUDADevice(
+                        py_gpu_device = PyGPUDevice(
                                                 dev_id % self.num_real_gpus,
                                                 gpu_mem_sizes[dev_id],
                                                 VCU_BASELINE
                                             )
                     else:
-                        py_cuda_device = PyCPUDevice(
+                        py_gpu_device = PyCPUDevice(
                                                 dev_id,
                                                 gpu_mem_sizes[dev_id],
                                                 VCU_BASELINE
                                             )
 
-                    gpu_arch.add_device(py_cuda_device)
-                    self.registered_devices.append(py_cuda_device)
-                    cy_device = py_cuda_device.get_cy_device()
+                    gpu_arch.add_device(py_gpu_device)
+                    self.registered_devices.append(py_gpu_device)
+                    cy_device = py_gpu_device.get_cy_device()
                     self.cy_device_manager.register_device(cy_device)
 
     def get_all_devices(self):

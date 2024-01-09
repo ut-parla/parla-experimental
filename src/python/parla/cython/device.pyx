@@ -37,14 +37,14 @@ cdef class CyDevice:
         return self._cpp_device.query_mapped_resource(<Resource> resource_type)
 
 
-cdef class CyCUDADevice(CyDevice):
+cdef class CyGPUDevice(CyDevice):
     """
     An inherited class from `CyDevice` for a device object specialized to CUDA.
     """
     def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
-        self._cpp_device = new CUDADevice(dev_id, mem_sz, num_vcus, <void *> py_device)
+        self._cpp_device = new GPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
     def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
         pass
@@ -105,7 +105,7 @@ class PyDevice:
     a device context as a task runs in Python.
     """
     def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
-        self._dev_type = dev_type
+        self._dev_type: PyDeviceType = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self
         self._device_id = dev_id
@@ -175,7 +175,7 @@ class PyDevice:
         return self._device
 
     @property
-    def architecture(self):
+    def architecture(self) -> PyDeviceType:
         """
         Returns the architecture (type) of the device.
         """
@@ -214,14 +214,14 @@ class PyDevice:
         return self._device_id
 
 
-class PyCUDADevice(PyDevice):
+class PyGPUDevice(PyDevice):
     """
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CUDA, "CUDA", dev_id)
-        self._cy_device = CyCUDADevice(dev_id, mem_sz, num_vcus, self)
+        super().__init__(PyDeviceType.GPU, "GPU", dev_id)
+        self._cy_device = CyGPUDevice(dev_id, mem_sz, num_vcus, self)
 
     @property
     def device(self):
@@ -236,7 +236,7 @@ class PyCPUDevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 
@@ -398,14 +398,14 @@ class ImportableArchitecture(PyArchitecture):
         architecture.add_device(device)
 
 
-class PyCUDAArchitecture(PyArchitecture):
+class PyGPUArchitecture(PyArchitecture):
     def __init__(self):
-        super().__init__("CUDAArch", DeviceType.CUDA)
+        super().__init__("GPUArch", DeviceType.GPU)
 
 
-class ImportableCUDAArchitecture(PyCUDAArchitecture, ImportableArchitecture):
+class ImportableGPUArchitecture(PyGPUArchitecture, ImportableArchitecture):
     def __init__(self):
-        ImportableArchitecture.__init__(self, "CUDAArch", DeviceType.CUDA)
+        ImportableArchitecture.__init__(self, "GPUArch", DeviceType.GPU)
  
 
 class PyCPUArchitecture(PyArchitecture):
