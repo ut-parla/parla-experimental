@@ -217,6 +217,9 @@ class PArray:
 
     # Public API:
 
+    def set_name(self, name: str):
+        self._name = name
+
     def get(self, device: Optional[PyDevice] = None) -> 'np.ndarray' | 'cp.ndarray':
         if device is None:
             return self.array
