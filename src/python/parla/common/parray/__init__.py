@@ -1,1 +1,1 @@
-from .from_data import array, asarray, asarray_batch
+from .from_data import array, asarray, asarray_batch, PArray
