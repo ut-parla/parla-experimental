@@ -390,7 +390,7 @@ TaskState InnerTask::set_state(TaskState state) {
     }
   } while (!this->state.compare_exchange_weak(old_state, new_state));
 
-  if (!success) {
+  if (!success && !this->is_data_task()) {
     throw std::runtime_error("Task States must always be increasing.");
   }
 

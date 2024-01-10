@@ -103,8 +103,7 @@ class Dataflow:
                                 _out.append((parray, i))
                 else:
                     raise TypeError(
-                        "IN/OUT/INOUT should be either a tuple of PArray",
-                        "and its partition number or CrossPyArray",
+                       f"Invalid Type: {type(element)}. Dataflow should be PArray, CrossPyArray, or Tuple[PArray, int]"
                     )
         return _out
 
