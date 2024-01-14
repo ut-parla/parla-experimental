@@ -277,7 +277,7 @@ public:
   /* Task Assigned Device Set*/
   std::vector<Device *> assigned_devices;
 
-  /*Resource Requirements for each assigned device*/
+  /* Resource Requirements for each assigned device*/
   std::unordered_map<int, ResourcePool_t> device_constraints;
 
   /* Task is data movement task */
@@ -293,6 +293,13 @@ public:
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
       parray_list;
 
+  /* A list of dependency tasks of a parray for this task's dependent tasks.
+     To be specific, a task sets dependencies of a parray for dependent tasks.
+     If this task's access permission to a parray includes write, it sets
+     itself as the dependency of the parray.
+     If this task's access permission to the parray is read-only, it pulls
+     this list of the dependencies to this map.
+   */
   std::unordered_map<uint64_t, std::vector<InnerTask*>> parray_dependencies_map;
 
   InnerTask();

@@ -239,7 +239,8 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
 
 
 
-
+// TODO(hc): need to think about better naming before it is merged.
+// first, need peer-review on this.
 void MemoryReserver::create_datamove_tasks2(InnerTask *task) {
   // Get a list of the parrays the current task holds.
   const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
@@ -258,28 +259,25 @@ void MemoryReserver::create_datamove_tasks2(InnerTask *task) {
           task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
           i);
       uint64_t parray_parent_id = parray->get_parent_parray()->id;
-      // Find dependency intersection between compute and data movement tasks.
-
-      // TODO(hc): This is not the complete implementation.
-      //           We will use a concurrent map for parray's
-      //           task list as an optimization.
-
+      // Get dependencies
       std::vector<void *> compute_task_dependencies = task->get_dependencies();
       std::vector<InnerTask *> data_task_dependencies;
       for (size_t k = 0; k < compute_task_dependencies.size(); ++k) {
         InnerTask *parray_dependency =
             static_cast<InnerTask *>(compute_task_dependencies[k]);
+        // Get dependencies of a parray having `parray_parent_id` that have
+        // registered to the traversed dependency task
         std::vector<InnerTask*>& dep_parray_dependencies = 
             parray_dependency->get_parray_dependencies(parray_parent_id);
 
-        std::cout << parray_dependency->name << " is being traversed\n";
+        //std::cout << parray_dependency->name << " is being traversed\n";
         for (size_t t = 0; t < dep_parray_dependencies.size(); ++t) {
           data_task_dependencies.push_back(parray_dependency);
           // If the current processing parray's access mode is READ ONLY,
           // add this dependency as a dependency for this parray.
-          std::cout << "access mode:" << int(access_mode) << "\n";
+          //std::cout << "access mode:" << int(access_mode) << "\n";
           if (access_mode == AccessMode::IN) {
-            std::cout << "IN parray is added:" << parray_parent_id << "\n";
+            //std::cout << "IN parray is added:" << parray_parent_id << "\n";
             task->get_parray_dependencies(parray_parent_id).push_back(parray_dependency);
           }
         }
@@ -287,9 +285,9 @@ void MemoryReserver::create_datamove_tasks2(InnerTask *task) {
 
       // If the current processing parray's access mode is not READ ONLY,
       // add itself as a dependency for this parray.
-      std::cout << task->name << " is being traversed access id :" << int(access_mode) << "\n";
+      //std::cout << task->name << " is being traversed access id :" << int(access_mode) << "\n";
       if (access_mode != AccessMode::IN) {
-        std::cout << "IN/OUT OUT parray is added:" << parray_parent_id << "\n";
+        //std::cout << "IN/OUT OUT parray is added:" << parray_parent_id << "\n";
         task->get_parray_dependencies(parray_parent_id).push_back(task);
       }
 
