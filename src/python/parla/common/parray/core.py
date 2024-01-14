@@ -170,13 +170,11 @@ class PArray:
         """
 
         if device_idx is None:
-            device_idx = self._current_device_index 
+            device_idx = self._current_device_index
 
         if self._slices:  # so this is a sub-parray object
             # index into origin array by saved slices
-            ret = self._array.get_by_global_slices(
-                device_idx, self._slices[0]
-            )
+            ret = self._array.get_by_global_slices(device_idx, self._slices[0])
             for s in self._slices[1:]:
                 ret = ret[s]
             return ret
@@ -214,10 +212,9 @@ class PArray:
             # to avoid import gpu context, which is slow to setup.
             return device.device.id  # device.device should be a cupy.cuda.Device object
 
-
     # Public API:
 
-    def get(self, device: Optional[PyDevice] = None) -> 'np.ndarray' | 'cp.ndarray':
+    def get(self, device: Optional[PyDevice] = None) -> "np.ndarray" | "cp.ndarray":
         if device is None:
             return self.array
         else:
