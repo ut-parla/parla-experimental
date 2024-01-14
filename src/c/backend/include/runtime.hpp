@@ -293,6 +293,8 @@ public:
   std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
       parray_list;
 
+  std::unordered_map<uint64_t, std::vector<InnerTask*>> parray_dependencies_map;
+
   InnerTask();
   InnerTask(long long int id, void *py_task);
   InnerTask(std::string name, long long int id, void *py_task);
@@ -622,6 +624,10 @@ public:
   void end_arch_req_addition();
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
+
+  std::vector<InnerTask*>& get_parray_dependencies(uint64_t parray_parent_id) {
+    return this->parray_dependencies_map[parray_parent_id];
+  }
 
   PlacementRequirementCollections &get_placement_req_options() {
     return placement_req_options_;

@@ -721,6 +721,7 @@ class DataMovementTask(Task):
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
 
+        print(self.name, " moves parray:", parray_id, " on device:", target_dev)
         self.parray._auto_move(parray_id, write_flag)
         return TaskRunahead(0)
 
@@ -1787,9 +1788,3 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
-
-
-
-
-    
-    
