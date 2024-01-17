@@ -72,6 +72,7 @@ def print_config():
     print("Default Runahead Behavior: ", default_sync, flush=True)
     print("VCU Precision: ", VCU_BASELINE, flush=True)
 
+
 class DeviceType(IntEnum):
     """
     This class declares device types.

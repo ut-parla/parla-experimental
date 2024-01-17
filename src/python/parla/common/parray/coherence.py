@@ -27,14 +27,14 @@ class MemoryOperation:
 
     # Flag
     SWITCH_DEVICE_FLAG = (
-        101
-    )  # if the flag is set, it means dst is not the current device
+        101  # if the flag is set, it means dst is not the current device
+    )
     LOAD_SUBARRAY = (
-        102
-    )  # if the flag is set, it means a subarray of src should be loaded
+        102  # if the flag is set, it means a subarray of src should be loaded
+    )
     ENSURE_IS_COMPLETE = (
-        103
-    )  # if the flag is set, check data will also check if the data is complete
+        103  # if the flag is set, check data will also check if the data is complete
+    )
 
     def __init__(self, inst: int = NOOP, dst: int = -1, src: int = -1, flag: int = []):
         self.inst = inst
@@ -125,9 +125,7 @@ class Coherence:
         self._is_complete[CPU_INDEX] = None
 
         self._local_states[init_owner] = self.MODIFIED  # initial state is MODIFIED
-        self.owner = (
-            init_owner
-        )  # the device that has the complete copy (take the role of main memory)
+        self.owner = init_owner  # the device that has the complete copy (take the role of main memory)
         self._versions[init_owner] = 0  # the first version is 0
         self._is_complete[init_owner] = True  # the copy is complete
         self._latest_version = 0  # the latest version in the system

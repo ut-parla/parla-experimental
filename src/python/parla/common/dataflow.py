@@ -103,7 +103,7 @@ class Dataflow:
                                 _out.append((parray, i))
                 else:
                     raise TypeError(
-                       f"Invalid Type: {type(element)}. Dataflow should be PArray, CrossPyArray, or Tuple[PArray, int]"
+                        f"Invalid Type: {type(element)}. Dataflow should be PArray, CrossPyArray, or Tuple[PArray, int]"
                     )
         return _out
 
