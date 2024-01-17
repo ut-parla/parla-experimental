@@ -98,7 +98,7 @@ public:
 
   // TODO(hc): use a customized type for device id.
 
-  const DevID_t globalid_to_parrayid(DevID_t global_dev_id) const {
+  const int globalid_to_parrayid(unsigned int global_dev_id) const {
     Device *dev = all_devices_[global_dev_id];
     if (dev->get_type() == DeviceType::CPU) {
       return -1;
@@ -107,7 +107,7 @@ public:
     }
   }
 
-  const int parrayid_to_globalid(DevID_t parray_dev_id) const {
+  const unsigned int parrayid_to_globalid(int parray_dev_id) const {
     if (parray_dev_id == -1) {
       // XXX: This assumes that a CPU device is always single and
       //      is added at first.

@@ -714,8 +714,9 @@ class DataMovementTask(Task):
         Devices are given by the local relative device id within the TaskEnvironment.
         """
 
-        print(f"Running data movement task: {self.name}, {self.parray.name} {self.access_mode}", flush=True)
-        write_flag = True if self.access_mode != AccessMode.IN else False
+        # write_flag = True if self.access_mode != AccessMode.IN else False
+        # Data movement tasks should only perform read operations
+        write_flag = False 
 
         # TODO: Get device manager from task environment instead of scheduler at creation time
         device_manager = self.scheduler.device_manager

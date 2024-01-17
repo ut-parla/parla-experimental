@@ -99,10 +99,10 @@ class Parla:
             self.original_handler = signal.getsignal(self.sig)
 
             def handler(signum, frame):
-                print("YOU PRESSED CTRL+C, INTERRUPTING ALL TASKS", flush=True)
+                print("Attempting to interurpt all running tasks...", flush=True)
                 self._sched.stop()
                 self.release()
-                self.interrupted = True
+                self.interuppted = True
 
             signal.signal(self.sig, handler)
         except ValueError:
