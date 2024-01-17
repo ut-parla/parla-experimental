@@ -202,6 +202,8 @@ class WorkerThread(ControllableThread, SchedulerContext):
                 with self.scheduler.start_monitor:
                     self.scheduler.start_monitor.notify_all()
 
+                device_manager = self.scheduler.device_manager
+
                 while self._should_run:
                     self.status = "Waiting"
 
@@ -246,6 +248,14 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         Locals.push_task(active_task)
 
                         with device_context as env:
+
+                            if isinstance(active_task, ComputeTask):
+                                # Perform write invalidations
+                                for parray, target_idx in active_task.dataflow.inout:
+                                    target_device = parla_devices[target_idx]
+                                    global_target_id = target_device.get_global_id()
+                                    parray_target_id = device_manager.globalid_to_parrayid(global_target_id)
+                                    parray._auto_move(parray_target_id, True)
                             
                             core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                             # Run the task body (this may complete the task or return a continuation)

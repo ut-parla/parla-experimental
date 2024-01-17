@@ -713,14 +713,16 @@ class DataMovementTask(Task):
         @brief Run the data movement task. Calls the PArray interface to move the data to the assigned devices.
         Devices are given by the local relative device id within the TaskEnvironment.
         """
-        write_flag = True if self.access_mode != AccessMode.IN else False
+
+        # write_flag = True if self.access_mode != AccessMode.IN else False
+        # Data movement tasks should only perform read operations
+        write_flag = False 
 
         # TODO: Get device manager from task environment instead of scheduler at creation time
         device_manager = self.scheduler.device_manager
         target_dev = self.assigned_devices[0]
         global_id = target_dev.get_global_id()
         parray_id = device_manager.globalid_to_parrayid(global_id)
-
         self.parray._auto_move(parray_id, write_flag)
         return TaskRunahead(0)
 

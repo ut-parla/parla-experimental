@@ -151,7 +151,7 @@ def asarray(a, dtype=None, order=None, like=None, on_gpu=False, name: str = "NA"
     )
 
 
-def asarray_batch(*args):
+def asarray_batch(*args, base="array"):
     """Converts numpy/cupy ndarray to Parla array without creating additional copy.
 
     Args:
@@ -168,27 +168,29 @@ def asarray_batch(*args):
         a, b = asarray_batch(a, b) # a and b are now parla array
     """
 
-    def get_parray(object):  # recursively process Sequence or Dictionary
+    def get_parray(object, count=0):  # recursively process Sequence or Dictionary
         if isinstance(object, (numpy.ndarray, cupy.ndarray)):
-            return asarray(object)
+            return asarray(object, name=f"{base}::{count}")
         elif isinstance(object, PArray):
             return object
         elif isinstance(object, dict):
             accumulator = {}
             for key, value in object.items():
-                accumulator[key] = get_parray(value)
+                accumulator[key] = get_parray(value, count+1)
             return accumulator
         elif isinstance(object, (list, tuple, set)):
             accumulator = []
             for item in object:
-                accumulator.append(get_parray(item))
+                accumulator.append(get_parray(item, count+1))
             return type(object)(accumulator)
         else:
             raise TypeError(f"Unsupported Type: {type(object)}")
 
     parla_arrays = []
+    i = 0
     for arg in args:
-        parla_arrays.append(get_parray(arg))
+        parla_arrays.append(get_parray(arg, i))
+        i += 1
 
     if len(parla_arrays) == 1:
         return parla_arrays[0]

@@ -13,9 +13,8 @@ cdef extern from "include/device_manager.hpp" nogil:
         DeviceManager() except +
         void register_device(Device*) except +
         void print_registered_devices() except +
-        int globalid_to_parrayid(int) except +
-        int parrayid_to_globalid(int) except +
-
+        int globalid_to_parrayid(unsigned int) except +
+        unsigned int parrayid_to_globalid(int) except +
 
 cdef class CyDeviceManager:
     cdef DeviceManager* cpp_device_manager_
