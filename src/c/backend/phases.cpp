@@ -237,6 +237,87 @@ void MemoryReserver::create_datamove_tasks(InnerTask *task) {
   task->add_dependencies(data_tasks, true);
 }
 
+
+
+// TODO(hc): need to think about better naming before it is merged.
+// first, need peer-review on this.
+void MemoryReserver::create_datamove_tasks2(InnerTask *task) {
+  // Get a list of the parrays the current task holds.
+  const std::vector<std::vector<std::pair<parray::InnerPArray *, AccessMode>>>
+      &parray_list = task->parray_list;
+  std::string task_base_name = task->get_name();
+  std::vector<InnerTask *> data_tasks;
+  data_tasks.reserve(parray_list.size());
+
+  for (size_t i = 0; i < parray_list.size(); ++i) {
+    for (size_t j = 0; j < parray_list[i].size(); ++j) {
+      // Create a data movement task for each PArray.
+      parray::InnerPArray *parray = parray_list[i][j].first;
+      AccessMode access_mode = parray_list[i][j].second;
+      InnerDataTask *datamove_task = new InnerDataTask(
+          // TODO(hc): id should be updated!
+          task_base_name + ".dm." + std::to_string(i), 0, parray, access_mode,
+          i);
+      uint64_t parray_parent_id = parray->get_parent_parray()->id;
+      // Get dependencies
+      std::vector<void *> compute_task_dependencies = task->get_dependencies();
+      std::vector<InnerTask *> data_task_dependencies;
+      for (size_t k = 0; k < compute_task_dependencies.size(); ++k) {
+        InnerTask *parray_dependency =
+            static_cast<InnerTask *>(compute_task_dependencies[k]);
+        // Get dependencies of a parray having `parray_parent_id` that have
+        // registered to the traversed dependency task
+        std::vector<InnerTask*>& dep_parray_dependencies = 
+            parray_dependency->get_parray_dependencies(parray_parent_id);
+
+        //std::cout << parray_dependency->name << " is being traversed\n";
+        for (size_t t = 0; t < dep_parray_dependencies.size(); ++t) {
+          data_task_dependencies.push_back(parray_dependency);
+          // If the current processing parray's access mode is READ ONLY,
+          // add this dependency as a dependency for this parray.
+          //std::cout << "access mode:" << int(access_mode) << "\n";
+          if (access_mode == AccessMode::IN) {
+            //std::cout << "IN parray is added:" << parray_parent_id << "\n";
+            task->get_parray_dependencies(parray_parent_id).push_back(parray_dependency);
+          }
+        }
+      }
+
+      // If the current processing parray's access mode is not READ ONLY,
+      // add itself as a dependency for this parray.
+      //std::cout << task->name << " is being traversed access id :" << int(access_mode) << "\n";
+      if (access_mode != AccessMode::IN) {
+        //std::cout << "IN/OUT OUT parray is added:" << parray_parent_id << "\n";
+        task->get_parray_dependencies(parray_parent_id).push_back(task);
+      }
+
+      // TODO(hc): pass false to add_dependencies() as optimization.
+      datamove_task->add_dependencies(data_task_dependencies, true);
+      // Copy assigned devices to a compute task to a data movement task.
+      // TODO(hc): When we support xpy, it should be devices corresponding
+      //           to placements of the local partition.
+      auto device = task->get_assigned_devices()[i];
+      datamove_task->add_assigned_device(device);
+
+      datamove_task->device_constraints.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(device->get_global_id()),
+          std::forward_as_tuple(0, 0, 1));
+
+      data_tasks.push_back(datamove_task);
+      // Add the created data movement task to a reserved task queue.
+      this->scheduler->increase_num_active_tasks();
+      this->reserved_tasks_buffer.push_back(datamove_task);
+    }
+  }
+
+  // Create dependencies between data move task and compute tasks.
+  task->add_dependencies(data_tasks, true);
+}
+
+
+
+
 void MemoryReserver::run(SchedulerPhase *next_phase) {
   NVTX_RANGE("MemoryReserver::run", NVTX_COLOR_LIGHT_GREEN)
 
@@ -263,7 +344,7 @@ void MemoryReserver::run(SchedulerPhase *next_phase) {
     if (can_reserve) {
       this->reserve_resources(task);
       this->reservable_tasks->pop();
-      this->create_datamove_tasks(task);
+      this->create_datamove_tasks2(task);
       this->reserved_tasks_buffer.push_back(task);
     } else {
       // TODO:(wlr) we need some break condition to allow the scheduler to

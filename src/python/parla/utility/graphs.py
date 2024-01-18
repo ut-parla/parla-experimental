@@ -251,8 +251,8 @@ class RunConfig:
     """
 
     outer_iterations: int = (
-        1
-    )  # Number of times to launch the Parla runtime and execute the task graph
+        1  # Number of times to launch the Parla runtime and execute the task graph
+    )
     # Number of times to execute the task graph within the same Parla runtime
     inner_iterations: int = 1
     inner_sync: bool = False  # Whether to synchronize after each kernel launch
@@ -504,7 +504,7 @@ def get_task_properties(line: str):
 
 
 def parse_blog(
-    filename: str = "parla.blog"
+    filename: str = "parla.blog",
 ) -> Tuple[Dict[TaskID, TaskTime], Dict[TaskID, List[TaskID]]]:
     try:
         result = subprocess.run(

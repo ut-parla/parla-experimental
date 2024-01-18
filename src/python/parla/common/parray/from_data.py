@@ -176,12 +176,12 @@ def asarray_batch(*args, base="array"):
         elif isinstance(object, dict):
             accumulator = {}
             for key, value in object.items():
-                accumulator[key] = get_parray(value, count+1)
+                accumulator[key] = get_parray(value, count + 1)
             return accumulator
         elif isinstance(object, (list, tuple, set)):
             accumulator = []
             for item in object:
-                accumulator.append(get_parray(item, count+1))
+                accumulator.append(get_parray(item, count + 1))
             return type(object)(accumulator)
         else:
             raise TypeError(f"Unsupported Type: {type(object)}")
