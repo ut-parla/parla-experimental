@@ -9,6 +9,7 @@ Tasks = tasks.TaskCollection
 TaskSpace = tasks.TaskSpace
 AtomicTaskSpace = tasks.AtomicTaskSpace
 BackendTaskSpace = tasks.BackendTaskSpace
+CompletedTaskSpace = tasks.CompletedTaskSpace
 
 specialize = variants.specialize
 
@@ -18,6 +19,7 @@ __all__ = [
     TaskSpace,
     AtomicTaskSpace,
     BackendTaskSpace,
+    CompletedTaskSpace,
     specialize,
     get_current_context,
     get_current_task,

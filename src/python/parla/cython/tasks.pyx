@@ -1789,3 +1789,12 @@ class BackendTaskSpace(TaskSpace):
 
     def wait(self):
         self.inner_space.wait()
+
+class CompletedTaskSpace(TaskCollection):
+
+    @property
+    def tasks(self):
+        return []
+
+    def __getitem__(self):
+        return TaskList()
