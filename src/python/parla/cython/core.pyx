@@ -287,6 +287,10 @@ cdef class PyInnerTask:
             status = c_self.notify_dependents_wrapper()
         return status
 
+    cpdef get_state_int(self):
+        cdef InnerTask* c_self = self.c_task
+        return c_self.get_state_int()  
+
     cpdef set_state(self, int state):
         cdef InnerTask* c_self = self.c_task
         return c_self.set_state(state)

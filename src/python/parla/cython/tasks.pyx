@@ -128,7 +128,7 @@ class TaskRunning(TaskState):
     @brief This state specifies that a task is executing in a stream.
     """
 
-    __slots__ = ["func", "args", "dependencies"]
+    __slots__ = ["func", "args", "dependencies", "id"]
 
     @property
     def value(self):
@@ -138,9 +138,14 @@ class TaskRunning(TaskState):
     def is_terminal(self):
         return False
 
+    @property
+    def return_value(self):
+        print("TaskRunning has no return value", self, "task: ", self.id, flush=True)
+        raise NotImplementedError()
+
     # The argument dependencies intentially has no type hint.
     # Callers can pass None if they want to pass empty dependencies.
-    def __init__(self, func, args, dependencies: Optional[Iterable] = None):
+    def __init__(self, func, args, dependencies: Optional[Iterable] = None, id=None):
         if dependencies is not None:
             self.dependencies = dependencies
         else:
@@ -148,6 +153,7 @@ class TaskRunning(TaskState):
 
         self.args = args
         self.func = func
+        self.id = id
 
     def clear_dependencies(self):
         self.dependencies = []
@@ -222,7 +228,7 @@ class TaskException(TaskState):
         self.traceback = tb
 
     def __repr__(self):
-        return "TaskException({})".format(self.exception)
+        return f"TaskException({self.exception}, {self.traceback})"
 
 
 TaskAwaitTasks = namedtuple("AwaitTasks", ["dependencies", "value_task"])
@@ -445,7 +451,7 @@ class Task:
         @return The return value of the task body or an exception if the task threw an exception. Returns None if the task has not completed.
         """
 
-        if isinstance(self.state, TaskCompleted):
+        if isinstance(self.state, TaskCompleted) or isinstance(self.state, TaskRunahead):
             return self.state.return_value
         elif isinstance(self.state, TaskException):
             return self.state.exception
@@ -464,30 +470,10 @@ class Task:
         """!
         @brief Run the task body.
         """
+        #if not isinstance(self.state, TaskRunning):
+        #    self.state = TaskRunning(self.func, self.args, id=self.name)
 
-        task_state = None
-        self.state = TaskRunning(self.func, self.args)
-        try:
-
-            task_state = self._execute_task()
-
-            task_state = task_state or TaskRunahead(None)
-
-        except Exception as e:
-            tb = traceback.format_exc()
-            task_state = TaskException(e, tb)
-            self.state = task_state
-
-            print("Exception in Task ", self, ": ", e, tb, flush=True)
-
-            if isinstance(e, KeyboardInterrupt):
-                print("You pressed Ctrl+C! In a Task!", flush=True)
-                raise e
-            # print("Task {} failed with exception: {} \n {}".format(self.name, e, tb), flush=True)
-
-        finally:
-            assert(task_state is not None)
-            self.state = task_state
+        self.state = self._execute_task()
 
     def __await__(self):
         return (yield TaskAwaitTasks([self], self))
@@ -560,7 +546,13 @@ class Task:
         """!
         @brief Get the state of the task (from the C++ runtime)
         """
-        return self.inner_task.get_state()
+        return self.inner_task.get_state_int()
+
+    def is_completed(self):
+        """!
+        @brief Get the completion status of the task.
+        """
+        return self.get_state() == 7
 
     def set_complete(self):
         self.inner_task.set_complete()

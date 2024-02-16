@@ -19,8 +19,11 @@ void InnerWorker::wait() {
   std::unique_lock<std::mutex> lck(mtx);
   // std::cout << "Waiting for task (C++) " << this->thread_idx << std::endl;
   cv.wait(lck, [this] { return this->notified; });
-  // std::cout << "Task assigned (C++) " << this->thread_idx << " "
-  //           << this->ready << std::endl;
+  // std::cout << "Task assigned (C++) " << this->thread_idx << " " <<
+  // this->ready
+  //           << std::endl;
+  // std::cout << "Task assigned (C++) " << this->task->get_name() << ": "
+  //           << this->task->instance << std::endl;
   this->scheduler->increase_num_notified_workers();
 }
 
@@ -209,6 +212,8 @@ void InnerScheduler::spawn_task(InnerTask *task) {
 void InnerScheduler::enqueue_task(InnerTask *task, TaskStatusFlags status) {
   // TODO: Change this to appropriate phase as it becomes implemented
   LOG_INFO(SCHEDULER, "Enqueing task: {}, Status: {}", task, status);
+  // std::cout << "Enqueing task: " << task->get_name()
+  //           << " Instance: " << task->instance << std::endl;
   if (status.mappable && (task->get_state() < TaskState::MAPPED)) {
     LOG_INFO(SCHEDULER, "Enqueing task: {} to mapper", task);
     task->set_status(TaskStatus::MAPPABLE);

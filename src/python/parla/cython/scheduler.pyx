@@ -206,11 +206,9 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
                 while self._should_run:
                     self.status = "Waiting"
-
-                    nvtx.push_range(message="worker::wait", domain="Python Runtime", color="blue")
                     self.inner_worker.wait_for_task()
-
                     self.task = self.inner_worker.get_task()
+                    
                     if isinstance(self.task, core.DataMovementTaskAttributes):
                         self.task_attrs = self.task
                         self.task = DataMovementTask()
@@ -219,8 +217,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                 
                         # comment(wlr): Need this is all cases currently. FIXME: Add stream/event creation in C++ so python isn't the owner.
                         _global_data_tasks[id(self.task)] = self.task
-
-                    nvtx.pop_range(domain="Python Runtime")
 
                     self.status = "Running"
 
@@ -242,8 +238,6 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         else:
                             active_task.handle_runahead_dependencies()
 
-                        nvtx.push_range(message="worker::run", domain="Python Runtime", color="blue")
-
                         # Push the task to the thread local stack
                         Locals.push_task(active_task)
 
@@ -257,10 +251,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
                                     parray_target_id = device_manager.globalid_to_parrayid(global_target_id)
                                     parray._auto_move(parray_target_id, True)
                             
-                            core.binlog_2("Worker", "Running task: ", active_task.inner_task, " on worker: ", self.inner_worker)
                             # Run the task body (this may complete the task or return a continuation)
                             # The body may return asynchronusly before kernels have completed, in which case the task will be marked as runahead
                             active_task.run()
+                            state = active_task.state
 
                         # Pop the task from the thread local stack
                         Locals.pop_task()
@@ -268,59 +262,40 @@ class WorkerThread(ControllableThread, SchedulerContext):
                         # Log events on all 'task default' streams
                         device_context.record_events()
 
-                        nvtx.pop_range(domain="Python Runtime")
-
-                        nvtx.push_range(message="worker::cleanup", domain="Python Runtime", color="blue")
-
-                        final_state = active_task.state
-
                         # FIXME: This can be cleaned up and hidden from this function with a better interface...
                         if active_task.runahead == SyncType.NONE:
                             device_context.finalize()
 
-                        # TODO(wlr): Add better exception handling
-                        if isinstance(final_state, tasks.TaskException):
-                            raise TaskBodyException(active_task.state.exception)
-
-                        elif isinstance(final_state, tasks.TaskRunning):
-                            nvtx.push_range(message="worker::continuation", domain="Python Runtime", color="red")
-                            # print("CONTINUATION: ", active_task.taskid.full_name, active_task.state.dependencies, flush=True)
-                            active_task.dependencies = active_task.state.dependencies
-                            active_task.func = active_task.state.func
-                            active_task.args = active_task.state.args
+                        if isinstance(state, tasks.TaskRunning):
+                            
+                            active_task.dependencies = state.dependencies
+                            active_task.func = state.func
+                            active_task.args = state.args
 
                             active_task.inner_task.clear_dependencies()
                             active_task.add_dependencies(active_task.dependencies, process=False)
-                            nvtx.pop_range(domain="Python Runtime")
                         
-                        elif  isinstance(final_state, tasks.TaskRunahead):
-                            core.binlog_2("Worker", "Runahead task: ", active_task.inner_task, " on worker: ", self.inner_worker)
-                    
                         # print("Cleaning up Task", active_task, flush=True)
                         
                         if USE_PYTHON_RUNAHEAD:
                             # Handle synchronization in Python (for debugging, works!)
-                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            self.scheduler.inner_scheduler.task_cleanup_presync(self.inner_worker, active_task.inner_task, state.value)
                             if active_task.runahead != SyncType.NONE:
                                 device_context.synchronize(events=True)
-                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            self.scheduler.inner_scheduler.task_cleanup_postsync(self.inner_worker, active_task.inner_task, state.value)
                         else:
                             # Handle synchronization in C++
-                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, active_task.state.value)
+                            self.scheduler.inner_scheduler.task_cleanup(self.inner_worker, active_task.inner_task, state.value)
 
                         if active_task.runahead != SyncType.NONE:
                             device_context.return_streams()
 
-                        if isinstance(final_state, tasks.TaskRunahead):
-                            final_state = tasks.TaskCompleted(final_state.return_value)
+                        if active_task.is_completed():
                             active_task.cleanup()
+                            active_task.state = tasks.TaskCompleted(active_task.result)
 
-                            core.binlog_2("Worker", "Completed task: ", active_task.inner_task, " on worker: ", self.inner_worker)
-
-                        active_task.state = final_state
                         self.task = None
 
-                        nvtx.pop_range(domain="Python Runtime")
                     elif self._should_run:
                         raise WorkerThreadException("%r Worker: Woke without a task", self.index)
                     else:
@@ -328,18 +303,10 @@ class WorkerThread(ControllableThread, SchedulerContext):
 
         except Exception as e:
             tb = traceback.format_exc()
-            print("Exception in Worker Thread ", self, ": ", e, tb, flush=True)
+            print("Exception in Worker Thread ", self, " during handling of ", self.task.name, ": ", e, tb, flush=True)
 
             self.scheduler.exception_stack.append(e)
             self.scheduler.stop()
-
-            if isinstance(e, TaskBodyException):
-                raise WorkerThreadException(f"Unhandled Exception in Task: {self.task.get_name()}") from e
-            if isinstance(e, KeyboardInterrupt):
-                print("You pressed Ctrl+C! In a worker!", flush=True)
-                raise e
-            else:
-                raise WorkerThreadException("Unhandled Exception on "+str(self))
 
     def stop(self):
         super().stop()
@@ -398,12 +365,15 @@ class Scheduler(ControllableThread, SchedulerContext):
 
                 for t in self.worker_threads:
                     t.join()
+
+            #print("Exiting Scheduler", flush=True)
+
         except Exception as e:
             self.exception_stack.append(e)
-
+        finally:
+            #print(self.exception_stack, flush=True)
             if len(self.exception_stack) > 0:
                 raise self.exception_stack[0]
-        finally:
             pass
 
     def run(self):
@@ -468,7 +438,6 @@ class Scheduler(ControllableThread, SchedulerContext):
         """
         return self.inner_scheduler.get_parray_state(global_dev_id, parray_parent_id)
 
-
 def _task_callback(task, body):
     """
     A function which forwards to a python function in the appropriate device context.
@@ -482,26 +451,36 @@ def _task_callback(task, body):
         if inspect.iscoroutine(body):
             try:
                 in_value_task = getattr(task, "value_task", None)
-                in_value = in_value_task and in_value_task.result
-
+                if in_value_task is not None:
+                    in_value = in_value_task.result
+                    #print(in_value_task.state)
+                    #print(f"Task invalue1", task, in_value_task, body, in_value, in_value_task.state, in_value_task.result, type(in_value_task), flush=True)
+                else:
+                    in_value = None
+                    #print(f"Task invalue2", task, in_value_task, body, in_value, type(task), type(in_value_task), flush=True)
+                
                 new_task_info = body.send(in_value)
+                #print(f"Task new_task_info", task, new_task_info, body, flush=True)
                 task.value_task = None
                 if not isinstance(new_task_info, tasks.TaskAwaitTasks):
                     raise TypeError(
                         "Parla coroutine tasks must yield a TaskAwaitTasks")
                 dependencies = new_task_info.dependencies
                 value_task = new_task_info.value_task
+                #print(dependencies)
                 if value_task:
                     assert isinstance(value_task, Task)
                     task.value_task = value_task
-                return tasks.TaskRunning(_task_callback, (body,), dependencies)
+                return tasks.TaskRunning(_task_callback, (body,), dependencies, id=task.name)
             except StopIteration as e:
+                #print(f"Task StopIteration", task, e, e.args, flush=True)
                 result = None
                 if e.args:
                     (result,) = e.args
                 return tasks.TaskRunahead(result)
         else:
             result = body()
+            #print(f"Task body", task, body, result, flush=True)
             return tasks.TaskRunahead(result)
     finally:
         pass
