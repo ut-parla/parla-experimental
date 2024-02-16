@@ -300,7 +300,8 @@ public:
      If this task's access permission to the parray is read-only, it pulls
      this list of the dependencies to this map.
    */
-  std::unordered_map<uint64_t, std::vector<InnerTask*>> parray_dependencies_map;
+  std::unordered_map<uint64_t, std::vector<InnerTask *>>
+      parray_dependencies_map;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -601,6 +602,12 @@ public:
   TaskState set_state(TaskState state);
 
   /* Get the task state */
+  int get_state_int() const {
+    const TaskState state = this->state.load();
+    return static_cast<int>(state);
+  }
+
+  /* Get the task state */
   TaskState get_state() const {
     const TaskState state = this->state.load();
     return state;
@@ -632,7 +639,7 @@ public:
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
 
-  std::vector<InnerTask*>& get_parray_dependencies(uint64_t parray_parent_id) {
+  std::vector<InnerTask *> &get_parray_dependencies(uint64_t parray_parent_id) {
     return this->parray_dependencies_map[parray_parent_id];
   }
 
