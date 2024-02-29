@@ -12,7 +12,7 @@ parser.add_argument('-trials', type=int, default=1)
 #What mapping to use
 parser.add_argument('-fixed', type=int, default=1)
 #How many gpus to use
-parser.add_argument('-ngpus', type=int, default=4)
+parser.add_argument('-ngpus', type=int, default=2)
 parser.add_argument('-t', type=int, default=1)
 parser.add_argument('-workers', type=int, default=4)
 
@@ -98,7 +98,7 @@ def using(point=""):
                 usage[2] / 1024.0 )
 @specialize
 @numba.jit(parallel=True)
-def jacobi(j, part_size, a0, a1):
+def jacobi(j, part_size, block_size, a0, a1):
     """
     CPU code to perform a single step in the Jacobi iteration.
     """
@@ -116,7 +116,7 @@ def jacobi(j, part_size, a0, a1):
     
 #     # a1[1:-1,1:-1] = .25 * (a0[2:,1:-1] + a0[:-2,1:-1] + a0[1:-1,2:] + a0[1:-1,:-2])
 @jacobi.variant(gpu)
-def jacobi_gpu(j, part_size, a0, a1):
+def jacobi_gpu(j, part_size, block_size, a0, a1):
     """
     GPU kernel call to perform a single step in the Jacobi iteration.
     """
@@ -127,12 +127,12 @@ def jacobi_gpu(j, part_size, a0, a1):
     # blocks_per_grid_y = (a1.shape[0] + (threads_per_block_y - 1)) // threads_per_block_y
 
     nb_stream = stream_cupy_to_numba(cp.cuda.get_current_stream())
-    gpu_jacobi_kernel[(blocks_per_grid_x), (threads_per_block_x), nb_stream](j, part_size, a0, a1)
+    gpu_jacobi_kernel[(blocks_per_grid_x), (threads_per_block_x), nb_stream](j, part_size, block_size, a0, a1)
     nb_stream.synchronize()
 
 
 @numba.cuda.jit
-def gpu_jacobi_kernel(j, part_size, a0, a1):
+def gpu_jacobi_kernel(j, part_size, block_size, a0, a1):
     """
     Actual CUDA kernel to do a single step.
     """
@@ -144,13 +144,13 @@ def gpu_jacobi_kernel(j, part_size, a0, a1):
     if 0 < i < a1.shape[0]-1:
         r_idx = -1
         if(j % 2 != 0):
-            if(i % part_size != 0):
+            if(i % part_size == part_size - 1):
                 r_idx = -1
             else:
                 r_idx = i + 1
         else:
             if(i % part_size == part_size - 1):
-                r_idx = part_size * part_size + (i // part_size)
+                r_idx = block_size + (i // part_size)
             else:
                 r_idx = i + 1
         # compute left boundary indices
@@ -162,35 +162,9 @@ def gpu_jacobi_kernel(j, part_size, a0, a1):
                 l_idx = i - 1
         else:
             if(i % part_size == 0):
-                l_idx = part_size * part_size + (i // part_size)
+                l_idx = block_size + (i // part_size)
             else:
                 l_idx = i - 1
-
-        # compute up boundary indices
-        u_idx = -1
-        if(j // 2 == 0):
-            if(i // part_size == 0):
-                u_idx = -1
-            else:
-                u_idx = i - part_size
-        else:
-            if(i // part_size == 0):
-                u_idx = part_size * part_size + (i // part_size)
-            else:
-                u_idx = i - part_size
-
-        # compute down boundary indices
-        d_idx = -1
-        if(j // 2 != 0):
-            if(i // part_size != 0):
-                d_idx = -1
-            else:
-                d_idx = i + part_size
-        else:
-            if(i // part_size == part_size - 1):
-                d_idx = part_size * part_size + (i // part_size)
-            else:
-                d_idx = i + part_size
         
         # print(part_size, a1.shape[0], a0.shape[0], j, i, r_idx)
         # print(j, i, l_idx)
@@ -215,8 +189,8 @@ def gpu_jacobi_kernel(j, part_size, a0, a1):
         # print(f'{j} {i} {d_idx}')
         r_val = 0 if r_idx == -1 else a0[r_idx]
         l_val = 0 if l_idx == -1 else a0[l_idx]
-        u_val = 100 if u_idx == -1 else a0[u_idx]
-        d_val = 0 if d_idx == -1 else a0[d_idx]
+        u_val = 100 
+        d_val = 0
         a0[i] = 0.25 * (r_val + l_val + u_val + d_val)
 
 
@@ -235,8 +209,9 @@ def main():
     matrix_size = n *n
     steps = 1
     blocks = ngpus
-    block_size = n // ngpus
-    part_size = n // 2
+    # block_size = n // ngpus
+    part_size = n // ngpus
+    block_size = matrix_size // ngpus
     # part_width = 2 * n // ngpus
     # part_length = 
 
@@ -257,17 +232,13 @@ def main():
         partition = []
         itr = 0
         for i in range(0, matrix_size, part_size):
-            loc = gpu(0)
-            if(itr < num_part/2):
-                loc = xp.gpu(itr % 2)
-            else:
-                loc = xp.gpu((itr % 2) + 2)
+            loc = xp.gpu(itr % 2)
             partition.append(loc)
             itr += 1
-        # print(partition)1
+        # print(partition)
         a0_crosspy = xp.array(a0, distribution=partition, axis=0)
         a1_crosspy = xp.array(a1, distribution=partition, axis=0)
-        # print(a0_crosspy)
+        #print(a0_crosspy)
         
         device_to_array_map = {}
         itr = divisions*part_size
@@ -281,7 +252,7 @@ def main():
                 temp.append(i)
             # temp.append(slice_new[1] - 1)
             device_to_array_map[device_id.id] = temp
-        # print(device_to_array_map)
+        #print(device_to_array_map)
         # print(a0_crosspy)
         # print(a0_crosspy.devices)
 
@@ -337,21 +308,17 @@ def main():
                     left_boundary = []
                     up_boundary = []
                     down_boundary = []
-                    for i in range(part_size):
+                    for i in range(n):
                         if(j % 2 == 0):
-                            right_boundary.append((j // 2) * part_size * n + part_size + i * n)
+                            right_boundary.append(j * part_size * n + part_size + i * n)
                         if(j % 2 != 0):
-                            left_boundary.append((j // 2) * part_size * n + (part_size - 1) + i * n)
-                        if(j // 2 != 0):
-                            up_boundary.append((j % 2) * part_size + (part_size - 1) * n + i)
-                        if(j // 2 == 0):
-                            down_boundary.append(j * part_size + n * part_size + i)
+                            left_boundary.append(i * n + part_size - 1)
+                            #left_boundary.append(j * part_size * n + part_size + i * (n - 1))
                     st = time.perf_counter()
-                    print(right_boundary)
-                    print(left_boundary)
-                    print(up_boundary)
-                    print(down_boundary)
-                    
+                    #print(right_boundary)
+                    #print(left_boundary)
+                    #print(up_boundary)
+                    #print(down_boundary)
                     # Make each task operating on each block depend on the tasks for
                     # that block and its immediate neighbors from the previous iteration.
                     # m_rng = nvtx.start_range(message="task", color="red")
@@ -389,7 +356,7 @@ def main():
                         # print(type(down_boundary))
                         
                         in_block = in_blocks[interior + right_boundary + down_boundary + left_boundary + up_boundary].to(device)
-                        print("In block len: {} {}".format(j, len(in_block)))
+                        # print("In block len: {} {}".format(j, len(in_block)))
                         out_block = out_blocks[interior].to(device)
                         stream.synchronize()
                         e1 = time.perf_counter()
@@ -399,7 +366,7 @@ def main():
                         
                         compute_start = time.perf_counter()
                         #rng2 = nvtx.start_range(message="jacobi", color="green")
-                        jacobi(j, part_size, in_block, out_block)
+                        jacobi(j, part_size, block_size, in_block, out_block)
                         # out_block = out_block1
                         stream.synchronize()
                         # nvtx.end_range(rng2)
