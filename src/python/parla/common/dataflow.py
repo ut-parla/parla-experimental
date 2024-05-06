@@ -2,6 +2,7 @@
 @file dataflow.py
 @brief Implements internal CrossPy containers for automatic datamovement.
 """
+
 from __future__ import annotations  # For type hints of unloaded classes
 from ..common.parray.core import PArray
 from ..common.globals import CROSSPY_ENABLED, crosspy

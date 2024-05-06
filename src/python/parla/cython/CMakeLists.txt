@@ -62,8 +62,7 @@ foreach(PYX_FILE DEPEND_STRING IN ZIP_LISTS PYX_FILES FILE_MAP)
   target_link_libraries(${CY_NAME} PRIVATE backend)
   target_link_directories(${CY_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-  target_include_directories(${CY_NAME}
-                             PRIVATE ${PROJECT_SOURCE_DIR}/src/c/backend)
+  target_include_directories(${CY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/c/backend)
   target_include_directories(
     ${CY_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/c/backend/include)
   target_include_directories(${CY_NAME} PRIVATE ${NumPy_INCLUDE_DIRS})

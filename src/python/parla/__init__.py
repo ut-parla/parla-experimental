@@ -15,6 +15,7 @@ specialize = variants.specialize
 
 sleep_gil = core.cpu_bsleep_gil
 sleep_nogil = core.cpu_bsleep_nogil
+sleep_nogil_data = core.cpu_bsleep_nogil_data
 
 gpu_sleep_gil = core.gpu_bsleep_gil
 gpu_sleep_nogil = core.gpu_bsleep_nogil
@@ -92,9 +93,13 @@ class Parla:
     def __enter__(self):
         if hasattr(self, "_sched"):
             raise ValueError("Do not use the same Parla object more than once.")
+<<<<<<< HEAD
         self._sched = self.scheduler_class(
             self._memory_manager, self._device_manager, **self.kwds
         )
+=======
+        self._sched = self.scheduler_class(self._device_manager, **self.kwds)
+>>>>>>> main
 
         self.interuppted = False
         self.released = False
@@ -103,10 +108,10 @@ class Parla:
             self.original_handler = signal.getsignal(self.sig)
 
             def handler(signum, frame):
-                print("YOU PRESSED CTRL+C, INTERRUPTING ALL TASKS", flush=True)
+                print("Attempting to interurpt all running tasks...", flush=True)
                 self._sched.stop()
                 self.release()
-                self.interrupted = True
+                self.interuppted = True
 
             signal.signal(self.sig, handler)
         except ValueError:

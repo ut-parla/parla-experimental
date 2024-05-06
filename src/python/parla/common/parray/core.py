@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Dict, TYPE_CHECKING, Union, Any
+from typing import List, Dict, TYPE_CHECKING, Union, Any, Optional
 
 from parla.cython.device import PyCPUDevice
 from parla.common.globals import (
@@ -53,7 +53,9 @@ class PArray:
     _coherence: Coherence
     _slices: List[SlicesType]
     _coherence_cv: Dict[int, threading.Condition]
-    _cy_parray: CyPArray  # the wrapper class of C++ PArray class, which store the size and id
+    _cy_parray: (
+        CyPArray  # the wrapper class of C++ PArray class, which store the size and id
+    )
     # the wrapper class of C++ PArrayState class, which store the exist and valid state
     _cyparray_state: CyPArrayState
 
@@ -176,7 +178,10 @@ class PArray:
         return self._cy_parray
 
     @property
-    def array(self) -> ndarray:
+    def array(self):
+        return self.get_array()
+
+    def get_array(self, device_idx: Optional[int] = None) -> ndarray:
         """
         The reference to cupy/numpy array on current device.
         Note: should be called within the current task context
@@ -184,6 +189,10 @@ class PArray:
             when in a tasks which only subarray is auto-moved.
             `valid_slices` is a slices within the auto-moved subarray.
         """
+
+        if device_idx is None:
+            device_idx = self._current_device_index
+
         if self._slices:  # so this is a sub-parray object
             # index into origin array by saved slices
             ret = self._array.get_by_global_slices(
@@ -193,7 +202,7 @@ class PArray:
                 ret = ret[s]
             return ret
         else:  # this is a complete copy
-            ret = self._array.get(self._current_device_index)
+            ret = self._array.get(device_idx)
 
             if isinstance(ret, list):  # get a subarray instead
                 raise IndexError(
@@ -227,6 +236,21 @@ class PArray:
             return device.device.id  # device.device should be a cupy.cuda.Device object
 
     # Public API:
+
+    def set_name(self, name: str):
+        self._name = name
+
+    def get(self, device: Optional[PyDevice] = None) -> "np.ndarray" | "cp.ndarray":
+        if device is None:
+            return self.array
+        else:
+            if isinstance(device, PyCPUDevice):
+                idx = CPU_INDEX
+            else:
+                idx = device.device.id
+            self._auto_move(idx)
+            ret = self.get_array(device_idx=idx)
+            return ret
 
     def nbytes_at(self, device_id: int):
         """An estimate of bytes used in `device_id` after data is moved there.

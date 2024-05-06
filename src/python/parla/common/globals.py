@@ -67,7 +67,16 @@ elif SYNC_FLAG == "1":
 else:
     default_sync = SynchronizationType.NON_BLOCKING
 
-print("DEFAULT SYNC: ", default_sync)
+
+def print_config():
+    print("Parla Configuration", flush=True)
+    print("-------------------", flush=True)
+    print("Cupy Found: ", CUPY_ENABLED, flush=True)
+    print("Crosspy Found: ", CROSSPY_ENABLED, flush=True)
+    print("Preinitialize Cupy + Handles in Threads: ", PREINIT_THREADS, flush=True)
+    print("Runahead Scheduling Backend: ", USE_PYTHON_RUNAHEAD, flush=True)
+    print("Default Runahead Behavior: ", default_sync, flush=True)
+    print("VCU Precision: ", VCU_BASELINE, flush=True)
 
 
 class DeviceType(IntEnum):

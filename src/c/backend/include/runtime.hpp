@@ -300,7 +300,7 @@ public:
   /* Task Assigned Device Set*/
   std::vector<Device *> assigned_devices;
 
-  /*Resource Requirements for each assigned device*/
+  /* Resource Requirements for each assigned device*/
   std::unordered_map<int, ResourcePool_t> device_constraints;
 
   /* Task is data movement task */
@@ -314,6 +314,16 @@ public:
      The first dimension index is for a device id specified in @spawn.
      The second index space is for PArrays. */
   std::vector<std::vector<PArrayAccess_t>> parray_list;
+
+  /* A list of dependency tasks of a parray for this task's dependent tasks.
+     To be specific, a task sets dependencies of a parray for dependent tasks.
+     If this task's access permission to a parray includes write, it sets
+     itself as the dependency of the parray.
+     If this task's access permission to the parray is read-only, it pulls
+     this list of the dependencies to this map.
+   */
+  std::unordered_map<uint64_t, std::vector<InnerTask *>>
+      parray_dependencies_map;
 
   InnerTask();
   InnerTask(long long int id, void *py_task);
@@ -591,6 +601,12 @@ public:
   TaskState set_state(TaskState state);
 
   /* Get the task state */
+  int get_state_int() const {
+    const TaskState state = this->state.load();
+    return static_cast<int>(state);
+  }
+
+  /* Get the task state */
   TaskState get_state() const {
     const TaskState state = this->state.load();
     return state;
@@ -621,6 +637,10 @@ public:
   void end_arch_req_addition();
   void begin_multidev_req_addition();
   void end_multidev_req_addition();
+
+  std::vector<InnerTask *> &get_parray_dependencies(uint64_t parray_parent_id) {
+    return this->parray_dependencies_map[parray_parent_id];
+  }
 
   PlacementRequirementCollections &get_placement_req_options() {
     return placement_req_options_;

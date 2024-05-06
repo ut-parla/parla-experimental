@@ -66,6 +66,7 @@ cdef extern from "include/runtime.hpp" nogil:
 
         string get_name()
 
+        int get_state_int()
         int set_state(int state)
         void add_device_req(void* dev_ptr, long mem_sz, int num_vcus)
         void begin_arch_req_addition()

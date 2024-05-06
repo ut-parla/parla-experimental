@@ -3,4 +3,4 @@
 	url = https://github.com/NVIDIA/NVTX
 [submodule "3rd_party/binlog"]
 	path = 3rd_party/binlog
-	url = git@github.com:morganstanley/binlog.git
+	url = https://github.com/morganstanley/binlog.git

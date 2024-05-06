@@ -356,6 +356,7 @@ protected:
   */
 
   void create_datamove_tasks(InnerTask *task);
+  void create_datamove_tasks2(InnerTask *task);
 };
 
 /**

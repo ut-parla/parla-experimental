@@ -245,7 +245,7 @@ class PyDeviceManager:
                 for dev_id in range(num_of_gpus):
 
                     if self.num_real_gpus > 0:
-                        py_cuda_device = PyGPUDevice(
+                        py_gpu_device = PyGPUDevice(
                                                 dev_id % self.num_real_gpus,
                                                 gpu_mem_sizes[dev_id],
                                                 VCU_BASELINE
@@ -258,9 +258,9 @@ class PyDeviceManager:
                                                 VCU_BASELINE
                                             )
 
-                    gpu_arch.add_device(py_cuda_device)
-                    self.registered_devices.append(py_cuda_device)
-                    cy_device = py_cuda_device.get_cy_device()
+                    gpu_arch.add_device(py_gpu_device)
+                    self.registered_devices.append(py_gpu_device)
+                    cy_device = py_gpu_device.get_cy_device()
                     self.cy_device_manager.register_device(cy_device)
 
     def get_all_devices(self):

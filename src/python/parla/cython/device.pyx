@@ -96,7 +96,7 @@ class PyDevice:
     a device context as a task runs in Python.
     """
     def __init__(self, dev_type: PyDeviceType, dev_type_name, dev_id: int):
-        self._dev_type = dev_type
+        self._dev_type: PyDeviceType = dev_type
         self._device_name = dev_type_name + ":" + str(dev_id)
         self._device = self
         self._device_id = dev_id
@@ -157,7 +157,7 @@ class PyDevice:
         return self._device
 
     @property
-    def architecture(self):
+    def architecture(self) -> PyDeviceType:
         """
         Returns the architecture (type) of the device.
         """
@@ -218,7 +218,7 @@ class PyCPUDevice(PyDevice):
     """
 
     def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
-        super().__init__(DeviceType.CPU, "CPU", dev_id)
+        super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 
 

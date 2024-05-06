@@ -101,7 +101,7 @@ cpdef binlog_2(category, message1, inner_type1 obj1, message2, inner_type2 obj2,
 cpdef cpu_bsleep_gil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but don't release the GIL"""
     cpu_busy_sleep(microseconds)
-
+    
 cpdef cpu_bsleep_nogil(unsigned int microseconds):
     """Busy sleep for a given number of microseconds, but release the GIL"""
     with nogil:
@@ -287,6 +287,10 @@ cdef class PyInnerTask:
         with nogil:
             status = c_self.notify_dependents_wrapper()
         return status
+
+    cpdef get_state_int(self):
+        cdef InnerTask* c_self = self.c_task
+        return c_self.get_state_int()  
 
     cpdef set_state(self, int state):
         cdef InnerTask* c_self = self.c_task
