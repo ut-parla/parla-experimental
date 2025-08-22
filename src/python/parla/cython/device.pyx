@@ -9,6 +9,7 @@ from parla.common.globals import _Locals as Locals
 from parla.common.globals import cupy, CUPY_ENABLED
 from parla.common.globals import DeviceType as PyDeviceType
 from parla.common.globals import VCU_BASELINE, get_device_manager
+from libc.stdint cimport int64_t
 
 from abc import ABCMeta
 from dataclasses import dataclass
@@ -27,13 +28,13 @@ cdef class CyDevice:
     cpdef int get_global_id(self):
         return self._cpp_device.get_global_id()
 
-    cpdef long long int query_resource(self, int resource_type):
+    cpdef int64_t query_resource(self, int resource_type):
         return self._cpp_device.query_resource(<Resource> resource_type)
 
-    cpdef long long int query_reserved_resource(self, int resource_type):
+    cpdef int64_t query_reserved_resource(self, int resource_type):
         return self._cpp_device.query_reserved_resource(<Resource> resource_type)
 
-    cpdef long long int query_mapped_resource(self, int resource_type):
+    cpdef int64_t query_mapped_resource(self, int resource_type):
         return self._cpp_device.query_mapped_resource(<Resource> resource_type)
 
 
@@ -41,12 +42,12 @@ cdef class CyGPUDevice(CyDevice):
     """
     An inherited class from `CyDevice` for a device object specialized to CUDA.
     """
-    def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
+    def __cinit__(self, int dev_id, int64_t mem_sz, int64_t num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
         self._cpp_device = new GPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
-    def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
+    def __init__(self, int dev_id, int64_t mem_sz, int64_t num_vcus, py_device):
         pass
 
 
@@ -54,12 +55,12 @@ cdef class CyCPUDevice(CyDevice):
     """
     An inherited class from `CyDevice` for a device object specialized to CPU.
     """
-    def __cinit__(self, int dev_id, long mem_sz, long num_vcus, py_device):
+    def __cinit__(self, int dev_id, int64_t mem_sz, int64_t num_vcus, py_device):
         # C++ device object.
         # This object is deallocated by the C++ device manager.
         self._cpp_device = new CPUDevice(dev_id, mem_sz, num_vcus, <void *> py_device)
 
-    def __init__(self, int dev_id, long mem_sz, long num_vcus, py_device):
+    def __init__(self, int dev_id, int64_t mem_sz, int64_t num_vcus, py_device):
         pass
 
 
@@ -74,13 +75,13 @@ class DeviceConfiguration:
     """
     type: PyDeviceType
     id: int = 0
-    memory: long = 0
+    memory: int = 0
     vcus: int = 1000
 
     __annotations__ = {
         "type": PyDeviceType,
         "id": int,
-        "memory": long,
+        "memory": int,
         "vcus": int
     }
 
@@ -90,11 +91,11 @@ class DeviceConfiguration:
 
 @dataclass
 class DeviceResource:
-    memory: long = 0
+    memory: int = 0
     vcus: int = 1000
 
     __annotations__ = {
-        "memory": long,
+        "memory": int,
         "vcus": int
     }
 
@@ -219,7 +220,7 @@ class PyGPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CUDA.
     """
 
-    def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
+    def __init__(self, dev_id: int = 0, mem_sz: int = 0, num_vcus: int = 1):
         super().__init__(PyDeviceType.GPU, "GPU", dev_id)
         self._cy_device = CyGPUDevice(dev_id, mem_sz, num_vcus, self)
 
@@ -235,7 +236,7 @@ class PyCPUDevice(PyDevice):
     An inherited class from `PyDevice` for a device object specialized to CPU.
     """
 
-    def __init__(self, dev_id: int = 0, mem_sz: long = 0, num_vcus: long = 1):
+    def __init__(self, dev_id: int = 0, mem_sz: int = 0, num_vcus: int = 1):
         super().__init__(PyDeviceType.CPU, "CPU", dev_id)
         self._cy_device = CyCPUDevice(dev_id, mem_sz, num_vcus, self)
 

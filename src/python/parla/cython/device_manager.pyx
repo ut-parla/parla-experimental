@@ -8,7 +8,7 @@
 from . import device
 from .device cimport Device
 from parla.common.globals import DeviceType, cupy, VCU_BASELINE
-
+from libc.stdint cimport int64_t
 from typing import Iterable, Tuple, List
 
 import os
@@ -184,7 +184,7 @@ class PyDeviceManager:
             for dev_id in range(num_of_gpus):
                 gpu_dev = cupy.cuda.Device(dev_id)
                 mem_info = gpu_dev.mem_info  # tuple of free and total memory (in bytes)
-                mem_sz = long(mem_info[1])
+                mem_sz = <int64_t>mem_info[1]
                 py_cuda_device = PyGPUDevice(dev_id, mem_sz, VCU_BASELINE)
 
                 # Add device to the architecture
@@ -210,7 +210,7 @@ class PyDeviceManager:
         if mem_sz:
             mem_sz = int(mem_sz)
         else:
-            mem_sz = long(psutil.virtual_memory().total)
+            mem_sz = <int64_t>(psutil.virtual_memory().total)
         
         py_cpu_device = PyCPUDevice(0, mem_sz, VCU_BASELINE)
 

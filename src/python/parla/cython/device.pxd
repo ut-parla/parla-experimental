@@ -7,6 +7,7 @@ cimport cython
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libc.stdint cimport int64_t
 
 cdef extern from "include/device.hpp" nogil:
 
@@ -16,22 +17,22 @@ cdef extern from "include/device.hpp" nogil:
         GPU "DeviceType::GPU"
         
     cdef cppclass Device:
-        Device(string, int, long, long, void*) except +
+        Device(string, int, int64_t, int64_t, void*) except +
         int get_id() except +
         int get_global_id() except +
         string get_name() except +
-        long get_memory_size() except +
-        long get_num_vcus() except +
+        int64_t get_memory_size() except +
+        int64_t get_num_vcus() except +
         void *get_py_device() except +
-        long long int query_resource(Resource) except +
-        long long int query_reserved_resource(Resource) except +
-        long long int query_mapped_resource(Resource) except +
+        int64_t query_resource(Resource) except +
+        int64_t query_reserved_resource(Resource) except +
+        int64_t query_mapped_resource(Resource) except +
 
     cdef cppclass GPUDevice(Device):
-        GPUDevice(int, long, long, void*) except +
+        GPUDevice(int, int64_t, int64_t, void*) except +
 
     cdef cppclass CPUDevice(Device):
-        CPUDevice(int, long, long, void*) except +
+        CPUDevice(int, int64_t, int64_t, void*) except +
 
     cdef cppclass DeviceSet:
         vector[void*] get_py_devices() except +  
@@ -41,6 +42,6 @@ cdef class CyDevice:
     cdef Device* _cpp_device
     cdef Device* get_cpp_device(self)
     cpdef int get_global_id(self)
-    cpdef long long int query_resource(self, int)
-    cpdef long long int query_reserved_resource(self, int)
-    cpdef long long int query_mapped_resource(self, int)
+    cpdef int64_t query_resource(self, int)
+    cpdef int64_t query_reserved_resource(self, int)
+    cpdef int64_t query_mapped_resource(self, int)
